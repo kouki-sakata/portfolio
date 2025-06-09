@@ -1,0 +1,138 @@
+<nav class="common_nav w-auto">
+    <form method="post">
+        <ol>
+            <li>
+                <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                        id="home-button"
+                        th:formaction="@{./../home/init}"
+                        type="submit"
+                >
+                    <div class="bg_white icon_box flex flex_align_center flex_just_center shadow  nav_icon"
+                         id="home">
+                        <i class="fa-solid fa-house"></i>
+                    </div>
+                    <div>ホーム</div>
+                </button>
+            </li>
+            <li>
+                <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                        id="stamp-history-button"
+                        th:formaction="@{./../stamphistory/init}"
+                        type="submit"
+                >
+                    <div class="bg_white icon_box flex flex_align_center flex_just_center shadow  nav_icon"
+                         id="stamp-history">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <div>打刻記録確認</div>
+                </button>
+            </li>
+            <li>
+                <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                        id="employee-list-button"
+                        th:formaction="@{./../employeelist/init}"
+                        type="submit"
+                >
+                    <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                         id="employee-list">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <div>従業員情報</div>
+                </button>
+            </li>
+
+            <div li th:if="${adminFlag == '1'}">
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="news-manage-button"
+                            th:formaction="@{./../newsmanage/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="news-manage">
+                            <i class="fa-solid fa-newspaper"></i>
+                        </div>
+                        <div>お知らせ管理</div>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="employee-manage-button"
+                            th:formaction="@{./../employeemanage/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="employee-manage">
+                            <i class="fa-solid fa-people-roof"></i>
+                        </div>
+                        <div>従業員情報管理</div>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="stamp-edit-button"
+                            th:formaction="@{./../stampedit/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="stamp-edit">
+                            <i class="fa-solid fa-pencil"></i>
+                        </div>
+                        <div>打刻記録編集</div>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="stamp-output-button"
+                            th:formaction="@{./../stampoutput/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="stamp-output">
+                            <i class="fa-solid fa-print"></i>
+                        </div>
+                        <div>打刻記録出力</div>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="stamp-delete-button"
+                            th:formaction="@{./../stampdelete/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="stamp-delete">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <div>打刻記録一括削除</div>
+                    </button>
+                </li>
+                <li>
+                    <button class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                            id="log-history-button"
+                            th:formaction="@{./../loghistory/init}"
+                            type="submit"
+                    >
+                        <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon"
+                             id="log-history">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <div>履歴確認</div>
+                    </button>
+                </li>
+            </div>
+            <li>
+                <button
+                        class="nav_button flex gap_5 flex_align_center bg_opa mt-2"
+                        th:formaction="@{./../signin/init}"
+                        type="submit"
+                >
+                    <div class="bg_white icon_box flex flex_align_center flex_just_center shadow nav_icon">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </div>
+                    <div>サインアウト</div>
+                </button>
+            </li>
+        </ol>
+    </form>
+</nav>

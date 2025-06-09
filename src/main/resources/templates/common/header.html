@@ -1,0 +1,49 @@
+<script src="./../js/darkmode.js"></script>
+<header class="common_header flex flex_just_between flex_align_center">
+    <div class="flex flex_align_center gap_3">
+        <!-- ハンバーガーメニューボタン -->
+        <button class="hamburger_btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <a
+                href="/home/init"
+                style="text-decoration: none; color: inherit;"
+                th:href="@{/home/init}">
+            <div class="logo-title">
+                <img alt="エナタイスクールロゴ" class="db_logo"
+                     src="../img/logo-small80_0.png">
+                <h1>
+                    enatai school<br>
+                    TIME MANAGER
+                </h1>
+            </div>
+        </a>
+    </div>
+    <!-- ダークモード切替スイッチ -->
+    <div class="flex flex_align_center gap_3">
+        <div class="toggle-label">
+            <span class="toggle-text"></span>
+            <label class="theme-toggle">
+                <input id="theme-toggle" type="checkbox">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <form method="post" style="display: inline-flex; align-items: center;"
+              th:action="@{./../signin/init}">
+            <div class="flex flex_align_center gap_3">
+                <i class="fa-solid fa-user"></i>
+                <div class="usr_name" th:text="${employeeName}"></div>
+                <div class="sign_out text_white">
+                    <button
+                            class="btn bg_red_info btn-sm shadow"
+                            type="submit"
+                    >SIGN OUT
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</header>
+<script src="./../js/hamburger.js"></script>
