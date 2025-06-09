@@ -1,13 +1,13 @@
-# 未完成
-
 # ポートフォリオサイト (My Portfolio)
+
+> ⚠️ **現在、このプロジェクトは開発中です。** 機能の追加やコードのリファクタリングを継続的に行っています。
 
 ![ポートフォリオサイトのスクリーンショットをここに挿入](ここに画像のURLやパスを記載)
 
 ## 概要 ✨
 
 これは、私自身の技術スキルや制作物を紹介するために作成したポートフォリオサイトです。
-設計から実装、デプロイまでを一貫して行い、Webアプリケーション開発における実践的なスキルを証明することを目的としています。
+設計から実装、デプロイまでを一貫して行い、Webアプリケーション開発における実践的なスキルを証明することを目的としています。**本プロジェクトは現在も開発を続けており、今後さらに機能を追加していく予定です。**
 
 ## デモ 🚀
 
@@ -28,16 +28,16 @@
 
 *   **バックエンド**:
     *   ![Java](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white)
-    *   `[フレームワーク名、例: Spring Boot, Jakarta EE]`
+    *   ![Spring](https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
 *   **フロントエンド**:
     *   ![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
     *   ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
     *   ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-    *   `[テンプレートエンジン名やJSフレームワーク名、例: Thymeleaf, React]`
+    *   ![Thymeleaf](https://img.shields.io/badge/Thymeleaf-005F0F?style=for-the-badge&logo=Thymeleaf&logoColor=white)
 *   **データベース**:
-    *   `[使用したデータベース名、例: MySQL, PostgreSQL, H2 Database]`
+    *   ![MySQL](https://img.shields.io/badge/MySQL-4479A1?style=for-the-badge&logo=mysql&logoColor=white)
 *   **ビルドツール**:
-    *   `[使用したビルドツール名、例: Gradle, Maven]`
+    *   ![Gradle](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
 *   **インフラ・デプロイ環境**:
     *   `[デプロイ先、例: AWS (EC2, S3), Heroku, Render]`
 *   **その他**:
@@ -63,10 +63,10 @@
     cd portfolio
     ```
 
-2.  **[もしあれば] 環境変数を設定します。**
-    `[もし環境変数などが必要な場合は、その設定方法をここに記述します。例: .env.example をコピーして .env を作成し、データベース接続情報を入力してください。]`
+2.  **[もしあれば] データベースの接続情報を設定します。**
+    `[もし設定が必要な場合は、その方法を記述します。例: src/main/resources/application.properties にあるMySQLの接続情報を、ご自身の環境に合わせて変更してください。]`
 
-3.  **[もしGradleを使っている場合] アプリケーションをビルド・実行します。**
+3.  **アプリケーションをビルド・実行します。**
     ```bash
     ./gradlew bootRun
     ```
