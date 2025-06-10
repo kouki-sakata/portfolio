@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.teamdev.mapper.StampDeleteMapper">
+	<delete id="deleteStampsByYearMonthRange">
+		DELETE FROM stamp_history
+		WHERE (year &gt; #{startYear} OR (year = #{startYear} AND month &gt;=
+		#{startMonth}))
+		AND (year &lt; #{endYear} OR (year = #{endYear} AND month &lt;=
+		#{endMonth}))
+	</delete>
+</mapper>

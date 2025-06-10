@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.teamdev.mapper.EmployeeMapper">
+	<!-- データを挿入する -->
+	<insert id="save" parameterType="com.example.teamdev.entity.Employee">
+		INSERT
+		INTO employee (
+			first_name,
+			last_name,
+			email,
+			password,
+			admin_flag,
+			update_date
+		) VALUES (
+			#{first_name},
+			#{last_name},
+			#{email},
+			#{password},
+			#{admin_flag},
+			#{update_date}
+		)
+	</insert>
+	<!-- データを更新する 2025/4/18 山本追記-->
+	<update id="upDate" parameterType="com.example.teamdev.entity.Employee">
+		UPDATE 
+			employee
+		SET
+			first_name = #{first_name},
+			last_name = #{last_name},
+			email = #{email},
+			password = #{password},
+			admin_flag = #{admin_flag},
+			update_date = #{update_date}
+		WHERE
+			id = #{id}
+	</update>
+</mapper>

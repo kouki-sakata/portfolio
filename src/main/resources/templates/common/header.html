@@ -1,0 +1,50 @@
+<!-- 
+	2024/03/21 n.yasunari 新規作成
+-->
+<script src="./../js/darkmode.js"></script>
+<header class="common_header flex flex_just_between flex_align_center">
+  <div class="flex flex_align_center gap_3">
+	<!-- ハンバーガーメニューボタン -->
+	<button class="hamburger_btn">
+      <span></span>
+      <span></span>
+      <span></span>
+	</button>
+  <!-- 5/12 東島追記/修正 -->
+  <a
+    href="/home/init" 
+    th:href="@{/home/init}"
+    style="text-decoration: none; color: inherit;">
+    <div class="logo-title">
+      <img class="db_logo" src="../img/logo-small80_0.png" alt="エナタイスクールロゴ">
+      <h1>
+        enatai school<br>
+        TIME MANAGER
+      </h1>
+    </div>
+  </a>
+  </div>
+  <!-- ダークモード切替スイッチ -->
+  <div class="flex flex_align_center gap_3">
+    <div class="toggle-label">
+      <span class="toggle-text"></span>
+      <label class="theme-toggle">
+        <input type="checkbox" id="theme-toggle">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+    <form th:action="@{./../signin/init}" method="post" style="display: inline-flex; align-items: center;">
+      <div class="flex flex_align_center gap_3">
+        <i class="fa-solid fa-user"></i>
+        <div class="usr_name" th:text="${employeeName}"></div>
+        <div class="sign_out text_white">
+          <button
+            type="submit"
+            class="btn bg_red_info btn-sm shadow"
+          >SIGN OUT</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</header>
+<script src="./../js/hamburger.js"></script>

@@ -1,0 +1,96 @@
+# Compiled class files
+*.class
+
+# Log files
+*.log
+logs/
+temp/
+
+# Package Files
+# ビルドで生成されるアーカイブファイル
+*.jar
+*.war
+*.nar
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Gradle
+.gradle/
+build/
+# Gradle Wrapperのjarはバージョン管理に含める
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+target/
+# Mavenのリリースプラグインなどが生成する一時ファイル
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+# Maven Wrapperのjarは含めても良い（プロジェクト方針による）
+# .mvn/wrapper/maven-wrapper.jar
+
+# IDE: IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+
+# IDE: Eclipse
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+
+# IDE: NetBeans
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# IDE: VS Code
+# チームで共有する設定（launch.jsonなど）がなければ無視してOK
+.vscode/
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# 個人用の設定ファイルなど（こちらを推奨）
+application-local.properties
+application-dev.properties
+local.properties
+
+# 不要であれば削除してよい項目
+# BlueJ files
+*.ctxt
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# JVMクラッシュログ
+hs_err_pid*
+replay_pid*
