@@ -1,6 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
 // 初期処理
 $(function () {
   $('.day_of_week').each(function(){
@@ -57,7 +54,7 @@ $('#regist').on('click', function(e) {
 					$("#regist_form").submit();
 		        }
 		    });
-		    
+
 		    // 「value_change」クラスを持っている場合のみ、子・孫要素のname属性を設定する
 		    if (hasValueChangeClass) {
 		        $(this).find('*').each(function() {

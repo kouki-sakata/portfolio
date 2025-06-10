@@ -1,7 +1,3 @@
-/**
- * 2024/04/10 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
@@ -18,8 +14,7 @@ import com.example.teamdev.mapper.StampHistoryMapper;
 
 
 /**
- * @author n.yasunari
- * 打刻記録編集 
+ * 打刻記録編集
  * 登録処理
  */
 @Service
@@ -28,12 +23,12 @@ public class StampEditService01{
 	StampHistoryMapper mapper;
 	@Autowired
 	LogHistoryService01 logHistoryService;
-	
+
 	public void execute(List<Map<String, Object>> StampEditList, int updateEmployeeId) {
 		//カンマ区切り対策追記
 		boolean save = false;
 		for (Map<String, Object> stampEdit : StampEditList) {
-			
+
 			String stYear = stampEdit.get("year").toString();
 			String stMonth = stampEdit.get("month").toString();
 			String stDay = stampEdit.get("day").toString();
@@ -45,7 +40,7 @@ public class StampEditService01{
                 employeeIdStr = employeeIdStr.split(",")[0];
             }
             int employeeId = Integer.parseInt(employeeIdStr);
-			
+
 			//出勤時刻
 			Timestamp timestampInTime = null;
 			if (stInTime != null && !stInTime.isEmpty()) {
@@ -54,7 +49,7 @@ public class StampEditService01{
 		        // LocalDateTimeからTimestampを作成
 		        timestampInTime = Timestamp.valueOf(localDateTime);
 			}
-	        
+
 	        //退勤時刻
 	        Timestamp timestampOutTime = null;
 	        if (stOutTime != null && !stOutTime.isEmpty()) {
@@ -85,38 +80,38 @@ public class StampEditService01{
 				StampHistory entity = mapper.getById(id).orElse(null);
 				entity.setInTime(timestampInTime);  //setIn_time→setIntime修正
 				entity.setOutTime(timestampOutTime);  //setOut_time→setOuttime修正
-				entity.setUpdateEmployeeId(updateEmployeeId); //setUpdate_employee_id→setUpdateEmployeeId修正 
+				entity.setUpdateEmployeeId(updateEmployeeId); //setUpdate_employee_id→setUpdateEmployeeId修正
 				mapper.update(entity);// 追記 ここでupdateメソッドを呼ぶ
 				Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 				entity.setUpdateDate(timestamp); //setUpdate_date→setUpdateDate修正
 				mapper.save(entity);
 				save = true;
-			}else {
+			} else {
 				//idが格納されていない場合は新規登録
 				StampHistory entity = new StampHistory();
 				entity.setYear(stYear);
 				entity.setMonth(stMonth);
 				entity.setDay(stDay);
 				entity.setMonth(stMonth);
-				entity.setEmployeeId(employeeId);  //setEmployee_id→setEmployeeId修正
-				entity.setInTime(timestampInTime);  //setIn_time→setIntime修正
-				entity.setOutTime(timestampOutTime);  //setOut_time→setOutTime修正
-				entity.setUpdateEmployeeId(updateEmployeeId);  //setUpdate_employee_id→setUpdateEmployeeId修正
+				entity.setEmployeeId(employeeId);
+				entity.setInTime(timestampInTime);
+				entity.setOutTime(timestampOutTime);
+				entity.setUpdateEmployeeId(updateEmployeeId);
 				Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-				entity.setUpdateDate(timestamp); //setUpdate_date→setUpdateDate修正
+				entity.setUpdateDate(timestamp);
 				mapper.save(entity);
 				save = true;
 			}
         }
-		//履歴記録
+		// 履歴記録
 		if(save) {
 			logHistoryService.execute(4, 3, null, Integer.parseInt(StampEditList.get(0).get("employeeId").toString()),
 					updateEmployeeId , Timestamp.valueOf(LocalDateTime.now()));
 		}
 	}
-	//年月日時刻の文字列を結合して、日時文字列をLocalDateTimeに変換
+	// 年月日時刻の文字列を結合して、日時文字列をLocalDateTimeに変換
 	public static LocalDateTime parseToLocalDateTime(String year, String month, String day, String time) {
-		
+
 		// 年月日時刻の文字列を結合して、日時文字列を作成
         String dateTimeString = year + "-" + month + "-" + day + " " + time;
         // 日時文字列をLocalDateTimeに変換

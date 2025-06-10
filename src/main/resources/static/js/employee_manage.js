@@ -1,6 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
 //全選択チェックボックス
 $("#all").change(function() {
     // "all" チェックボックスの状態を取得
@@ -18,7 +15,7 @@ $(".td_btn").click(function() {
     let email = tr.find(".email").text();
     let password = tr.find(".password").text();
     let adminCheckbox = tr.find(".admin_flag");
-    
+
     $("#input_id").val(id);
     $("#input_first_name").val(firstName);
     $("#input_last_name").val(lastName);
@@ -38,7 +35,7 @@ $('#regist').on('click', function() {
     if (firstNameValue.trim() === "") {
 		$("#regist_message_area").text("姓を入力してください。");
         return;
-		
+
     }
     if (lastNameValue.trim() === "") {
         $("#regist_message_area").text("名を入力してください。");

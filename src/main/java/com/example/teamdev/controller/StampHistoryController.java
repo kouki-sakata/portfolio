@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 n.yasunari 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.time.LocalDate;
@@ -27,16 +23,15 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * StampHistoryコントローラ
  */
 @Controller
 @RequestMapping("stamphistory")
 public class StampHistoryController {
-	
+
 	@Autowired
 	StampHistoryService01 service01;
-	
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -45,13 +40,13 @@ public class StampHistoryController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		// 初期表示：システム日付の属する年YYYY、月MM（ゼロ埋め）
         LocalDate currentDate = LocalDate.now();
         String year = String.valueOf(currentDate.getYear());
@@ -69,12 +64,12 @@ public class StampHistoryController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-				
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			// 検索表示：ユーザーが設定した年YYYY、月MM
@@ -95,22 +90,22 @@ public class StampHistoryController {
 	 * @return stamp-history.html
 	 */
 	public String view(
-			String year, 
-			String month, 
+			String year,
+			String month,
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		try {
-			// ナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/2 山本変更)
+			// ナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			//セッションに格納した従業員情報を取り出す
 			Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
 			Integer employeeId = Integer.parseInt(employeeMap.get("id").toString());
@@ -121,14 +116,14 @@ public class StampHistoryController {
 			List<String> yearList = service01.getYearList();
 			//月リスト取得
 			List<String> monthList = service01.getMonthList();
-			
+
 			//打刻記録確認
 			model.addAttribute("stampHistoryList", stampHistoryList);
 			model.addAttribute("selectYear", year);
 			model.addAttribute("selectMonth", month);
 			model.addAttribute("yearList", yearList);
 			model.addAttribute("monthList", monthList);
-			
+
 			return "./stamphistory/stamp-history";
 		} catch (Exception e) {
 			// エラー内容を出力

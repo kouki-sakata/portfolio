@@ -1,7 +1,3 @@
-/**
- * 2024/04/10 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
@@ -16,7 +12,6 @@ import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.NewsMapper;
 
 /**
- * @author n.yasunari
  * お知らせ管理
  * 公開/非公開設定処理
  */
@@ -27,12 +22,12 @@ public class NewsManageService03{
 	NewsMapper mapper;
 	@Autowired
 	LogHistoryService01 logHistoryService;
-	
+
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
-		
+
 		boolean release = false;
 		for (Map<String,String> editMap : listForm.getEditList()) {
-			
+
 			int id = Integer.parseInt(editMap.get("id"));
 			String releaseFlagString = editMap.get("releaseFlag");
 			boolean releaseFlag;
@@ -52,9 +47,9 @@ public class NewsManageService03{
 			}
 		}
 		if(release) {
-			//履歴記録
+			// 履歴記録
 			logHistoryService.execute(2, 5, null, null, updateEmployeeId , Timestamp.valueOf(LocalDateTime.now()));
 		}
-		
+
 	}
 }

@@ -1,7 +1,3 @@
-/**
- * 2024/04/11 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
@@ -15,7 +11,6 @@ import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
 
 /**
- * @author n.yasunari
  * 従業員情報管理
  * 削除処理
  */
@@ -26,9 +21,9 @@ public class EmployeeManageService02{
 	EmployeeMapper mapper;
 	@Autowired
 	LogHistoryService01 logHistoryService;
-	
+
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
-		
+
 		for (String employeeId : listForm.getIdList()) {
 			int id = Integer.parseInt(employeeId);
 			mapper.deleteById(id);

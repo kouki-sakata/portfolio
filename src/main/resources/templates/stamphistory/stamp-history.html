@@ -1,6 +1,3 @@
-<!-- 
-	2024/03/21 n.yausnari 新規作成
--->
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -28,14 +25,11 @@
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
     <section>
-<!--2025/04/24 add atart -->	
-	<div class="layout">	
-<!--2025/04/24 add end-->			
+	<div class="layout">
       <div class="weight_600">
           氏名
       </div>
       <h2 th:text="${employeeName}"></h2>
-<!-- <form id="search_form" th:action="@{search}" method="post">-->	  
       <form id="search_form" th:action="@{search}" method="post" class="year-month">
         <div class="weight_600">
             年
@@ -50,9 +44,7 @@
           <option th:each="item : ${monthList}" th:value="${item}" th:text="${item}" th:selected="${item == selectMonth}"></option>
         </select>
       </form>
-<!--2025/04/24 add start-->	  
 	</div>
-<!--2025/04/24 add end-->	
       <div id="stamp_table" class="bg_white stamp_box margin_tp_2">
         <table class="table table-striped">
           <thead>
@@ -82,7 +74,7 @@
       </div>
     </section>
   </main>
-  
+
   <!-- 共通フッター -->
   <footer th:replace="~{common/footer}"></footer>
   <!-- bootstrap -->

@@ -1,7 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
@@ -15,17 +11,16 @@ import com.example.teamdev.entity.LogHistory;
 import com.example.teamdev.mapper.LogHistoryMapper;
 
 /**
- * @author n.yasunari
  * 履歴記録（共通）
  * 登録処理
  */
 @Service
 public class LogHistoryService01{
-	
+
 	@Autowired
 	LogHistoryMapper mapper;
-	
-	public void execute(int displayName, int operationType, Timestamp stampTime, 
+
+	public void execute(int displayName, int operationType, Timestamp stampTime,
 			Integer employeeId, Integer update_employee_id, Timestamp update_date) {
 		// 既存履歴の有無を確認するためのパラメータをMapで用意 追記
         Map<String, Object> params = new HashMap<>();

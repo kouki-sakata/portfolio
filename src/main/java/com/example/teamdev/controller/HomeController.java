@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 n.yasunari 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.time.LocalDateTime;
@@ -34,7 +30,6 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * Homeコントローラ
  */
 @Controller
@@ -49,7 +44,7 @@ public class HomeController {
 	HomeService03 service03;
 	@Autowired
     HttpSession httpSession;
-	
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -60,8 +55,8 @@ public class HomeController {
 			RedirectAttributes redirectAttributes) {
 		return view(model,session, redirectAttributes);
 	}
-	
-	//home画面に遷移させる為、追記 4/30東島
+
+	// home画面に遷移させる為
 	@GetMapping("init")
 	public String initGet(
 	    Model model,
@@ -69,7 +64,7 @@ public class HomeController {
 	    RedirectAttributes redirectAttributes) {
 	    return view(model, session, redirectAttributes);
 	}
-	
+
 	/**
 	 * サインイン画面→ホーム画面
 	 * サインイン入力値と登録済み従業員情報の一致確認を行う
@@ -82,7 +77,7 @@ public class HomeController {
 		HttpSession session,
 		RedirectAttributes redirectAttributes
 	){
-		
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			Employee employee = new Employee();
@@ -113,7 +108,7 @@ public class HomeController {
 			return "redirect:/signin";
 		}
 	}
-	
+
 	/**
 	 * 打刻登録を行う
 	 */
@@ -125,12 +120,12 @@ public class HomeController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
-		if (redirect != null) 
+		if (redirect != null)
 			return redirect;
-				
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			try {
@@ -140,17 +135,17 @@ public class HomeController {
 				service02.execute(homeForm, employeeId);
 				//modelに登録完了メッセージを格納
 				//「出勤or退勤 時刻を登録しました。（yyyy/MM/dd HH:mm:ss）」
-				LocalDateTime dateTime = 
+				LocalDateTime dateTime =
 					LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
 				String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
 				String type = homeForm.getStampType().equals("1") ? "出勤" : "退勤";
-				
-				// Flash attribute に成功メッセージを追加（2025/5/8 山本)
+
+				// Flash attribute に成功メッセージを追加
 				redirectAttributes.addFlashAttribute("result", type + "時刻を登録しました。（" + newDateTimeString + "）");
-				
-				// 登録完了後、リダイレクト先にGETリクエストを送り、再実行をしない（2025/5/8 山本)
+
+				// 登録完了後、リダイレクト先にGETリクエストを送り、再実行をしない
 				return "redirect:/home/init";
-				
+
 			} catch (Exception e) {
 				System.out.println("例外発生" + e);
 				return "error";
@@ -173,21 +168,21 @@ public class HomeController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
-		if (redirect != null) 
+		if (redirect != null)
 			return redirect;
-		
+
 		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/1 山本変更)
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			List<Map<String,Object>>newsList = new ArrayList<Map<String,Object>>();
 			//画面情報取得処理
 			newsList = service01.execute();
-			
+
 			//お知らせ情報
 			model.addAttribute("newsList", newsList);
 			return "./home/home";
@@ -197,6 +192,6 @@ public class HomeController {
 			//エラー画面表示
 			return "error";
 		}
-		
+
 	}
 }

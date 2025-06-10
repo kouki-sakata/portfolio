@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 a.kuma 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import jakarta.servlet.http.HttpSession;
@@ -14,13 +10,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
- * @author n.yasunari
  * SignInコントローラ
  */
-@Controller 
+@Controller
 @RequestMapping("signin")
 public class SignInController {
-	
+
 	/**
 	 * getでの初期表示
 	 */
@@ -32,7 +27,7 @@ public class SignInController {
 		model.addAttribute("result", result);
 		return view(model);
 	}
-	
+
 	/**
 	 * メニュー・サインアウトボタンからアクセスする
 	 */
@@ -59,5 +54,5 @@ public class SignInController {
 		model.addAttribute("msg", "Welcome back");
 		return "./signin/signin";
 	}
-	
+
 }

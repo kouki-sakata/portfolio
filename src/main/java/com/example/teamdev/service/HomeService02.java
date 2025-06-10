@@ -1,7 +1,3 @@
-/**
- * 2024/04/11 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
@@ -18,7 +14,6 @@ import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
 
 /**
- * @author n.yasunari
  * ホーム画面
  * 打刻登録処理
  */

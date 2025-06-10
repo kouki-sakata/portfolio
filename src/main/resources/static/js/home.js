@@ -1,7 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
-
 // 現在日時を取得してリアルタイム表示
 setInterval(() => {
   const now = new Date();
@@ -50,7 +46,7 @@ function formatDateTime(){
 	let dateObj = new Date(curdate.replace(/年|月|日/g, '/'));
 	// yyyy-MM-dd形式に変換
 	let formattedDate = dateObj.getFullYear() + '-'
-		+ ('0' + (dateObj.getMonth() + 1)).slice(-2) + '-' 
+		+ ('0' + (dateObj.getMonth() + 1)).slice(-2) + '-'
 		+ ('0' + dateObj.getDate()).slice(-2);
 	let curtime = $("#curtime").text();
 	 return formattedDate +"T"+ curtime;

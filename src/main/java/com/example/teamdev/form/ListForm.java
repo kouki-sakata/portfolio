@@ -1,7 +1,3 @@
-/**
- * 2024/04/11 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.form;
 
 import java.util.List;
@@ -12,7 +8,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * @author n.yasunari
  * ListForm(共通)
  */
 @Data

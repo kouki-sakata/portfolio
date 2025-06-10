@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.time.LocalDate;
@@ -30,20 +26,19 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * StampOutputコントローラ
  */
 @Controller
 @RequestMapping("stampoutput")
 public class StampOutputController {
-	
+
 	@Autowired
 	EmployeeListService01 service01;
 	@Autowired
 	StampHistoryService01 service02;
 	@Autowired
 	StampOutputService01 service03;
-	
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -71,7 +66,7 @@ public class StampOutputController {
 		Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
 		//更新者IDとして使用
 		Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
-		
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			try {
@@ -101,16 +96,16 @@ public class StampOutputController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-			
-			// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+			// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 			String redirect = SessionUtil.checkSession(session,
 					redirectAttributes);
-			if (redirect != null) 
+			if (redirect != null)
 				return redirect;
-			
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/2 山本変更)
+
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			try {
 			//一般
 			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
@@ -118,7 +113,7 @@ public class StampOutputController {
 			//管理者
 			List<Map<String,Object>> adminList = new ArrayList<Map<String,Object>>();
 			adminList = service01.execute(1);
-			
+
 			// 初期選択値：システム日付の属する年YYYY、月MM（ゼロ埋め）
 			LocalDate currentDate = LocalDate.now();
 			String year = String.valueOf(currentDate.getYear());
@@ -127,7 +122,7 @@ public class StampOutputController {
 			List<String> yearList = service02.getYearList();
 			//月リスト取得
 			List<String> monthList = service02.getMonthList();
-			
+
 			//従業員情報
 			model.addAttribute("employeeList", employeeList);
 			model.addAttribute("adminList", adminList);
@@ -136,7 +131,7 @@ public class StampOutputController {
 			model.addAttribute("selectMonth", month);
 			model.addAttribute("yearList", yearList);
 			model.addAttribute("monthList", monthList);
-			
+
 			return "./stampoutput/stamp-output";
 		} catch (Exception e) {
 			// エラー内容を出力

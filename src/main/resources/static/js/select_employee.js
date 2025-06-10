@@ -1,6 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
 //従業員氏名クリック時のsubmit
 $('.td_link').click(function() {
 	//クリックした従業員行のIDを取得してformにセット

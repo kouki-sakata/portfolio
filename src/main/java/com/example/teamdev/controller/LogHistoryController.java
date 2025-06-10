@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 a.kuma 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.time.LocalDate;
@@ -28,7 +24,6 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * LogHistoryコントローラ
  */
 @Controller
@@ -49,7 +44,7 @@ public class LogHistoryController {
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -72,7 +67,7 @@ public class LogHistoryController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null) 
@@ -104,14 +99,14 @@ public class LogHistoryController {
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
 		
 		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/7 山本変更)
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
 			
 			//履歴記録

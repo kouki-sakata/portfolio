@@ -1,17 +1,14 @@
-/**
- * 2024/04/28 k.sakata 新規作成
- */
 // ハンバーガーメニューの制御
 document.addEventListener('DOMContentLoaded', function() {
     // ハンバーガーメニュー要素
     const hamburgerBtn = document.querySelector('.hamburger_btn');
     const navMenu = document.querySelector('.common_nav');
-    
+
     // オーバーレイ要素の作成
     const overlay = document.createElement('div');
     overlay.classList.add('menu_overlay');
     document.body.appendChild(overlay);
-    
+
     // ハンバーガーボタンのクリックイベント
     if (hamburgerBtn) {
         hamburgerBtn.addEventListener('click', function() {
@@ -21,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.body.classList.toggle('no-scroll');
         });
     }
-    
+
     // オーバーレイクリックでメニューを閉じる
     overlay.addEventListener('click', function() {
         hamburgerBtn.classList.remove('open');
@@ -29,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         this.classList.remove('open');
         document.body.classList.remove('no-scroll');
     });
-    
+
     // ナビメニュー内のリンクをクリックしたらメニューを閉じる
     const navLinks = document.querySelectorAll('.common_nav .nav_button');
     navLinks.forEach(function(link) {
@@ -42,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // リサイズ時の処理
     window.addEventListener('resize', function() {
         if (window.innerWidth > 768) {

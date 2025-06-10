@@ -1,7 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- * 2025/5/12 s.tominaga カラー変更
- */
 // 初期処理
 $(function () {
   $('.day_of_week').each(function(){

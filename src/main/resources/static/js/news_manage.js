@@ -1,6 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
 // 初期表示時にイベントを発火
 $(function () {
   // 公開チェックボックスの活性非活性設定
@@ -20,7 +17,7 @@ $(".td_btn").click(function() {
     let id = tr.find(".id").val();
     let date = tr.find(".date").text();
     let content = tr.find(".content").text();
-    
+
     $("#input_id").val(id);
     $("#input_date").val(date.replace(/\//g, '-'));
     $("#input_content").val(content);

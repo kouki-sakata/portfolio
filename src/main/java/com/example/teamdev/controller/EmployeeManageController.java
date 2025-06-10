@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 n.yasunari 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.util.ArrayList;
@@ -30,20 +26,19 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * EmployeeManageコントローラ
  */
 @Controller
 @RequestMapping("employeemanage")
 public class EmployeeManageController {
-	
+
 	@Autowired
 	EmployeeListService01 service01;
 	@Autowired
 	EmployeeManageService01 service02;
 	@Autowired
 	EmployeeManageService02 service03;
-	
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -55,7 +50,7 @@ public class EmployeeManageController {
 		return view(model, session, redirectAttributes);
 	}
 	/**
-	 * 登録後リダイレクト用GETメソッド（2025/5/7 山本）
+	 * 登録後リダイレクト用GETメソッド
 	 */
 	@GetMapping("init")
 	public String initGet(
@@ -75,12 +70,12 @@ public class EmployeeManageController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			try {
@@ -95,12 +90,12 @@ public class EmployeeManageController {
 				if(error) {
 					model.addAttribute("registResult", "メールアドレスが重複しています。");
 				}else {
-					// Flash attribute に成功メッセージを追加（2025/5/7 山本)
+					// Flash attribute に成功メッセージを追加
 					redirectAttributes.addFlashAttribute("registResult", "登録しました");
 				}
-				// 登録完了後、リダイレクト先にGETリクエストを送り、再実行をしない（2025/5/7 山本)
+				// 登録完了後、リダイレクト先にGETリクエストを送り、再実行をしない
 				return "redirect:/employeemanage/init";
-				
+
 			} catch (Exception e) {
 				// エラー内容を出力
 				System.out.println("例外発生" + e);
@@ -127,12 +122,12 @@ public class EmployeeManageController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		try {
 			//セッションに格納したサインイン従業員情報を取り出す
 			Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
@@ -157,21 +152,21 @@ public class EmployeeManageController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		try {
-			// ナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/2 山本変更)
+			// ナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			//すべての従業員情報をID昇順で取得
 			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
 			employeeList = service01.execute(null);
-			
+
 			//従業員情報
 			model.addAttribute("employeeList", employeeList);
 			return "./employeemanage/employee-manage";

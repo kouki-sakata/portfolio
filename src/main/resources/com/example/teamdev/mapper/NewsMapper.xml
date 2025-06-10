@@ -16,8 +16,8 @@
 			#{update_date}
 		)
 	</insert>
-	
-	<!-- データを更新する 2025/4/18 山本追記-->
+
+	<!-- データを更新する -->
 	<update id="upDate" parameterType="com.example.teamdev.entity.News">
 		UPDATE
 			news

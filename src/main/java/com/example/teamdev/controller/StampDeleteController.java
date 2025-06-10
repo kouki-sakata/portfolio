@@ -47,7 +47,7 @@ public class StampDeleteController {
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -72,13 +72,13 @@ public class StampDeleteController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
 
-		//セッションに格納したサインイン従業員情報を取り出す（2024/4/30 山本追記）
+		//セッションに格納したサインイン従業員情報を取り出す
 		// employeeMap.get("id")が必要なためそのまま記述
 		Map<String, Object> employeeMap = (Map<String, Object>) session
 				.getAttribute("employeeMap");
@@ -130,7 +130,7 @@ public class StampDeleteController {
 							stampDeleteForm.getStartMonth(),
 							stampDeleteForm.getEndYear(),
 							stampDeleteForm.getEndMonth());
-			// 履歴に登録（2024/5/1 坂田追記）
+			// 履歴に登録
 			Integer updateEmployeeId = Integer
 					.parseInt(employeeMap.get("id").toString());
 			logHistoryService.execute(5, 4, null, null,
@@ -153,7 +153,7 @@ public class StampDeleteController {
 	/**
 	 * 削除完了画面表示
 	 * @return result.html
-	 * PRGパターン（Post/Redirect/Get）を使用し、同じリクエストの再送信を防ぐ処理を追加（2024/5/1 坂田追記）
+	 * PRGパターン（Post/Redirect/Get）を使用し、同じリクエストの再送信を防ぐ処理を追加
 	 */
 	@GetMapping("result")
 	public String result(
@@ -162,13 +162,13 @@ public class StampDeleteController {
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
 
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
 
-		// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/1 山本変更)
+		// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 		ModelUtil.setNavigation(model, session);
 
 		// 初期表示用のフォームを設定

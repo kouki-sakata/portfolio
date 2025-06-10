@@ -1,11 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- * 2025/04/23 s.tominaga 追記
- * 2025/04/24 s.tominaga 追記
- * 2025/04/24 k.sakata ダークモード機能を追加
- * 2025/04/28 s.tominaga 追記
- * 2025/05/02 y.morita 追記
- */
 /* 共通 */
 :root {
 	/* ライトモード（デフォルト）の変数 */
@@ -107,9 +99,6 @@ section {
 }
 
 #input_content {
-  /* 山本変更　2024/4/30 */
-	/* width: 380%;
-	max-width: 1050px; */
   height: 50px;
   width: 100%;
   max-width: 100%;
@@ -129,16 +118,17 @@ section {
 	transform: translateX(-20px);
 	top: -20px;
 }
-/*2025/05/01 add s.tominaga */
+
 .myflat {
-  display: flex; 
+  display: flex;
   gap: 20px;
 }
+
 .label-spacing {
-    margin-right: 110px; 
-    display: inline-block; 
+    margin-right: 110px;
+    display: inline-block;
 }
-/*2025/04/28 add end*/
+
 /* ヘッダー */
 .common_header {
 	margin: 1rem 2rem;
@@ -219,7 +209,7 @@ section {
 	width: 15rem;
 	padding: .5rem 1rem;
 	border-radius: .3rem;
-	transition: transform 0.3s ease, box-shadow 0.3s ease;	
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .nav_button:hover {
@@ -236,7 +226,6 @@ section {
 	border-left: 3px solid var(--accent-blue);
 }
 
-/*2025/04/23 add start*/
 .text_white2 {
 	float: right;
 	width: 200px;
@@ -245,8 +234,6 @@ section {
 	color: var(--text-color);
 }
 
-/*2025/04/22 add end*/
-/*2025/04/24 add start*/
 .layout {
 	display: flex;
 	align-items: center;
@@ -269,15 +256,6 @@ section {
 	height: 38px;
 }
 
-/*2025/04/24 add end*/
-/*2025/05/02 add start*/
-/* 5/7　修正の為コメントアウト　東島 */
-/* #delete3,#release3{
-	padding: 5px 24px 5px 24px !important; 
-	font-size: 1.5rem;
-	box-sizing: content-box;
-} */
-/*2025/05/02 add end s.tominaga*/
 /* フッター */
 .footer {
 	text-align: center;
@@ -305,15 +283,13 @@ section {
 	font-weight: bold;
 	font-size: .9rem;
 }
-/*2025/04/28 add start*/
-/* 2025/5/1 山本追記 */
+
 .form-row1 {
 	display: flex;
   flex-wrap: wrap;
 	gap: 1rem;
 }
 
-/* 2025/5/9 東島追記 */
 input.form-control {
   height: 38px; /* Bootstrapの標準高さ */
   padding: 6px 12px;
@@ -503,7 +479,6 @@ input[type="text"] {
 	color: var(--link-color) !important;
 }
 
-/*y.morita 追記*/
 /* スイッチ本体 */
 .toggle_switch {
   position: relative;
@@ -786,7 +761,7 @@ input:checked+.toggle-slider:before {
   left: -2px;
 }
 
-[data-theme="dark"] .triangle-icon {	
+[data-theme="dark"] .triangle-icon {
 	border-top: 6px solid rgb(255, 255, 255);
 }
 
@@ -828,13 +803,12 @@ input:checked+.toggle-slider:before {
 	}
 
 	.form-row1 {
-		display: flex;
-		/* flex-direction: column; */
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: flex-end;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
 	}
-	
+
 	#input_content {
 	    width: 100%;
 	}
@@ -847,7 +821,7 @@ input:checked+.toggle-slider:before {
 	.text_white2 {
 	    float: none;
 	    width: 200px;
-	    height: auto; 
+	    height: auto;
 	    font-size: inherit;
 	    color: var(--text-color);
 	    position: static;
@@ -982,7 +956,7 @@ input:checked+.toggle-slider:before {
 		gap: 20px;
 	}
 }
-/*y.morita 追記
+
 /* 夜勤退勤ラベルのレスポンシブ対応 */
 .night-label {
   font-size: 1.2rem;
@@ -1004,12 +978,12 @@ input:checked+.toggle-slider:before {
 
 /* アクティブナビの背景 */
 .active-menu {
-	background-color: #e0f7fa; 
+	background-color: #e0f7fa;
 	color: #00796b;
 	font-weight: bold;
 }
 
-/* 5/12 ヘッダーのロゴ、テキストに関する追記　東島 */
+/* 5/12 ヘッダーのロゴ、テキストに関する追記　 */
 .logo-title {
   display: flex;
   align-items: center;  /* 垂直方向の中央揃え */

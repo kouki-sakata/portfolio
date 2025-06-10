@@ -1,119 +1,127 @@
-<!-- 
-	2024/03/21 n.yausnari 新規作成
--->
 <!DOCTYPE html>
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Sign In</title>
-	<!-- favicon -->
-	<link rel="icon" href="./img/favicon.ico">
-	<!-- bootstrap -->
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-		rel="stylesheet"
-		integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-		crossorigin="anonymous">
-	<!-- Bootstrap Icons (for password toggle and social icons) -->
-	<link rel="stylesheet"
-		href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-	<!-- css -->
-	<link rel="stylesheet" href="./css/reset.css">
-	<link rel="stylesheet" href="./css/style.css">
-	<style>
-		body {
-			display: flex;
-			flex-direction: column;
-			min-height: 100vh;
-			background-color: #f0f2f5;
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In</title>
+    <!-- favicon -->
+    <link rel="icon" href="./img/favicon.ico">
+    <!-- bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
+          crossorigin="anonymous">
+    <!-- Bootstrap Icons (for password toggle and social icons) -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- css -->
+    <link rel="stylesheet" href="./css/reset.css">
+    <link rel="stylesheet" href="./css/style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+        }
 
-		main {
-			flex: 1;
-		}
+        main {
+            flex: 1;
+        }
 
-		.icon-button {
-			color: var(--bs-secondary-color, #6c757d);
-			transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-		}
+        .icon-button {
+            color: var(--bs-secondary-color, #6c757d);
+            transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+        }
 
-		.icon-button:hover {
-			background-color: var(--bs-tertiary-bg, rgba(233, 236, 239, 0.7));
-			color: var(--bs-primary, #0d6efd);
-		}
+        .icon-button:hover {
+            background-color: var(--bs-tertiary-bg, rgba(233, 236, 239, 0.7));
+            color: var(--bs-primary, #0d6efd);
+        }
 
-		.icon-button:active {
-			background-color: var(--bs-secondary-bg-subtle, rgba(204, 208, 211, 0.7));
-			color: var(--bs-primary-dark, #0a58ca);
-		}
-	</style>
+        .icon-button:active {
+            background-color: var(--bs-secondary-bg-subtle, rgba(204, 208, 211, 0.7));
+            color: var(--bs-primary-dark, #0a58ca);
+        }
+    </style>
 </head>
 
 <body>
-	<main>
-		<section class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
-			<div class="signin_block_enhanced p-4 p-md-5 border-0 rounded-3 shadow-sm bg-white"
-				style="max-width: 480px; width: 100%;">
-				<div class="text-center mb-4">
-					<img class="db_logo img-fluid" src="../img/logo-small80_0.png" alt="エナタイスクールロゴ"
-						style="max-width: 120px;">
-				</div>
-				<h1 class="h3 mb-3 text-center font_size_3 weight_700 text_info text_gradient"
-					th:text="${msg ?: 'サインイン'}">
-					タイトルが入ります
-				</h1>
-				<p class="mb-4 text-center text-muted">
-					メールアドレスとパスワードを入力してサインインしてください。
-				</p>
-				<form id="signin_form" th:action="@{home/check}" method="post" novalidate>
-					<div class="form-floating mb-3">
-						<input type="email" class="form-control fs-6 rounded-3" id="email"
-							name="email" placeholder="name@example.com" th:value="${param.email}"
-							required aria-describedby="emailHelp">
-						<label for="email">メールアドレス</label>
-						<div class="form-text mt-1" id="emailHelp">
-							入力されたメールアドレスは、ご提供いただいた目的以外で使用することはありません。
-						</div>
-						<div class="invalid-feedback">
-							有効なメールアドレスを入力してください。
-						</div>
-					</div>
-					<div class="input-group mb-3 position-relative">
-						<div class="form-floating flex-grow-1">
-							<input type="password" class="form-control fs-6 rounded-3" id="password"
-								name="password" placeholder="パスワード" required>
-							<label for="password">パスワード</label>
-						</div>
-						<!-- 目のアイコンボタン -->
-						<button type="button"
-							class="btn position-absolute top-50 end-0 translate-middle-y pe-3 bg-transparent border-0 icon-button"
-							id="togglePassword" aria-label="パスワードを表示/非表示">
-							<i class="bi bi-eye-fill fs-5" id="toggleIcon"></i>
-						</button>
-					</div>
-					<!-- ENTERキークリックでサインイン　5/1東島修正 -->
-					<button type='submit' id="sign_in"
-						class="btn bg_blue_info shadow height_3 w-100 mt-4 mb-0">SIGN IN</button>
-				</form>
-				<!-- 新しいメッセージ表示エリア: 常に一定の高さを確保 -->
-				<div class="message-container mt-4" style="min-height: 1.5rem;">
-					<!-- エラーメッセージ表示（タイムアウト時）2024/4/23 山本追記  一部変更：坂田-->
-					<p class="text-danger mb-0" id="message_area" th:text="${result ?: error}"></p>
-				</div>
-			</div>
-		</section>
-	</main>
-	<!-- 共通フッター -->
-	<footer th:replace="~{common/footer}"></footer>
-	<!-- bootstrap -->
-	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
-		integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-		crossorigin="anonymous"></script>
-	<!-- jquery -->
-	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-	<!-- signin.js -->
-	<script src="js/sign_in.js"></script>
+<main>
+    <section
+            class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
+        <div class="signin_block_enhanced p-4 p-md-5 border-0 rounded-3 shadow-sm bg-white"
+             style="max-width: 480px; width: 100%;">
+            <div class="text-center mb-4">
+                <img class="db_logo img-fluid" src="../img/logo-small80_0.png"
+                     alt="エナタイスクールロゴ"
+                     style="max-width: 120px;">
+            </div>
+            <h1 class="h3 mb-3 text-center font_size_3 weight_700 text_info text_gradient"
+                th:text="${msg ?: 'サインイン'}">
+                タイトルが入ります
+            </h1>
+            <p class="mb-4 text-center text-muted">
+                メールアドレスとパスワードを入力してサインインしてください。
+            </p>
+            <form id="signin_form" th:action="@{home/check}" method="post"
+                  novalidate>
+                <div class="form-floating mb-3">
+                    <input type="email" class="form-control fs-6 rounded-3"
+                           id="email"
+                           name="email" placeholder="name@example.com"
+                           th:value="${param.email}"
+                           required aria-describedby="emailHelp">
+                    <label for="email">メールアドレス</label>
+                    <div class="form-text mt-1" id="emailHelp">
+                        入力されたメールアドレスは、ご提供いただいた目的以外で使用することはありません。
+                    </div>
+                    <div class="invalid-feedback">
+                        有効なメールアドレスを入力してください。
+                    </div>
+                </div>
+                <div class="input-group mb-3 position-relative">
+                    <div class="form-floating flex-grow-1">
+                        <input type="password"
+                               class="form-control fs-6 rounded-3" id="password"
+                               name="password" placeholder="パスワード"
+                               required>
+                        <label for="password">パスワード</label>
+                    </div>
+                    <!-- 目のアイコンボタン -->
+                    <button type="button"
+                            class="btn position-absolute top-50 end-0 translate-middle-y pe-3 bg-transparent border-0 icon-button"
+                            id="togglePassword"
+                            aria-label="パスワードを表示/非表示">
+                        <i class="bi bi-eye-fill fs-5" id="toggleIcon"></i>
+                    </button>
+                </div>
+                <!-- ENTERキークリックでサインイン -->
+                <button type='submit' id="sign_in"
+                        class="btn bg_blue_info shadow height_3 w-100 mt-4 mb-0">
+                    SIGN IN
+                </button>
+            </form>
+            <!-- 新しいメッセージ表示エリア: 常に一定の高さを確保 -->
+            <div class="message-container mt-4" style="min-height: 1.5rem;">
+                <!-- エラーメッセージ表示（タイムアウト時）2024/4/23 山本追記  一部変更：坂田-->
+                <p class="text-danger mb-0" id="message_area"
+                   th:text="${result ?: error}"></p>
+            </div>
+        </div>
+    </section>
+</main>
+<!-- 共通フッター -->
+<footer th:replace="~{common/footer}"></footer>
+<!-- bootstrap -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+<!-- jquery -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+<!-- signin.js -->
+<script src="js/sign_in.js"></script>
 </body>
 
 </html>

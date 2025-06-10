@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 n.yasunari 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.time.LocalDate;
@@ -32,21 +28,20 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * StampEditコントローラ
  */
 @Controller
 @RequestMapping("stampedit")
 public class StampEditController {
-	
+
 	@Autowired
 	EmployeeListService01 service01;
 	@Autowired
 	StampHistoryService01 service02;
 	@Autowired
 	StampEditService01 service03;
-	
-	
+
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -68,12 +63,12 @@ public class StampEditController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		// 必須チェック
 		if (!bindingResult.hasErrors()) {
 			try {
@@ -119,12 +114,12 @@ public class StampEditController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		// 必須チェック
 		// カンマ区切り対策と"変更箇所がありません。"追記
 		if (!bindingResult.hasErrors()) {
@@ -155,7 +150,7 @@ public class StampEditController {
 
 	         // 登録完了後にGETメソッドへリダイレクト（山本 2025/5/8）
 	            return "redirect:/stampedit/view?year=" + year + "&month=" + month + "&employeeId=" + employeeId;
-	            
+
 	        } catch (Exception e) {
 	            System.out.println("例外発生" + e);
 	            return "error";
@@ -180,17 +175,17 @@ public class StampEditController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/7 山本変更)
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			if(type.equals("init")) {
 				//初期表示：従業員選択【画面１】
 				//一般
@@ -203,7 +198,7 @@ public class StampEditController {
 				//従業員情報
 				model.addAttribute("employeeList", employeeList);
 				model.addAttribute("adminList", adminList);
-				
+
 				return "./stampedit/select-employee";
 			}else{
 				//対象従業員の打刻記録編集【画面２】
@@ -221,7 +216,7 @@ public class StampEditController {
 				model.addAttribute("selectMonth", month);
 				model.addAttribute("yearList", yearList);
 				model.addAttribute("monthList", monthList);
-				
+
 				return "./stampedit/stamp-edit";
 			}
 		} catch (Exception e) {
@@ -255,7 +250,7 @@ public class StampEditController {
         return false; // すべて同じなら変更なし
     }
     /**
-     * 登録後リダイレクト用GETメソッド（2025/5/7 山本）
+     * 登録後リダイレクト用GETメソッド
      */
     @GetMapping("view")
     public String viewAfterRegistration(

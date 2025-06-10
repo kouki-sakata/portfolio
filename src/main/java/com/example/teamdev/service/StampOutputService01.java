@@ -1,7 +1,3 @@
-/**
- * 2024/04/10 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.service;
 
 import java.io.IOException;
@@ -25,24 +21,23 @@ import com.example.teamdev.mapper.StampHistoryMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * @author n.yasunari
  * 打刻記録出力
  * 出力処理
  */
 @Service
 public class StampOutputService01{
-	
+
 	@Autowired
 	StampHistoryMapper mapper;
 	@Autowired
 	LogHistoryService01 logHistoryService;
-	
+
 	public void execute(HttpServletResponse response, StampOutputForm stampOutputForm, Integer updateEmployeeId) throws IOException {
-		
+
 		String year = stampOutputForm.getYear();
 		String month = stampOutputForm.getMonth();
 		String startDate = year + month + "01";
-		
+
 		// 全従業員の打刻データを格納するリスト
 		List<StampHistoryDisplay> allStampHistoryList = new ArrayList<>();
 		// 従業員名を保持するリスト（ファイル名用）
@@ -93,7 +88,7 @@ public class StampOutputService01{
 
 	/**
 	* CSVファイルを出力する
-	* 
+	*
 	* @param response HTTPレスポンス
 	* @param year 年
 	* @param month 月

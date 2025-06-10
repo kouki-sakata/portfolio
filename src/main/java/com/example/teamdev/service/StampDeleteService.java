@@ -14,13 +14,15 @@ public class StampDeleteService {
 
 	/**
 	 * 年と月を分解し打刻記録を取得
-	 * 
+	 *
 	 * @param startYear  開始年
 	 * @param startMonth 開始月
 	 * @param endYear    終了年
 	 * @param endMonth   終了月
 	 * @return 削除された件数
 	 */
+
+	// TODO 型不安のためentityに詰め替えて処理を実装
 	@Transactional
 	public int deleteStampsByYearMonthRange(String startYear,
 			String startMonth, String endYear, String endMonth) {
@@ -30,14 +32,15 @@ public class StampDeleteService {
 	}
 
 	/**
-	* 開始年月と終了年月の妥当性を検証する
-	* 
-	* @param startYear  開始年
-	* @param startMonth 開始月
-	* @param endYear    終了年
-	* @param endMonth   終了月
-	* @return 開始年月が終了年月より後の場合はfalse、それ以外はtrue
-	*/
+	 * 開始年月と終了年月の妥当性を検証する
+	 *
+	 * @param startYear  開始年
+	 * @param startMonth 開始月
+	 * @param endYear    終了年
+	 * @param endMonth   終了月
+	 * @return 開始年月が終了年月より後の場合はfalse、それ以外はtrue
+	 */
+	// TODO 型不安のためentityに詰め替えて処理を実装
 	public boolean validateYearMonthRange(String startYear,
 			String startMonth, String endYear, String endMonth) {
 		try {

@@ -1,7 +1,3 @@
-/**
- * 2024/03/14 a.kuma 新規作成
- * 2025/04/09 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
 import java.util.ArrayList;
@@ -31,7 +27,6 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * NewsManageコントローラ
  */
 @Controller
@@ -54,7 +49,7 @@ public class NewsManageController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -63,14 +58,14 @@ public class NewsManageController {
 		return view(model, session, redirectAttributes);
 	}
 	/**
-	 * 登録後リダイレクト用GETメソッド（2025/5/7 山本）
+	 * 登録後リダイレクト用GETメソッド
 	 */
 	@GetMapping("init")
 	public String initGet(
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -89,7 +84,7 @@ public class NewsManageController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -105,7 +100,7 @@ public class NewsManageController {
 				//お知らせ情報を登録する
 				service02.execute(newsManageForm, updateEmployeeId);
 				
-				// PRGパターン（Post/Redirect/Get）を使用し、同じリクエストの再送信を防ぐ処理を追加（2025/5/7 山本)
+				// PRGパターン（Post/Redirect/Get）を使用し、同じリクエストの再送信を防ぐ処理を追加
 				// Flash attribute に成功メッセージを追加
 				redirectAttributes.addFlashAttribute("registResult", "登録しました");
 				return "redirect:/newsmanage/init";
@@ -136,7 +131,7 @@ public class NewsManageController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -167,7 +162,7 @@ public class NewsManageController {
 		RedirectAttributes redirectAttributes,
 		HttpSession session
 	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
@@ -196,14 +191,14 @@ public class NewsManageController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session,
 				redirectAttributes);
 		if (redirect != null)
 			return redirect;
 		
 		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/2 山本変更)
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
 			
 			//お知らせ情報を日付の降順で取得する

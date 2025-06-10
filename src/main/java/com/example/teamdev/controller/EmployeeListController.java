@@ -22,16 +22,15 @@ import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
 /**
- * @author n.yasunari
  * EmployeeListコントローラ
  */
 @Controller
 @RequestMapping("employeelist")
 public class EmployeeListController {
-	
+
 	@Autowired
 	EmployeeListService01 service01;
-	
+
 	/**
 	 * メニューからアクセスする
 	 */
@@ -50,16 +49,16 @@ public class EmployeeListController {
 			Model model,
 			HttpSession session,
 			RedirectAttributes redirectAttributes) {
-		
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し（2024/4/24 山本追記）
+
+		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
 		String redirect = SessionUtil.checkSession(session, redirectAttributes);
 		if (redirect != null)
 			return redirect;
-		
+
 		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し（2025/5/2 山本変更)
+			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
 			ModelUtil.setNavigation(model, session);
-			
+
 			//従業員情報を一般と管理者に分けて取得する
 			//一般
 			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
@@ -67,8 +66,8 @@ public class EmployeeListController {
 			//管理者
 			List<Map<String,Object>> adminList = new ArrayList<Map<String,Object>>();
 			adminList = service01.execute(1);
-			
-			
+
+
 			//従業員情報
 			model.addAttribute("employeeList", employeeList);
 			model.addAttribute("adminList", adminList);

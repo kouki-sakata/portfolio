@@ -1,15 +1,9 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- * 2025/04/11 n.yasunari v1.0.1
- */
 package com.example.teamdev.entity;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 /**
- * @author n.yasunari
  * 打刻記録表示、出力
  */
 @Data

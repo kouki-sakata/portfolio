@@ -1,6 +1,3 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- */
 //バリエーションチェックNo.1：必須チェック
 $(document).ready(function() {
 
@@ -81,4 +78,3 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 });
-
