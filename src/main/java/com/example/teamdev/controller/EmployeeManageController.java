@@ -1,180 +1,179 @@
 package com.example.teamdev.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.http.HttpSession;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.teamdev.exception.DuplicateEmailException;
+import com.example.teamdev.exception.EmployeeNotFoundException;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.service.EmployeeListService01;
-import com.example.teamdev.service.EmployeeManageService01;
+import com.example.teamdev.service.EmployeeManageService;
 import com.example.teamdev.service.EmployeeManageService02;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
-/**
- * EmployeeManageコントローラ
- */
 @Controller
 @RequestMapping("employeemanage")
 public class EmployeeManageController {
 
-	@Autowired
-	EmployeeListService01 service01;
-	@Autowired
-	EmployeeManageService01 service02;
-	@Autowired
-	EmployeeManageService02 service03;
+    private static final Logger logger = LoggerFactory.getLogger(EmployeeManageController.class);
 
-	/**
-	 * メニューからアクセスする
-	 */
-	@PostMapping("init")
-	public String initPost(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
-		return view(model, session, redirectAttributes);
-	}
-	/**
-	 * 登録後リダイレクト用GETメソッド
-	 */
-	@GetMapping("init")
-	public String initGet(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
-		return view(model, session, redirectAttributes);
-	}
-	/**
-	 * 従業員情報の編集を登録
-	 */
-	@PostMapping("regist")
-	public String regist(
-		@Validated EmployeeManageForm employeeManageForm,
-		BindingResult bindingResult,
-		Model model,
-		RedirectAttributes redirectAttributes,
-		HttpSession session
-	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-		String redirect = SessionUtil.checkSession(session,
-				redirectAttributes);
-		if (redirect != null)
-			return redirect;
+    private final EmployeeListService01 employeeListService;
+    private final EmployeeManageService employeeManageService;
+    private final EmployeeManageService02 employeeDeleteService;
 
-		// 必須チェック
-		if (!bindingResult.hasErrors()) {
-			try {
-				//セッションに格納したサインイン従業員情報を取り出す
-				Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-				//更新者IDとして使用
-				Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
-				//メールアドレスの重複エラーの場合、falseが返却される
-				boolean error = service02.execute(employeeManageForm, updateEmployeeId);
-				//従業員情報を登録
-				service02.execute(employeeManageForm, updateEmployeeId);
-				if(error) {
-					model.addAttribute("registResult", "メールアドレスが重複しています。");
-				}else {
-					// Flash attribute に成功メッセージを追加
-					redirectAttributes.addFlashAttribute("registResult", "登録しました");
-				}
-				// 登録完了後、リダイレクト先にGETリクエストを送り、再実行をしない
-				return "redirect:/employeemanage/init";
+    @Autowired
+    public EmployeeManageController(
+            EmployeeListService01 employeeListService,
+            EmployeeManageService employeeManageService,
+            EmployeeManageService02 employeeDeleteService) {
+        this.employeeListService = employeeListService;
+        this.employeeManageService = employeeManageService;
+        this.employeeDeleteService = employeeDeleteService;
+    }
 
-			} catch (Exception e) {
-				// エラー内容を出力
-				System.out.println("例外発生" + e);
-				//エラー画面表示
-				return "error";
-			}
-		} else {
-			// エラー内容を取得して出力
-			System.out.println("Validation errors:");
-			for (FieldError error : bindingResult.getFieldErrors()) {
-				System.out.println("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
-			}
-			//エラー画面表示
-			return "error";
-		}
-	}
-	/**
-	 * 従業員情報を削除
-	 */
-	@PostMapping("delete")
-	public String delete(
-		ListForm listForm,
-		Model model,
-		RedirectAttributes redirectAttributes,
-		HttpSession session
-	) {
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-		String redirect = SessionUtil.checkSession(session,
-				redirectAttributes);
-		if (redirect != null)
-			return redirect;
+    @PostMapping("init")
+    public String initPost(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return view(model, session, redirectAttributes);
+    }
 
-		try {
-			//セッションに格納したサインイン従業員情報を取り出す
-			Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-			//更新者IDとして使用
-			Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
-			//従業員情報削除処理
-			service03.execute(listForm, updateEmployeeId);
-			model.addAttribute("deleteResult", "削除しました。");
-			return view(model, session, redirectAttributes);
-		} catch (Exception e) {
-			// エラー内容を出力
-			System.out.println("例外発生" + e);
-			//エラー画面表示
-			return "error";
-		}
-	}
-	/**
-	 * 画面表示
-	 * @return employee-manage.html
-	 */
-	public String view(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
+    @GetMapping("init")
+    public String initGet(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return view(model, session, redirectAttributes);
+    }
 
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-		String redirect = SessionUtil.checkSession(session,
-				redirectAttributes);
-		if (redirect != null)
-			return redirect;
+    @PostMapping("regist")
+    public String regist(
+            @Validated EmployeeManageForm employeeManageForm,
+            BindingResult bindingResult,
+            Model model,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
 
-		try {
-			// ナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-			ModelUtil.setNavigation(model, session);
+        String sessionRedirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (sessionRedirect != null) {
+            return sessionRedirect;
+        }
 
-			//すべての従業員情報をID昇順で取得
-			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
-			employeeList = service01.execute(null);
+        model.addAttribute("employeeManageForm", employeeManageForm);
 
-			//従業員情報
-			model.addAttribute("employeeList", employeeList);
-			return "./employeemanage/employee-manage";
-		} catch (Exception e) {
-			// エラー内容を出力
-			System.out.println("例外発生" + e);
-			//エラー画面表示
-			return "error";
-		}
-	}
+        if (bindingResult.hasErrors()) {
+            logger.warn("登録フォームに検証エラーがあります: {}", bindingResult.getAllErrors());
+            model.addAttribute("bindingResult", bindingResult);
+            return view(model, session, redirectAttributes);
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> loggedInEmployeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
+            if (loggedInEmployeeMap == null) {
+                logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
+                model.addAttribute("registResult", "セッションエラーが発生しました。再度ログインしてください。");
+                return view(model, session, redirectAttributes);
+            }
+            Integer updateEmployeeId = Integer.parseInt(loggedInEmployeeMap.get("id").toString());
+
+
+            if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
+                Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
+                employeeManageService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId);
+                redirectAttributes.addFlashAttribute("registResult", "従業員情報を更新しました。");
+            } else {
+                employeeManageService.createEmployee(employeeManageForm, updateEmployeeId);
+                redirectAttributes.addFlashAttribute("registResult", "従業員情報を登録しました。");
+            }
+            return "redirect:/employeemanage/init";
+
+        } catch (DuplicateEmailException e) {
+            logger.warn("登録/更新失敗 (メール重複): {}", e.getMessage());
+            model.addAttribute("registResult", e.getMessage());
+            return view(model, session, redirectAttributes);
+        } catch (EmployeeNotFoundException e) {
+            logger.warn("更新失敗 (従業員が見つかりません): {}", e.getMessage());
+            model.addAttribute("registResult", e.getMessage());
+            return view(model, session, redirectAttributes);
+        } catch (NumberFormatException e) {
+            logger.error("IDの形式が無効です。", e);
+            model.addAttribute("registResult", "IDの形式が無効です。");
+            return view(model, session, redirectAttributes);
+        } catch (Exception e) {
+            logger.error("従業員の登録/更新中に予期せぬエラーが発生しました。", e);
+            model.addAttribute("registResult", "エラーが発生しました。詳細は管理者に問い合わせてください。");
+            return view(model, session, redirectAttributes);
+        }
+    }
+
+    @PostMapping("delete")
+    public String delete(
+            ListForm listForm,
+            Model model,
+            RedirectAttributes redirectAttributes,
+            HttpSession session) {
+
+        String sessionRedirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (sessionRedirect != null) {
+            return sessionRedirect;
+        }
+
+        try {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
+            if (employeeMap == null) {
+                logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
+                redirectAttributes.addFlashAttribute("deleteResult", "セッションエラーが発生しました。再度ログインしてください。");
+                return "redirect:/employeemanage/init";
+            }
+            Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
+
+            employeeDeleteService.execute(listForm, updateEmployeeId);
+            redirectAttributes.addFlashAttribute("deleteResult", "選択された従業員情報を削除しました。");
+            return "redirect:/employeemanage/init";
+        } catch (Exception e) {
+            logger.error("従業員の削除中にエラーが発生しました。", e);
+            redirectAttributes.addFlashAttribute("deleteResult", "従業員の削除中にエラーが発生しました。");
+            return "redirect:/employeemanage/init";
+        }
+    }
+
+    public String view(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            ModelUtil.setNavigation(model, session);
+            List<Map<String, Object>> employeeList = employeeListService.execute(null);
+            model.addAttribute("employeeList", employeeList);
+
+            if (!model.containsAttribute("employeeManageForm")) {
+                model.addAttribute("employeeManageForm", new EmployeeManageForm());
+            }
+            return "./employeemanage/employee-manage";
+        } catch (Exception e) {
+            logger.error("従業員管理画面の表示中にエラーが発生しました。", e);
+            model.addAttribute("errorMessage", "画面表示中にエラーが発生しました。");
+            return "error";
+        }
+    }
 }
