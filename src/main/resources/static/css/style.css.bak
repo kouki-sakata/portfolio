@@ -1,0 +1,1002 @@
+/* 共通 */
+:root {
+	/* ライトモード（デフォルト）の変数 */
+	--background-color: #ffffff;
+	--text-color: #333333;
+	--primary-color: #4285f4;
+	--secondary-color: #f5f5f5;
+	--border-color: #e0e0e0;
+
+	/* フォーム関連 */
+	--form-bg: #ffffff;
+	--form-text: #000000;
+	--input-bg: #ffffff;
+	--input-border: #d2d6da;
+	--input-text: #333333;
+	--form-shadow: 0 4px 7px -1px rgba(0, 0, 0, .11), 0 2px 4px -1px rgba(0, 0, 0, .07);
+
+	/* テーブル関連 */
+	--table-bg: #ffffff;
+	--table-border: #e0e0e0;
+	--link-color: blue;
+
+	/* ナビゲーション */
+	--nav-text: #67748e;
+	--hamburger-color: #333333;
+	/* ハンバーガーメニュー用の色を追加 */
+
+	/* その他 */
+	--box-shadow: 0 20px 27px 0 rgba(0, 0, 0, .05);
+}
+
+/* ダークモード用の変数 */
+[data-theme="dark"] {
+	/* 基本色 */
+	--background-color: #121212;
+	--text-color: rgba(255, 255, 255, 0.87);
+	--primary-color: #5c9eff;
+	--secondary-color: #2c2c2c;
+	--border-color: #444444;
+
+	/* フォーム関連 */
+	--form-bg: #1e1e1e;
+	--form-text: rgba(255, 255, 255, 0.87);
+	--input-bg: #2c2c2c;
+	--input-border: #444444;
+	--input-text: rgba(255, 255, 255, 0.87);
+	--form-shadow: 0 4px 7px -1px rgba(0, 0, 0, .3), 0 2px 4px -1px rgba(0, 0, 0, .2);
+
+	/* テーブル関連 */
+	--table-bg: #1e1e1e;
+	--table-border: #444444;
+	--link-color: #5c9eff;
+
+	/* ナビゲーション */
+	--nav-text: rgba(255, 255, 255, 0.6);
+	--hamburger-color: #ffffff;
+	/* ハンバーガーメニュー用の色を追加 */
+
+	/* その他 */
+	--box-shadow: 0 20px 27px 0 rgba(0, 0, 0, .3);
+
+	/* 拡張ダークモード変数 */
+	--bg-primary: #121212;
+	--bg-secondary: #1e1e1e;
+	--bg-tertiary: #2c2c2c;
+	--text-primary: rgba(255, 255, 255, 0.87);
+	--text-secondary: rgba(255, 255, 255, 0.6);
+	--text-disabled: rgba(255, 255, 255, 0.38);
+	--accent-blue: #3da8f5;
+	--accent-orange: #ff7e5f;
+	--divider: rgba(255, 255, 255, 0.12);
+
+	/* 白背景要素のダークモード対応 */
+	--bg-white-area: #1e1e1e;
+}
+
+html {
+	font-size: calc(12 / 1280 * 100vw);
+	/* 画面幅1280pxで12px*/
+}
+
+body {
+	background-color: var(--background-color);
+	color: var(--text-color);
+}
+
+section {
+	margin: 0 1.3rem;
+	width: 82%;
+}
+
+.container {
+	height: 100vh;
+	position: relative;
+}
+
+.space {
+	text-align: end;
+}
+
+#input_content {
+  height: 50px;
+  width: 100%;
+  max-width: 100%;
+  font-size: 1.2rem
+}
+
+#input_date {
+	height: 50px;
+	width: 100%;
+	max-width: 100%;
+  font-size: 1.2rem
+}
+
+.text_white2 {
+	position: relative;
+	/* 必要に応じて */
+	transform: translateX(-20px);
+	top: -20px;
+}
+
+.myflat {
+  display: flex;
+  gap: 20px;
+}
+
+.label-spacing {
+    margin-right: 110px;
+    display: inline-block;
+}
+
+/* ヘッダー */
+.common_header {
+	margin: 1rem 2rem;
+	background-color: var(--background-color);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.usr_name {
+	font-size: 1rem;
+	color: var(--text-color);
+}
+
+.sign_out {
+	margin-left: .5rem;
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+	border: 1px solid var(--border-color);
+}
+
+[data-theme="dark"] .sign_out:hover {
+	background-color: #ff5a5a;
+	color: white;
+}
+
+.db_logo {
+	display: inline-block;
+	max-width: 20%;
+}
+
+/* ハンバーガーメニューボタン (追加) */
+.hamburger_btn {
+	display: none;
+	/* デフォルトでは非表示 */
+	flex-direction: column;
+	justify-content: space-between;
+	width: 30px;
+	height: 22px;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+	padding: 0;
+	z-index: 1100;
+	margin-left: 1rem;
+}
+
+.hamburger_btn span {
+	display: block;
+	width: 100%;
+	height: 3px;
+	background-color: var(--hamburger-color);
+	transition: all 0.3s ease-in-out;
+}
+
+/* メインコンテンツ */
+.main_content {
+	display: flex;
+}
+
+/* ナビゲーション */
+.common_nav {
+	margin: 0 1.3rem;
+	background-color: var(--background-color);
+}
+
+.icon_box {
+	width: 2rem;
+	height: 2rem;
+	font-size: .7rem;
+	border-radius: .3rem;
+	background-color: var(--secondary-color);
+	color: var(--text-color);
+}
+
+.nav_button {
+	color: var(--nav-text);
+	width: 15rem;
+	padding: .5rem 1rem;
+	border-radius: .3rem;
+	transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.nav_button:hover {
+	transform: translateY(-4px) scale(1.04);
+	box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="dark"] .nav_button:hover {
+	background-color: var(--bg-tertiary);
+}
+
+[data-theme="dark"] .nav_button.active {
+	background-color: rgba(61, 168, 245, 0.2);
+	border-left: 3px solid var(--accent-blue);
+}
+
+.text_white2 {
+	float: right;
+	width: 200px;
+	height: 60px;
+	font-size: 50px;
+	color: var(--text-color);
+}
+
+.layout {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+.year-month {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+}
+
+#select_year {
+	width: 100px;
+	height: 38px;
+}
+
+#select_month {
+	width: 100px;
+	height: 38px;
+}
+
+/* フッター */
+.footer {
+	text-align: center;
+	width: 100%;
+	padding: 1rem;
+	font-size: .7rem;
+	left: 0;
+	bottom: 0;
+	background-color: var(--background-color);
+	color: var(--text-secondary);
+}
+
+.footer_link {
+	text-decoration: underline;
+	color: var(--nav-text);
+}
+
+[data-theme="dark"] .footer_link {
+	color: var(--accent-blue);
+}
+
+/* フォーム */
+.form-label {
+	color: var(--form-text);
+	font-weight: bold;
+	font-size: .9rem;
+}
+
+.form-row1 {
+	display: flex;
+  flex-wrap: wrap;
+	gap: 1rem;
+}
+
+input.form-control {
+  height: 38px; /* Bootstrapの標準高さ */
+  padding: 6px 12px;
+  font-size: 14px;
+  line-height: 1.42857143;
+  box-sizing: border-box;
+}
+
+input[type="email"],
+input[type="password"] {
+	display: block;
+	padding: 0.5rem 0.75rem;
+	font-size: 1.2rem;
+	font-weight: 400;
+	line-height: 2rem;
+	color: var(--input-text);
+	background-color: var(--input-bg);
+	border: 1px solid var(--input-border);
+	background-clip: padding-box;
+	appearance: none;
+	transition: box-shadow .15s ease, border-color .15s ease;
+}
+
+/* 入力フィールド共通スタイル */
+input[type="text"] {
+	background-color: var(--input-bg);
+	color: var(--input-text);
+	border: 1px solid var(--input-border);
+	border-radius: 4px;
+	padding: 8px 12px;
+	width: 100%;
+	transition: border-color 0.3s, box-shadow 0.3s;
+	box-sizing: border-box;
+}
+
+/* ダークモード時の入力フィールド */
+[data-theme="dark"] input[type="text"],
+[data-theme="dark"] input[type="email"] {
+	border: 1px solid #444444;
+	background-color: #ffffff;
+	color: #333333;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* ダークモード時の入力フィールド:disabled */
+[data-theme="dark"] input[type="text"]:disabled {
+	background-color: #252525;
+	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+	border: 1px solid #3a3a3a;
+	box-shadow: none;
+}
+
+[data-theme="dark"] input[type="text"]:focus,
+[data-theme="dark"] input[type="email"]:focus,
+[data-theme="dark"] input[type="password"]:focus {
+	border-color: var(--accent-blue);
+	box-shadow: 0 0 0 0.2rem rgba(61, 168, 245, 0.25);
+}
+
+.form-text {
+	font-size: .8rem;
+	color: var(--text-secondary);
+}
+
+/* コンテンツ */
+/* サインイン */
+.signin_block {
+	width: 48rem;
+	border-radius: 1rem;
+	background-color: var(--form-bg);
+	color: var(--form-text);
+	margin: 0 auto;
+	padding: 5rem;
+	box-shadow: var(--form-shadow);
+}
+
+.text_gradient.text_info {
+	background-image: linear-gradient(310deg, #2152ff, #21d4fd);
+}
+
+.text_gradient {
+	background-clip: text;
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+	position: relative;
+	z-index: 1;
+}
+
+/* ホーム */
+.stamp_box {
+	padding: 1rem;
+	border-radius: 1rem;
+	box-shadow: var(--box-shadow);
+	background-color: var(--bg-secondary);
+}
+
+.stamp_box_disp {
+	border-radius: .6rem;
+	width: 38rem;
+	height: 23rem;
+	background-color: var(--bg-secondary);
+}
+
+.stamp_box_btn {
+	border-radius: .6rem;
+	width: 50rem;
+	height: 100%;
+	padding-left: 1rem;
+	background-color: var(--bg-secondary);
+}
+/*y.morita 追記*/
+.home-message-success {
+  color: rgb(255, 0, 0);
+  font-size: 1.2rem;
+}
+
+/* ボタン関連 */
+.btn {
+	transition: transform 0.3s ease, background-color 0.3s ease, color 0.3s ease;
+	--bs-btn-border-width: 0;
+}
+
+.btn:hover {
+	color: #fff;
+	transform: scale(1.04);
+}
+
+.btn_shadow {
+	box-shadow: var(--box-shadow);
+}
+
+.btn_timestamp {
+	width: 23.4rem;
+	height: 18rem;
+	border-radius: .6rem;
+}
+
+.toggle_switch {
+	width: 4rem !important;
+	height: 2rem;
+	margin: 0 !important;
+}
+
+[data-theme="dark"] .toggle_switch {
+	background-color: #2c2c2c;
+}
+
+[data-theme="dark"] .toggle_switch:checked {
+	background-color: var(--accent-blue);
+}
+
+.chk_label {
+	margin-left: 1rem;
+	color: var(--text-color);
+}
+/* チェックボックスを大きくする　山本追記（2025/5/9） */
+.checkbox-large {
+  transform: scale(1.5); /* サイズを1.5倍に拡大 */
+  -webkit-transform: scale(1.5); /* Safari対応 */
+  margin: 5px; /* 少し余白を持たせる */
+}
+
+/* テーブル関連 */
+.th_cell {
+	width: 15rem;
+	text-align: center;
+	background-color: var(--table-bg);
+	color: var(--text-color);
+	border-color: var(--table-border);
+}
+
+.table th,
+.table td {
+	background-color: var(--bg-white-area);
+	color: var(--text-color);
+	border-color: var(--table-border);
+}
+
+.td_link {
+	cursor: pointer;
+	text-decoration: underline;
+	color: var(--link-color) !important;
+}
+
+.td_btn {
+	cursor: pointer;
+	color: var(--link-color) !important;
+}
+
+/* スイッチ本体 */
+.toggle_switch {
+  position: relative;
+  appearance: none;
+  background-color: white;  /* OFF時の背景色 */
+  width: 4rem;
+  height: 2rem;
+  border-radius: 2rem;
+  outline: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+/* スイッチのつまみ（〇） */
+.toggle_switch::before {
+  content: "";
+  position: absolute;
+  top: 0.3rem;
+  left: 0.3rem;
+  width: 1.4rem;
+  height: 1.4rem;
+  background-color: #3da8f5; /* OFF時の水色 */
+  border-radius: 50%;
+  transition: transform 0.3s ease, background-color 0.3s ease;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.2);
+  z-index: 2;
+}
+
+/* ON時の背景とつまみ */
+.toggle_switch:checked {
+  background-image: linear-gradient(310deg, #FE0096, #F7BD2B);
+  background-color: transparent;
+}
+
+.toggle_switch:checked::before {
+  background-color: white;
+  transform: translateX(1.8rem);
+}
+
+/* レイアウト関連 */
+.flex {
+	display: flex;
+}
+
+.flex_just_center {
+	justify-content: center;
+}
+
+.flex_just_between {
+	justify-content: space-between;
+}
+
+.flex_align_center {
+	align-items: center;
+}
+
+.flex_dir_col {
+	flex-direction: column;
+}
+
+.gap_3 {
+	gap: .3rem;
+}
+
+.gap_5 {
+	gap: .5rem;
+}
+
+.gap_10 {
+	gap: 1rem;
+}
+
+.height_3 {
+	height: 3rem;
+}
+
+.height_15 {
+	height: 15rem;
+}
+
+.height_25 {
+	height: 25rem;
+}
+
+.margin_tp_1 {
+	margin-top: 1rem;
+}
+
+.margin_tp_2 {
+	margin-top: 2rem;
+}
+
+.padding_tpbtm_1 {
+	padding: 1rem 0;
+}
+
+.display_block {
+	display: block;
+}
+
+/* 背景関連 */
+.bg_opa {
+	background-color: rgba(255, 255, 255, 0);
+}
+
+.bg_white {
+	background-color: var(--bg-white-area);
+}
+
+[data-theme="dark"] .bg_white {
+	background-color: var(--bg-secondary);
+}
+
+.bg_blue_info {
+	color: #fff;
+	background-image: linear-gradient(310deg, #2152ff, #21d4fd);
+}
+
+.bg_red_info {
+	color: #fff;
+	background-image: linear-gradient(310deg, #FE0096, #F7BD2B);
+}
+
+.bg_dark_info {
+	background-image: linear-gradient(310deg, #151828, #3A416F);
+}
+
+/* フォント関連 */
+.weight_700 {
+	font-weight: 700;
+}
+
+.weight_600 {
+	font-weight: 600;
+}
+
+.font_size_3 {
+	font-size: 3rem;
+}
+
+.font_size_8 {
+	font-size: 8rem;
+}
+
+.text_default {
+	color: var(--nav-text);
+}
+
+.text_info {
+	color: var(--accent-blue);
+}
+
+.text_white {
+	color: #fff;
+}
+
+.text_blue {
+	color: var(--accent-blue);
+}
+
+.text_red {
+	color: var(--accent-orange);
+}
+
+/* お知らせエリア等の背景を黒くする */
+[data-theme="dark"] .announcement-area,
+[data-theme="dark"] .content-area {
+	background-color: var(--bg-white-area);
+}
+
+/* スクロールバーのカスタマイズ */
+[data-theme="dark"] ::-webkit-scrollbar {
+	height: 8px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-track {
+	background-color: var(--bg-white-area);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+	background-color: #444;
+	border-radius: 4px;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+	background-color: #555;
+}
+
+/* モーダルやダイアログ */
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal-content,
+[data-theme="dark"] .dialog {
+	background-color: var(--bg-secondary);
+	color: var(--text-primary);
+	border-color: var(--border-color);
+}
+
+/* テーマ切替スイッチ用スタイル */
+.theme-toggle {
+	position: relative;
+	display: inline-block;
+	width: 48px;
+	height: 24px;
+}
+
+.theme-toggle input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.toggle-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #2c2c2c;
+	transition: .4s;
+	border-radius: 24px;
+}
+
+.toggle-slider:before {
+	position: absolute;
+	content: "🌜";
+	font-size: 16px;
+	text-align: center;
+	line-height: 18px;
+	height: 18px;
+	width: 18px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: .3s;
+	border-radius: 50%;
+}
+
+input:checked+.toggle-slider {
+	background-color: var(--accent-blue);
+}
+
+input:checked+.toggle-slider:before {
+	transform: translateX(24px);
+	content: "🌞";
+}
+
+/* オーバーレイ (追加) */
+.menu_overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 998;
+	display: none;
+}
+
+.menu_overlay.open {
+	display: block;
+}
+
+/* アイコン用の汎用スタイル */
+.icon {
+  display: inline-block;
+  margin-left: 0;
+}
+
+/* 三角形アイコンのスタイル */
+.triangle-icon {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 6px solid #333;
+  position: relative;
+  display: inline-block;
+  top: -5px;
+  left: -2px;
+}
+
+[data-theme="dark"] .triangle-icon {
+	border-top: 6px solid rgb(255, 255, 255);
+}
+
+/* レスポンシブ対応 (追加) */
+@media (max-width: 992px) {
+
+	/* タブレット以下のデバイス向け */
+	html {
+		font-size: calc(10 / 768 * 100vw);
+		/* タブレットサイズでのフォントサイズ調整 */
+	}
+
+	section {
+		width: 95%;
+	}
+
+	.signin_block {
+		width: 90%;
+		max-width: 600px;
+		padding: 3rem;
+	}
+
+	.stamp_box_disp {
+		width: 100%;
+	}
+
+	.stamp_box_btn {
+		width: 100%;
+	}
+
+	.btn_timestamp {
+		width: 100%;
+	}
+
+	#curtime,
+	#in_button,
+	#out_button {
+		font-size: 6rem;
+	}
+
+	.form-row1 {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: flex-end;
+	}
+
+	#input_content {
+	    width: 100%;
+	}
+
+	.space {
+		text-align: initial;
+		transform: none;
+	}
+
+	.text_white2 {
+	    float: none;
+	    width: 200px;
+	    height: auto;
+	    font-size: inherit;
+	    color: var(--text-color);
+	    position: static;
+	    transform: none;
+	    top: auto;
+	}
+}
+
+@media (max-width: 768px) {
+
+	/* ハンバーガーメニュー表示 */
+	.hamburger_btn {
+		display: flex;
+	}
+
+	.main_content {
+		flex-direction: column;
+	}
+
+	.common_nav {
+		position: fixed;
+		top: 0;
+		left: -100%;
+		height: 100vh;
+		width: 250px;
+		margin: 0;
+		z-index: 999;
+		padding-top: 60px;
+		box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+		transition: all 0.3s ease;
+	}
+
+	.common_nav.open {
+		left: 0;
+	}
+
+	/* ハンバーガーメニュー開いた時のボタン */
+	.hamburger_btn.open span:nth-child(1) {
+		transform: rotate(45deg) translate(5px, 5px);
+	}
+
+	.hamburger_btn.open span:nth-child(2) {
+		opacity: 0;
+	}
+
+	.hamburger_btn.open span:nth-child(3) {
+		transform: rotate(-45deg) translate(7px, -8px);
+	}
+
+	section {
+		margin: 0 auto;
+		width: 100%;
+		padding: 0 1rem;
+	}
+
+	.common_header {
+		margin: 0.5rem;
+	}
+
+	.year-month {
+		flex-wrap: wrap;
+	}
+
+	.font_size_3 {
+		font-size: 2rem;
+	}
+
+	.font_size_8 {
+		font-size: 5rem;
+	}
+}
+
+@media (max-width: 576px) {
+
+	/* スマートフォン向け */
+	html {
+		font-size: calc(9 / 375 * 100vw);
+		/* スマートフォンサイズでのフォントサイズ調整 */
+	}
+
+	.common_header {
+		margin: 0.5rem;
+	}
+
+	.db_logo {
+		max-width: 40%;
+	}
+
+	.signin_block {
+		padding: 2rem 1rem;
+	}
+
+	.text_white2 {
+		width: 150px;
+		font-size: 35px;
+	}
+
+	.year-month {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	#select_year,
+	#select_month {
+		width: 100%;
+	}
+
+	.font_size_3 {
+		font-size: 1.8rem;
+	}
+
+	.font_size_8 {
+		font-size: 4rem;
+	}
+
+	/* テーブルをスクロール可能に */
+	.table {
+		display: block;
+		overflow-x: auto;
+		white-space: nowrap;
+	}
+
+	#curtime,
+	#in_button,
+	#out_button {
+		font-size: 4rem;
+	}
+
+	.layout {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 20px;
+	}
+}
+
+/* 夜勤退勤ラベルのレスポンシブ対応 */
+.night-label {
+  font-size: 1.2rem;
+}
+
+/* タブレット以下 */
+@media (max-width: 768px) {
+  .night-label {
+    font-size: 1rem;
+  }
+}
+
+/* スマホ */
+@media (max-width: 480px) {
+  .night-label {
+    font-size: 0.7rem;
+  }
+}
+
+/* アクティブナビの背景 */
+.active-menu {
+	background-color: #e0f7fa;
+	color: #00796b;
+	font-weight: bold;
+}
+
+/* 5/12 ヘッダーのロゴ、テキストに関する追記　 */
+.logo-title {
+  display: flex;
+  align-items: center;  /* 垂直方向の中央揃え */
+  gap: 12px;             /* ロゴとテキストの間隔 */
+}
+
+.db_logo {
+  width: 80px;           /* お好みでサイズ調整 */
+  height: auto;
+}
+
+.logo-title h1 {
+  margin: 0;
+  font-size: -0.5rem;
+  line-height: 1.2;
+}
