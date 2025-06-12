@@ -6,53 +6,50 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
+// Remove: import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/**
- * @author n.yasunari
- * サインイン→ホーム画面
- * サインイン処理
- */
 @Service
-public class HomeService03{
-	@Autowired
-	EmployeeMapper mapper;
+public class HomeService03 {
 
-	public Map<String, Object> execute(Employee employee) {
+    private final EmployeeMapper mapper;
+    // Remove: private final PasswordEncoder passwordEncoder;
 
-		Map<String, Object> map = new HashMap<String, Object>();
+    @Autowired
+    public HomeService03(EmployeeMapper mapper) { // Remove PasswordEncoder from constructor
+        this.mapper = mapper;
+        // Remove: this.passwordEncoder = passwordEncoder;
+    }
 
-		String email = employee.getEmail();
-		String password = employee.getPassword();
+    public Map<String, Object> execute(Employee employeeFromForm) {
+        Map<String, Object> map = new HashMap<>();
+        String email = employeeFromForm.getEmail();
+        String rawPassword = employeeFromForm.getPassword(); // Plain text password from form
 
-		//従業員情報テーブルからメールアドレスが一致するレコードを1件取得する
-		Employee targetEmployee =  mapper.getEmployeeByEmail(email);
+        Employee targetEmployee = mapper.getEmployeeByEmail(email);
 
-		if(Objects.nonNull(targetEmployee)) {
-			if(targetEmployee.getPassword().equals(password)) {
-				//対象レコードのパスワードと入力パスワードが一致した場合
-				//対象の従業員情報をmapに入れる
-				map = new ObjectMapper().convertValue(targetEmployee, Map.class);
-				//従業員情報の姓名を表示用に「姓+全角スペース+名」で格納
-				String employeeName = map.get("first_name").toString() +
-						"　" + map.get("last_name").toString();
-		        map.put("employeeName", employeeName);
-				// サインインに成功した現在日時を格納
-		        map.put("signInTime", LocalDateTime.now());
-				 // セキュリティ上、持ち回る従業員情報mapからパスワードを削除
-				map.remove("password");
-				return map;
-			}else {
-				//対象レコードのパスワードと入力パスワードが不一致
-				return map;
-			}
-		}else {
-			//メールアドレスが一致するレコードが存在しない
-			return map;
-		}
-	}
+        if (Objects.nonNull(targetEmployee)) {
+            // Revert to plain-text password comparison
+            if (targetEmployee.getPassword().equals(rawPassword)) {
+                // Passwords match
+                map = new ObjectMapper().convertValue(targetEmployee, Map.class);
+                String employeeName = map.get("first_name").toString() +
+                        "　" + map.get("last_name").toString();
+                map.put("employeeName", employeeName);
+                map.put("signInTime", LocalDateTime.now());
+                map.remove("password");
+                return map;
+            } else {
+                // Password does not match
+                return map; // Return empty map
+            }
+        } else {
+            // Email not found
+            return map; // Return empty map
+        }
+    }
 }
