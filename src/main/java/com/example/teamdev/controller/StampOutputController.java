@@ -19,125 +19,104 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.teamdev.form.StampOutputForm;
-import com.example.teamdev.service.EmployeeListService01;
+// Import EmployeeService
+import com.example.teamdev.service.EmployeeService;
+// Remove: import com.example.teamdev.service.EmployeeListService01;
 import com.example.teamdev.service.StampHistoryService01;
 import com.example.teamdev.service.StampOutputService01;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
-/**
- * StampOutputコントローラ
- */
 @Controller
 @RequestMapping("stampoutput")
 public class StampOutputController {
 
-	@Autowired
-	EmployeeListService01 service01;
-	@Autowired
-	StampHistoryService01 service02;
-	@Autowired
-	StampOutputService01 service03;
+    // Change type to EmployeeService and rename variable for clarity
+    private final EmployeeService employeeService;
+    private final StampHistoryService01 stampHistoryService; // Renamed for consistency from service02
+    private final StampOutputService01 stampOutputService;   // Renamed for consistency from service03
 
-	/**
-	 * メニューからアクセスする
-	 */
-	@PostMapping("init")
-	public String init(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
-		return view(model, session, redirectAttributes);
-	}
-	/**
-	 * 打刻記録を出力
-	 * void → return viewに変更（山本 2025/5/8）
-	 */
-	@PostMapping("output")
-	public String output(
-		HttpServletResponse response,
-		@Validated StampOutputForm stampOutputForm,
-		BindingResult bindingResult,
-		Model model,
-		RedirectAttributes redirectAttributes,
-		HttpSession session
-	) {
-		//セッションに格納したサインイン従業員情報を取り出す（履歴記録のため山本追記 2025/5/9）
-		Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-		//更新者IDとして使用
-		Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
+    @Autowired
+    public StampOutputController(
+            EmployeeService employeeService,
+            StampHistoryService01 stampHistoryService,
+            StampOutputService01 stampOutputService) {
+        this.employeeService = employeeService;
+        this.stampHistoryService = stampHistoryService;
+        this.stampOutputService = stampOutputService;
+    }
 
-		// 必須チェック
-		if (!bindingResult.hasErrors()) {
-			try {
-				//出力処理
-				service03.execute(response, stampOutputForm, updateEmployeeId);
-			} catch (Exception e) {
-				// エラー内容を出力
-				System.out.println("例外発生" + e);
-			}
-		} else {
-			// エラー内容を取得して出力
-			System.out.println("Validation errors:");
-			for (FieldError error : bindingResult.getFieldErrors()) {
-				System.out.println("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
-			}
-		}
+    @PostMapping("init")
+    public String init(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return view(model, session, redirectAttributes);
+    }
 
-		// modelにエラーメッセージ追加 （山本 2025/5/8）
-		model.addAttribute("result", "出力する従業員情報を1件選択してください");
-		return view(model, session, redirectAttributes);
-	}
-	/**
-	 * 打刻記録編集画面表示
-	 * @return stamp_output.html
-	 */
-	public String view(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
+    @PostMapping("output")
+    public String output(
+        HttpServletResponse response,
+        @Validated StampOutputForm stampOutputForm,
+        BindingResult bindingResult,
+        Model model,
+        RedirectAttributes redirectAttributes,
+        HttpSession session
+    ) {
+        Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
+        Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
 
-			// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-			String redirect = SessionUtil.checkSession(session,
-					redirectAttributes);
-			if (redirect != null)
-				return redirect;
+        if (!bindingResult.hasErrors()) {
+            try {
+                // Use the correctly named service variable
+                stampOutputService.execute(response, stampOutputForm, updateEmployeeId);
+            } catch (Exception e) {
+                System.out.println("例外発生" + e);
+            }
+        } else {
+            System.out.println("Validation errors:");
+            for (FieldError error : bindingResult.getFieldErrors()) {
+                System.out.println("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
+            }
+        }
+        model.addAttribute("result", "出力する従業員情報を1件選択してください");
+        return view(model, session, redirectAttributes);
+    }
 
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-			ModelUtil.setNavigation(model, session);
+    public String view(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
-			try {
-			//一般
-			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
-			employeeList = service01.execute(0);
-			//管理者
-			List<Map<String,Object>> adminList = new ArrayList<Map<String,Object>>();
-			adminList = service01.execute(1);
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (redirect != null)
+            return redirect;
 
-			// 初期選択値：システム日付の属する年YYYY、月MM（ゼロ埋め）
-			LocalDate currentDate = LocalDate.now();
-			String year = String.valueOf(currentDate.getYear());
-			String month = String.format("%02d", currentDate.getMonthValue());
-			//年リスト取得
-			List<String> yearList = service02.getYearList();
-			//月リスト取得
-			List<String> monthList = service02.getMonthList();
+        ModelUtil.setNavigation(model, session);
 
-			//従業員情報
-			model.addAttribute("employeeList", employeeList);
-			model.addAttribute("adminList", adminList);
-			//年・月
-			model.addAttribute("selectYear", year);
-			model.addAttribute("selectMonth", month);
-			model.addAttribute("yearList", yearList);
-			model.addAttribute("monthList", monthList);
+        try {
+            // Use the new service method
+            List<Map<String,Object>>employeeList = employeeService.getAllEmployees(0);
+            List<Map<String,Object>> adminList = employeeService.getAllEmployees(1);
 
-			return "./stampoutput/stamp-output";
-		} catch (Exception e) {
-			// エラー内容を出力
-			System.out.println("例外発生" + e);
-			//エラー画面表示
-			return "error";
-		}
-	}
+            LocalDate currentDate = LocalDate.now();
+            String year = String.valueOf(currentDate.getYear());
+            String month = String.format("%02d", currentDate.getMonthValue());
+            // Use the correctly named service variable
+            List<String> yearList = stampHistoryService.getYearList();
+            List<String> monthList = stampHistoryService.getMonthList();
+
+            model.addAttribute("employeeList", employeeList);
+            model.addAttribute("adminList", adminList);
+            model.addAttribute("selectYear", year);
+            model.addAttribute("selectMonth", month);
+            model.addAttribute("yearList", yearList);
+            model.addAttribute("monthList", monthList);
+
+            return "./stampoutput/stamp-output";
+        } catch (Exception e) {
+            System.out.println("例外発生" + e);
+            return "error";
+        }
+    }
 }

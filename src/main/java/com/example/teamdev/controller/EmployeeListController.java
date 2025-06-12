@@ -1,10 +1,6 @@
-/**
- * 2024/03/14 a.kuma 新規作成
- * 2025/03/20 n.yasunari v1.0.1
- */
 package com.example.teamdev.controller;
 
-import java.util.ArrayList;
+import java.util.ArrayList; // Keep this if new ArrayList<>() is used, though service returns List
 import java.util.List;
 import java.util.Map;
 
@@ -14,69 +10,56 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMapping; // Added for RequestMapping
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.teamdev.service.EmployeeListService01;
+// Import EmployeeService
+import com.example.teamdev.service.EmployeeService;
+// Remove: import com.example.teamdev.service.EmployeeListService01;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
-/**
- * EmployeeListコントローラ
- */
 @Controller
-@RequestMapping("employeelist")
+@RequestMapping("employeelist") // Ensure RequestMapping is present
 public class EmployeeListController {
 
-	@Autowired
-	EmployeeListService01 service01;
+    private final EmployeeService employeeService; // Changed type and name
 
-	/**
-	 * メニューからアクセスする
-	 */
-	@PostMapping("init")
-	public String init(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
-		return view(model, session, redirectAttributes);
-	}
-	/**
-	 * 従業員情報画面表示
-	 * @return employee-list.html
-	 */
-	public String view(
-			Model model,
-			HttpSession session,
-			RedirectAttributes redirectAttributes) {
+    @Autowired
+    public EmployeeListController(EmployeeService employeeService) { // Constructor injection
+        this.employeeService = employeeService;
+    }
 
-		// セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-		String redirect = SessionUtil.checkSession(session, redirectAttributes);
-		if (redirect != null)
-			return redirect;
+    @PostMapping("init")
+    public String init(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
+        return view(model, session, redirectAttributes);
+    }
 
-		try {
-			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-			ModelUtil.setNavigation(model, session);
+    public String view(
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes) {
 
-			//従業員情報を一般と管理者に分けて取得する
-			//一般
-			List<Map<String,Object>>employeeList = new ArrayList<Map<String,Object>>();
-			employeeList = service01.execute(0);
-			//管理者
-			List<Map<String,Object>> adminList = new ArrayList<Map<String,Object>>();
-			adminList = service01.execute(1);
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (redirect != null)
+            return redirect;
 
+        try {
+            ModelUtil.setNavigation(model, session);
 
-			//従業員情報
-			model.addAttribute("employeeList", employeeList);
-			model.addAttribute("adminList", adminList);
-			return "./employeelist/employee-list";
-		} catch (Exception e) {
-			// エラー内容を出力
-			System.out.println("例外発生" + e);
-			//エラー画面表示
-			return "error";
-		}
-	}
+            // Use the new service method
+            List<Map<String,Object>> employeeList = employeeService.getAllEmployees(0);
+            List<Map<String,Object>> adminList = employeeService.getAllEmployees(1);
+
+            model.addAttribute("employeeList", employeeList);
+            model.addAttribute("adminList", adminList);
+            return "./employeelist/employee-list";
+        } catch (Exception e) {
+            System.out.println("例外発生" + e);
+            return "error";
+        }
+    }
 }

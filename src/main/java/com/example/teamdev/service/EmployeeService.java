@@ -39,7 +39,8 @@ public class EmployeeService {
 
     @Transactional
     public Employee createEmployee(EmployeeManageForm form, Integer updateEmployeeId) throws DuplicateEmailException {
-        if (employeeMapper.findByEmail(form.getEmail()) != null) {
+        // Corrected method call here
+        if (employeeMapper.getEmployeeByEmail(form.getEmail()) != null) {
             throw new DuplicateEmailException("メールアドレス「" + form.getEmail() + "」は既に使用されています。");
         }
 
@@ -62,7 +63,8 @@ public class EmployeeService {
             throws DuplicateEmailException, EmployeeNotFoundException {
         Employee entity = employeeMapper.getById(employeeId)
                 .orElseThrow(() -> new EmployeeNotFoundException("ID " + employeeId + " の従業員は見つかりませんでした。"));
-        Employee existingByEmail = employeeMapper.findByEmail(form.getEmail());
+        // Corrected method call here
+        Employee existingByEmail = employeeMapper.getEmployeeByEmail(form.getEmail());
         if (existingByEmail != null && !existingByEmail.getId().equals(employeeId)) {
             throw new DuplicateEmailException("メールアドレス「" + form.getEmail() + "」は既に使用されています。");
         }
