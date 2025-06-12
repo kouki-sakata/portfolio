@@ -56,9 +56,8 @@
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_email">メールアドレス</label>
-                    <input type="email" class="form-control" id="input_email"
-                           name="email" maxlength="255"
-                           style="font-size: 14px; line-height: 1.42857143; box-sizing: border-box;">
+                    <input type="email" class="form-control form-control-small-font" id="input_email"
+                           name="email" maxlength="255">
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_password">パスワード</label>
@@ -79,8 +78,7 @@
             <!-- 登録・削除ボタンを右寄せ -->
             <div class="d-flex justify-content-end gap-2 mt-3">
                 <button type='button' id="regist"
-                        class="btn bg_blue_info shadow height_3"
-                        style="width: 150px;">登録
+                        class="btn bg_blue_info shadow height_3 btn-width-150">登録
                 </button>
             </div>
         </form>
@@ -150,8 +148,7 @@
             </div>
         </form>
         <button type="button" id="delete"
-                class="btn bg_red_info shadow height_3 mt-3"
-                style="width: 150px;">削除
+                class="btn bg_red_info shadow height_3 mt-3 btn-width-150">削除
         </button>
         <p class="mt-4 text-danger" id="delete_message_area"
            th:text="${deleteResult}"></p>

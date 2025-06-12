@@ -1000,3 +1000,14 @@ input:checked+.toggle-slider:before {
   font-size: -0.5rem;
   line-height: 1.2;
 }
+
+/* インラインスタイルからの移行用カスタムクラス */
+.form-control-small-font {
+    font-size: 14px;
+    line-height: 1.42857143;
+    /* box-sizing: border-box; は .form-control で継承される想定 */
+}
+
+.btn-width-150 {
+    width: 150px !important; /* Bootstrapのスタイルを確実に上書きするため */
+}

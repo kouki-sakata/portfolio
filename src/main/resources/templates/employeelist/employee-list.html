@@ -57,7 +57,7 @@
                     <td class="email" th:text="${employee.email}"></td>
                 </tr>
                 </tbody>
-                <tbody id="admin" style="display:none;">
+                <tbody id="admin" class="d-none">
                 <tr th:each="admin : ${adminList}">
                     <td class="id" th:text="${admin.id}"></td>
                     <td class="employee_name"
