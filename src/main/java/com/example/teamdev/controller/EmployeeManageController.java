@@ -17,33 +17,47 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-// Remove imports for old services if they are no longer used anywhere else in this class
-// import com.example.teamdev.service.EmployeeListService01;
-// import com.example.teamdev.service.EmployeeManageService02;
-// Keep EmployeeManageService if it was the name before rename, now it's EmployeeService
-import com.example.teamdev.service.EmployeeService; // Import the consolidated service
-
+import com.example.teamdev.service.EmployeeService;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
-// Exceptions are likely handled by GlobalExceptionHandler, but imports can remain if specific catches are still present
+// DuplicateEmailException と EmployeeNotFoundException のインポートは、
+// これらの例外をコントローラ内で明示的にキャッチしない場合（GlobalExceptionHandlerで処理する場合）は不要になる可能性があります。
+// ただし、他のカスタム例外を将来的にキャッチする可能性を考慮し、残しても問題ありません。
 import com.example.teamdev.exception.DuplicateEmailException;
 import com.example.teamdev.exception.EmployeeNotFoundException;
 
+/**
+ * 従業員情報の管理（登録、更新、削除、一覧表示）に関連するリクエストを処理するコントローラです。
+ */
 @Controller
 @RequestMapping("employeemanage")
 public class EmployeeManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeManageController.class);
 
-    private final EmployeeService employeeService; // Single consolidated service
+    private final EmployeeService employeeService; // 従業員関連のビジネスロジックを提供するサービス
 
+    /**
+     * EmployeeManageControllerのコンストラクタ。
+     * EmployeeServiceをインジェクションします。
+     * @param employeeService 従業員サービス
+     */
     @Autowired
-    public EmployeeManageController(EmployeeService employeeService) { // Updated constructor
+    public EmployeeManageController(EmployeeService employeeService) {
         this.employeeService = employeeService;
     }
 
+    /**
+     * 従業員管理画面の初期表示を行います。(POSTリクエスト版)
+     * 主にメニューからの遷移で使用されます。
+     *
+     * @param model モデルオブジェクト
+     * @param session HTTPセッション
+     * @param redirectAttributes リダイレクト属性
+     * @return 従業員管理画面のビュー名
+     */
     @PostMapping("init")
     public String initPost(
             Model model,
@@ -52,6 +66,15 @@ public class EmployeeManageController {
         return view(model, session, redirectAttributes);
     }
 
+    /**
+     * 従業員管理画面の初期表示を行います。(GETリクエスト版)
+     * 主にリダイレクト時や直接アクセス時に使用されます。
+     *
+     * @param model モデルオブジェクト
+     * @param session HTTPセッション
+     * @param redirectAttributes リダイレクト属性
+     * @return 従業員管理画面のビュー名
+     */
     @GetMapping("init")
     public String initGet(
             Model model,
@@ -60,6 +83,19 @@ public class EmployeeManageController {
         return view(model, session, redirectAttributes);
     }
 
+    /**
+     * 新規従業員の登録、または既存従業員の情報を更新します。
+     * バリデーションエラーがある場合は、エラーメッセージと共にフォーム画面を再表示します。
+     * 処理中に発生した例外 (DuplicateEmailException, EmployeeNotFoundException) は
+     * {@link com.example.teamdev.controller.advice.GlobalExceptionHandler GlobalExceptionHandler} によって処理されます。
+     *
+     * @param employeeManageForm 登録または更新する従業員情報を含むフォームオブジェクト (バリデーション済み)
+     * @param bindingResult バリデーション結果
+     * @param model モデルオブジェクト
+     * @param redirectAttributes リダイレクト属性 (処理結果メッセージの伝達に使用)
+     * @param session HTTPセッション (操作者IDの取得、セッションチェックに使用)
+     * @return 成功時は従業員管理画面へのリダイレクトパス、バリデーションエラー時や処理失敗時は従業員管理画面のビュー名
+     */
     @PostMapping("regist")
     public String regist(
             @Validated EmployeeManageForm employeeManageForm,
@@ -70,19 +106,19 @@ public class EmployeeManageController {
 
         String sessionRedirect = SessionUtil.checkSession(session, redirectAttributes);
         if (sessionRedirect != null) {
-            return sessionRedirect;
+            return sessionRedirect; // セッションタイムアウト
         }
 
-        model.addAttribute("employeeManageForm", employeeManageForm);
+        model.addAttribute("employeeManageForm", employeeManageForm); // エラー時にもフォームオブジェクトをビューに渡す
 
         if (bindingResult.hasErrors()) {
             logger.warn("登録フォームに検証エラーがあります: {}", bindingResult.getAllErrors());
             model.addAttribute("bindingResult", bindingResult);
-            return view(model, session, redirectAttributes);
+            return view(model, session, redirectAttributes); // エラー詳細をビューに表示するため、viewメソッドを呼ぶ
         }
 
         try {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") // セッション属性からのキャストは型安全性がコンパイル時に保証されないため抑制
             Map<String, Object> loggedInEmployeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
             if (loggedInEmployeeMap == null) {
                 logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
@@ -93,39 +129,45 @@ public class EmployeeManageController {
 
             if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
                 Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
-                // Calls the method on the consolidated employeeService
-                employeeService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId);
+                employeeService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId); // 従業員情報更新
                 redirectAttributes.addFlashAttribute("registResult", "従業員情報を更新しました。");
             } else {
-                // Calls the method on the consolidated employeeService
-                employeeService.createEmployee(employeeManageForm, updateEmployeeId);
+                employeeService.createEmployee(employeeManageForm, updateEmployeeId); // 新規従業員登録
                 redirectAttributes.addFlashAttribute("registResult", "従業員情報を登録しました。");
             }
-            return "redirect:/employeemanage/init";
+            return "redirect:/employeemanage/init"; // 成功時はリダイレクト
 
         } catch (NumberFormatException e) {
             logger.error("IDの形式が無効です: {}", e.getMessage());
             model.addAttribute("registResult", "IDの形式が無効です。");
-            return view(model, session, redirectAttributes);
+            return view(model, session, redirectAttributes); // エラーメッセージをビューに表示
         }
-        // DuplicateEmailException and EmployeeNotFoundException are handled by GlobalExceptionHandler
-        // Other RuntimeExceptions will also be caught by GlobalExceptionHandler's generic handler
+        // DuplicateEmailException と EmployeeNotFoundException は GlobalExceptionHandler で処理される
     }
 
+    /**
+     * 指定された従業員情報を削除します。
+     *
+     * @param listForm 削除対象の従業員IDのリストを含むフォームオブジェクト
+     * @param model モデルオブジェクト (このメソッドでは直接使用されないが、他のフローとの一貫性のため残すことも検討)
+     * @param redirectAttributes リダイレクト属性 (処理結果メッセージの伝達に使用)
+     * @param session HTTPセッション (操作者IDの取得、セッションチェックに使用)
+     * @return 従業員管理画面へのリダイレクトパス
+     */
     @PostMapping("delete")
     public String delete(
-            ListForm listForm,
+            ListForm listForm, // @Validated はListFormに適切なバリデーションアノテーションがあれば付与
             Model model,
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
         String sessionRedirect = SessionUtil.checkSession(session, redirectAttributes);
         if (sessionRedirect != null) {
-            return sessionRedirect;
+            return sessionRedirect; // セッションタイムアウト
         }
 
         try {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") // セッション属性からのキャストは型安全性がコンパイル時に保証されないため抑制
             Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
             if (employeeMap == null) {
                 logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
@@ -134,28 +176,47 @@ public class EmployeeManageController {
             }
             Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
 
-            // Calls the method on the consolidated employeeService
-            employeeService.deleteEmployees(listForm, updateEmployeeId);
+            employeeService.deleteEmployees(listForm, updateEmployeeId); // 従業員削除処理
             redirectAttributes.addFlashAttribute("deleteResult", "選択された従業員情報を削除しました。");
             return "redirect:/employeemanage/init";
-        } catch (Exception e) { // Catching general exceptions here for this specific flow
+        } catch (Exception e) {
             logger.error("従業員の削除中にエラーが発生しました。", e);
             redirectAttributes.addFlashAttribute("deleteResult", "従業員の削除中にエラーが発生しました。");
             return "redirect:/employeemanage/init";
         }
     }
 
+    /**
+     * 従業員管理画面の表示に必要な情報を準備し、ビューを返します。
+     * 全従業員のリストを取得し、モデルに追加します。
+     *
+     * @param model モデルオブジェクト
+     * @param session HTTPセッション
+     * @param redirectAttributes リダイレクト属性 (このメソッドでは直接使用されないが、他からの呼び出しフローを考慮)
+     * @return 従業員管理画面のビュー名 (./employeemanage/employee-manage) またはエラー画面のビュー名
+     */
     public String view(
             Model model,
             HttpSession session,
             RedirectAttributes redirectAttributes) {
 
+        // セッションチェックは各エントリーポイント(initPost, initGetなど)で行われているため、
+        // viewメソッドがそれらからのみ呼ばれる場合は重複する可能性がある。
+        // SessionUtil.checkSessionの呼び出しはviewメソッドの責務か、呼び出し元の責務か検討の余地あり。
+        // ここでは既存の構造を踏襲し、view内にもセッションチェックを残す。
+        String sessionRedirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (sessionRedirect != null) {
+            return sessionRedirect;
+        }
+
         try {
-            ModelUtil.setNavigation(model, session);
-            // Calls the method on the consolidated employeeService, passing null for adminFlag to get all employees
+            ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+
+            // 全従業員情報を取得 (adminFlag = null は全件取得を意味する)
             List<Map<String, Object>> employeeList = employeeService.getAllEmployees(null);
             model.addAttribute("employeeList", employeeList);
 
+            // フォームオブジェクトがモデルにない場合（例: GETリクエスト時）、空のフォームを追加
             if (!model.containsAttribute("employeeManageForm")) {
                 model.addAttribute("employeeManageForm", new EmployeeManageForm());
             }
@@ -163,7 +224,7 @@ public class EmployeeManageController {
         } catch (Exception e) {
             logger.error("従業員管理画面の表示中にエラーが発生しました。", e);
             model.addAttribute("errorMessage", "画面表示中にエラーが発生しました。");
-            return "error";
+            return "error"; // 汎用エラーページ
         }
     }
 }
