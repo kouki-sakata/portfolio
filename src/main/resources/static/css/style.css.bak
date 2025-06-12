@@ -75,7 +75,7 @@
 }
 
 html {
-	font-size: 16px;
+	font-size: calc(12 / 1280 * 100vw);
 	/* 画面幅1280pxで12px*/
 }
 
@@ -98,12 +98,18 @@ section {
 	text-align: end;
 }
 
-#input_content,
-#input_date {
-  height: 3.125rem; /* Standardized to rem */
+#input_content {
+  height: 50px;
   width: 100%;
   max-width: 100%;
-  font-size: 1.2rem;
+  font-size: 1.2rem
+}
+
+#input_date {
+	height: 50px;
+	width: 100%;
+	max-width: 100%;
+  font-size: 1.2rem
 }
 
 .text_white2 {
@@ -763,6 +769,10 @@ input:checked+.toggle-slider:before {
 @media (max-width: 992px) {
 
 	/* タブレット以下のデバイス向け */
+	html {
+		font-size: calc(10 / 768 * 100vw);
+		/* タブレットサイズでのフォントサイズ調整 */
+	}
 
 	section {
 		width: 95%;
@@ -887,6 +897,10 @@ input:checked+.toggle-slider:before {
 @media (max-width: 576px) {
 
 	/* スマートフォン向け */
+	html {
+		font-size: calc(9 / 375 * 100vw);
+		/* スマートフォンサイズでのフォントサイズ調整 */
+	}
 
 	.common_header {
 		margin: 0.5rem;
