@@ -17,15 +17,19 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.teamdev.exception.DuplicateEmailException;
-import com.example.teamdev.exception.EmployeeNotFoundException;
+// Remove imports for old services if they are no longer used anywhere else in this class
+// import com.example.teamdev.service.EmployeeListService01;
+// import com.example.teamdev.service.EmployeeManageService02;
+// Keep EmployeeManageService if it was the name before rename, now it's EmployeeService
+import com.example.teamdev.service.EmployeeService; // Import the consolidated service
+
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
-import com.example.teamdev.service.EmployeeListService01;
-import com.example.teamdev.service.EmployeeManageService;
-import com.example.teamdev.service.EmployeeManageService02;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
+// Exceptions are likely handled by GlobalExceptionHandler, but imports can remain if specific catches are still present
+import com.example.teamdev.exception.DuplicateEmailException;
+import com.example.teamdev.exception.EmployeeNotFoundException;
 
 @Controller
 @RequestMapping("employeemanage")
@@ -33,18 +37,11 @@ public class EmployeeManageController {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeManageController.class);
 
-    private final EmployeeListService01 employeeListService;
-    private final EmployeeManageService employeeManageService;
-    private final EmployeeManageService02 employeeDeleteService;
+    private final EmployeeService employeeService; // Single consolidated service
 
     @Autowired
-    public EmployeeManageController(
-            EmployeeListService01 employeeListService,
-            EmployeeManageService employeeManageService,
-            EmployeeManageService02 employeeDeleteService) {
-        this.employeeListService = employeeListService;
-        this.employeeManageService = employeeManageService;
-        this.employeeDeleteService = employeeDeleteService;
+    public EmployeeManageController(EmployeeService employeeService) { // Updated constructor
+        this.employeeService = employeeService;
     }
 
     @PostMapping("init")
@@ -94,34 +91,25 @@ public class EmployeeManageController {
             }
             Integer updateEmployeeId = Integer.parseInt(loggedInEmployeeMap.get("id").toString());
 
-
             if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
                 Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
-                employeeManageService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId);
+                // Calls the method on the consolidated employeeService
+                employeeService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId);
                 redirectAttributes.addFlashAttribute("registResult", "従業員情報を更新しました。");
             } else {
-                employeeManageService.createEmployee(employeeManageForm, updateEmployeeId);
+                // Calls the method on the consolidated employeeService
+                employeeService.createEmployee(employeeManageForm, updateEmployeeId);
                 redirectAttributes.addFlashAttribute("registResult", "従業員情報を登録しました。");
             }
             return "redirect:/employeemanage/init";
 
-        } catch (DuplicateEmailException e) {
-            logger.warn("登録/更新失敗 (メール重複): {}", e.getMessage());
-            model.addAttribute("registResult", e.getMessage());
-            return view(model, session, redirectAttributes);
-        } catch (EmployeeNotFoundException e) {
-            logger.warn("更新失敗 (従業員が見つかりません): {}", e.getMessage());
-            model.addAttribute("registResult", e.getMessage());
-            return view(model, session, redirectAttributes);
         } catch (NumberFormatException e) {
-            logger.error("IDの形式が無効です。", e);
+            logger.error("IDの形式が無効です: {}", e.getMessage());
             model.addAttribute("registResult", "IDの形式が無効です。");
             return view(model, session, redirectAttributes);
-        } catch (Exception e) {
-            logger.error("従業員の登録/更新中に予期せぬエラーが発生しました。", e);
-            model.addAttribute("registResult", "エラーが発生しました。詳細は管理者に問い合わせてください。");
-            return view(model, session, redirectAttributes);
         }
+        // DuplicateEmailException and EmployeeNotFoundException are handled by GlobalExceptionHandler
+        // Other RuntimeExceptions will also be caught by GlobalExceptionHandler's generic handler
     }
 
     @PostMapping("delete")
@@ -146,10 +134,11 @@ public class EmployeeManageController {
             }
             Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
 
-            employeeDeleteService.execute(listForm, updateEmployeeId);
+            // Calls the method on the consolidated employeeService
+            employeeService.deleteEmployees(listForm, updateEmployeeId);
             redirectAttributes.addFlashAttribute("deleteResult", "選択された従業員情報を削除しました。");
             return "redirect:/employeemanage/init";
-        } catch (Exception e) {
+        } catch (Exception e) { // Catching general exceptions here for this specific flow
             logger.error("従業員の削除中にエラーが発生しました。", e);
             redirectAttributes.addFlashAttribute("deleteResult", "従業員の削除中にエラーが発生しました。");
             return "redirect:/employeemanage/init";
@@ -163,7 +152,8 @@ public class EmployeeManageController {
 
         try {
             ModelUtil.setNavigation(model, session);
-            List<Map<String, Object>> employeeList = employeeListService.execute(null);
+            // Calls the method on the consolidated employeeService, passing null for adminFlag to get all employees
+            List<Map<String, Object>> employeeList = employeeService.getAllEmployees(null);
             model.addAttribute("employeeList", employeeList);
 
             if (!model.containsAttribute("employeeManageForm")) {
