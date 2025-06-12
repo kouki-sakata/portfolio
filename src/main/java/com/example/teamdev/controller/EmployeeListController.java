@@ -1,7 +1,8 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.entity.Employee; // Employee のインポートを確認・追加
 import java.util.List;
-import java.util.Map;
+// import java.util.Map; // Map が不要になったためコメントアウトまたは削除
 
 import jakarta.servlet.http.HttpSession;
 
@@ -79,8 +80,8 @@ public class EmployeeListController {
             ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
 
             // 一般従業員 (adminFlag=0) と管理者 (adminFlag=1) のリストをそれぞれ取得
-            List<Map<String,Object>> employeeList = employeeService.getAllEmployees(0);
-            List<Map<String,Object>> adminList = employeeService.getAllEmployees(1);
+            List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(0);
+            List<com.example.teamdev.entity.Employee> adminList = employeeService.getAllEmployees(1);
 
             model.addAttribute("employeeList", employeeList);
             model.addAttribute("adminList", adminList);

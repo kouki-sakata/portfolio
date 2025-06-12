@@ -6,7 +6,8 @@ import com.example.teamdev.exception.EmployeeNotFoundException;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
+// ObjectMapper は不要になるためコメントアウトまたは削除
+// import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +15,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap; // ObjectMapperがHashMapを返すわけではないが、Map<String, Object>の実装として使われることがある
+// HashMap と Map は getAllEmployees の戻り値変更により不要になる
+// import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional; // getByIdがOptionalを返す場合があるため
+// import java.util.Map;
+import java.util.Optional;
 
 /**
  * 従業員情報に関するビジネスロジックを担当するサービスクラス。
@@ -28,7 +30,8 @@ public class EmployeeService {
 
     private final EmployeeMapper employeeMapper; // 従業員情報へのデータアクセスを行うマッパー
     private final LogHistoryService01 logHistoryService; // 操作履歴の記録を行うサービス
-    private final ObjectMapper objectMapper; // オブジェクトとJSON/Mapの相互変換を行うマッパー
+    // ObjectMapper はこのクラスでは不要になる
+    // private final ObjectMapper objectMapper;
 
     /**
      * 必要な依存関係を注入してEmployeeServiceを構築します。
@@ -40,7 +43,7 @@ public class EmployeeService {
                            LogHistoryService01 logHistoryService) {
         this.employeeMapper = employeeMapper;
         this.logHistoryService = logHistoryService;
-        this.objectMapper = new ObjectMapper();
+        // this.objectMapper = new ObjectMapper(); // ObjectMapperの初期化を削除
     }
 
     /**
@@ -111,13 +114,12 @@ public class EmployeeService {
 
     /**
      * 全従業員の情報、または管理者フラグによってフィルタリングされた従業員情報を取得します。
-     * 各従業員エンティティは {@code Map<String, Object>} に変換されて返されます。
      *
      * @param adminFlag フィルタリングする管理者フラグ (0: 一般, 1: 管理者)。nullの場合は全従業員を取得。
-     * @return 従業員情報のマップのリスト。従業員が存在しない場合は空のリスト。
+     * @return {@link Employee} のリスト。従業員が存在しない場合は空のリスト。
      */
-    public List<Map<String, Object>> getAllEmployees(Integer adminFlag) {
-        List<Map<String, Object>> employeeMapList = new ArrayList<>();
+    public List<Employee> getAllEmployees(Integer adminFlag) {
+        // List<Map<String, Object>> employeeMapList = new ArrayList<>(); // 不要になる
         List<Employee> employeeList;
         if (adminFlag == null) {
             // 管理者フラグが指定されていない場合は全件取得
@@ -126,12 +128,13 @@ public class EmployeeService {
             // 管理者フラグでフィルタリングして取得
             employeeList = employeeMapper.getEmployeeByAdminFlagOrderById(adminFlag);
         }
-        for (Employee employee : employeeList) {
-            @SuppressWarnings("unchecked") // ObjectMapperによる変換は型安全性がコンパイル時に保証されないため抑制
-            Map<String, Object> employeeMap = objectMapper.convertValue(employee, Map.class);
-            employeeMapList.add(employeeMap);
-        }
-        return employeeMapList;
+        // Mapへの変換ループは削除
+        // for (Employee employee : employeeList) {
+        //    @SuppressWarnings("unchecked")
+        //    Map<String, Object> employeeMap = objectMapper.convertValue(employee, Map.class);
+        //    employeeMapList.add(employeeMap);
+        // }
+        return employeeList; // List<Employee> を直接返す
     }
 
     /**

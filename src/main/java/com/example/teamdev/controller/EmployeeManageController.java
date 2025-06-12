@@ -1,7 +1,8 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.entity.Employee; // Employee のインポートを確認・追加
 import java.util.List;
-import java.util.Map;
+// import java.util.Map; // Map が不要になるか確認
 
 import jakarta.servlet.http.HttpSession;
 
@@ -213,7 +214,7 @@ public class EmployeeManageController {
             ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
 
             // 全従業員情報を取得 (adminFlag = null は全件取得を意味する)
-            List<Map<String, Object>> employeeList = employeeService.getAllEmployees(null);
+            List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(null);
             model.addAttribute("employeeList", employeeList);
 
             // フォームオブジェクトがモデルにない場合（例: GETリクエスト時）、空のフォームを追加

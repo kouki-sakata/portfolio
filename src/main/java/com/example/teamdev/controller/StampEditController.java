@@ -1,8 +1,9 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.entity.Employee; // Employee のインポートを確認・追加
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+// import java.util.Map; // Map が不要になるか確認 (ただし、このファイルでは他でMapが使われている可能性あり)
 
 import jakarta.servlet.http.HttpSession;
 
@@ -249,8 +250,8 @@ public class StampEditController {
 
             if(type.equals("init")) {
                 // 従業員選択画面の準備
-                List<Map<String,Object>> employeeList = employeeService.getAllEmployees(0); // 一般従業員
-                List<Map<String,Object>> adminList = employeeService.getAllEmployees(1);    // 管理者
+                List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(0); // 一般従業員
+                List<com.example.teamdev.entity.Employee> adminList = employeeService.getAllEmployees(1);    // 管理者
                 model.addAttribute("employeeList", employeeList);
                 model.addAttribute("adminList", adminList);
                 if (!model.containsAttribute("stampEditForm")) { // フォームがなければ新規作成

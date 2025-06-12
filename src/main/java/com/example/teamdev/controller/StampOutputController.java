@@ -1,8 +1,9 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.entity.Employee; // Employee のインポートを確認・追加
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+// import java.util.Map; // Map が不要になるか確認 (ただし、このファイルでは他でMapが使われている可能性あり)
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
@@ -151,8 +152,8 @@ public class StampOutputController {
 
         try {
             // 従業員リスト（一般・管理者）を取得
-            List<Map<String,Object>> employeeList = employeeService.getAllEmployees(0);
-            List<Map<String,Object>> adminList = employeeService.getAllEmployees(1);
+            List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(0);
+            List<com.example.teamdev.entity.Employee> adminList = employeeService.getAllEmployees(1);
 
             // 現在の年月と、選択可能な年月リストを取得
             LocalDate currentDate = LocalDate.now();
