@@ -1,64 +1,69 @@
 package com.example.teamdev.service;
 
+import com.example.teamdev.entity.StampDelete;
+import com.example.teamdev.form.StampDeleteForm;
+import com.example.teamdev.mapper.StampDeleteMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.teamdev.mapper.StampDeleteMapper;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Service
 public class StampDeleteService {
 
-	@Autowired
-	private StampDeleteMapper stampDeleteMapper;
+    @Autowired
+    private StampDeleteMapper stampDeleteMapper;
+    @Autowired
+    private LogHistoryService01 logHistoryService;
 
-	/**
-	 * 年と月を分解し打刻記録を取得
-	 *
-	 * @param startYear  開始年
-	 * @param startMonth 開始月
-	 * @param endYear    終了年
-	 * @param endMonth   終了月
-	 * @return 削除された件数
-	 */
+    /**
+     * 年と月を分解し打刻記録を取得
+     *
+     * @return 削除された件数
+     */
+    @Transactional
+    public int deleteStampsByYearMonthRange(StampDeleteForm stampDeleteForm,
+            Integer updateEmployeeId) {
+        StampDelete stampDeleteEntity = new StampDelete();
+        stampDeleteEntity.setStartYear(stampDeleteForm.getStartYear());
+        stampDeleteEntity.setStartMonth(stampDeleteForm.getStartMonth());
+        stampDeleteEntity.setEndYear(stampDeleteForm.getEndYear());
+        stampDeleteEntity.setEndMonth(stampDeleteForm.getEndMonth());
+        int deletedCount = stampDeleteMapper.deleteStampsByYearMonthRange(
+                stampDeleteEntity);
+        
+        // 削除が成功した場合のみ履歴に登録
+        logHistoryService.execute(5, 4, null, null, updateEmployeeId,
+                Timestamp.valueOf(LocalDateTime.now()));
 
-	// TODO 型不安のためentityに詰め替えて処理を実装
-	@Transactional
-	public int deleteStampsByYearMonthRange(String startYear,
-			String startMonth, String endYear, String endMonth) {
+        return deletedCount;
+    }
 
-		return stampDeleteMapper.deleteStampsByYearMonthRange(startYear,
-				startMonth, endYear, endMonth);
-	}
+    /**
+     * 開始年月と終了年月の妥当性を検証する
+     *
+     * @return 開始年月が終了年月より後の場合はfalse、それ以外はtrue
+     */
+    public boolean validateYearMonthRange(StampDeleteForm stampDeleteForm) {
+        try {
+            // ゼロパディングしておく
+            String sm = String.format("%02d",
+                    Integer.parseInt(stampDeleteForm.getStartMonth()));
+            String em = String.format("%02d",
+                    Integer.parseInt(stampDeleteForm.getEndMonth()));
 
-	/**
-	 * 開始年月と終了年月の妥当性を検証する
-	 *
-	 * @param startYear  開始年
-	 * @param startMonth 開始月
-	 * @param endYear    終了年
-	 * @param endMonth   終了月
-	 * @return 開始年月が終了年月より後の場合はfalse、それ以外はtrue
-	 */
-	// TODO 型不安のためentityに詰め替えて処理を実装
-	public boolean validateYearMonthRange(String startYear,
-			String startMonth, String endYear, String endMonth) {
-		try {
-			// ゼロパディングしておく
-			String sm = String.format("%02d",
-					Integer.parseInt(startMonth));
-			String em = String.format("%02d",
-					Integer.parseInt(endMonth));
+            // 開始日と終了日を結合して比較する
+            int startDate = Integer.parseInt(
+                    stampDeleteForm.getStartYear() + sm);
+            int endDate = Integer.parseInt(
+                    stampDeleteForm.getEndYear() + em);
+            // 開始年月が終了年月以前であれば有効
+            return startDate <= endDate;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+    }
 
-			// 開始日と終了日を結合して比較する
-			int startDate = Integer.parseInt(startYear + sm);
-			int endDate = Integer.parseInt(endYear + em);
-
-			// 開始年月が終了年月以前であれば有効
-			return startDate <= endDate;
-		} catch (NumberFormatException e) {
-			// 変換エラーの場合は無効とする
-			return false;
-		}
-	}
 }
