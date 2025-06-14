@@ -55,7 +55,19 @@ function formatDateTime(){
 function setNightWorkFlag(){
 	if($('#switch').prop("checked") == true){
 		$('#nightWorkFlag').val("1");
-	}else{
+	} else {
 		$('#nightWorkFlag').val("0");
 	}
 }
+// 出勤退勤メッセージの自動消去
+window.addEventListener('DOMContentLoaded', function () {
+      const message = document.querySelector('.home-message-success');
+      if (message && message.textContent.trim() !== '') {
+        setTimeout(() => {
+          message.style.opacity = '0';
+          setTimeout(() => {
+            message.style.display = 'none';
+          }, 500); // フェードアウト後に完全非表示
+        }, 3000); // 3秒後に開始
+      }
+    });

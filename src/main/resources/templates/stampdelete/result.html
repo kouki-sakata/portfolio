@@ -3,24 +3,23 @@
 
 <head>
     <meta charset="UTF-8">
-    <!-- 必要なCSSやJavaScriptのリンクを追加 -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TIME MANAGER / 削除結果</title>
     <!-- favicon -->
-    <link rel="icon" href="./../img/favicon.ico">
+    <link href="@{/img/favicon.ico}" rel="icon">
     <!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet"
+    <link crossorigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-          crossorigin="anonymous">
+          rel="stylesheet">
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
     <!-- css -->
-    <link rel="stylesheet" href="./../css/reset.css">
-    <link rel="stylesheet" href="./../css/style.css">
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"/>
+    <link href="@{/css/reset.css}" rel="stylesheet">
+    <link href="@{/css/style.css}" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+          rel="stylesheet"/>
     <style>
         .container {
             max-width: 600px;
@@ -54,7 +53,7 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="stamp-delete"/>
+    <input id="target_nav" type="hidden" value="stamp-delete"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
@@ -68,7 +67,7 @@
                     <h2>削除処理が完了しました</h2>
                     <p th:text="${deletedCount} + '件の打刻記録を削除しました'"></p>
                 </div>
-                <form th:action="@{/home/init}" method="post">
+                <form method="post" th:action="@{/home/init}">
                     <div class="button-group">
                         <button class="btn btn-primary">ホームに戻る</button>
                     </div>
@@ -80,13 +79,13 @@
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+<script crossorigin="anonymous"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <!-- common.js -->
-<script src="./../js/common.js"></script>
+<script src="@{/js/common.js}"></script>
 </body>
 
 </html>

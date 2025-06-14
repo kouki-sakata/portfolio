@@ -2,21 +2,21 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TIME MANAGER / お知らせ情報管理</title>
     <!-- favicon -->
-    <link rel="icon" href="./../img/favicon.ico">
+    <link href="@{/img/favicon.ico}" rel="icon">
     <!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet"
+    <link crossorigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-          crossorigin="anonymous">
+          rel="stylesheet">
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
     <!-- css -->
-    <link rel="stylesheet" href="./../css/reset.css">
-    <link rel="stylesheet" href="./../css/style.css">
+    <link href="./../css/reset.css" rel="stylesheet">
+    <link href="./../css/style.css" rel="stylesheet">
 </head>
 <body>
 <!-- 共通ヘッダー -->
@@ -25,7 +25,7 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="news-manage"/>
+    <input id="target_nav" type="hidden" value="news-manage"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
@@ -36,27 +36,28 @@
         <p class="mb-4">
             お知らせ情報を新規登録したい場合は、以下を入力して登録ボタンを押してください
         </p>
-        <form id="regist_form" th:action="@{regist}" method="post">
-            <input type="hidden" id="input_id" name="id">
+        <form id="regist_form" method="post" th:action="@{regist}">
+            <input id="input_id" name="id" type="hidden">
             <div class="row g-3">
                 <div class="col-12 col-md-2">
                     <label for="input_date">日付</label>
-                    <input type="date" class="form-control" id="input_date"
-                           name="newsDate">
+                    <input class="form-control" id="input_date" name="newsDate"
+                           type="date">
                 </div>
                 <div class="col-12 col-md-10">
                     <label for="input_content">内容</label>
-                    <input type="text" class="form-control" id="input_content"
-                           name="content" maxlength="75">
+                    <input class="form-control" id="input_content"
+                           maxlength="75"
+                           name="content" type="text">
                     <!-- 文字数75文字カウント -->
                     <p class="space">現在<span id="content_count">0</span>文字（75文字以内）
                     </p>
                 </div>
             </div>
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <button type='button' id="regist"
-                        class="btn bg_blue_info shadow height_3"
-                        style="width: 150px;">登録
+                <button class="btn bg_blue_info shadow height_3" id="regist"
+                        style="width: 150px;"
+                        type='button'>登録
                 </button>
             </div>
         </form>
@@ -74,7 +75,7 @@
         <p class="mb-4">
             お知らせ情報を公開したい場合は、公開チェックボックスをONにして公開ボタンを押してください（最大4件）
         </p>
-        <form id="delete_release_form" th:action="@{delete}" method="post">
+        <form id="delete_release_form" method="post" th:action="@{delete}">
             <div class="bg_white stamp_box margin_tp_2">
                 <table class="table table-striped margin_tp_1">
                     <thead>
@@ -89,8 +90,9 @@
                     <tbody>
                     <tr>
                         <td>
-                            <input type="checkbox" id="all"
-                                   class="selection-days-checkbox-1 checkbox-large">
+                            <input class="selection-days-checkbox-1 checkbox-large"
+                                   id="all"
+                                   type="checkbox">
                             全選択
                         </td>
                         <td></td>
@@ -99,18 +101,18 @@
                         <td></td>
                     </tr>
                     <tr class="tbody_tr" th:each="news : ${newsList}">
-                        <input type="hidden" class="id" th:value="${news.id}"/>
-                        <input type="hidden" class="submit_release_flag"/>
+                        <input class="id" th:value="${news.id}" type="hidden"/>
+                        <input class="submit_release_flag" type="hidden"/>
                         <td>
-                            <input type="checkbox"
-                                   class="delete_check selection-days-checkbox-1 checkbox-large">
+                            <input class="delete_check selection-days-checkbox-1 checkbox-large"
+                                   type="checkbox">
                         </td>
                         <td class="date" th:text="${news.news_date}"></td>
                         <td class="content" th:text="${news.content}"></td>
                         <td>
-                            <input type="checkbox"
-                                   class="release_flag selection-days-checkbox-1 checkbox-large"
-                                   th:checked="${news.release_flag == true}">
+                            <input class="release_flag selection-days-checkbox-1 checkbox-large"
+                                   th:checked="${news.release_flag == true}"
+                                   type="checkbox">
                         </td>
                         <td><i class="td_btn fa-solid fa-pencil"></i></td>
                     </tr>
@@ -118,13 +120,14 @@
                 </table>
             </div>
             <div class="button-row text_white d-flex gap-3 mt-4 mb-0">
-                <button type="button" id="delete"
-                        class="btn bg_red_info shadow height_3"
-                        style="width: 150px;">削除
+                <button class="btn bg_red_info shadow height_3" id="delete"
+                        style="width: 150px;"
+                        type="button">削除
                 </button>
-                <button type="button" id="release"
-                        class="btn bg_blue_info shadow height_3 ms-auto"
-                        style="width: 150px;">公開
+                <button class="btn bg_blue_info shadow height_3 ms-auto"
+                        id="release"
+                        style="width: 150px;"
+                        type="button">公開
                 </button>
             </div>
         </form>
@@ -135,14 +138,14 @@
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+<script crossorigin="anonymous"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <!-- common.js -->
-<script src="./../js/common.js"></script>
+<script src="@{/js/common.js}"></script>
 <!-- news_manage.js -->
-<script src="./../js/news_manage.js"></script>
+<script src="@{/js/news_manage.js}"></script>
 </body>
 </html>

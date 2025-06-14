@@ -2,21 +2,21 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TIME MANAGER / 従業員情報管理</title>
     <!-- favicon -->
-    <link rel="icon" href="./../img/favicon.ico">
+    <link href="@{/img/favicon.ico}" rel="icon">
     <!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet"
+    <link crossorigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-          crossorigin="anonymous">
+          rel="stylesheet">
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
     <!-- css -->
-    <link rel="stylesheet" href="./../css/reset.css">
-    <link rel="stylesheet" href="./../css/style.css">
+    <link href="@{/css/reset.css}" rel="stylesheet">
+    <link href="@{/css/style.css}" rel="stylesheet">
 </head>
 <body>
 <!-- 共通ヘッダー -->
@@ -25,7 +25,7 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="employee-manage"/>
+    <input id="target_nav" type="hidden" value="employee-manage"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
@@ -36,40 +36,44 @@
         <p class="mb-4">
             従業員情報を新規登録したい場合は、以下を入力して登録ボタンを押してください
         </p>
-        <form id="regist_form" th:action="@{regist}" method="post">
+        <form id="regist_form" method="post" th:action="@{regist}">
             <div class="row">
                 <div class="form-group col-md-2">
                     <label for="input_id">ID</label>
-                    <input type="text" class="form-control" id="input_id"
-                           name="employeeId" disabled>
+                    <input class="form-control" disabled id="input_id"
+                           name="employeeId" type="text">
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_first_name">姓</label>
-                    <input type="text" class="form-control"
-                           id="input_first_name" name="firstName"
-                           maxlength="30">
+                    <input class="form-control" id="input_first_name"
+                           maxlength="30" name="firstName"
+                           type="text">
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_last_name">名</label>
-                    <input type="text" class="form-control" id="input_last_name"
-                           name="lastName" maxlength="30">
+                    <input class="form-control" id="input_last_name"
+                           maxlength="30"
+                           name="lastName" type="text">
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_email">メールアドレス</label>
-                    <input type="email" class="form-control form-control-small-font" id="input_email"
-                           name="email" maxlength="255">
+                    <input class="form-control form-control-small-font"
+                           id="input_email"
+                           maxlength="255"
+                           name="email" type="email">
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_password">パスワード</label>
-                    <input type="text" class="form-control" id="input_password"
-                           name="password" maxlength="16">
+                    <input class="form-control" id="input_password"
+                           maxlength="16"
+                           name="password" type="text">
                     <small class="form-text text-muted">8～16文字</small>
                 </div>
                 <div class="form-group col-md-1 d-flex align-items-center">
-                    <input type="hidden" id="admin_flag" name="adminFlag">
+                    <input id="admin_flag" name="adminFlag" type="hidden">
                     <div class="form-check mt-4">
-                        <input class="form-check-input" type="checkbox"
-                               id="input_admin">
+                        <input class="form-check-input" id="input_admin"
+                               type="checkbox">
                         <label class="form-check-label"
                                for="input_admin">管理者</label>
                     </div>
@@ -77,8 +81,10 @@
             </div>
             <!-- 登録・削除ボタンを右寄せ -->
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <button type='button' id="regist"
-                        class="btn bg_blue_info shadow height_3 btn-width-150">登録
+                <button class="btn bg_blue_info shadow height_3 btn-width-150"
+                        id="regist"
+                        type='button'>
+                    登録
                 </button>
             </div>
         </form>
@@ -93,8 +99,8 @@
         <p class="mb-4">
             従業員情報を削除したい場合は、対象行のチェックボックスをONにして削除ボタンを押してください（複数選択可）
         </p>
-        <input type="hidden" id="employee_id" name="employeeId"/>
-        <form id="delete_form" th:action="@{delete}" method="post">
+        <input id="employee_id" name="employeeId" type="hidden"/>
+        <form id="delete_form" method="post" th:action="@{delete}">
             <div class="bg_white stamp_box margin_tp_2">
                 <table class="table table-striped margin_tp_1">
                     <thead>
@@ -112,8 +118,9 @@
                     <tbody>
                     <tr>
                         <td>
-                            <input type="checkbox" id="all"
-                                   class="selection-days-checkbox-1 checkbox-large">
+                            <input class="selection-days-checkbox-1 checkbox-large"
+                                   id="all"
+                                   type="checkbox">
                             全選択
                         </td>
                         <td></td>
@@ -125,8 +132,9 @@
                         <td></td>
                     </tr>
                     <tr th:each="employee : ${employeeList}">
-                        <td><input type="checkbox"
-                                   class="delete_check selection-days-checkbox-1 checkbox-large">
+                        <td><input
+                                class="delete_check selection-days-checkbox-1 checkbox-large"
+                                type="checkbox">
                         </td> <!--山本追記 2025/5/9-->
                         <td class="id" th:text="${employee.id}"></td>
                         <td class="first_name"
@@ -136,10 +144,11 @@
                         <td class="email" th:text="${employee.email}"></td>
                         <td class="password"
                             th:text="${employee.password}"></td>
-                        <td><input type="checkbox"
-                                   class="admin_flag selection-days-checkbox-1 checkbox-large"
-                                   th:checked="${employee.admin_flag == 1}"
-                                   disabled="disabled"></td>
+                        <td><input
+                                class="admin_flag selection-days-checkbox-1 checkbox-large"
+                                disabled="disabled"
+                                th:checked="${employee.admin_flag == 1}"
+                                type="checkbox"></td>
                         <!--山本追記 2025/5/9-->
                         <td><i class="td_btn fa-solid fa-pencil"></i></td>
                     </tr>
@@ -147,8 +156,9 @@
                 </table>
             </div>
         </form>
-        <button type="button" id="delete"
-                class="btn bg_red_info shadow height_3 mt-3 btn-width-150">削除
+        <button class="btn bg_red_info shadow height_3 mt-3 btn-width-150"
+                id="delete"
+                type="button">削除
         </button>
         <p class="mt-4 text-danger" id="delete_message_area"
            th:text="${deleteResult}"></p>
@@ -157,14 +167,14 @@
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+<script crossorigin="anonymous"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <!-- common.js -->
-<script src="./../js/common.js"></script>
+<script src="@{/js/common.js}"></script>
 <!-- employee_manage.js -->
-<script src="./../js/employee_manage.js"></script>
+<script src="@｛/js/employee_manage.js｝"></script>
 </body>
 </html>

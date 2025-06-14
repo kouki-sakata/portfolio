@@ -2,21 +2,21 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TIME MANAGER / 従業員情報</title>
     <!-- favicon -->
-    <link rel="icon" href="./../img/favicon.ico">
+    <link href="@{/img/favicon.ico}" rel="icon">
     <!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet"
+    <link crossorigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-          crossorigin="anonymous">
+          rel="stylesheet">
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
     <!-- css -->
-    <link rel="stylesheet" href="./../css/reset.css">
-    <link rel="stylesheet" href="./../css/style.css">
+    <link href="@{/css/reset.css}" rel="stylesheet">
+    <link href="@{/css/style.css}" rel="stylesheet">
 </head>
 <body>
 <!-- 共通ヘッダー -->
@@ -25,18 +25,20 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="employee-list"/>
+    <input id="target_nav" type="hidden" value="employee-list"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
     <section>
-        <div class="btn-group w-100" role="group"
-             aria-label="Basic radio toggle button group">
-            <input type="radio" class="btn-check" name="tbody_toggle"
-                   id="btnradio1" autocomplete="off" value="no_admin" checked>
+        <div aria-label="Basic radio toggle button group"
+             class="btn-group w-100"
+             role="group">
+            <input autocomplete="off" checked class="btn-check"
+                   id="btnradio1" name="tbody_toggle" type="radio"
+                   value="no_admin">
             <label class="btn btn-outline-primary" for="btnradio1">一般</label>
-            <input type="radio" class="btn-check" name="tbody_toggle"
-                   id="btnradio2" autocomplete="off" value="admin">
+            <input autocomplete="off" class="btn-check" id="btnradio2"
+                   name="tbody_toggle" type="radio" value="admin">
             <label class="btn btn-outline-primary"
                    for="btnradio2">管理者</label>
         </div>
@@ -57,7 +59,7 @@
                     <td class="email" th:text="${employee.email}"></td>
                 </tr>
                 </tbody>
-                <tbody id="admin" class="d-none">
+                <tbody class="d-none" id="admin">
                 <tr th:each="admin : ${adminList}">
                     <td class="id" th:text="${admin.id}"></td>
                     <td class="employee_name"
@@ -72,14 +74,14 @@
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+<script crossorigin="anonymous"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <!-- common.js -->
-<script src="./../js/common.js"></script>
+<script src="@{/js/common.js}"></script>
 <!-- employee_list.js -->
-<script src="./../js/employee_list.js"></script>
+<script src="@{/js/employee_list.js}"></script>
 </body>
 </html>

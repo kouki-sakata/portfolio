@@ -2,21 +2,21 @@
 <html lang="ja" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>TIME MANAGER / 履歴確認</title>
     <!-- favicon -->
-    <link rel="icon" href="./../img/favicon.ico">
+    <link href="@{/img/favicon.ico}" rel="icon">
     <!-- bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet"
+    <link crossorigin="anonymous"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
           integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM"
-          crossorigin="anonymous">
+          rel="stylesheet">
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
     <!-- css -->
-    <link rel="stylesheet" href="./../css/reset.css">
-    <link rel="stylesheet" href="./../css/style.css">
+    <link href="@{/css/reset.css}" rel="stylesheet">
+    <link href="./../css/style.css" rel="stylesheet">
 </head>
 <body>
 <!-- 共通ヘッダー -->
@@ -25,28 +25,30 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="log-history"/>
+    <input id="target_nav" type="hidden" value="log-history"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
     <section>
-        <label for="select_year" class="label-spacing">年</label>
-        <label for="select_month" class="label-spacing">月</label>
-        <form id="search_form" th:action="@{search}" method="post">
+        <label class="label-spacing" for="select_year">年</label>
+        <label class="label-spacing" for="select_month">月</label>
+        <form id="search_form" method="post" th:action="@{search}">
             <div class="myflat">
-                <select name="year" id="select_year" class="form-select">
-                    <option th:each="item : ${yearList}" th:value="${item}"
+                <select class="form-select" id="select_year" name="year">
+                    <option th:each="item : ${yearList}"
+                            th:selected="${item == selectYear}"
                             th:text="${item}"
-                            th:selected="${item == selectYear}"></option>
+                            th:value="${item}"></option>
                 </select>
-                <select name="month" id="select_month" class="form-select">
-                    <option th:each="item : ${monthList}" th:value="${item}"
+                <select class="form-select" id="select_month" name="month">
+                    <option th:each="item : ${monthList}"
+                            th:selected="${item == selectMonth}"
                             th:text="${item}"
-                            th:selected="${item == selectMonth}"></option>
+                            th:value="${item}"></option>
                 </select>
             </div>
         </form>
-        <div id="stamp_table" class="bg_white stamp_box margin_tp_2">
+        <div class="bg_white stamp_box margin_tp_2" id="stamp_table">
             <table class="table table-striped margin_tp_1">
                 <thead>
                 <tr>
@@ -79,14 +81,14 @@
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <!-- bootstrap -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+<script crossorigin="anonymous"
         integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
-        crossorigin="anonymous"></script>
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
 <!-- common.js -->
-<script src="./../js/common.js"></script>
+<script src="@{/js/common.js}"></script>
 <!-- stamphistory.js -->
-<script src="./../js/stamp_history.js"></script>
+<script src="@{/js/stamp_history.js}"></script>
 </body>
 </html>
