@@ -9,12 +9,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-// Remove: import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -28,14 +26,14 @@ public class HomeService03Test {
     @InjectMocks
     private HomeService03 homeService03;
 
-    private Employee employeeFromForm;
+    private Employee employeeFrom;
     private Employee storedEmployee;
 
     @BeforeEach
     void setUp() {
-        employeeFromForm = new Employee();
-        employeeFromForm.setEmail("test@example.com");
-        employeeFromForm.setPassword("plainPassword123");
+        employeeFrom = new Employee();
+        employeeFrom.setEmail("test@example.com");
+        employeeFrom.setPassword("plainPassword123");
 
         storedEmployee = new Employee();
         storedEmployee.setId(1);
@@ -50,12 +48,13 @@ public class HomeService03Test {
     @Test
     void execute_shouldReturnEmployeeMap_whenLoginIsSuccessful() {
         // Arrange
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
+        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(
+                storedEmployee);
         // Remove: when(passwordEncoder.matches("plainPassword123", "hashedPasswordFromDB")).thenReturn(true);
         // Password comparison is now direct string equality within the service.
 
         // Act
-        Map<String, Object> result = homeService03.execute(employeeFromForm);
+        Map<String, Object> result = homeService03.execute(employeeFrom);
 
         // Assert
         assertNotNull(result);
@@ -69,12 +68,14 @@ public class HomeService03Test {
     @Test
     void execute_shouldReturnEmptyMap_whenPasswordDoesNotMatch() {
         // Arrange
-        storedEmployee.setPassword("wrongPlainPassword"); // Set a different plain password
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
+        storedEmployee.setPassword(
+                "wrongPlainPassword"); // Set a different plain password
+        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(
+                storedEmployee);
         // Remove: when(passwordEncoder.matches("plainPassword123", "hashedPasswordFromDB")).thenReturn(false);
 
         // Act
-        Map<String, Object> result = homeService03.execute(employeeFromForm);
+        Map<String, Object> result = homeService03.execute(employeeFrom);
 
         // Assert
         assertNotNull(result);
@@ -87,7 +88,7 @@ public class HomeService03Test {
         when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(null);
 
         // Act
-        Map<String, Object> result = homeService03.execute(employeeFromForm);
+        Map<String, Object> result = homeService03.execute(employeeFrom);
 
         // Assert
         assertNotNull(result);
@@ -97,11 +98,11 @@ public class HomeService03Test {
     @Test
     void execute_shouldReturnEmptyMap_whenEmailInFormIsNull() {
         // Arrange
-        employeeFromForm.setEmail(null);
+        employeeFrom.setEmail(null);
         when(employeeMapper.getEmployeeByEmail(null)).thenReturn(null);
 
         // Act
-        Map<String, Object> result = homeService03.execute(employeeFromForm);
+        Map<String, Object> result = homeService03.execute(employeeFrom);
 
         // Assert
         assertNotNull(result);
@@ -112,14 +113,15 @@ public class HomeService03Test {
     void execute_shouldReturnEmptyMap_whenPasswordInFormIsNull() {
         // Arrange
         // If form password is null, and stored password is not null, .equals will be false.
-        employeeFromForm.setPassword(null);
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
+        employeeFrom.setPassword(null);
+        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(
+                storedEmployee);
         // No specific mock needed for passwordEncoder.matches as it's removed.
         // The service's Objects.nonNull(targetEmployee.getPassword()) and .equals(rawPassword) will handle this.
         // If rawPassword is null, targetEmployee.getPassword().equals(null) is false.
 
         // Act
-        Map<String, Object> result = homeService03.execute(employeeFromForm);
+        Map<String, Object> result = homeService03.execute(employeeFrom);
 
         // Assert
         assertNotNull(result);
