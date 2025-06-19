@@ -1,86 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.teamdev.mapper.LogHistoryMapper">
-	<!-- //更新日時がパラメータ年月に属する日付であるレコードを更新日時降順で取得 -->
-	<select id="getLogHistoryByYearMonthOrderByUpdateDateDesc" parameterType="map" resultType="com.example.teamdev.entity.LogHistoryDisplay">
-<!--		SELECT -->
-<!--			DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date, -->
-<!--			CASE log_history.display_name -->
-<!--				WHEN 1 THEN 'ホーム' -->
-<!--				WHEN 2 THEN 'お知らせ管理' -->
-<!--				WHEN 3 THEN '従業員情報管理' -->
-<!--				WHEN 4 THEN '打刻記録編集' -->
-<!--				WHEN 5 THEN '打刻記録一括削除' -->
-<!--			END AS display_name, -->
-<!--			CASE log_history.operation_type -->
-<!--				WHEN 1 THEN '出勤' -->
-<!--				WHEN 2 THEN '退勤' -->
-<!--				WHEN 3 THEN '登録' -->
-<!--				WHEN 4 THEN '削除' -->
-<!--				WHEN 5 THEN '公開' -->
-<!--			END AS operation_type, -->
-<!--			DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time, -->
-<!--			CONCAT_WS(' ', emp.first_name, emp.last_name) AS employee_name, -->
-<!--			CONCAT_WS(' ', emp2.first_name, emp2.last_name) AS update_employee_name -->
-<!--			FROM log_history -->
-<!--			LEFT JOIN employee AS emp ON log_history.employee_id = emp.id -->
-<!--			LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id -->
-<!--			WHERE YEAR(log_history.update_date) = #{year} AND MONTH(log_history.update_date) = #{month} -->
-<!--			ORDER BY log_history.update_date DESC-->
-		SELECT 
-			DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date, 
-			CASE log_history.display_name 
-				WHEN 1 THEN 'ホーム' 
-				WHEN 2 THEN 'お知らせ管理' 
-				WHEN 3 THEN '従業員情報管理' 
-				WHEN 4 THEN '打刻記録編集' 
-				WHEN 5 THEN '打刻記録一括削除'
-				WHEN 6 THEN '打刻記録出力' <!-- 山本追記 2025/5/9 -->
-			END AS display_name, 
-			CASE log_history.operation_type 
-				WHEN 1 THEN '出勤' 
-				WHEN 2 THEN '退勤' 
-				WHEN 3 THEN '登録' 
-				WHEN 4 THEN '削除' 
-				WHEN 5 THEN '公開'
-				WHEN 6 THEN '出力' <!-- 山本追記 2025/5/9 -->
-			END AS operation_type, 
-			DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time, 
-			CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employee_name, 
-			CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS update_employee_name
-		FROM log_history
-		LEFT JOIN employee AS emp ON log_history.employee_id = emp.id
-		LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id
-		WHERE YEAR(log_history.update_date) = #{year} AND MONTH(log_history.update_date) = #{month}
-		ORDER BY log_history.update_date DESC
-	</select>
-	<!--追記-->
-	<!--同じ日に同じユーザーが同じ操作（出勤・退勤）を押した場合、2回目以降は履歴を残さないようにするための存在チェック用SQL-->
-	<select id="existsLogHistoryForToday" parameterType="map" resultType="int">
-		SELECT COUNT(*) FROM log_history
-		WHERE employee_id = #{employee_id}
-		  AND operation_type = #{operation_type}
-		  AND DATE(update_date) = DATE(#{update_date})
-	</select>
-	
-	<!-- データを挿入または更新する -->
-	<insert id="save" parameterType="com.example.teamdev.entity.LogHistory">
-		INSERT INTO log_history (
-			id,
-			display_name,
-			operation_type,
-			stamp_time,
-			employee_id,
-			update_employee_id,
-			update_date
-		) VALUES (
-			#{id},
-			#{display_name},
-			#{operation_type},
-			#{stamp_time},
-			#{employee_id},
-			#{update_employee_id},
-			#{update_date}
-		)
-	</insert>
+    <!-- //更新日時がパラメータ年月に属する日付であるレコードを更新日時降順で取得 -->
+    <select id="getLogHistoryByYearMonthOrderByUpdateDateDesc"
+            parameterType="map"
+            resultType="com.example.teamdev.entity.LogHistoryDisplay">
+        <!--		SELECT -->
+        <!--			DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date, -->
+        <!--			CASE log_history.display_name -->
+        <!--				WHEN 1 THEN 'ホーム' -->
+        <!--				WHEN 2 THEN 'お知らせ管理' -->
+        <!--				WHEN 3 THEN '従業員情報管理' -->
+        <!--				WHEN 4 THEN '打刻記録編集' -->
+        <!--				WHEN 5 THEN '打刻記録一括削除' -->
+        <!--			END AS display_name, -->
+        <!--			CASE log_history.operation_type -->
+        <!--				WHEN 1 THEN '出勤' -->
+        <!--				WHEN 2 THEN '退勤' -->
+        <!--				WHEN 3 THEN '登録' -->
+        <!--				WHEN 4 THEN '削除' -->
+        <!--				WHEN 5 THEN '公開' -->
+        <!--			END AS operation_type, -->
+        <!--			DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time, -->
+        <!--			CONCAT_WS(' ', emp.first_name, emp.last_name) AS employee_name, -->
+        <!--			CONCAT_WS(' ', emp2.first_name, emp2.last_name) AS update_employee_name -->
+        <!--			FROM log_history -->
+        <!--			LEFT JOIN employee AS emp ON log_history.employee_id = emp.id -->
+        <!--			LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id -->
+        <!--			WHERE YEAR(log_history.update_date) = #{year} AND MONTH(log_history.update_date) = #{month} -->
+        <!--			ORDER BY log_history.update_date DESC-->
+        SELECT
+        DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date,
+        CASE log_history.display_name
+        WHEN 1 THEN 'ホーム'
+        WHEN 2 THEN 'お知らせ管理'
+        WHEN 3 THEN '従業員情報管理'
+        WHEN 4 THEN '打刻記録編集'
+        WHEN 5 THEN '打刻記録一括削除'
+        WHEN 6 THEN '打刻記録出力'
+        END AS display_name,
+        CASE log_history.operation_type
+        WHEN 1 THEN '出勤'
+        WHEN 2 THEN '退勤'
+        WHEN 3 THEN '登録'
+        WHEN 4 THEN '削除'
+        WHEN 5 THEN '公開'
+        WHEN 6 THEN '出力'
+        END AS operation_type,
+        DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time,
+        CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name,
+        '')) AS employee_name,
+        CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name,
+        '')) AS update_employee_name
+        FROM log_history
+        LEFT JOIN employee AS emp ON log_history.employee_id = emp.id
+        LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id
+        WHERE YEAR(log_history.update_date) = #{year} AND
+        MONTH(log_history.update_date) = #{month}
+        ORDER BY log_history.update_date DESC
+    </select>
+    <!--追記-->
+    <!--同じ日に同じユーザーが同じ操作（出勤・退勤）を押した場合、2回目以降は履歴を残さないようにするための存在チェック用SQL-->
+    <select id="existsLogHistoryForToday" parameterType="map" resultType="int">
+        SELECT COUNT(*) FROM log_history
+        WHERE employee_id = #{employee_id}
+        AND operation_type = #{operation_type}
+        AND DATE(update_date) = DATE(#{update_date})
+    </select>
+
+    <!-- データを挿入または更新する -->
+    <insert id="save" parameterType="com.example.teamdev.entity.LogHistory">
+        INSERT INTO log_history (
+        id,
+        display_name,
+        operation_type,
+        stamp_time,
+        employee_id,
+        update_employee_id,
+        update_date
+        ) VALUES (
+        #{id},
+        #{display_name},
+        #{operation_type},
+        #{stamp_time},
+        #{employee_id},
+        #{update_employee_id},
+        #{update_date}
+        )
+    </insert>
 </mapper>
