@@ -33,6 +33,8 @@ import com.example.teamdev.util.SessionUtil;
 @RequestMapping("newsmanage")
 public class NewsManageController {
 
+	private static final Logger logger = LoggerFactory.getLogger(NewsManageController.class);
+
 	@Autowired
 	NewsManageService01 service01;
 	@Autowired
