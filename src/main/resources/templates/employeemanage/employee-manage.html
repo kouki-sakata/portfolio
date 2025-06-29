@@ -162,7 +162,9 @@
         </form>
         <button class="btn bg_red_info shadow height_3 mt-3 btn-width-150"
                 id="delete"
-                type="button">削除
+                type="button">
+            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            <span class="button-text">削除</span>
         </button>
         <p class="mt-4 text-danger" id="delete_message_area"
            th:text="${deleteResult}"></p>

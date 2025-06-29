@@ -1,6 +1,7 @@
 /**
  * 2024/03/21 n.yasunari 新規作成
  * 2025/06/29 Gemini リアルタイムバリデーション追加
+ * 2025/06/29 Gemini ローディングインジケーター追加
  */
 //全選択チェックボックス
 $("#all").change(function() {
@@ -101,6 +102,14 @@ $("#input_first_name, #input_last_name, #input_email, #input_password").on("blur
     validateField($(this).attr("id"), $(this).val());
 });
 
+// ローディング表示関数
+function showLoading(buttonId) {
+    const button = $("#" + buttonId);
+    button.prop("disabled", true); // ボタンを無効化
+    button.find(".button-text").addClass("d-none"); // テキストを非表示
+    button.find(".spinner-border").removeClass("d-none"); // スピナーを表示
+}
+
 //登録ボタンsubmit
 $('#regist').on('click', function() {
     clearAllErrors(); // 登録ボタンクリック時も全てのエラーをクリア
@@ -124,6 +133,7 @@ $('#regist').on('click', function() {
             $("#admin_flag").val("0");
         }
         $("#input_id").removeAttr("disabled");
+        showLoading("regist"); // ローディング表示
         $("#regist_form").submit();
     } else {
         $("#regist_message_area").text("入力内容にエラーがあります。修正してください。");
@@ -143,6 +153,7 @@ $('#delete').click(function() {
 	        // name属性をセット
 	        $(this).attr("name", "idList[" + index + "]");
 	    });
+        showLoading("delete"); // ローディング表示
 	    $("#delete_form").submit();
 	} else {
 	    $("#delete_message_area").text("削除する従業員情報を選択してください。");
