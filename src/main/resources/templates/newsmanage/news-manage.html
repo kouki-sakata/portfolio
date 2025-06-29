@@ -145,5 +145,14 @@
 <script th:src="@{/js/common.js}"></script>
 <!-- news_manage.js -->
 <script th:src="@{/js/news_manage.js}"></script>
+<!-- Flatpickr JS -->
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+<script>
+    flatpickr("#input_date", {
+        locale: "ja",
+        dateFormat: "Y-m-d",
+    });
+</script>
 </body>
 </html>
