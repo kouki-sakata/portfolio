@@ -183,14 +183,12 @@
                          th:errors="*{endMonth}"
                          th:if="${#fields.hasErrors('endMonth')}"></div>
                     <div class="actions">
-                        <button class="btn bg_red_info fs-6 shadow height_2 mt-3"
+                        <button class="btn bg_red_info fs-6 shadow height_2 mt-3 w-25"
                                 id="delete"
-                                style="width: 17%;height: fit-content;"
                                 type="submit"
                         >削除
                         </button>
-                        <a class="btn bg-secondary fs-6 text-white shadow height_2 mt-3"
-                           style="width: 17%;height: fit-content;"
+                        <a class="btn bg-secondary fs-6 text-white shadow height_2 mt-3 w-25"
                            th:href="@{/home/init}">キャンセル</a>
                     </div>
                 </div>

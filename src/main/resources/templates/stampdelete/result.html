@@ -67,10 +67,8 @@
                     <h2>削除処理が完了しました</h2>
                     <p th:text="${deletedCount} + '件の打刻記録を削除しました'"></p>
                 </div>
-                <form method="post" th:action="@{/home/init}">
-                    <div class="button-group">
-                        <button class="btn btn-primary">ホームに戻る</button>
-                    </div>
+                <form class="mt-4" method="post" th:action="@{/home/init}">
+                    <button class="btn btn-primary">ホームに戻る</button>
                 </form>
             </div>
         </div>

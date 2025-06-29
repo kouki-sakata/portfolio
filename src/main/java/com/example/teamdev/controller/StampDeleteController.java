@@ -7,6 +7,8 @@ import com.example.teamdev.service.StampHistoryService01;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -26,6 +28,8 @@ import java.util.Map;
 @RequestMapping("stampdelete")
 public class StampDeleteController {
 
+    private static final Logger logger = LoggerFactory.getLogger(
+            StampDeleteController.class);
     @Autowired
     StampDeleteService stampDeleteService;
     @Autowired
