@@ -29,6 +29,8 @@ import com.example.teamdev.util.SessionUtil;
 @RequestMapping("stamphistory")
 public class StampHistoryController {
 
+	private static final Logger logger = LoggerFactory.getLogger(StampHistoryController.class);
+
 	@Autowired
 	StampHistoryService01 service01;
 
