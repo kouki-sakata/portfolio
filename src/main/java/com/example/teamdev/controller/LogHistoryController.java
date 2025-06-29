@@ -30,6 +30,8 @@ import com.example.teamdev.util.SessionUtil;
 @RequestMapping("loghistory")
 public class LogHistoryController {
 
+	private static final Logger logger = LoggerFactory.getLogger(LogHistoryController.class);
+
 	@Autowired
 	StampHistoryService01 service01;
 	@Autowired
@@ -127,7 +129,7 @@ public class LogHistoryController {
 			return "./loghistory/log-history";
 		} catch (Exception e) {
 			// エラー内容を出力
-			System.out.println("例外発生" + e);
+			logger.error("例外発生", e);
 			//エラー画面表示
 			return "error";
 		}
