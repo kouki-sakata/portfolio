@@ -193,7 +193,6 @@ public class HomeController {
                 return "error"; // エラー画面表示
             }
         } else {
-            // TODO: System.out.printlnではなく、SLF4J等のロガーを使用することを推奨
             logger.warn("打刻フォームの検証エラーが発生しました:");
             for (FieldError error : bindingResult.getFieldErrors()) {
                 logger.warn("フィールド: {}, エラー: {}", error.getField(), error.getDefaultMessage());
