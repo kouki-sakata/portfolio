@@ -169,7 +169,7 @@ public class EmployeeManageController {
      */
     @PostMapping("delete")
     public String delete(
-            ListForm listForm, // @Validated はListFormに適切なバリデーションアノテーションがあれば付与
+            ListForm listForm,
             Model model,
             RedirectAttributes redirectAttributes,
             HttpSession session) {
@@ -180,29 +180,18 @@ public class EmployeeManageController {
             return sessionRedirect; // セッションタイムアウト
         }
 
-        try {
-            @SuppressWarnings("unchecked") // セッション属性からのキャストは型安全性がコンパイル時に保証されないため抑制
-            Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute(
-                    "employeeMap");
-            if (employeeMap == null) {
-                logger.error(
-                        "セッションから従業員情報(employeeMap)を取得できませんでした。");
-                redirectAttributes.addFlashAttribute("deleteResult",
-                        "セッションエラーが発生しました。再度ログインしてください。");
-                return "redirect:/employeemanage/init";
-            }
-            Integer updateEmployeeId = Integer.parseInt(
-                    employeeMap.get("id").toString());
+        Integer updateEmployeeId = getUpdateEmployeeId(session, model, redirectAttributes);
+        if (updateEmployeeId == null) {
+            return "redirect:/employeemanage/init"; // エラーメッセージはgetUpdateEmployeeIdで設定済み
+        }
 
-            employeeService.deleteEmployees(listForm,
-                    updateEmployeeId); // 従業員削除処理
-            redirectAttributes.addFlashAttribute("deleteResult",
-                    "選択された従業員情報を削除しました。");
+        try {
+            employeeService.deleteEmployees(listForm, updateEmployeeId); // 従業員削除処理
+            redirectAttributes.addFlashAttribute("deleteResult", "選択された従業員情報を削除しました。");
             return "redirect:/employeemanage/init";
         } catch (Exception e) {
             logger.error("従業員の削除中にエラーが発生しました。", e);
-            redirectAttributes.addFlashAttribute("deleteResult",
-                    "従業員の削除中にエラーが発生しました。");
+            redirectAttributes.addFlashAttribute("deleteResult", "従業員の削除中にエラーが発生しました。");
             return "redirect:/employeemanage/init";
         }
     }
