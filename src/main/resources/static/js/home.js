@@ -46,7 +46,7 @@ function formatDateTime(){
 	let dateObj = new Date(curdate.replace(/年|月|日/g, '/'));
 	// yyyy-MM-dd形式に変換
 	let formattedDate = dateObj.getFullYear() + '-'
-		+ ('0' + (dateObj.getMonth() + 1)).slice(-2) + '-'
+		+ ('0' + (dateObj.getMonth() + 1)).slice(-2) + '-' 
 		+ ('0' + dateObj.getDate()).slice(-2);
 	let curtime = $("#curtime").text();
 	 return formattedDate +"T"+ curtime;
@@ -55,19 +55,14 @@ function formatDateTime(){
 function setNightWorkFlag(){
 	if($('#switch').prop("checked") == true){
 		$('#nightWorkFlag').val("1");
-	} else {
+	}else{
 		$('#nightWorkFlag').val("0");
 	}
 }
-// 出勤退勤メッセージの自動消去
-window.addEventListener('DOMContentLoaded', function () {
-      const message = document.querySelector('.home-message-success');
-      if (message && message.textContent.trim() !== '') {
-        setTimeout(() => {
-          message.style.opacity = '0';
-          setTimeout(() => {
-            message.style.display = 'none';
-          }, 500); // フェードアウト後に完全非表示
-        }, 3000); // 3秒後に開始
-      }
+
+// メッセージの自動消去
+$(document).ready(function() {
+    $('.alert').delay(3000).fadeOut('slow', function() {
+        $(this).remove();
     });
+});
