@@ -32,22 +32,8 @@
         <!--			ORDER BY log_history.update_date DESC-->
         SELECT
         DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date,
-        CASE log_history.display_name
-        WHEN 1 THEN 'ホーム'
-        WHEN 2 THEN 'お知らせ管理'
-        WHEN 3 THEN '従業員情報管理'
-        WHEN 4 THEN '打刻記録編集'
-        WHEN 5 THEN '打刻記録一括削除'
-        WHEN 6 THEN '打刻記録出力'
-        END AS display_name,
-        CASE log_history.operation_type
-        WHEN 1 THEN '出勤'
-        WHEN 2 THEN '退勤'
-        WHEN 3 THEN '登録'
-        WHEN 4 THEN '削除'
-        WHEN 5 THEN '公開'
-        WHEN 6 THEN '出力'
-        END AS operation_type,
+        log_history.display_name AS display_name_code,
+        log_history.operation_type AS operation_type_code,
         DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time,
         CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name,
         '')) AS employee_name,
