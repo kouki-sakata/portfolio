@@ -197,7 +197,8 @@ public class HomeController {
             for (FieldError error : bindingResult.getFieldErrors()) {
                 logger.warn("フィールド: {}, エラー: {}", error.getField(), error.getDefaultMessage());
             }
-            return "error"; // エラー画面表示 (実際にはフォームに戻すべき)
+            redirectAttributes.addFlashAttribute("result", "打刻情報に不備があります。入力内容を確認してください。");
+            return "redirect:/home/init";
         }
     }
 
