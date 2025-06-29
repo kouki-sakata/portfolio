@@ -48,12 +48,14 @@
                     <input class="form-control" id="input_first_name"
                            maxlength="30" name="firstName"
                            type="text">
+                    <div id="first_name_error" class="text-danger small"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_last_name">名</label>
                     <input class="form-control" id="input_last_name"
                            maxlength="30"
                            name="lastName" type="text">
+                    <div id="last_name_error" class="text-danger small"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_email">メールアドレス</label>
@@ -61,6 +63,7 @@
                            id="input_email"
                            maxlength="255"
                            name="email" type="email">
+                    <div id="email_error" class="text-danger small"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_password">パスワード</label>
@@ -68,6 +71,7 @@
                            maxlength="16"
                            name="password" type="text">
                     <small class="form-text text-muted">8～16文字</small>
+                    <div id="password_error" class="text-danger small"></div>
                 </div>
                 <div class="form-group col-md-1 d-flex align-items-center">
                     <input id="admin_flag" name="adminFlag" type="hidden">
@@ -101,8 +105,8 @@
         </p>
         <input id="employee_id" name="employeeId" type="hidden"/>
         <form id="delete_form" method="post" th:action="@{delete}">
-            <div class="bg_white stamp_box margin_tp_2">
-                <table class="table table-striped margin_tp_1">
+            <div class="bg_white stamp_box margin_tp_2 table-responsive">
+                <table id="employee-table" class="table table-striped margin_tp_1">
                     <thead>
                     <tr>
                         <th>削除</th>

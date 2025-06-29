@@ -42,7 +42,7 @@
             <label class="btn btn-outline-primary"
                    for="btnradio2">管理者</label>
         </div>
-        <div class="bg_white stamp_box margin_tp_2">
+        <div class="bg_white stamp_box margin_tp_2 table-responsive">
             <table class="table table-striped margin_tp_1">
                 <thead>
                 <tr>
@@ -88,10 +88,22 @@
 <script th:src="@{/js/employee_list.js}"></script>
 <script>
     $(document).ready(function () {
-        $('#employee-table').DataTable({
+        var table = $('#employee-table-list').DataTable({
             "language": {
                 "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
             }
+        });
+
+        $('input[name="tbody_toggle"]').change(function () {
+            var selected = $(this).val();
+            if (selected === 'admin') {
+                $('.admin_row').show();
+                $('.no_admin_row').hide();
+            } else {
+                $('.admin_row').hide();
+                $('.no_admin_row').show();
+            }
+            table.draw();
         });
     });
 </script>
