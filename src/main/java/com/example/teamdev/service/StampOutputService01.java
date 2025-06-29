@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class StampOutputService01{
 
+	private static final Logger logger = LoggerFactory.getLogger(StampOutputService01.class);
+
 	@Autowired
 	StampHistoryMapper mapper;
 	@Autowired
