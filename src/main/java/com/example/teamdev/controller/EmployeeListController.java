@@ -87,7 +87,6 @@ public class EmployeeListController {
             model.addAttribute("adminList", adminList);
             return "./employeelist/employee-list";
         } catch (Exception e) {
-            // TODO: System.out.printlnではなく、SLF4J等のロガーを使用することを推奨
             logger.error("従業員一覧画面の表示中に例外が発生しました。", e);
             model.addAttribute("errorMessage", "従業員一覧の表示中にエラーが発生しました。"); // ユーザーフレンドリーなメッセージ
             return "error"; // 汎用エラーページ

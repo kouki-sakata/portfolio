@@ -117,9 +117,9 @@ public class NewsManageController {
 			}
 		} else {
 			// エラー内容を取得して出力
-			System.out.println("Validation errors:");
+			logger.warn("Validation errors:");
 			for (FieldError error : bindingResult.getFieldErrors()) {
-				System.out.println("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
+				logger.warn("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
 			}
 			//エラー画面表示
 			return "error";
@@ -151,7 +151,7 @@ public class NewsManageController {
 			return view(model, session, redirectAttributes);
 		} catch (Exception e) {
 			// エラー内容を出力
-			System.out.println("例外発生" + e);
+			logger.error("例外発生", e);
 			//エラー画面表示
 			return "error";
 		}
@@ -182,7 +182,7 @@ public class NewsManageController {
 			return view(model, session, redirectAttributes);
 		} catch (Exception e) {
 			// エラー内容を出力
-			System.out.println("例外発生" + e);
+			logger.error("例外発生", e);
 			//エラー画面表示
 			return "error";
 		}
@@ -215,7 +215,7 @@ public class NewsManageController {
 			return "./newsmanage/news-manage";
 		} catch (Exception e) {
 			// エラー内容を出力
-			System.out.println("例外発生" + e);
+			logger.error("例外発生", e);
 			//エラー画面表示
 			return "error";
 		}

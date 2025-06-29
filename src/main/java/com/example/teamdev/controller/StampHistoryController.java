@@ -131,7 +131,7 @@ public class StampHistoryController {
 			return "./stamphistory/stamp-history";
 		} catch (Exception e) {
 			// エラー内容を出力
-			System.out.println("例外発生" + e);
+			logger.error("例外発生", e);
 			//エラー画面表示
 			return "error";
 		}

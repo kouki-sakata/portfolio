@@ -229,7 +229,6 @@ public class HomeController {
 
             return "./home/home";
         } catch (Exception e) {
-            // TODO: System.out.printlnではなく、SLF4J等のロガーを使用することを推奨
             logger.error("ホーム画面表示中に例外が発生しました。", e);
             return "error"; // エラー画面表示
         }

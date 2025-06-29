@@ -78,7 +78,7 @@ public class StampOutputService01{
 
 			} catch (NumberFormatException e) {
 				// 数値変換エラーの場合はログ出力するなどの処理を追加
-				System.err.println("従業員ID変換エラー: " + employeeIdStr);
+				logger.error("従業員ID変換エラー: " + employeeIdStr, e);
 			}
 		}
 
