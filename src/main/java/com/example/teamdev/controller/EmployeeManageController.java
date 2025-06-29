@@ -116,41 +116,46 @@ public class EmployeeManageController {
                     redirectAttributes); // エラー詳細をビューに表示するため、viewメソッドを呼ぶ
         }
 
+        Integer updateEmployeeId = getUpdateEmployeeId(session, model, redirectAttributes);
+        if (updateEmployeeId == null) {
+            return view(model, session, redirectAttributes);
+        }
+
         try {
-            @SuppressWarnings("unchecked") // セッション属性からのキャストは型安全性がコンパイル時に保証されないため抑制
-            Map<String, Object> loggedInEmployeeMap = (Map<String, Object>) session.getAttribute(
-                    "employeeMap");
-            if (loggedInEmployeeMap == null) {
-                logger.error(
-                        "セッションから従業員情報(employeeMap)を取得できませんでした。");
-                model.addAttribute("registResult",
-                        "セッションエラーが発生しました。再度ログインしてください。");
-                return view(model, session, redirectAttributes);
-            }
-            Integer updateEmployeeId = Integer.parseInt(
-                    loggedInEmployeeMap.get("id").toString());
-
             if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
-                Integer employeeId = Integer.parseInt(
-                        employeeManageForm.getEmployeeId());
-                employeeService.updateEmployee(employeeId, employeeManageForm,
-                        updateEmployeeId); // 従業員情報更新
-                redirectAttributes.addFlashAttribute("registResult",
-                        "従業員情報を更新しました。");
+                return updateEmployee(employeeManageForm, updateEmployeeId, redirectAttributes);
             } else {
-                employeeService.createEmployee(employeeManageForm,
-                        updateEmployeeId); // 新規従業員登録
-                redirectAttributes.addFlashAttribute("registResult",
-                        "従業員情報を登録しました。");
+                return createEmployee(employeeManageForm, updateEmployeeId, redirectAttributes);
             }
-            return "redirect:/employeemanage/init"; // 成功時はリダイレクト
-
         } catch (NumberFormatException e) {
             logger.error("IDの形式が無効です: {}", e.getMessage());
             model.addAttribute("registResult", "IDの形式が無効です。");
             return view(model, session, redirectAttributes); // エラーメッセージをビューに表示
         }
-        // DuplicateEmailException と EmployeeNotFoundException は GlobalExceptionHandler で処理される
+    }
+
+    private Integer getUpdateEmployeeId(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
+        @SuppressWarnings("unchecked")
+        Map<String, Object> loggedInEmployeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
+        if (loggedInEmployeeMap == null) {
+            logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
+            model.addAttribute("registResult", "セッションエラーが発生しました。再度ログインしてください。");
+            return null;
+        }
+        return Integer.parseInt(loggedInEmployeeMap.get("id").toString());
+    }
+
+    private String createEmployee(EmployeeManageForm employeeManageForm, Integer updateEmployeeId, RedirectAttributes redirectAttributes) {
+        employeeService.createEmployee(employeeManageForm, updateEmployeeId); // 新規従業員登録
+        redirectAttributes.addFlashAttribute("registResult", "従業員情報を登録しました。");
+        return "redirect:/employeemanage/init";
+    }
+
+    private String updateEmployee(EmployeeManageForm employeeManageForm, Integer updateEmployeeId, RedirectAttributes redirectAttributes) {
+        Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
+        employeeService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId); // 従業員情報更新
+        redirectAttributes.addFlashAttribute("registResult", "従業員情報を更新しました。");
+        return "redirect:/employeemanage/init";
     }
 
     /**
