@@ -468,6 +468,11 @@ input[type="text"] {
 	border-color: var(--table-border);
 }
 
+[data-theme="dark"] .table th {
+	background-color: var(--bg-tertiary);
+	color: var(--text-primary);
+}
+
 .td_link {
 	cursor: pointer;
 	text-decoration: underline;
@@ -997,7 +1002,7 @@ input:checked+.toggle-slider:before {
 
 .logo-title h1 {
   margin: 0;
-  font-size: -0.5rem;
+  font-size: 1rem;
   line-height: 1.2;
 }
 
