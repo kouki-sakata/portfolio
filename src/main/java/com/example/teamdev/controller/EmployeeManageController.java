@@ -116,7 +116,7 @@ public class EmployeeManageController {
                     redirectAttributes); // エラー詳細をビューに表示するため、viewメソッドを呼ぶ
         }
 
-        Integer updateEmployeeId = getUpdateEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
         if (updateEmployeeId == null) {
             return view(model, session, redirectAttributes);
         }
@@ -134,16 +134,7 @@ public class EmployeeManageController {
         }
     }
 
-    private Integer getUpdateEmployeeId(HttpSession session, Model model, RedirectAttributes redirectAttributes) {
-        @SuppressWarnings("unchecked")
-        Map<String, Object> loggedInEmployeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-        if (loggedInEmployeeMap == null) {
-            logger.error("セッションから従業員情報(employeeMap)を取得できませんでした。");
-            model.addAttribute("registResult", "セッションエラーが発生しました。再度ログインしてください。");
-            return null;
-        }
-        return Integer.parseInt(loggedInEmployeeMap.get("id").toString());
-    }
+    
 
     private String createEmployee(EmployeeManageForm employeeManageForm, Integer updateEmployeeId, RedirectAttributes redirectAttributes) {
         employeeService.createEmployee(employeeManageForm, updateEmployeeId); // 新規従業員登録
@@ -180,7 +171,7 @@ public class EmployeeManageController {
             return sessionRedirect; // セッションタイムアウト
         }
 
-        Integer updateEmployeeId = getUpdateEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
         if (updateEmployeeId == null) {
             return "redirect:/employeemanage/init"; // エラーメッセージはgetUpdateEmployeeIdで設定済み
         }
@@ -221,7 +212,10 @@ public class EmployeeManageController {
         }
 
         try {
-            ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
 
             // 全従業員情報を取得 (adminFlag = null は全件取得を意味する)
             List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(

@@ -98,18 +98,7 @@ public class StampOutputController {
             return sessionCheck; // セッションタイムアウト時
         }
 
-        @SuppressWarnings("unchecked") // セッション属性からのキャストは型安全性がコンパイル時に保証されないため抑制
-        Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute(
-                "employeeMap");
-        if (employeeMap == null) {
-            logger.error(
-                    "セッションから従業員情報(employeeMap)を取得できませんでした。");
-            model.addAttribute("errorMessage",
-                    "セッションエラーが発生しました。再度ログインしてください。");
-            return view(model, session, redirectAttributes); // 初期画面に戻す
-        }
-        Integer updateEmployeeId = Integer.parseInt(
-                employeeMap.get("id").toString());
+        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
 
         if (!bindingResult.hasErrors()) {
             try {
@@ -156,7 +145,10 @@ public class StampOutputController {
             return redirect; // セッションタイムアウト時
         }
 
-        ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        if (navRedirect != null) {
+            return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+        }
 
         try {
             // 従業員リスト（一般・管理者）を取得
@@ -191,7 +183,9 @@ public class StampOutputController {
                     e);
             model.addAttribute("errorMessage",
                     "画面表示中にエラーが発生しました。");
-            return "error"; // 汎用エラーページ
+            model.addAttribute("errorMessage",
+                        "CSV出力処理中にエラーが発生しました。");
+            return view(model, session, redirectAttributes);
         }
     }
 }

@@ -187,7 +187,6 @@ public class HomeController {
                 redirectAttributes.addFlashAttribute("result", type + "時刻を登録しました。（" + newDateTimeString + "）");
                 return "redirect:/home/init"; // 登録完了後リダイレクト
             } catch (Exception e) {
-                // TODO: System.out.printlnではなく、SLF4J等のロガーを使用することを推奨
                 logger.error("打刻登録中に例外が発生しました。", e);
                 return "error"; // エラー画面表示
             }
@@ -221,7 +220,10 @@ public class HomeController {
         }
 
         try {
-            ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
 
             List<Map<String,Object>> newsList = homeNewsService.execute(); // お知らせ情報取得
             model.addAttribute("newsList", newsList);

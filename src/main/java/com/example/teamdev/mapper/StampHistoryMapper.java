@@ -26,7 +26,7 @@ public interface StampHistoryMapper {
             @Param("year") String year,
             @Param("month") String month,
             @Param("employeeId") int employeeId,
-            @Param("startDate") String startDate
+            @Param("datesInMonth") List<java.time.LocalDate> datesInMonth
     );
 
     //指定のidで1レコードを取得する

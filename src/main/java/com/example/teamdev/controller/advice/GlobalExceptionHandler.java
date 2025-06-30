@@ -67,8 +67,7 @@ public class GlobalExceptionHandler {
     public String handleNumberFormatException(NumberFormatException ex, Model model, HttpServletRequest request) {
         logger.error("数値形式エラーが発生しました (URI: {}): {}", request.getRequestURI(), ex.getMessage(), ex); // スタックトレースも記録
         model.addAttribute("errorMessage", "入力された数値の形式が正しくありません。");
-        model.addAttribute("details", "詳細: " + ex.getMessage()); // エラーの詳細をビューに渡す（開発時向け）
-        return "error"; // templates/error.html などの汎用エラーページ
+        return "error";
     }
 
     /**
@@ -84,8 +83,6 @@ public class GlobalExceptionHandler {
     public String handleGenericException(Exception ex, Model model, HttpServletRequest request) {
         logger.error("予期せぬエラーが発生しました (URI: {}): {}", request.getRequestURI(), ex.getMessage(), ex); // スタックトレースも記録
         model.addAttribute("errorMessage", "予期せぬエラーが発生しました。システム管理者にお問い合わせください。");
-        // 開発環境では詳細なエラー情報を表示することも検討 (本番ではセキュリティリスクになるため控える)
-        // model.addAttribute("details", ex.getClass().getName() + ": " + ex.getMessage());
-        return "error"; // templates/error.html などの汎用エラーページ
+        return "error";
     }
 }

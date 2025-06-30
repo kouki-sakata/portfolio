@@ -110,7 +110,10 @@ public class StampDeleteController {
             model.addAttribute("selectMonth",
                     stampDeleteForm.getStartMonth());
             // ナビゲーション設定
-            ModelUtil.setNavigation(model, session);
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
             return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
         // 削除処理を実行
@@ -144,7 +147,10 @@ public class StampDeleteController {
             return redirect;
         }
         // ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-        ModelUtil.setNavigation(model, session);
+        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        if (navRedirect != null) {
+            return navRedirect;
+        }
         // 初期表示用のフォームを設定
         if (!model.containsAttribute("stampDeleteForm")) {
             model.addAttribute("stampDeleteForm",
@@ -188,7 +194,10 @@ public class StampDeleteController {
             model.addAttribute("monthList", monthList);
 
             // ヘッダーとナビゲーション用の共通属性をModelに追加
-            ModelUtil.setNavigation(model, session);
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect;
+            }
 
             return "stampdelete/init";
         } catch (Exception e) {

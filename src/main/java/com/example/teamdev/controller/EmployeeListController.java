@@ -77,7 +77,10 @@ public class EmployeeListController {
         }
 
         try {
-            ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
 
             // 一般従業員 (adminFlag=0) と管理者 (adminFlag=1) のリストをそれぞれ取得
             List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(0);

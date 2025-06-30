@@ -215,7 +215,9 @@ public class StampEditController {
                         e);
                 model.addAttribute("errorMessage",
                         "登録処理中にエラーが発生しました。");
-                return "error"; // 汎用エラーページ
+                return view("search", stampEditForm.getYear(), stampEditForm.getMonth(),
+                        Integer.parseInt(stampEditForm.getEmployeeId()), model, session,
+                        redirectAttributes);
             }
         } else {
             logger.warn("登録フォームの検証エラーが発生しました:");
@@ -273,7 +275,11 @@ public class StampEditController {
         }
 
         try {
-            ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
+            String navRedirect = ModelUtil.setNavigation(model, session,
+                    redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
 
             if (type.equals("init")) {
                 // 従業員選択画面の準備

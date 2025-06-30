@@ -7,14 +7,11 @@
     <select id="getStampHistoryByYearMonthEmployeeId" parameterType="map"
             resultType="com.example.teamdev.entity.StampHistoryDisplay">
         SELECT
-        stamp_history.id,
-        COALESCE(stamp_history.year, DATE_FORMAT(generated_dates.date, '%Y')) AS
-        year,
-        COALESCE(stamp_history.month, DATE_FORMAT(generated_dates.date, '%m'))
-        AS month,
-        COALESCE(stamp_history.day, DATE_FORMAT(generated_dates.date, '%d')) AS
-        day,
-        CASE DAYOFWEEK(generated_dates.date)
+        COALESCE(sh.id, NULL) AS id,
+        DATE_FORMAT(gd.date, '%Y') AS year,
+        DATE_FORMAT(gd.date, '%m') AS month,
+        DATE_FORMAT(gd.date, '%d') AS day,
+        CASE DAYOFWEEK(gd.date)
         WHEN 1 THEN '日'
         WHEN 2 THEN '月'
         WHEN 3 THEN '火'
@@ -23,36 +20,26 @@
         WHEN 6 THEN '金'
         WHEN 7 THEN '土'
         END AS day_of_week,
-        emp.id AS employee_id,
+        #{employeeId} AS employee_id,
         CONCAT_WS(' ', emp.first_name, emp.last_name) AS employee_name,
         CONCAT_WS(' ', emp2.first_name, emp2.last_name) AS update_employee_name,
-        TIME_FORMAT(stamp_history.in_time, '%H:%i') AS in_time,
-        TIME_FORMAT(stamp_history.out_time, '%H:%i') AS out_time,
-        DATE_FORMAT(stamp_history.update_date, '%Y/%m/%d %H:%i') AS update_date
+        TIME_FORMAT(sh.in_time, '%H:%i') AS in_time,
+        TIME_FORMAT(sh.out_time, '%H:%i') AS out_time,
+        DATE_FORMAT(sh.update_date, '%Y/%m/%d %H:%i') AS update_date
         FROM
         (
-        SELECT *, DATE_FORMAT(CONCAT(year, '-', LPAD(month, 2, '0'), '-',
-        LPAD(day, 2, '0')), '%Y-%m-%d') AS formatted_date
-        FROM stamp_history
-        WHERE year = #{year} AND month = #{month} AND employee_id =
-        #{employeeId}
-        ) AS stamp_history
-        RIGHT JOIN (
-        SELECT
-        @f := DATE_FORMAT(CURDATE(), #{startDate}) AS date
-        UNION ALL
-        SELECT
-        @f := date_format(date_add(@f, interval 1 day), '%Y-%m-%d') AS date
-        FROM
-        `information_schema`.COLUMNS
-        WHERE
-        @f &lt; LAST_DAY(DATE_FORMAT(CURDATE(), #{startDate}))
-        ) AS generated_dates
-        ON stamp_history.year = YEAR(generated_dates.date)
-        AND stamp_history.month = MONTH(generated_dates.date)
-        AND stamp_history.day = DAY(generated_dates.date)
-        LEFT JOIN employee AS emp ON emp.id = #{employeeId}
-        LEFT JOIN employee AS emp2 ON stamp_history.update_employee_id = emp2.id
+        <foreach collection="datesInMonth" item="date" separator="UNION ALL">
+            SELECT #{date} AS date
+        </foreach>
+        ) AS gd
+        LEFT JOIN stamp_history sh ON
+        YEAR(gd.date) = sh.year AND
+        MONTH(gd.date) = sh.month AND
+        DAY(gd.date) = sh.day AND
+        sh.employee_id = #{employeeId}
+        LEFT JOIN employee emp ON emp.id = #{employeeId}
+        LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+        ORDER BY gd.date ASC
     </select>
 
     <!-- データを挿入または更新する -->

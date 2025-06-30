@@ -121,8 +121,8 @@ public class NewsManageController {
 			for (FieldError error : bindingResult.getFieldErrors()) {
 				logger.warn("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
 			}
-			//エラー画面表示
-			return "error";
+			model.addAttribute("registResult", "入力内容にエラーがあります。修正してください。");
+			return view(model, session, redirectAttributes);
 		}
 	}
 	/**
@@ -203,7 +203,10 @@ public class NewsManageController {
 		
 		try {
 			// ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-			ModelUtil.setNavigation(model, session);
+			String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+			if (navRedirect != null) {
+				return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+			}
 			
 			//お知らせ情報を日付の降順で取得する
 			List<Map<String,Object>> newsList = new ArrayList<Map<String,Object>>();

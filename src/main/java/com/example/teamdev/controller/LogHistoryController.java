@@ -88,8 +88,8 @@ public class LogHistoryController {
             for (FieldError error : bindingResult.getFieldErrors()) {
                 logger.warn("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
             }
-            //エラー画面表示
-            return "error";
+            model.addAttribute("errorMessage", "検索条件にエラーがあります。入力内容を確認してください。");
+            return view(String.valueOf(LocalDate.now().getYear()), String.format("%02d", LocalDate.now().getMonthValue()), model, session, redirectAttributes);
         }
     }
 
@@ -113,7 +113,10 @@ public class LogHistoryController {
 
         try {
             // ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
-            ModelUtil.setNavigation(model, session);
+            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            if (navRedirect != null) {
+                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+            }
 
             //履歴記録
             List<Map<String, Object>> logHistoryList = new ArrayList<Map<String, Object>>();
