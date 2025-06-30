@@ -22,7 +22,7 @@ import java.util.List;
 public class EmployeeService {
 
     private final EmployeeMapper employeeMapper; // 従業員情報へのデータアクセスを行うマッパー
-    private final LogHistoryService01 logHistoryService; // 操作履歴の記録を行うサービス
+    private final LogHistoryRegistrationService logHistoryService; // 操作履歴の記録を行うサービス
 
     /**
      * 必要な依存関係を注入してEmployeeServiceを構築します。
@@ -32,7 +32,7 @@ public class EmployeeService {
      */
     @Autowired
     public EmployeeService(EmployeeMapper employeeMapper,
-            LogHistoryService01 logHistoryService) {
+            LogHistoryRegistrationService logHistoryService) {
         this.employeeMapper = employeeMapper;
         this.logHistoryService = logHistoryService;
     }

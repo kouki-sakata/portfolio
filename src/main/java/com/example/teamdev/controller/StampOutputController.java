@@ -2,8 +2,8 @@ package com.example.teamdev.controller;
 
 import com.example.teamdev.form.StampOutputForm;
 import com.example.teamdev.service.EmployeeService;
-import com.example.teamdev.service.StampHistoryService01;
-import com.example.teamdev.service.StampOutputService01;
+import com.example.teamdev.service.StampHistoryService;
+import com.example.teamdev.service.StampOutputService;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -35,8 +35,8 @@ public class StampOutputController {
             StampOutputController.class); // Loggerを追加
 
     private final EmployeeService employeeService; // 従業員情報取得サービス
-    private final StampHistoryService01 stampHistoryService; // 打刻履歴関連サービス (年月リスト取得用)
-    private final StampOutputService01 stampOutputService;   // CSV出力処理サービス
+    private final StampHistoryService stampHistoryService; // 打刻履歴関連サービス (年月リスト取得用)
+    private final StampOutputService stampOutputService;   // CSV出力処理サービス
 
     /**
      * StampOutputControllerのコンストラクタ。
@@ -49,8 +49,8 @@ public class StampOutputController {
     @Autowired
     public StampOutputController(
             EmployeeService employeeService,
-            StampHistoryService01 stampHistoryService,
-            StampOutputService01 stampOutputService) {
+            StampHistoryService stampHistoryService,
+            StampOutputService stampOutputService) {
         this.employeeService = employeeService;
         this.stampHistoryService = stampHistoryService;
         this.stampOutputService = stampOutputService;

@@ -2,8 +2,8 @@ package com.example.teamdev.controller;
 
 import com.example.teamdev.form.StampEditForm;
 import com.example.teamdev.service.EmployeeService;
-import com.example.teamdev.service.StampEditService01;
-import com.example.teamdev.service.StampHistoryService01;
+import com.example.teamdev.service.StampEditService;
+import com.example.teamdev.service.StampHistoryService;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
@@ -22,7 +22,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
+import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -38,8 +40,8 @@ public class StampEditController {
             StampEditController.class); // Loggerを追加
 
     private final EmployeeService employeeService; // 従業員情報取得サービス
-    private final StampHistoryService01 stampHistoryService; // 打刻履歴関連サービス
-    private final StampEditService01 stampEditService; // 打刻編集処理サービス
+    private final StampHistoryService stampHistoryService; // 打刻履歴関連サービス
+    private final StampEditService stampEditService; // 打刻編集処理サービス
 
     /**
      * StampEditControllerのコンストラクタ。
@@ -52,8 +54,8 @@ public class StampEditController {
     @Autowired
     public StampEditController(
             EmployeeService employeeService,
-            StampHistoryService01 stampHistoryService,
-            StampEditService01 stampEditService) {
+            StampHistoryService stampHistoryService,
+            StampEditService stampEditService) {
         this.employeeService = employeeService;
         this.stampHistoryService = stampHistoryService;
         this.stampEditService = stampEditService;
@@ -339,7 +341,7 @@ public class StampEditController {
      * @return 変更があればtrue、なければfalse
      */
     private boolean isStampChanged(StampEditForm form,
-            StampHistoryService01 stampHistoryService, String year,
+            StampHistoryService stampHistoryService, String year,
             String month, int employeeId) {
         List<Map<String, Object>> currentList = stampHistoryService.execute(
                 year, month, employeeId);
@@ -355,38 +357,36 @@ public class StampEditController {
             Map<String, Object> next = newList.get(i);
 
             // DBからの時刻は Timestamp 型の場合があるため、toString() で比較。nullも考慮。
-            String currIn = curr.get("in_time") != null ? curr.get(
-                    "in_time").toString().substring(0,
-                    16) : ""; // yyyy-MM-dd HH:mm
-            String nextIn = next.get("inTime") != null ? next.get(
+            // DBからの時刻は Timestamp 型の場合があるため、HH:mm形式に変換して比較。nullも考慮。
+            String currInTime = "";
+            if (curr.get("in_time") instanceof Timestamp) {
+                currInTime = ((Timestamp) curr.get("in_time")).toLocalDateTime().format(
+                        DateTimeFormatter.ofPattern("HH:mm"));
+            } else if (curr.get("in_time") != null) {
+                // If it's not a Timestamp but still has a value, try to parse it as a string
+                String timeStr = curr.get("in_time").toString();
+                if (timeStr.length() >= 5) { // Assuming HH:mm or HH:mm:ss format
+                    currInTime = timeStr.substring(0, 5);
+                }
+            }
+
+            String nextInTime = next.get("inTime") != null ? next.get(
                     "inTime").toString() : "";
-            if (nextIn.length() > 16) nextIn = nextIn.substring(0,
-                    16); // HH:mm:ss を HH:mm に合わせる (もしあれば)
 
-            String currOut = curr.get("out_time") != null ? curr.get(
-                    "out_time").toString().substring(0,
-                    16) : ""; // yyyy-MM-dd HH:mm
-            String nextOut = next.get("outTime") != null ? next.get(
+            String currOutTime = "";
+            if (curr.get("out_time") instanceof Timestamp) {
+                currOutTime = ((Timestamp) curr.get("out_time")).toLocalDateTime().format(
+                        DateTimeFormatter.ofPattern("HH:mm"));
+            } else if (curr.get("out_time") != null) {
+                String timeStr = curr.get("out_time").toString();
+                if (timeStr.length() >= 5) {
+                    currOutTime = timeStr.substring(0, 5);
+                }
+            }
+            String nextOutTime = next.get("outTime") != null ? next.get(
                     "outTime").toString() : "";
-            if (nextOut.length() > 16) nextOut = nextOut.substring(0, 16);
 
-            // フォームからの入力は "HH:mm" または空文字を想定。DBは "yyyy-MM-dd HH:mm:ss.S"
-            // ここでは簡単化のため、DBの日付部分を除いた時刻部分(HH:mm)で比較するロジックが必要になるが、
-            // 現在の in_time, out_time は Timestamp なので、より正確な比較には日付情報も必要。
-            // ここでは、元のロジックの雰囲気を残しつつ、文字列比較を行っている。
-            // より堅牢な比較のためには、Timestamp とフォームからの文字列 (HH:mm) を
-            // 同じ LocalTime や LocalDateTime に変換して比較すべき。
-            // 現状は、フォーム入力が HH:mm で、DBが yyyy-MM-dd HH:mm:ss.S の場合、単純な文字列比較では不一致になる。
-            // TODO: 時刻比較ロジックの改善。Timestampとフォーム入力(HH:mm)の正確な比較。
-
-            // 元のロジックに近い形で比較 (ただし、これだと日付部分も比較対象になる)
-            // String currIn = curr.get("in_time") != null ? curr.get("in_time").toString() : "";
-            // String nextIn = next.get("inTime") != null ? next.get("inTime").toString() : "";
-            // String currOut = curr.get("out_time") != null ? curr.get("out_time").toString() : "";
-            // String nextOut = next.get("outTime") != null ? next.get("outTime").toString() : "";
-
-
-            if (!currIn.equals(nextIn) || !currOut.equals(nextOut)) {
+            if (!currInTime.equals(nextInTime) || !currOutTime.equals(nextOutTime)) {
                 return true;
             }
         }

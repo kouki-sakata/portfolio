@@ -21,10 +21,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.form.NewsManageForm;
-import com.example.teamdev.service.NewsManageService01;
-import com.example.teamdev.service.NewsManageService02;
-import com.example.teamdev.service.NewsManageService03;
-import com.example.teamdev.service.NewsManageService04;
+import com.example.teamdev.service.NewsManageService;
+import com.example.teamdev.service.NewsManageRegistrationService;
+import com.example.teamdev.service.NewsManageReleaseService;
+import com.example.teamdev.service.NewsManageDeletionService;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
@@ -38,13 +38,13 @@ public class NewsManageController {
 	private static final Logger logger = LoggerFactory.getLogger(NewsManageController.class);
 
 	@Autowired
-	NewsManageService01 service01;
+	NewsManageService service01;
 	@Autowired
-	NewsManageService02 service02;
+	NewsManageRegistrationService service02;
 	@Autowired
-	NewsManageService03 service03;
+	NewsManageReleaseService service03;
 	@Autowired
-	NewsManageService04 service04;
+	NewsManageDeletionService service04;
 	/**
 	 * メニューからアクセスする
 	 */
@@ -111,7 +111,7 @@ public class NewsManageController {
 
 			} catch (Exception e) {
 				// エラー内容を出力
-				System.out.println("例外発生" + e);
+				logger.error("例外発生", e);
 				//エラー画面表示
 				return "error";
 			}

@@ -25,9 +25,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.form.SignInForm;
-import com.example.teamdev.service.HomeService01;
-import com.example.teamdev.service.HomeService02;
-import com.example.teamdev.service.HomeService03;
+import com.example.teamdev.service.HomeNewsService;
+import com.example.teamdev.service.StampService;
+import com.example.teamdev.service.AuthenticationService;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 
@@ -41,9 +41,9 @@ public class HomeController {
 
     private static final Logger logger = LoggerFactory.getLogger(HomeController.class); // Loggerを追加
 
-    private final HomeService01 homeService01; // お知らせ情報取得サービス
-    private final HomeService02 homeService02; // 打刻登録サービス
-    private final HomeService03 homeService03; // サインイン処理サービス
+    private final HomeNewsService homeNewsService; // お知らせ情報取得サービス
+    private final StampService stampService; // 打刻登録サービス
+    private final AuthenticationService authenticationService; // サインイン処理サービス
     // HttpSession は直接フィールドインジェクションするよりも、メソッド引数で受け取る方が一般的です。
     // しかし、既存のコードで @Autowired HttpSession httpSession; があったため、
     // コンストラクタインジェクションの対象からは外しますが、ベストプラクティスとしてはメソッド引数での使用を推奨します。
@@ -53,19 +53,18 @@ public class HomeController {
     /**
      * HomeControllerのコンストラクタ。
      * 必要なサービスをインジェクションします。
-     * @param homeService01 お知らせ情報取得サービス
-     * @param homeService02 打刻登録サービス
-     * @param homeService03 サインイン処理サービス
+     * @param homeNewsService お知らせ情報取得サービス
+     * @param stampService 打刻登録サービス
+     * @param authenticationService サインイン処理サービス
      */
     @Autowired
     public HomeController(
-            HomeService01 homeService01,
-            HomeService02 homeService02,
-            HomeService03 homeService03) {
-        this.homeService01 = homeService01;
-        this.homeService02 = homeService02;
-        this.homeService03 = homeService03;
-        // this.httpSession = httpSession; // ← 削除
+            HomeNewsService homeNewsService,
+            StampService stampService,
+            AuthenticationService authenticationService) {
+        this.homeNewsService = homeNewsService;
+        this.stampService = stampService;
+        this.authenticationService = authenticationService;
     }
 
     /**
@@ -128,7 +127,7 @@ public class HomeController {
             employee.setPassword(signInForm.getPassword());
 
             // サインイン情報をチェックし、対象従業員情報を取得
-            Map<String, Object> employeeMap = homeService03.execute(employee);
+            Map<String, Object> employeeMap = authenticationService.execute(employee);
 
             // serviceクラスでサインイン成功（signInTimeキーが存在するかで判断）
             if (employeeMap.containsKey("signInTime")) {
@@ -179,7 +178,7 @@ public class HomeController {
                 Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
                 Integer employeeId = Integer.parseInt(employeeMap.get("id").toString());
 
-                homeService02.execute(homeForm, employeeId); // 打刻登録処理
+                stampService.execute(homeForm, employeeId); // 打刻登録処理
 
                 LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                 String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
@@ -224,7 +223,7 @@ public class HomeController {
         try {
             ModelUtil.setNavigation(model, session); // ヘッダー・ナビゲーション情報設定
 
-            List<Map<String,Object>> newsList = homeService01.execute(); // お知らせ情報取得
+            List<Map<String,Object>> newsList = homeNewsService.execute(); // お知らせ情報取得
             model.addAttribute("newsList", newsList);
 
             return "./home/home";

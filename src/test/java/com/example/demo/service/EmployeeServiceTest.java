@@ -7,7 +7,7 @@ import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.EmployeeService;
-import com.example.teamdev.service.LogHistoryService01;
+import com.example.teamdev.service.LogHistoryRegistrationService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +40,7 @@ public class EmployeeServiceTest {
     private EmployeeMapper employeeMapper;
 
     @Mock
-    private LogHistoryService01 logHistoryService;
+    private LogHistoryRegistrationService logHistoryService;
 
     @InjectMocks
     private EmployeeService employeeService;

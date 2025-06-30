@@ -1,9 +1,9 @@
 package com.example.teamdev.controller;
 
 import com.example.teamdev.form.StampDeleteForm;
-import com.example.teamdev.service.LogHistoryService01;
+import com.example.teamdev.service.LogHistoryRegistrationService;
 import com.example.teamdev.service.StampDeleteService;
-import com.example.teamdev.service.StampHistoryService01;
+import com.example.teamdev.service.StampHistoryService;
 import com.example.teamdev.util.ModelUtil;
 import com.example.teamdev.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
@@ -33,9 +33,9 @@ public class StampDeleteController {
     @Autowired
     StampDeleteService stampDeleteService;
     @Autowired
-    LogHistoryService01 logHistoryService;
+    LogHistoryRegistrationService logHistoryService;
     @Autowired
-    StampHistoryService01 service01;
+    StampHistoryService service01;
 
     /**
      * メニューからアクセスする
@@ -90,7 +90,7 @@ public class StampDeleteController {
         // バリデーションエラーがある場合
         if (result.hasErrors()) {
             // 初期表示画面に戻る
-            return "stampdelete/init";
+            return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
         // 日付の妥当性チェック（開始日が終了日より後でないか）
         if (!stampDeleteService.validateYearMonthRange(stampDeleteForm)) {
@@ -111,7 +111,7 @@ public class StampDeleteController {
                     stampDeleteForm.getStartMonth());
             // ナビゲーション設定
             ModelUtil.setNavigation(model, session);
-            return "stampdelete/init";
+            return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
         // 削除処理を実行
         Integer updateEmployeeId = Integer

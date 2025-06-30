@@ -16,7 +16,7 @@ public class StampDeleteService {
     @Autowired
     private StampDeleteMapper stampDeleteMapper;
     @Autowired
-    private LogHistoryService01 logHistoryService;
+    private LogHistoryRegistrationService logHistoryService;
 
     /**
      * 年と月を分解し打刻記録を取得

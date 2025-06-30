@@ -2,7 +2,7 @@ package com.example.demo.service;
 
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
-import com.example.teamdev.service.HomeService03;
+import com.example.teamdev.service.AuthenticationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -24,7 +24,7 @@ public class HomeService03Test {
     // Remove: @Mock private PasswordEncoder passwordEncoder;
 
     @InjectMocks
-    private HomeService03 homeService03;
+    private AuthenticationService homeService03;
 
     private Employee employeeFrom;
     private Employee storedEmployee;
