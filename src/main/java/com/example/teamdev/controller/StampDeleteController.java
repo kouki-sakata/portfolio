@@ -1,7 +1,6 @@
 package com.example.teamdev.controller;
 
 import com.example.teamdev.form.StampDeleteForm;
-import com.example.teamdev.service.LogHistoryRegistrationService;
 import com.example.teamdev.service.StampDeleteService;
 import com.example.teamdev.service.StampHistoryService;
 import com.example.teamdev.util.ModelUtil;
@@ -22,190 +21,95 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @Controller
 @RequestMapping("stampdelete")
 public class StampDeleteController {
 
-    private static final Logger logger = LoggerFactory.getLogger(
-            StampDeleteController.class);
-    @Autowired
-    StampDeleteService stampDeleteService;
-    @Autowired
-    LogHistoryRegistrationService logHistoryService;
-    @Autowired
-    StampHistoryService service01;
+    private static final Logger logger = LoggerFactory.getLogger(StampDeleteController.class);
 
-    /**
-     * メニューからアクセスする
-     */
-    @PostMapping("init")
-    public String init(
-            @ModelAttribute StampDeleteForm stampDeleteForm,
-            Model model,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
+    private final StampDeleteService stampDeleteService;
+    private final StampHistoryService stampHistoryService;
 
-        // セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-        String redirect = SessionUtil.checkSession(session,
-                redirectAttributes);
-        if (redirect != null)
-            return redirect;
-
-        // 初期表示：システム日付の属する年YYYY、月MM（ゼロ埋め）
-        LocalDate currentDate = LocalDate.now();
-        String year = String.valueOf(currentDate.getYear());
-        String month = String.format("%02d",
-                currentDate.getMonthValue());
-        return view(stampDeleteForm, year, month, model, session,
-                redirectAttributes);
+    @Autowired
+    public StampDeleteController(StampDeleteService stampDeleteService, StampHistoryService stampHistoryService) {
+        this.stampDeleteService = stampDeleteService;
+        this.stampHistoryService = stampHistoryService;
     }
 
-    /**
-     * 打刻記録一括削除を行う
-     */
+    @PostMapping("init")
+    public String init(@ModelAttribute StampDeleteForm stampDeleteForm, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (redirect != null) return redirect;
+
+        LocalDate currentDate = LocalDate.now();
+        String year = String.valueOf(currentDate.getYear());
+        String month = String.format("%02d", currentDate.getMonthValue());
+        return view(stampDeleteForm, year, month, model, session, redirectAttributes);
+    }
+
     @PostMapping("delete")
-    public String delete(
-            @ModelAttribute @Validated StampDeleteForm stampDeleteForm,
-            BindingResult result,
-            Model model,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        // セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-        String redirect = SessionUtil.checkSession(session,
-                redirectAttributes);
+    public String delete(@ModelAttribute @Validated StampDeleteForm stampDeleteForm, BindingResult result, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
         if (redirect != null) {
             return redirect;
         }
-        //セッションに格納したサインイン従業員情報を取り出す
-        Map<String, Object> employeeMap = (Map<String, Object>) session
-                .getAttribute("employeeMap");
-        //画面情報をmodelに格納
-        model.addAttribute("employeeName",
-                employeeMap.get("employeeName").toString());
-        model.addAttribute("adminFlag",
-                employeeMap.get("admin_flag").toString());
 
-        // バリデーションエラーがある場合
         if (result.hasErrors()) {
-            // 初期表示画面に戻る
             return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
-        // 日付の妥当性チェック（開始日が終了日より後でないか）
+
         if (!stampDeleteService.validateYearMonthRange(stampDeleteForm)) {
-            result.rejectValue("startMonth", "error.date.range",
-                    "開始年月が終了年月より後の日付になっています");
-            // 年リスト・月リスト再取得
-            List<String> yearList = service01.getYearList();
-            List<String> monthList = service01.getMonthList();
-
-            // モデルに必要な属性を追加
-            model.addAttribute("yearList", yearList);
-            model.addAttribute("monthList", monthList);
-
-            // 重要：選択されていた値をモデルに再設定
-            model.addAttribute("selectYear",
-                    stampDeleteForm.getStartYear());
-            model.addAttribute("selectMonth",
-                    stampDeleteForm.getStartMonth());
-            // ナビゲーション設定
-            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
-            if (navRedirect != null) {
-                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
-            }
+            result.rejectValue("startMonth", "error.date.range", "開始年月が終了年月より後の日付になっています");
             return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
-        // 削除処理を実行
-        Integer updateEmployeeId = Integer
-                .parseInt(employeeMap.get("id").toString());
-        int deletedCount = stampDeleteService
-                .deleteStampsByYearMonthRange(stampDeleteForm, updateEmployeeId);
-        // リダイレクト後の画面に削除件数を一時的に渡す（1回限り有効なFlash属性として保存）
-        redirectAttributes.addFlashAttribute("deletedCount",
-                deletedCount);
+
+        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        if (updateEmployeeId == null) {
+            return "redirect:/stampdelete/init";
+        }
+
+        int deletedCount = stampDeleteService.deleteStampsByYearMonthRange(stampDeleteForm, updateEmployeeId);
+        redirectAttributes.addFlashAttribute("deletedCount", deletedCount);
         return "redirect:/stampdelete/result";
     }
 
-    /**
-     * 削除完了画面表示
-     *
-     * @return result.html
-     * PRGパターン（Post/Redirect/Get）を使用し、同じリクエストの再送信を防ぐ処理を追加
-     */
     @GetMapping("result")
-    public String result(
-            @ModelAttribute StampDeleteForm stampDeleteForm,
-            Model model,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-
-        // セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-        String redirect = SessionUtil.checkSession(session,
-                redirectAttributes);
+    public String result(@ModelAttribute StampDeleteForm stampDeleteForm, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
         if (redirect != null) {
             return redirect;
         }
-        // ヘッダーとナビゲーション用の共通属性をModelに追加するメソッド呼び出し
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }
-        // 初期表示用のフォームを設定
         if (!model.containsAttribute("stampDeleteForm")) {
-            model.addAttribute("stampDeleteForm",
-                    new StampDeleteForm());
+            model.addAttribute("stampDeleteForm", new StampDeleteForm());
         }
         return "stampdelete/result";
     }
 
-    /**
-     * 打刻記録一括削除画面表示
-     *
-     * @return init.html
-     */
-    public String view(
-            @ModelAttribute StampDeleteForm stampDeleteForm,
-            String year,
-            String month,
-            Model model,
-            HttpSession session,
-            RedirectAttributes redirectAttributes) {
-        // セッションタイムアウト時ログイン画面にリダイレクトメソッド呼び出し
-        String redirect = SessionUtil.checkSession(session,
-                redirectAttributes);
-        if (redirect != null)
-            return redirect;
+    private String view(@ModelAttribute StampDeleteForm stampDeleteForm, String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        String redirect = SessionUtil.checkSession(session, redirectAttributes);
+        if (redirect != null) return redirect;
 
-        try {
-            // 年リスト取得
-            List<String> yearList = service01.getYearList();
-            // 月リスト取得
-            List<String> monthList = service01.getMonthList();
-
-            // フォームオブジェクトに初期値をセット
-            stampDeleteForm.setStartYear(year);
-            stampDeleteForm.setStartMonth(month);
-            stampDeleteForm.setEndYear(year);
-            stampDeleteForm.setEndMonth(month);
-
-            // モデルに属性を追加
-            model.addAttribute("yearList", yearList);
-            model.addAttribute("monthList", monthList);
-
-            // ヘッダーとナビゲーション用の共通属性をModelに追加
-            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
-            if (navRedirect != null) {
-                return navRedirect;
-            }
-
-            return "stampdelete/init";
-        } catch (Exception e) {
-            // エラー内容を出力
-            logger.error("例外発生", e);
-            //エラー画面表示
-            return "error";
+        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        if (navRedirect != null) {
+            return navRedirect;
         }
-    }
 
+        List<String> yearList = stampHistoryService.getYearList();
+        List<String> monthList = stampHistoryService.getMonthList();
+
+        stampDeleteForm.setStartYear(year);
+        stampDeleteForm.setStartMonth(month);
+        stampDeleteForm.setEndYear(year);
+        stampDeleteForm.setEndMonth(month);
+
+        model.addAttribute("yearList", yearList);
+        model.addAttribute("monthList", monthList);
+
+        return "stampdelete/init";
+    }
 }

@@ -1,16 +1,16 @@
 package com.example.teamdev.controller;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap; // SignInFormからEmployeeへのマッピングで使用
-import java.util.List;
-import java.util.Map;
-
+import com.example.teamdev.entity.Employee;
+import com.example.teamdev.form.HomeForm;
+import com.example.teamdev.form.SignInForm;
+import com.example.teamdev.service.AuthenticationService;
+import com.example.teamdev.service.HomeNewsService;
+import com.example.teamdev.service.StampService;
+import com.example.teamdev.util.ModelUtil;
+import com.example.teamdev.util.SessionUtil;
 import jakarta.servlet.http.HttpSession;
-
-import org.slf4j.Logger; // SLF4J Logger を追加
-import org.slf4j.LoggerFactory; // SLF4J LoggerFactory を追加
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -22,216 +22,109 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.example.teamdev.entity.Employee;
-import com.example.teamdev.form.HomeForm;
-import com.example.teamdev.form.SignInForm;
-import com.example.teamdev.service.HomeNewsService;
-import com.example.teamdev.service.StampService;
-import com.example.teamdev.service.AuthenticationService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 
-/**
- * ホーム画面に関連するリクエストを処理するコントローラです。
- * 主にサインイン処理、打刻処理、ホーム画面の表示を担当します。
- */
 @Controller
 @RequestMapping("home")
 public class HomeController {
 
-    private static final Logger logger = LoggerFactory.getLogger(HomeController.class); // Loggerを追加
+    private static final Logger logger = LoggerFactory.getLogger(HomeController.class);
 
-    private final HomeNewsService homeNewsService; // お知らせ情報取得サービス
-    private final StampService stampService; // 打刻登録サービス
-    private final AuthenticationService authenticationService; // サインイン処理サービス
-    // HttpSession は直接フィールドインジェクションするよりも、メソッド引数で受け取る方が一般的です。
-    // しかし、既存のコードで @Autowired HttpSession httpSession; があったため、
-    // コンストラクタインジェクションの対象からは外しますが、ベストプラクティスとしてはメソッド引数での使用を推奨します。
-    // ここでは既存のフィールドとしてのHttpSessionは削除し、必要なメソッドで引数として受け取る形を想定します。
-    // @Autowired // private final HttpSession httpSession; // ← 削除またはメソッド引数へ
+    private final HomeNewsService homeNewsService;
+    private final StampService stampService;
+    private final AuthenticationService authenticationService;
 
-    /**
-     * HomeControllerのコンストラクタ。
-     * 必要なサービスをインジェクションします。
-     * @param homeNewsService お知らせ情報取得サービス
-     * @param stampService 打刻登録サービス
-     * @param authenticationService サインイン処理サービス
-     */
     @Autowired
-    public HomeController(
-            HomeNewsService homeNewsService,
-            StampService stampService,
-            AuthenticationService authenticationService) {
+    public HomeController(HomeNewsService homeNewsService, StampService stampService, AuthenticationService authenticationService) {
         this.homeNewsService = homeNewsService;
         this.stampService = stampService;
         this.authenticationService = authenticationService;
     }
 
-    /**
-     * ホーム画面の初期表示を行います。(POSTリクエスト版)
-     * 主にメニューからの遷移で使用されます。
-     *
-     * @param model モデルオブジェクト
-     * @param session HTTPセッション
-     * @param redirectAttributes リダイレクト属性
-     * @return ホーム画面のビュー名
-     */
     @PostMapping("init")
-    public String init(
-            Model model,
-            HttpSession session, // HttpSessionを引数で受け取る
-            RedirectAttributes redirectAttributes) {
+    public String init(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         return view(model, session, redirectAttributes);
     }
 
-    /**
-     * ホーム画面の初期表示を行います。(GETリクエスト版)
-     * 主にリダイレクト時や直接アクセス時に使用されます。
-     *
-     * @param model モデルオブジェクト
-     * @param session HTTPセッション
-     * @param redirectAttributes リダイレクト属性
-     * @return ホーム画面のビュー名
-     */
     @GetMapping("init")
-    public String initGet(
-            Model model,
-            HttpSession session, // HttpSessionを引数で受け取る
-            RedirectAttributes redirectAttributes) {
+    public String initGet(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         return view(model, session, redirectAttributes);
     }
 
-    /**
-     * サインイン処理を行います。
-     * 入力されたサインイン情報（メールアドレス、パスワード）を検証し、
-     * 成功すればホーム画面を表示し、失敗すればサインイン画面にリダイレクトします。
-     *
-     * @param signInForm サインインフォームオブジェクト (バリデーション済み)
-     * @param bindingResult バリデーション結果
-     * @param model モデルオブジェクト
-     * @param session HTTPセッション (サインイン情報の格納に使用)
-     * @param redirectAttributes リダイレクト属性 (エラーメッセージの伝達に使用)
-     * @return 成功時はホーム画面のビュー名、失敗時はサインイン画面へのリダイレクトパス
-     */
     @PostMapping("check")
-    public String check(
-            @Validated SignInForm signInForm, // パラメータ名をsignInFormに変更 (Javaの命名規則)
-            BindingResult bindingResult,
-            Model model,
-            HttpSession session, // HttpSessionを引数で受け取る
-            RedirectAttributes redirectAttributes) {
-
-        if (!bindingResult.hasErrors()) {
-            Employee employee = new Employee();
-            employee.setEmail(signInForm.getEmail());
-            employee.setPassword(signInForm.getPassword());
-
-            // サインイン情報をチェックし、対象従業員情報を取得
-            Map<String, Object> employeeMap = authenticationService.execute(employee);
-
-            // serviceクラスでサインイン成功（signInTimeキーが存在するかで判断）
-            if (employeeMap.containsKey("signInTime")) {
-                session.setAttribute("employeeMap", employeeMap); // サインイン従業員情報をセッションに格納
-                return view(model, session, redirectAttributes); // ホーム画面表示
-            } else {
-                redirectAttributes.addFlashAttribute("result", "EmailまたはPasswordが一致しません");
-                return "redirect:/signin"; // サインイン失敗
-            }
-        } else {
-            // TODO: System.out.printlnではなく、SLF4J等のロガーを使用することを推奨
-            logger.warn("サインインフォームの検証エラーが発生しました:");
+    public String check(@Validated SignInForm signInForm, BindingResult bindingResult, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
+        if (bindingResult.hasErrors()) {
+            logger.warn("Sign-in form validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
-                logger.warn("フィールド: {}, エラー: {}", error.getField(), error.getDefaultMessage());
+                logger.warn("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
             }
             redirectAttributes.addFlashAttribute("result", "EmailまたはPasswordが空白になっています");
             return "redirect:/signin";
         }
+
+        Employee employee = new Employee();
+        employee.setEmail(signInForm.getEmail());
+        employee.setPassword(signInForm.getPassword());
+
+        Map<String, Object> employeeMap = authenticationService.execute(employee);
+
+        if (employeeMap.containsKey("signInTime")) {
+            session.setAttribute("employeeMap", employeeMap);
+            return view(model, session, redirectAttributes);
+        } else {
+            redirectAttributes.addFlashAttribute("result", "EmailまたはPasswordが一致しません");
+            return "redirect:/signin";
+        }
     }
 
-    /**
-     * 打刻情報を登録します。
-     * フォームから受け取った打刻情報を基に、打刻処理サービスを呼び出します。
-     *
-     * @param homeForm ホーム画面フォームオブジェクト (バリデーション済み、打刻情報を含む)
-     * @param bindingResult バリデーション結果
-     * @param model モデルオブジェクト
-     * @param redirectAttributes リダイレクト属性 (結果メッセージの伝達に使用)
-     * @param session HTTPセッション (セッションチェック、従業員ID取得に使用)
-     * @return 処理結果に応じてホーム画面へのリダイレクトパスまたはエラー画面のビュー名
-     */
     @PostMapping("regist")
-    public String regist(
-            @Validated HomeForm homeForm,
-            BindingResult bindingResult,
-            Model model,
-            RedirectAttributes redirectAttributes,
-            HttpSession session // HttpSessionを引数で受け取る
-    ) {
+    public String regist(@Validated HomeForm homeForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
         String redirect = SessionUtil.checkSession(session, redirectAttributes);
         if (redirect != null) {
-            return redirect; // セッションタイムアウト時
+            return redirect;
         }
 
-        if (!bindingResult.hasErrors()) {
-            try {
-                @SuppressWarnings("unchecked") // セッション属性のキャストは型安全性が保証されないため抑制
-                Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-                Integer employeeId = Integer.parseInt(employeeMap.get("id").toString());
-
-                stampService.execute(homeForm, employeeId); // 打刻登録処理
-
-                LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-                String type = homeForm.getStampType().equals("1") ? "出勤" : "退勤";
-
-                redirectAttributes.addFlashAttribute("result", type + "時刻を登録しました。（" + newDateTimeString + "）");
-                return "redirect:/home/init"; // 登録完了後リダイレクト
-            } catch (Exception e) {
-                logger.error("打刻登録中に例外が発生しました。", e);
-                return "error"; // エラー画面表示
-            }
-        } else {
-            logger.warn("打刻フォームの検証エラーが発生しました:");
+        if (bindingResult.hasErrors()) {
+            logger.warn("Stamp form validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
-                logger.warn("フィールド: {}, エラー: {}", error.getField(), error.getDefaultMessage());
+                logger.warn("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
             }
             redirectAttributes.addFlashAttribute("result", "打刻情報に不備があります。入力内容を確認してください。");
             return "redirect:/home/init";
         }
+
+        Integer employeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        if (employeeId == null) {
+            return "redirect:/home/init";
+        }
+
+        stampService.execute(homeForm, employeeId);
+
+        LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
+        String type = homeForm.getStampType().equals("1") ? "出勤" : "退勤";
+
+        redirectAttributes.addFlashAttribute("result", type + "時刻を登録しました。（" + newDateTimeString + "）");
+        return "redirect:/home/init";
     }
 
-    /**
-     * ホーム画面の表示に必要な情報を準備し、ビューを返します。
-     * セッションチェック、ナビゲーション情報の設定、お知らせ情報の取得を行います。
-     *
-     * @param model モデルオブジェクト
-     * @param session HTTPセッション
-     * @param redirectAttributes リダイレクト属性
-     * @return ホーム画面のビュー名 (./home/home) またはエラー画面のビュー名
-     */
-    public String view(
-            Model model,
-            HttpSession session, // HttpSessionを引数で受け取る
-            RedirectAttributes redirectAttributes) {
-
+    private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         String redirect = SessionUtil.checkSession(session, redirectAttributes);
         if (redirect != null) {
-            return redirect; // セッションタイムアウト時
+            return redirect;
         }
 
-        try {
-            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
-            if (navRedirect != null) {
-                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
-            }
-
-            List<Map<String,Object>> newsList = homeNewsService.execute(); // お知らせ情報取得
-            model.addAttribute("newsList", newsList);
-
-            return "./home/home";
-        } catch (Exception e) {
-            logger.error("ホーム画面表示中に例外が発生しました。", e);
-            return "error"; // エラー画面表示
+        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        if (navRedirect != null) {
+            return navRedirect;
         }
+
+        List<Map<String, Object>> newsList = homeNewsService.execute();
+        model.addAttribute("newsList", newsList);
+
+        return "./home/home";
     }
 }
