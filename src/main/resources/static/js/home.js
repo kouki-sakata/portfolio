@@ -24,13 +24,22 @@ const zerofill = (value) => {
 
 //出勤ボタンsubmit
 $('#in_button').on('click', function() {
+	// ボタンを無効化して二重送信を防止
+	$(this).prop('disabled', true);
+	$('#out_button').prop('disabled', true);
+
 	setNightWorkFlag();
 	$("#stampTime").val(formatDateTime());
 	$("#stampType").val("1");
 	$("#home_form").submit();
 });
+
 //退勤ボタンsubmit
 $('#out_button').on('click', function() {
+	// ボタンを無効化して二重送信を防止
+	$(this).prop('disabled', true);
+	$('#in_button').prop('disabled', true);
+
 	setNightWorkFlag();
 	$("#stampTime").val(formatDateTime());
 	$("#stampType").val("2");
@@ -40,22 +49,23 @@ $('#out_button').on('click', function() {
 //打刻時刻生成
 //形式：yyyy-MM-ddTHH:mm:ss
 function formatDateTime(){
-	//yyyy年MM月dd日(X)→yyyy-MM-dd
-	let curdate = $("#curdate").text();
-	// Dateオブジェクトを生成
-	let dateObj = new Date(curdate.replace(/年|月|日/g, '/'));
-	// yyyy-MM-dd形式に変換
-	let formattedDate = dateObj.getFullYear() + '-'
-		+ ('0' + (dateObj.getMonth() + 1)).slice(-2) + '-' 
-		+ ('0' + dateObj.getDate()).slice(-2);
-	let curtime = $("#curtime").text();
-	 return formattedDate +"T"+ curtime;
+    const now = new Date(); // 現在の日時を直接取得
+    const year = now.getFullYear();
+    const month = ('0' + (now.getMonth() + 1)).slice(-2); // ゼロ埋め
+    const day = ('0' + now.getDate()).slice(-2); // ゼロ埋め
+    const hours = ('0' + now.getHours()).slice(-2); // ゼロ埋め
+    const minutes = ('0' + now.getMinutes()).slice(-2); // ゼロ埋め
+    const seconds = ('0' + now.getSeconds()).slice(-2); // ゼロ埋め
+
+    // yyyy-MM-ddTHH:mm:ss 形式で文字列を構築
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
 }
+
 //夜勤ボタンの値設定
 function setNightWorkFlag(){
 	if($('#switch').prop("checked") == true){
 		$('#nightWorkFlag').val("1");
-	}else{
+	} else {
 		$('#nightWorkFlag').val("0");
 	}
 }

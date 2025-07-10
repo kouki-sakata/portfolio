@@ -87,7 +87,8 @@ CREATE TABLE `stamp_history` (
   `out_time` timestamp NULL DEFAULT NULL COMMENT '退勤時刻',
   `update_employee_id` int DEFAULT NULL COMMENT '更新従業員ID',
   `update_date` timestamp NULL DEFAULT NULL COMMENT '更新日時',
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_employee_date` (`employee_id`,`year`,`month`,`day`)
 ) ENGINE=InnoDB AUTO_INCREMENT=103 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='打刻記録';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
