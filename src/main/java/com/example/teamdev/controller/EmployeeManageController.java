@@ -99,12 +99,6 @@ public class EmployeeManageController {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
-        String sessionRedirect = SessionUtil.checkSession(session,
-                redirectAttributes);
-        if (sessionRedirect != null) {
-            return sessionRedirect; // セッションタイムアウト
-        }
-
         model.addAttribute("employeeManageForm",
                 employeeManageForm); // エラー時にもフォームオブジェクトをビューに渡す
 
@@ -165,12 +159,6 @@ public class EmployeeManageController {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
-        String sessionRedirect = SessionUtil.checkSession(session,
-                redirectAttributes);
-        if (sessionRedirect != null) {
-            return sessionRedirect; // セッションタイムアウト
-        }
-
         Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
         if (updateEmployeeId == null) {
             return "redirect:/employeemanage/init"; // エラーメッセージはgetUpdateEmployeeIdで設定済み
@@ -205,12 +193,6 @@ public class EmployeeManageController {
         // viewメソッドがそれらからのみ呼ばれる場合は重複する可能性がある。
         // SessionUtil.checkSessionの呼び出しはviewメソッドの責務か、呼び出し元の責務か検討の余地あり。
         // ここでは既存の構造を踏襲し、view内にもセッションチェックを残す。
-        String sessionRedirect = SessionUtil.checkSession(session,
-                redirectAttributes);
-        if (sessionRedirect != null) {
-            return sessionRedirect;
-        }
-
         try {
             String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
             if (navRedirect != null) {

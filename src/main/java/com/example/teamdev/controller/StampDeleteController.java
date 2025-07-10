@@ -39,9 +39,6 @@ public class StampDeleteController {
 
     @PostMapping("init")
     public String init(@ModelAttribute StampDeleteForm stampDeleteForm, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         LocalDate currentDate = LocalDate.now();
         String year = String.valueOf(currentDate.getYear());
         String month = String.format("%02d", currentDate.getMonthValue());
@@ -50,11 +47,6 @@ public class StampDeleteController {
 
     @PostMapping("delete")
     public String delete(@ModelAttribute @Validated StampDeleteForm stampDeleteForm, BindingResult result, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         if (result.hasErrors()) {
             return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
@@ -76,10 +68,6 @@ public class StampDeleteController {
 
     @GetMapping("result")
     public String result(@ModelAttribute StampDeleteForm stampDeleteForm, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
@@ -91,9 +79,6 @@ public class StampDeleteController {
     }
 
     private String view(@ModelAttribute StampDeleteForm stampDeleteForm, String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;

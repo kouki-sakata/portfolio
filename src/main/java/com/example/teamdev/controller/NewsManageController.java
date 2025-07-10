@@ -46,15 +46,11 @@ public class NewsManageController {
 
     @PostMapping("init")
     public String initPost(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
         return view(model, session, redirectAttributes);
     }
 
     @GetMapping("init")
     public String initGet(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
         return view(model, session, redirectAttributes);
     }
 
@@ -119,9 +115,6 @@ public class NewsManageController {
     }
 
     private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         try {
             String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
             if (navRedirect != null) {

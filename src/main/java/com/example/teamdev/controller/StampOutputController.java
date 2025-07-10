@@ -48,11 +48,6 @@ public class StampOutputController {
 
     @PostMapping("output")
     public String output(HttpServletResponse response, @Validated StampOutputForm stampOutputForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) throws IOException {
-        String sessionCheck = SessionUtil.checkSession(session, redirectAttributes);
-        if (sessionCheck != null) {
-            return sessionCheck;
-        }
-
         if (bindingResult.hasErrors()) {
             logger.warn("CSV output form validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -72,11 +67,6 @@ public class StampOutputController {
     }
 
     private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;

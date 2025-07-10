@@ -51,11 +51,6 @@ public class StampEditController {
 
     @PostMapping("search")
     public String search(@Validated StampEditForm stampEditForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         if (bindingResult.hasErrors()) {
             logger.warn("Search form validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -87,11 +82,6 @@ public class StampEditController {
 
     @PostMapping("regist")
     public String regist(@Validated StampEditForm stampEditForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         if (bindingResult.hasErrors()) {
             logger.warn("Registration form validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -127,11 +117,6 @@ public class StampEditController {
     }
 
     private String view(String type, String year, String month, int employeeId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;

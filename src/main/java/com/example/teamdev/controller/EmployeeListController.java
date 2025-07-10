@@ -35,11 +35,6 @@ public class EmployeeListController {
     }
 
     private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) {
-            return redirect;
-        }
-
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;

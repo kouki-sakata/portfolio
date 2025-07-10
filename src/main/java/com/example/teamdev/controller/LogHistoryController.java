@@ -39,9 +39,6 @@ public class LogHistoryController {
 
     @PostMapping("init")
     public String init(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         LocalDate currentDate = LocalDate.now();
         String year = String.valueOf(currentDate.getYear());
         String month = String.format("%02d", currentDate.getMonthValue());
@@ -50,9 +47,6 @@ public class LogHistoryController {
 
     @PostMapping("search")
     public String search(@Validated StampHistoryForm stampHistoryForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         if (bindingResult.hasErrors()) {
             logger.warn("Validation errors in search form:");
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -66,9 +60,6 @@ public class LogHistoryController {
     }
 
     private String view(String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
