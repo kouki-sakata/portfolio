@@ -2,160 +2,221 @@
  * 2024/03/21 n.yasunari 新規作成
  * 2025/06/29 Gemini リアルタイムバリデーション追加
  * 2025/06/29 Gemini ローディングインジケーター追加
+ * 2025/07/12 Gemini DataTables対応リファクタリング
  */
-//全選択チェックボックス
-$("#all").change(function() {
-    // "all" チェックボックスの状態を取得
-    let isChecked = $(this).prop("checked");
-    // クラスが "delete_check" のチェックボックスの状態を変更
-    $(".delete_check").prop("checked", isChecked);
-});
-//編集ボタンクリック
-$(".td_btn").click(function() {
-	//クリックした行のデータを「従業員情報　新規登録・変更」にセットする
-    let tr = $(this).closest("tr");
-    let id = tr.find(".id").text();
-    let firstName = tr.find(".first_name").text();
-    let lastName = tr.find(".last_name").text();
-    let email = tr.find(".email").text();
-    let password = tr.find(".password").text();
-    let adminCheckbox = tr.find(".admin_flag");
-    
-    $("#input_id").val(id);
-    $("#input_first_name").val(firstName);
-    $("#input_last_name").val(lastName);
-    $("#input_email").val(email);
-    $("#input_password").val(password);
-	let adminFlagChecked = adminCheckbox.is(":checked");
-    $("#input_admin").prop("checked", adminFlagChecked);
-    
-    // 編集時に既存のエラーメッセージをクリア
-    clearAllErrors();
-});
+$(document).ready(function () {
+    let loadingStartTime;
+    const minimumLoadingTime = 500; // 最小表示時間（ミリ秒）
 
-// エラーメッセージ表示ヘルパー
-function displayError(fieldId, message) {
-    $("#" + fieldId + "_error").text(message).show();
-    $("#" + fieldId).addClass("is-invalid");
-}
-
-// エラーメッセージクリアヘルパー
-function clearError(fieldId) {
-    $("#" + fieldId + "_error").text("").hide();
-    $("#" + fieldId).removeClass("is-invalid");
-}
-
-// 全てのエラーメッセージをクリア
-function clearAllErrors() {
-    clearError("input_first_name");
-    clearError("input_last_name");
-    clearError("input_email");
-    clearError("input_password");
-    $("#regist_message_area").text("");
-}
-
-// フィールドごとのバリデーション関数
-function validateField(fieldId, value) {
-    let isValid = true;
-    clearError(fieldId); // まずエラーをクリア
-
-    switch (fieldId) {
-        case "input_first_name":
-            if (value.trim() === "") {
-                displayError(fieldId, "姓を入力してください。");
-                isValid = false;
+    // DataTablesの初期化
+    const employeeTable = $('#employee-table').DataTable({
+        "processing": true,
+        "serverSide": true,
+        "ajax": {
+            "url": "/employeemanage/data",
+            "type": "POST",
+            "contentType": "application/json",
+            "data": function (d) {
+                return JSON.stringify(d);
             }
-            break;
-        case "input_last_name":
-            if (value.trim() === "") {
-                displayError(fieldId, "名を入力してください。");
-                isValid = false;
+        },
+        "columns": [
+            {
+                "data": null,
+                "render": function (data, type, row) {
+                    return `<input type="checkbox" class="delete_check form-check-input checkbox-large" value="${row.id}">`;
+                },
+                "orderable": false
+            },
+            { "data": "id" },
+            { "data": "first_name" },
+            { "data": "last_name" },
+            { "data": "email" },
+            { "data": "password" },
+            {
+                "data": "admin_flag",
+                "render": function (data, type, row) {
+                    return `<input class="admin_flag form-check-input checkbox-large" disabled="disabled" type="checkbox" ${data == 1 ? 'checked' : ''}>`;
+                },
+                "orderable": false
+            },
+            {
+                "data": null,
+                "render": function (data, type, row) {
+                    return '<i class="td_btn fa-solid fa-pencil"></i>';
+                },
+                "orderable": false
             }
-            break;
-        case "input_email":
-            if (value.trim() === "") {
-                displayError(fieldId, "メールアドレスを入力してください。");
-                isValid = false;
-            } else {
-                let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                if (!emailRegex.test(value)) {
-                    displayError(fieldId, "有効なメールアドレス形式で入力してください。");
+        ],
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
+        },
+        "initComplete": function (settings, json) {
+            hideLoadingWithDelay();
+        },
+        "preDrawCallback": function (settings) {
+            showLoading();
+        },
+        "drawCallback": function (settings) {
+            hideLoadingWithDelay();
+        }
+    });
+
+    function showLoading() {
+        loadingStartTime = new Date().getTime();
+        $('#loading-overlay').addClass('show');
+    }
+
+    function hideLoadingWithDelay() {
+        const elapsedTime = new Date().getTime() - loadingStartTime;
+        const remainingTime = minimumLoadingTime - elapsedTime;
+        setTimeout(() => {
+            $('#loading-overlay').removeClass('show');
+        }, remainingTime > 0 ? remainingTime : 0);
+    }
+
+    // --- イベントデリゲーション ---
+
+    // 編集ボタンクリック
+    $('#employee-table tbody').on('click', '.td_btn', function () {
+        const data = employeeTable.row($(this).parents('tr')).data();
+        $("#input_id").val(data.id);
+        $("#input_first_name").val(data.first_name);
+        $("#input_last_name").val(data.last_name);
+        $("#input_email").val(data.email);
+        $("#input_password").val(data.password);
+        $("#input_admin").prop("checked", data.admin_flag == 1);
+        clearAllErrors();
+    });
+
+    // 全選択チェックボックス
+    $('#select-all-employees').on('click', function () {
+        const rows = employeeTable.rows({ 'search': 'applied' }).nodes();
+        $('.delete_check', rows).prop('checked', this.checked);
+    });
+
+    // 個別チェックボックスの変更で「全選択」の状態を更新
+    $('#employee-table tbody').on('change', 'input[type="checkbox"]', function () {
+        if (!this.checked) {
+            const el = $('#select-all-employees').get(0);
+            if (el && el.checked && ('indeterminate' in el)) {
+                el.indeterminate = true;
+            }
+        }
+    });
+
+    // 削除ボタンsubmit
+    $('#delete').on('click', function () {
+        const selectedIds = [];
+        employeeTable.$('.delete_check:checked').each(function () {
+            selectedIds.push($(this).val());
+        });
+
+        if (selectedIds.length > 0) {
+            if (confirm('選択した従業員情報を本当に削除しますか？\nこの操作は元に戻せません。')) {
+                // 既存のhidden inputをクリア
+                $('#delete_form input[name="idList"]').remove();
+                // 新しいhidden inputを追加
+                selectedIds.forEach(function (id) {
+                    $('#delete_form').append(`<input type="hidden" name="idList" value="${id}">`);
+                });
+                showButtonLoading("delete");
+                $("#delete_form").submit();
+            }
+        } else {
+            $("#delete_message_area").text("削除する従業員情報を選択してください。");
+        }
+    });
+
+
+    // --- フォームバリデーション ---
+
+    function displayError(fieldId, message) {
+        $("#" + fieldId + "_error").text(message).show();
+        $("#" + fieldId).addClass("is-invalid");
+    }
+
+    function clearError(fieldId) {
+        $("#" + fieldId + "_error").text("").hide();
+        $("#" + fieldId).removeClass("is-invalid");
+    }
+
+    function clearAllErrors() {
+        clearError("input_first_name");
+        clearError("input_last_name");
+        clearError("input_email");
+        clearError("input_password");
+        $("#regist_message_area").text("");
+    }
+
+    function validateField(fieldId, value) {
+        let isValid = true;
+        clearError(fieldId);
+
+        switch (fieldId) {
+            case "input_first_name":
+                if (value.trim() === "") {
+                    displayError(fieldId, "姓を入力してください。");
                     isValid = false;
                 }
-            }
-            break;
-        case "input_password":
-            if (value.trim() === "") {
-                displayError(fieldId, "パスワードを入力してください。");
-                isValid = false;
-            } else if (value.length < 8 || value.length > 16) {
-                displayError(fieldId, "パスワードは文字数8文字以上、16文字以内で入力してください。");
-                isValid = false;
-            }
-            break;
-    }
-    return isValid;
-}
-
-// リアルタイムバリデーションのイベントリスナー設定
-$("#input_first_name, #input_last_name, #input_email, #input_password").on("blur keyup", function() {
-    validateField($(this).attr("id"), $(this).val());
-});
-
-// ローディング表示関数
-function showLoading(buttonId) {
-    const button = $("#" + buttonId);
-    button.prop("disabled", true); // ボタンを無効化
-    button.find(".button-text").addClass("d-none"); // テキストを非表示
-    button.find(".spinner-border").removeClass("d-none"); // スピナーを表示
-}
-
-//登録ボタンsubmit
-$('#regist').on('click', function() {
-    clearAllErrors(); // 登録ボタンクリック時も全てのエラーをクリア
-
-    let isValidForm = true;
-    // 全フィールドのバリデーションを実行
-    if (!validateField("input_first_name", $("#input_first_name").val())) isValidForm = false;
-    if (!validateField("input_last_name", $("#input_last_name").val())) isValidForm = false;
-    if (!validateField("input_email", $("#input_email").val())) isValidForm = false;
-    if (!validateField("input_password", $("#input_password").val())) isValidForm = false;
-
-    if (isValidForm) {
-        //チェックボックスadminFlagの値を設定
-        let isAdminChecked = $("#input_admin").prop("checked");
-        // adminFlagの値を設定
-        if (isAdminChecked) {
-            // チェックボックスがONの場合は"1"を設定
-            $("#admin_flag").val("1");
-        } else {
-            // チェックボックスがOFFの場合は"0"を設定
-            $("#admin_flag").val("0");
+                break;
+            case "input_last_name":
+                if (value.trim() === "") {
+                    displayError(fieldId, "名を入力してください。");
+                    isValid = false;
+                }
+                break;
+            case "input_email":
+                if (value.trim() === "") {
+                    displayError(fieldId, "メールアドレスを入力してください。");
+                    isValid = false;
+                } else {
+                    let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(value)) {
+                        displayError(fieldId, "有効なメールアドレス形式で入力してください。");
+                        isValid = false;
+                    }
+                }
+                break;
+            case "input_password":
+                if ($("#input_id").val() === "" && value.trim() === "") { // 新規登録時のみ必須
+                     displayError(fieldId, "パスワードを入力してください。");
+                     isValid = false;
+                } else if (value.trim() !== "" && (value.length < 8 || value.length > 16)) {
+                    displayError(fieldId, "パスワードは8文字以上、16文字以内で入力してください。");
+                    isValid = false;
+                }
+                break;
         }
-        $("#input_id").removeAttr("disabled");
-        showLoading("regist"); // ローディング表示
-        $("#regist_form").submit();
-    } else {
-        $("#regist_message_area").text("入力内容にエラーがあります。修正してください。");
+        return isValid;
     }
-});
 
-//削除ボタンsubmit
-$('#delete').click(function() {
-	//必須チェック
-	let checkedCheckboxes = $(".delete_check:checked");
-	if (checkedCheckboxes.length > 0) {
-	    checkedCheckboxes.each(function(index) {
-	        // チェックボックスが属するtr要素を取得
-	        let trElement = $(this).closest('tr');
-	        // tr要素内のclass="id"の値を取得してチェックボックスのvalue属性にセット
-	        $(this).val(trElement.find('.id').text());
-	        // name属性をセット
-	        $(this).attr("name", "idList[" + index + "]");
-	    });
-        showLoading("delete"); // ローディング表示
-	    $("#delete_form").submit();
-	} else {
-	    $("#delete_message_area").text("削除する従業員情報を選択してください。");
-	}
+    $("#input_first_name, #input_last_name, #input_email, #input_password").on("blur keyup", function () {
+        validateField($(this).attr("id"), $(this).val());
+    });
+
+    function showButtonLoading(buttonId) {
+        const button = $("#" + buttonId);
+        button.prop("disabled", true);
+        button.find(".button-text").addClass("d-none");
+        button.find(".spinner-border").removeClass("d-none");
+    }
+
+    $('#regist').on('click', function () {
+        clearAllErrors();
+        let isValidForm = true;
+        if (!validateField("input_first_name", $("#input_first_name").val())) isValidForm = false;
+        if (!validateField("input_last_name", $("#input_last_name").val())) isValidForm = false;
+        if (!validateField("input_email", $("#input_email").val())) isValidForm = false;
+        if (!validateField("input_password", $("#input_password").val())) isValidForm = false;
+
+        if (isValidForm) {
+            $("#admin_flag").val($("#input_admin").prop("checked") ? "1" : "0");
+            $("#input_id").removeAttr("disabled");
+            showButtonLoading("regist");
+            $("#regist_form").submit();
+        } else {
+            $("#regist_message_area").text("入力内容にエラーがあります。修正してください。");
+        }
+    });
 });

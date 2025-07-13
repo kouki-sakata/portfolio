@@ -15,11 +15,15 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 import java.util.Map;
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 従業員情報の管理（登録、更新、削除、一覧表示）に関連するリクエストを処理するコントローラです。
@@ -42,6 +46,12 @@ public class EmployeeManageController {
     @Autowired
     public EmployeeManageController(EmployeeService employeeService) {
         this.employeeService = employeeService;
+    }
+
+    @PostMapping("/data")
+    @ResponseBody
+    public DataTablesResponse getEmployeeData(@RequestBody DataTablesRequest request) {
+        return employeeService.getEmployeesForDataTables(request);
     }
 
     /**
@@ -198,11 +208,6 @@ public class EmployeeManageController {
             if (navRedirect != null) {
                 return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
             }
-
-            // 全従業員情報を取得 (adminFlag = null は全件取得を意味する)
-            List<com.example.teamdev.entity.Employee> employeeList = employeeService.getAllEmployees(
-                    null);
-            model.addAttribute("employeeList", employeeList);
 
             // フォームオブジェクトがモデルにない場合（例: GETリクエスト時）、空のフォームを追加
             if (!model.containsAttribute("employeeManageForm")) {

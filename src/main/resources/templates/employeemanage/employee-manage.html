@@ -14,6 +14,9 @@
     <!-- fontawesome -->
     <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
           rel="stylesheet">
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css"
+          rel="stylesheet" type="text/css">
     <!-- css -->
     <link rel="stylesheet" th:href="@{/css/reset.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
@@ -21,7 +24,6 @@
 <body>
 <!-- 共通ヘッダー -->
 <header th:replace="~{common/header}"></header>
-
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
@@ -36,7 +38,8 @@
         <p class="mb-4">
             従業員情報を新規登録したい場合は、以下を入力して登録ボタンを押してください
         </p>
-        <form id="regist_form" method="post" th:action="@{regist}" th:object="${employeeManageForm}">
+        <form id="regist_form" method="post" th:action="@{regist}"
+              th:object="${employeeManageForm}">
             <div class="row">
                 <div class="form-group col-md-2">
                     <label for="input_id">ID</label>
@@ -47,49 +50,69 @@
                     <label for="input_first_name">姓</label>
                     <input class="form-control" id="input_first_name"
                            maxlength="30" name="firstName"
-                           type="text" th:field="*{firstName}" th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''">
-                    <div class="text-danger small" id="first_name_error" th:errors="*{firstName}"></div>
+                           th:classappend="${#fields.hasErrors('firstName')} ? 'is-invalid' : ''"
+                           th:field="*{firstName}"
+                           type="text">
+                    <div class="text-danger small" id="first_name_error"
+                         th:errors="*{firstName}"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_last_name">名</label>
                     <input class="form-control" id="input_last_name"
                            maxlength="30"
-                           name="lastName" type="text" th:field="*{lastName}" th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''">
-                    <div class="text-danger small" id="last_name_error" th:errors="*{lastName}"></div>
+                           name="lastName"
+                           th:classappend="${#fields.hasErrors('lastName')} ? 'is-invalid' : ''"
+                           th:field="*{lastName}"
+                           type="text">
+                    <div class="text-danger small" id="last_name_error"
+                         th:errors="*{lastName}"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_email">メールアドレス</label>
                     <input class="form-control form-control-small-font"
                            id="input_email"
                            maxlength="255"
-                           name="email" type="email" th:field="*{email}" th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''">
-                    <div class="text-danger small" id="email_error" th:errors="*{email}"></div>
+                           name="email"
+                           th:classappend="${#fields.hasErrors('email')} ? 'is-invalid' : ''"
+                           th:field="*{email}"
+                           type="email">
+                    <div class="text-danger small" id="email_error"
+                         th:errors="*{email}"></div>
                 </div>
                 <div class="form-group col-md-2">
                     <label for="input_password">パスワード</label>
                     <input class="form-control" id="input_password"
                            maxlength="16"
-                           name="password" type="text" th:field="*{password}" th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''">
+                           name="password"
+                           th:classappend="${#fields.hasErrors('password')} ? 'is-invalid' : ''"
+                           th:field="*{password}"
+                           type="text">
                     <small class="form-text text-muted">8～16文字</small>
-                    <div class="text-danger small" id="password_error" th:errors="*{password}"></div>
+                    <div class="text-danger small" id="password_error"
+                         th:errors="*{password}"></div>
                 </div>
                 <div class="form-group col-md-1 d-flex align-items-center">
-                    <input id="admin_flag" name="adminFlag" type="hidden" th:field="*{adminFlag}">
+                    <input id="admin_flag" name="adminFlag"
+                           th:field="*{adminFlag}"
+                           type="hidden">
                     <div class="form-check mt-4">
                         <input class="form-check-input" id="input_admin"
-                               type="checkbox" th:field="*{adminFlag}" th:value="1" th:classappend="${#fields.hasErrors('adminFlag')} ? 'is-invalid' : ''">
+                               th:classappend="${#fields.hasErrors('adminFlag')} ? 'is-invalid' : ''"
+                               th:field="*{adminFlag}"
+                               th:value="1"
+                               type="checkbox">
                         <label class="form-check-label"
                                for="input_admin">管理者</label>
-                        <div class="text-danger small" id="admin_flag_error" th:errors="*{adminFlag}"></div>
+                        <div class="text-danger small" id="admin_flag_error"
+                             th:errors="*{adminFlag}"></div>
                     </div>
                 </div>
             </div>
             <!-- 登録・削除ボタンを右寄せ -->
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <button class="btn bg_blue_info shadow height_3 btn-width-150"
-                        id="regist"
-                        type='button'>
-                    登録
+                <button class="btn bg_blue_info shadow height_3 btn-width-150" id="regist" type="button">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                    <span class="button-text">登録</span>
                 </button>
             </div>
         </form>
@@ -107,11 +130,17 @@
         <input id="employee_id" name="employeeId" type="hidden"/>
         <form id="delete_form" method="post" th:action="@{delete}">
             <div class="bg_white stamp_box margin_tp_2 table-responsive">
+                <!-- TODO ローディングオーバーレイの再構築 -->
+                <div class="loading-overlay" id="loading-overlay">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
                 <table class="table table-striped margin_tp_1"
                        id="employee-table">
                     <thead>
                     <tr>
-                        <th>削除</th>
+                        <th><input type="checkbox" id="select-all-employees" class="form-check-input checkbox-large"></th>
                         <th>ID</th>
                         <th>姓</th>
                         <th>名</th>
@@ -122,42 +151,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>
-                            <input class="selection-days-checkbox-1 checkbox-large"
-                                   id="all"
-                                   type="checkbox">
-                            全選択
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
-                    <tr th:each="employee : ${employeeList}">
-                        <td><input
-                                class="delete_check selection-days-checkbox-1 checkbox-large"
-                                type="checkbox">
-                        </td> <!--山本追記 2025/5/9-->
-                        <td class="id" th:text="${employee.id}"></td>
-                        <td class="first_name"
-                            th:text="${employee.first_name}"></td>
-                        <td class="last_name"
-                            th:text="${employee.last_name}"></td>
-                        <td class="email" th:text="${employee.email}"></td>
-                        <td class="password"
-                            th:text="${employee.password}"></td>
-                        <td><input
-                                class="admin_flag selection-days-checkbox-1 checkbox-large"
-                                disabled="disabled"
-                                th:checked="${employee.admin_flag == 1}"
-                                type="checkbox"></td>
-                        <!--山本追記 2025/5/9-->
-                        <td><i class="td_btn fa-solid fa-pencil"></i></td>
-                    </tr>
+                    <!-- DataTables will populate this section dynamically -->
                     </tbody>
                 </table>
             </div>
@@ -193,17 +187,6 @@
         type="text/javascript"></script>
 <!-- employee_manage.js -->
 <script th:src="@{/js/employee_manage.js}"></script>
-<script>
-    $(document).ready(function () {
-        $('#employee-table').DataTable({
-            "language": {
-                "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
-            },
-            "columnDefs": [
-                {"orderable": false, "targets": [0, 7]} // 削除チェックボックスと編集ボタンはソート不可に
-            ]
-        });
-    });
-</script>
+
 </body>
 </html>

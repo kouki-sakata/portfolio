@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
 
 /**
  * 従業員情報に関するビジネスロジックを担当するサービスクラス。
@@ -35,6 +37,37 @@ public class EmployeeService {
             LogHistoryRegistrationService logHistoryService) {
         this.employeeMapper = employeeMapper;
         this.logHistoryService = logHistoryService;
+    }
+
+    public DataTablesResponse getEmployeesForDataTables(DataTablesRequest request) {
+        String searchValue = request.getSearch().getValue();
+        String orderColumn = "id"; // Default sort column
+        String orderDir = "asc"; // Default sort direction
+
+        if (request.getOrder() != null && !request.getOrder().isEmpty()) {
+            int columnIndex = request.getOrder().get(0).getColumn();
+            orderColumn = request.getColumns().get(columnIndex).getData();
+            orderDir = request.getOrder().get(0).getDir();
+        }
+
+        List<Employee> employees = employeeMapper.findFilteredEmployees(
+                request.getStart(),
+                request.getLength(),
+                searchValue,
+                orderColumn,
+                orderDir
+        );
+
+        long totalRecords = employeeMapper.countTotalEmployees();
+        long filteredRecords = employeeMapper.countFilteredEmployees(searchValue);
+
+        DataTablesResponse response = new DataTablesResponse();
+        response.setDraw(request.getDraw());
+        response.setRecordsTotal(totalRecords);
+        response.setRecordsFiltered(filteredRecords);
+        response.setData(employees);
+
+        return response;
     }
 
     /**

@@ -32,6 +32,12 @@ public interface EmployeeMapper {
 	@Select("SELECT * FROM employee WHERE id = #{id}")
 	Optional<Employee> getById(@Param("id") Integer id);
 
+    List<Employee> findFilteredEmployees(@Param("start") int start, @Param("length") int length, @Param("searchValue") String searchValue, @Param("orderColumn") String orderColumn, @Param("orderDir") String orderDir);
+
+    long countFilteredEmployees(@Param("searchValue") String searchValue);
+
+    long countTotalEmployees();
+
 	// データを挿入する
 	int save(Employee employee);
 

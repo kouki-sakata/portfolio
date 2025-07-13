@@ -34,4 +34,36 @@
 		WHERE
 			id = #{id}
 	</update>
+
+    <select id="findFilteredEmployees" resultType="com.example.teamdev.entity.Employee">
+        SELECT id, first_name, last_name, email, password, admin_flag, update_date
+        FROM employee
+        <where>
+            <if test="searchValue != null and searchValue != ''">
+                first_name LIKE CONCAT('%', #{searchValue}, '%')
+                OR last_name LIKE CONCAT('%', #{searchValue}, '%')
+                OR email LIKE CONCAT('%', #{searchValue}, '%')
+            </if>
+        </where>
+        <if test="orderColumn != null and orderColumn != ''">
+            ORDER BY ${orderColumn} ${orderDir}
+        </if>
+        LIMIT #{start}, #{length}
+    </select>
+
+    <select id="countFilteredEmployees" resultType="long">
+        SELECT count(*)
+        FROM employee
+        <where>
+            <if test="searchValue != null and searchValue != ''">
+                first_name LIKE CONCAT('%', #{searchValue}, '%')
+                OR last_name LIKE CONCAT('%', #{searchValue}, '%')
+                OR email LIKE CONCAT('%', #{searchValue}, '%')
+            </if>
+        </where>
+    </select>
+
+    <select id="countTotalEmployees" resultType="long">
+        SELECT count(*) FROM employee
+    </select>
 </mapper>
