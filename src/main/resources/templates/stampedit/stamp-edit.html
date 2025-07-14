@@ -48,7 +48,7 @@
                 <div class="d-flex flex-column">
                     <label for="edit_select_year"
                            class="weight_600 mb-1">年</label>
-                    <select name="year" id="select_year" class="form-select">
+                    <select name="year" id="edit_select_year" class="form-select">
                         <option th:each="item : ${yearList}" th:value="${item}"
                                 th:text="${item}"
                                 th:selected="${item == selectYear}"></option>
@@ -58,7 +58,7 @@
                 <div class="d-flex flex-column">
                     <label for="edit_select_month"
                            class="weight_600 mb-1">月</label>
-                    <select name="month" id="select_month" class="form-select">
+                    <select name="month" id="edit_select_month" class="form-select">
                         <option th:each="item : ${monthList}" th:value="${item}"
                                 th:text="${item}"
                                 th:selected="${item == selectMonth}"></option>
@@ -111,11 +111,11 @@
                         <td class="day_of_week"
                             th:text="${stampHistory.day_of_week}"></td>
                         <td><input name="inTime" placeholder=""
-                                   class="form-control form-control-sm border"
+                                   class="form-control form-control-sm"
                                    type="time"
                                    th:value="${stampHistory.in_time}"></td>
                         <td><input name="outTime" placeholder=""
-                                   class="form-control form-control-sm border"
+                                   class="form-control form-control-sm"
                                    type="time"
                                    th:value="${stampHistory.out_time}"></td>
                         <td th:text="${stampHistory.update_employee_name}"></td>
@@ -128,7 +128,7 @@
                 <!-- 左側：メッセージ -->
                 <p class="mb-0 text-danger" id="message_area"
                    th:text="${result != null ? result : ''}"></p>
-                <!-- 右側：ボタンたち -->
+                <!-- 右側：ボタン -->
                 <div class="d-flex gap-2">
                     <form id="regist_form" th:action="@{/register}"
                           method="post" class="mb-0">

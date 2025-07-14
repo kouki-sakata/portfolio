@@ -327,10 +327,12 @@ input[type="text"] {
 
 /* ダークモード時の入力フィールド */
 [data-theme="dark"] input[type="text"],
-[data-theme="dark"] input[type="email"] {
-	border: 1px solid #444444;
-	background-color: #ffffff;
-	color: #333333;
+[data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="time"],
+.form-select {
+	border: 1px solid var(--input-border);
+	background-color: var(--input-bg);
+	color: var(--input-text);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
