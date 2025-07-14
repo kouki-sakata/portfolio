@@ -1,16 +1,9 @@
-/**
- * 2024/03/21 n.yasunari 新規作成
- * 2025/06/29 Gemini リアルタイムバリデーション追加
- * 2025/06/29 Gemini ローディングインジケーター追加
- * 2025/07/12 Gemini DataTables対応リファクタリング
- */
 $(document).ready(function () {
     let loadingStartTime;
     const minimumLoadingTime = 500; // 最小表示時間（ミリ秒）
 
     // DataTablesの初期化
     const employeeTable = $('#employee-table').DataTable({
-        "processing": true,
         "serverSide": true,
         "ajax": {
             "url": "/employeemanage/data",
@@ -130,7 +123,6 @@ $(document).ready(function () {
 
 
     // --- フォームバリデーション ---
-
     function displayError(fieldId, message) {
         $("#" + fieldId + "_error").text(message).show();
         $("#" + fieldId).addClass("is-invalid");

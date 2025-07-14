@@ -108,10 +108,12 @@
                     </div>
                 </div>
             </div>
-            <!-- 登録・削除ボタンを右寄せ -->
             <div class="d-flex justify-content-end gap-2 mt-3">
-                <button class="btn bg_blue_info shadow height_3 btn-width-150" id="regist" type="button">
-                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                <button class="btn bg_blue_info shadow height_3 btn-width-150"
+                        id="regist" type="button">
+                    <span aria-hidden="true"
+                          class="spinner-border spinner-border-sm d-none"
+                          role="status"></span>
                     <span class="button-text">登録</span>
                 </button>
             </div>
@@ -140,7 +142,9 @@
                        id="employee-table">
                     <thead>
                     <tr>
-                        <th><input type="checkbox" id="select-all-employees" class="form-check-input checkbox-large"></th>
+                        <th><input class="form-check-input checkbox-large"
+                                   id="select-all-employees"
+                                   type="checkbox"></th>
                         <th>ID</th>
                         <th>姓</th>
                         <th>名</th>
@@ -187,6 +191,5 @@
         type="text/javascript"></script>
 <!-- employee_manage.js -->
 <script th:src="@{/js/employee_manage.js}"></script>
-
 </body>
 </html>
