@@ -29,26 +29,24 @@
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
     <section>
-        <div class="layout">
-            <div class="weight_600">
-                氏名
-            </div>
-            <h2 th:text="${employeeName}"></h2>
-            <form class="year-month" id="search_form" method="post"
+        <div class="d-flex align-items-center p-2 gap-3">
+            <div class="weight_600">氏名</div>
+            <h2 class="mb-0" th:text="${employeeName}">従業員名</h2>
+            <form class="d-flex align-items-center gap-2" id="search_form"
+                  method="post"
                   th:action="@{search}">
-                <div class="weight_600">
-                    年
-                </div>
-                <select class="form-select" id="select_year" name="year">
+                <label class="form-label mb-0 ms-3" for="select_year">年</label>
+                <select class="form-select" id="select_year" name="year"
+                        style="width: auto;">
                     <option th:each="item : ${yearList}"
                             th:selected="${item == selectYear}"
                             th:text="${item}"
                             th:value="${item}"></option>
                 </select>
-                <div class="weight_600">
-                    月
-                </div>
-                <select class="form-select" id="select_month" name="month">
+                <label class="form-label mb-0 ms-2"
+                       for="select_month">月</label>
+                <select class="form-select" id="select_month" name="month"
+                        style="width: auto;">
                     <option th:each="item : ${monthList}"
                             th:selected="${item == selectMonth}"
                             th:text="${item}"
@@ -56,7 +54,8 @@
                 </select>
             </form>
         </div>
-        <div class="bg_white stamp_box margin_tp_2 table-responsive" id="stamp_table">
+        <div class="bg_white stamp_box margin_tp_2 table-responsive"
+             id="stamp_table">
             <table class="table table-striped">
                 <thead>
                 <tr>
