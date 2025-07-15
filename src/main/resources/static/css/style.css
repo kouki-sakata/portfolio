@@ -428,12 +428,6 @@ input[type="time"] {
 	color: var(--text-color);
 }
 
-.checkbox-large {
-  transform: scale(1.5); /* サイズを1.5倍に拡大 */
-  -webkit-transform: scale(1.5); /* Safari対応 */
-  margin: 5px; /* 少し余白を持たせる */
-}
-
 /* テーブル関連 */
 .th_cell {
 	width: 15rem;
@@ -729,36 +723,10 @@ input:checked+.toggle-slider:before {
 	display: block;
 }
 
-/* アイコン用の汎用スタイル */
-.icon {
-  display: inline-block;
-  margin-left: 0;
-}
-
-/* 三角形アイコンのスタイル */
-.triangle-icon {
-  width: 0;
-  height: 0;
-  border-left: 6px solid transparent;
-  border-right: 6px solid transparent;
-  border-top: 6px solid #333;
-  position: relative;
-  display: inline-block;
-  top: -5px;
-  left: -2px;
-}
-
-[data-theme="dark"] .triangle-icon {
-	border-top: 6px solid rgb(255, 255, 255);
-}
-
-/* レスポンシブ対応 (追加) */
+/* レスポンシブ: タブレット */
 @media (max-width: 992px) {
-
-	/* タブレット以下のデバイス向け */
 	html {
 		font-size: calc(10 / 768 * 100vw);
-		/* タブレットサイズでのフォントサイズ調整 */
 	}
 
 	section {
@@ -813,9 +781,8 @@ input:checked+.toggle-slider:before {
 	    top: auto;
 	}
 }
-
+/* レスポンシブ: スマホ */
 @media (max-width: 768px) {
-
 	/* ハンバーガーメニュー表示 */
 	.hamburger_btn {
 		display: flex;
@@ -842,7 +809,7 @@ input:checked+.toggle-slider:before {
 		left: 0;
 	}
 
-	/* ハンバーガーメニュー開いた時のボタン */
+	/* ハンバーガーメニューが開いた時のボタン */
 	.hamburger_btn.open span:nth-child(1) {
 		transform: rotate(45deg) translate(5px, 5px);
 	}
@@ -1045,4 +1012,15 @@ input:checked+.toggle-slider:before {
 
 .dataTables_processing {
     z-index: 1050; /* Bootstrapのモーダルより手前に表示 */
+}
+
+.checkbox-large {
+  transform: scale(1.3);
+  margin: 5px;
+}
+
+/* チェックボックスのダークモード対応 */
+[data-theme="dark"] .form-check-input {
+    background-color: var(--input-bg);
+    border-color: var(--input-border);
 }

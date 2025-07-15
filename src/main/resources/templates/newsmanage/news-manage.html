@@ -86,7 +86,10 @@
                 <table class="table table-striped margin_tp_1">
                     <thead>
                     <tr>
-                        <th>削除</th>
+                        <th><input
+                                class="selection-days-checkbox-1 form-check-input checkbox-large"
+                                id="all"
+                                type="checkbox"></th>
                         <th>日付</th>
                         <th>内容</th>
                         <th>公開</th>
@@ -94,29 +97,17 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr>
-                        <td>
-                            <input class="selection-days-checkbox-1 checkbox-large"
-                                   id="all"
-                                   type="checkbox">
-                            全選択
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                    </tr>
                     <tr class="tbody_tr" th:each="news : ${newsList}">
                         <input class="id" th:value="${news.id}" type="hidden"/>
                         <input class="submit_release_flag" type="hidden"/>
                         <td>
-                            <input class="delete_check selection-days-checkbox-1 checkbox-large"
+                            <input class="delete_check selection-days-checkbox-1 form-check-input checkbox-large"
                                    type="checkbox">
                         </td>
                         <td class="date" th:text="${news.news_date}"></td>
                         <td class="content" th:text="${news.content}"></td>
                         <td>
-                            <input class="release_flag selection-days-checkbox-1 checkbox-large"
+                            <input class="release_flag selection-days-checkbox-1 form-check-input checkbox-large"
                                    th:checked="${news.release_flag == true}"
                                    type="checkbox">
                         </td>

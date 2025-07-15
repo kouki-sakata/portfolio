@@ -82,7 +82,7 @@
                     <tr>
                         <th style="width: 100px;">
                             <label for="check-all">
-                                <input class="checkbox-large" id="check-all"
+                                <input class="form-check-input checkbox-large" id="check-all"
                                        onclick="toggleAll(this)" title="全選択"
                                        type="checkbox">
                                 <i class="icon triangle-icon"></i>
@@ -97,9 +97,9 @@
                     <tbody id="no_admin">
                     <tr th:each="employee : ${employeeList}">
                         <td><input
-                                class="selection-days-checkbox-1 checkbox-large"
+                                class="selection-days-checkbox-1 form-check-input checkbox-large"
                                 type="checkbox">
-                        </td> <!--山本追記 2025/5/9-->
+                        </td>
                         <td class="id" th:text="${employee.id}"></td>
                         <td th:text="${employee.first_name + ' ' + employee.last_name}"></td>
                         <td class="email" th:text="${employee.email}"></td>
@@ -109,23 +109,23 @@
                     <tbody id="admin" style="display:none;">
                     <tr th:each="admin : ${adminList}">
                         <td><input
-                                class="selection-days-checkbox-1 checkbox-large"
+                                class="selection-days-checkbox-1 form-check-input checkbox-large"
                                 type="checkbox">
-                        </td> <!--山本追記 2025/5/9-->
+                        </td>
                         <td class="id" th:text="${admin.id}"></td>
                         <td th:text="${admin.first_name + ' ' + admin.last_name}"></td>
                         <td class="email" th:text="${admin.email}"></td>
                     </tr>
                     </tbody>
                 </table>
-            </div>
-            <div class="text_white2">
                 <button class="btn bg_blue_info shadow height_3 w-100 mt-4 mb-0"
                         id="output"
                         type="submit">
                     出力
                 </button>
             </div>
+            </div>
+            <div class="text_white2">
             <p class="mt-4 text-danger" id="message_area"
                th:text="${result}"></p>
         </form>
