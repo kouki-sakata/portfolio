@@ -18,8 +18,10 @@
     <link rel="stylesheet" th:href="@{/css/reset.css}">
     <link rel="stylesheet" th:href="@{/css/style.css}">
     <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"
+          rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/material_blue.css"
+          rel="stylesheet">
 </head>
 <body>
 <!-- 共通ヘッダー -->
@@ -45,6 +47,7 @@
                 <div class="col-12 col-md-2">
                     <label for="input_date">日付</label>
                     <input class="form-control" id="input_date" name="newsDate"
+                           placeholder="YYYY-MM-DD"
                            type="date">
                 </div>
                 <div class="col-12 col-md-10">
@@ -123,7 +126,8 @@
                 </table>
             </div>
             <div class="button-row text_white d-flex gap-3 mt-4 mb-0">
-                <button class="btn bg_red_info shadow height_3 btn-width-150" id="delete"
+                <button class="btn bg_red_info shadow height_3 btn-width-150"
+                        id="delete"
                         type="button">削除
                 </button>
                 <button class="btn bg_blue_info shadow height_3 ms-auto btn-width-150"

@@ -74,6 +74,11 @@
 	--bg-white-area: #1e1e1e;
 }
 
+[data-theme="dark"] ::placeholder {
+    color: #ccc;
+    opacity: .3;
+}
+
 html {
 	font-size: calc(12 / 1280 * 100vw);
 	/* 画面幅1280pxで12px*/
@@ -98,23 +103,8 @@ section {
 	text-align: end;
 }
 
-#input_content {
-  height: 50px;
-  width: 100%;
-  max-width: 100%;
-  font-size: 1.2rem
-}
-
-#input_date {
-	height: 50px;
-	width: 100%;
-	max-width: 100%;
-  font-size: 1.2rem
-}
-
 .text_white2 {
 	position: relative;
-	/* 必要に応じて */
 	transform: translateX(-20px);
 	top: -20px;
 }
@@ -298,23 +288,11 @@ input.form-control {
   box-sizing: border-box;
 }
 
-input[type="email"],
-input[type="password"] {
-	display: block;
-	padding: 0.5rem 0.75rem;
-	font-size: 1.2rem;
-	font-weight: 400;
-	line-height: 2rem;
-	color: var(--input-text);
-	background-color: var(--input-bg);
-	border: 1px solid var(--input-border);
-	background-clip: padding-box;
-	appearance: none;
-	transition: box-shadow .15s ease, border-color .15s ease;
-}
-
 /* 入力フィールド共通スタイル */
-input[type="text"] {
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="time"] {
 	background-color: var(--input-bg);
 	color: var(--input-text);
 	border: 1px solid var(--input-border);
@@ -328,17 +306,18 @@ input[type="text"] {
 /* ダークモード時の入力フィールド */
 [data-theme="dark"] input[type="text"],
 [data-theme="dark"] input[type="email"],
+[data-theme="dark"] input[type="password"],
 [data-theme="dark"] input[type="time"],
-.form-select {
+.form-select,
+ select {
 	border: 1px solid var(--input-border);
 	background-color: var(--input-bg);
 	color: var(--input-text);
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* ダークモード時の入力フィールド:disabled */
 [data-theme="dark"] input[type="text"]:disabled {
-	background-color: #252525;
+	background-color: #3a3a3a;
 	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 	border: 1px solid #3a3a3a;
 	box-shadow: none;
@@ -346,7 +325,8 @@ input[type="text"] {
 
 [data-theme="dark"] input[type="text"]:focus,
 [data-theme="dark"] input[type="email"]:focus,
-[data-theme="dark"] input[type="password"]:focus {
+[data-theme="dark"] input[type="password"]:focus,
+[data-theme="dark"] input[type="time"]:focus {
 	border-color: var(--accent-blue);
 	box-shadow: 0 0 0 0.2rem rgba(61, 168, 245, 0.25);
 }
@@ -402,7 +382,7 @@ input[type="text"] {
 	padding-left: 1rem;
 	background-color: var(--bg-secondary);
 }
-/*y.morita 追記*/
+
 .home-message-success {
   color: rgb(255, 0, 0);
   font-size: 1.2rem;
@@ -447,7 +427,7 @@ input[type="text"] {
 	margin-left: 1rem;
 	color: var(--text-color);
 }
-/* チェックボックスを大きくする　山本追記（2025/5/9） */
+
 .checkbox-large {
   transform: scale(1.5); /* サイズを1.5倍に拡大 */
   -webkit-transform: scale(1.5); /* Safari対応 */
@@ -817,10 +797,6 @@ input:checked+.toggle-slider:before {
         align-items: flex-end;
 	}
 
-	#input_content {
-	    width: 100%;
-	}
-
 	.space {
 		text-align: initial;
 		transform: none;
@@ -991,7 +967,6 @@ input:checked+.toggle-slider:before {
 	font-weight: bold;
 }
 
-/* 5/12 ヘッダーのロゴ、テキストに関する追記　 */
 .logo-title {
   display: flex;
   align-items: center;  /* 垂直方向の中央揃え */
@@ -1013,7 +988,6 @@ input:checked+.toggle-slider:before {
 .form-control-small-font {
     font-size: 14px;
     line-height: 1.42857143;
-    /* box-sizing: border-box; は .form-control で継承される想定 */
 }
 
 .btn-width-150 {
@@ -1025,7 +999,7 @@ input:checked+.toggle-slider:before {
     border-bottom: none;
 }
 
-/* 2024/07/13 ローディングオーバーレイの再構築 */
+/* ローディングオーバーレイ */
 #loading-overlay {
     position: fixed;
     top: 0;
