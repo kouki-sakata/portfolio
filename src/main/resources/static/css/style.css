@@ -778,7 +778,7 @@ input:checked + .toggle-slider:before {
   z-index: 9999;
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
+  transition: opacity 0.1s ease, visibility 0.1s ease;
 }
 #loading-overlay.show {
   opacity: 1;
@@ -816,4 +816,12 @@ input:checked + .toggle-slider:before {
 [data-theme="dark"] .form-check-input {
   background-color: var(--input-bg);
   border-color: var(--input-border);
+}
+
+/* トランジションを一時的に無効にするためのクラス */
+.no-transition, .no-transition * {
+  -webkit-transition: none !important;
+  -moz-transition: none !important;
+  -o-transition: none !important;
+  transition: none !important;
 }
