@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS `employee`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `employee` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
-  `first_name` varchar(30) NOT NULL COMMENT '姓',
-  `last_name` varchar(30) NOT NULL COMMENT '名',
+  `first_name` varchar(30) CHARACTER SET utf8mb4 NOT NULL COMMENT '姓',
+  `last_name` varchar(30) CHARACTER SET utf8mb4 NOT NULL COMMENT '名',
   `email` varchar(255) NOT NULL COMMENT 'メールアドレス',
   `password` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'パスワード',
   `admin_flag` int NOT NULL COMMENT '管理者フラグ',
@@ -63,7 +63,7 @@ DROP TABLE IF EXISTS `news`;
 CREATE TABLE `news` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT 'ID',
   `news_date` varchar(10) DEFAULT NULL COMMENT 'お知らせ日付',
-  `content` varchar(75) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '内容',
+  `content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL COMMENT '内容',
   `release_flag` tinyint(1) DEFAULT NULL COMMENT '公開フラグ',
   `update_date` timestamp NULL DEFAULT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`)

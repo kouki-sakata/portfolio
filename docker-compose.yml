@@ -1,0 +1,37 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/teamdev_db?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+    volumes:
+      - app_data:/app
+
+  db:
+    image: mysql:8.0
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_DATABASE: teamdev_db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      LANG: C.UTF-8
+      LC_ALL: C.UTF-8
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./src/main/resources/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+      - ./src/main/resources/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql
+
+volumes:
+  app_data:
+  db_data:
