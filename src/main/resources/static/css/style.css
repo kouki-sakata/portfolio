@@ -66,6 +66,14 @@
   opacity: 0.3;
 }
 
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] input:-webkit-autofill:hover,
+[data-theme="dark"] input:-webkit-autofill:focus,
+[data-theme="dark"] input:-webkit-autofill:active {
+    box-shadow: 0 0 0 30px #212529 inset !important;
+    -webkit-text-fill-color: #fff !important;
+}
+
 /* =================================== */
 /* 基本スタイル (モバイルファースト) */
 /* =================================== */
