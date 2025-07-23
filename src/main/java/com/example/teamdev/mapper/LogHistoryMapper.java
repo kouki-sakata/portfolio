@@ -22,7 +22,8 @@ public interface LogHistoryMapper {
 	);
 
 	// 履歴記録テーブルの更新日時から存在する年をすべて昇順で取得する
-	@Select("SELECT DISTINCT  YEAR(update_date) AS year FROM log_history ORDER BY year ASC")
+	// パフォーマンス最適化: インデックスを使用したDISTINCT最適化
+	@Select("SELECT DISTINCT YEAR(update_date) AS year FROM log_history WHERE update_date IS NOT NULL ORDER BY year ASC")
 	List<String> getLogHistoryYearOrderByYearAsc();
 
 	// 打刻記録テーブルにレコードを挿入する

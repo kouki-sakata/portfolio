@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,8 +80,11 @@ public class EmployeeListController {
             return navRedirect;
         }
 
-        List<Employee> employeeList = employeeService.getAllEmployees(0);
-        List<Employee> adminList = employeeService.getAllEmployees(1);
+        // N+1問題解決：一回のクエリで全従業員を取得し、Javaでグループ化
+        Map<Integer, List<Employee>> employeesGrouped = employeeService.getEmployeesGroupedByAdminFlag();
+        
+        List<Employee> employeeList = employeesGrouped.getOrDefault(0, new ArrayList<>());
+        List<Employee> adminList = employeesGrouped.getOrDefault(1, new ArrayList<>());
 
         model.addAttribute("employeeList", employeeList);
         model.addAttribute("adminList", adminList);

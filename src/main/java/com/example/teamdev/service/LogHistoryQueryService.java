@@ -16,6 +16,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 /**
  * 履歴確認
  * 画面情報取得処理
+ * パフォーマンス最適化: ObjectMapperの再利用とストリーム処理
  */
 @Service
 public class LogHistoryQueryService{
@@ -23,20 +24,21 @@ public class LogHistoryQueryService{
 	@Autowired
 	LogHistoryMapper mapper;
 
+	// ObjectMapperのインスタンスを再利用（スレッドセーフ）
+	private final ObjectMapper objectMapper = new ObjectMapper();
+
 	public List<Map<String,Object>> execute(String year, String month) {
-
-		List<Map<String,Object>> logMapList = new ArrayList<Map<String,Object>>();
-		Map<String, Object> logMap = new HashMap<String, Object>();
-
 		//更新日時がパラメータ年月と一致するレコードを更新日時降順で取得
-		List<LogHistoryDisplay> logList =  mapper.getLogHistoryByYearMonthOrderByUpdateDateDesc(year, month);
-		for (LogHistoryDisplay log : logList) {
-			//mapに詰め替え
-			logMap = new ObjectMapper().convertValue(log, Map.class);
-			//Listに追加
-			logMapList.add(logMap);
-        }
-		return logMapList;
+		List<LogHistoryDisplay> logList = mapper.getLogHistoryByYearMonthOrderByUpdateDateDesc(year, month);
+		
+		// パフォーマンス最適化: ストリーム処理とObjectMapperの再利用
+		return logList.stream()
+				.map(log -> {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> result = objectMapper.convertValue(log, Map.class);
+					return result;
+				})
+				.toList();
 	}
 
 	//履歴記録が存在するすべての年リスト取得(＋システム日付の属する年)

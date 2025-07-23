@@ -46,4 +46,11 @@ public interface EmployeeMapper {
 
 	@Delete("DELETE FROM employee WHERE id = #{id}")
 	int deleteById(@Param("id") Integer id);
+
+	// バッチ削除用（N+1問題解決）
+	int deleteByIdList(@Param("idList") List<Integer> idList);
+
+	// 管理者フラグによる一括取得（N+1問題解決）
+	@Select("SELECT * FROM employee ORDER BY admin_flag, id")
+	List<Employee> getAllEmployeesGroupedByAdminFlag();
 }

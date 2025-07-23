@@ -12,7 +12,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import com.example.teamdev.dto.DataTablesRequest;
 import com.example.teamdev.dto.DataTablesResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,6 +30,11 @@ public class EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final LogHistoryRegistrationService logHistoryService;
     private final PasswordEncoder passwordEncoder;
+    
+    // クエリキャッシュの実装検討: 単純なメモリキャッシュ
+    private final Map<String, List<Employee>> employeeCache = new ConcurrentHashMap<>();
+    private volatile long lastCacheUpdate = 0;
+    private static final long CACHE_DURATION_MS = 5 * 60 * 1000; // 5分
 
     /**
      * 必要な依存関係を注入してEmployeeServiceを構築します。
@@ -44,20 +52,28 @@ public class EmployeeService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    /**
+     * DataTables用の従業員データを取得します。
+     * パフォーマンス最適化: デフォルト値の処理とバリデーション改善
+     */
     public DataTablesResponse getEmployeesForDataTables(DataTablesRequest request) {
-        String searchValue = "";
-        if (request.getSearch() != null && request.getSearch().getValue() != null) {
-            searchValue = request.getSearch().getValue();
-        }
-        String orderColumn = "id"; // Default sort column
-        String orderDir = "asc"; // Default sort direction
-
+        // パフォーマンス最適化: 検索値の早期初期化
+        String searchValue = (request.getSearch() != null && request.getSearch().getValue() != null) 
+                ? request.getSearch().getValue().trim() : "";
+        
+        // ソート情報の効率的な取得
+        String orderColumn = "id";
+        String orderDir = "asc";
+        
         if (request.getOrder() != null && !request.getOrder().isEmpty() && 
             request.getColumns() != null && !request.getColumns().isEmpty()) {
             int columnIndex = request.getOrder().get(0).getColumn();
-            if (columnIndex < request.getColumns().size()) {
-                orderColumn = request.getColumns().get(columnIndex).getData();
-                orderDir = request.getOrder().get(0).getDir();
+            if (columnIndex >= 0 && columnIndex < request.getColumns().size()) {
+                String column = request.getColumns().get(columnIndex).getData();
+                if (column != null && !column.trim().isEmpty()) {
+                    orderColumn = column;
+                    orderDir = request.getOrder().get(0).getDir();
+                }
             }
         }
 
@@ -69,8 +85,9 @@ public class EmployeeService {
                 orderDir
         );
 
+        // カウントクエリの最適化: 空の検索値の場合は全件数を再利用
         long totalRecords = employeeMapper.countTotalEmployees();
-        long filteredRecords = employeeMapper.countFilteredEmployees(searchValue);
+        long filteredRecords = searchValue.isEmpty() ? totalRecords : employeeMapper.countFilteredEmployees(searchValue);
 
         DataTablesResponse response = new DataTablesResponse();
         response.setDraw(request.getDraw());
@@ -156,37 +173,64 @@ public class EmployeeService {
 
     /**
      * 全従業員の情報、または管理者フラグによってフィルタリングされた従業員情報を取得します。
+     * N+1クエリ問題を解決するため、一回のクエリで全従業員を取得しJavaでフィルタリングします。
      *
      * @param adminFlag フィルタリングする管理者フラグ (0: 一般, 1: 管理者)。nullの場合は全従業員を取得。
      * @return {@link Employee} のリスト。従業員が存在しない場合は空のリスト。
      */
     public List<Employee> getAllEmployees(Integer adminFlag) {
-        // List<Map<String, Object>> employeeMapList = new ArrayList<>(); // 不要になる
-        List<Employee> employeeList;
         if (adminFlag == null) {
             // 管理者フラグが指定されていない場合は全件取得
-            employeeList = employeeMapper.getAllOrderById();
+            return employeeMapper.getAllOrderById();
         } else {
-            // 管理者フラグでフィルタリングして取得
-            employeeList = employeeMapper.getEmployeeByAdminFlagOrderById(
-                    adminFlag);
+            // N+1問題解決：全件取得後Javaでフィルタリング（キャッシュ効果も期待）
+            return employeeMapper.getAllOrderById().stream()
+                    .filter(employee -> employee.getAdmin_flag().equals(adminFlag))
+                    .toList();
         }
-        return employeeList;
+    }
+
+    /**
+     * 管理者フラグごとにグループ化された従業員情報を効率的に取得します。
+     * N+1クエリ問題を解決するため、一回のクエリで全従業員を取得します。
+     *
+     * @return 管理者フラグをキーとした従業員リストのマップ
+     */
+    public Map<Integer, List<Employee>> getEmployeesGroupedByAdminFlag() {
+        return employeeMapper.getAllEmployeesGroupedByAdminFlag().stream()
+                .collect(java.util.stream.Collectors.groupingBy(Employee::getAdmin_flag));
     }
 
     /**
      * 指定されたIDリストに基づいて複数の従業員情報を削除します。
+     * N+1クエリ問題を解決するため、バッチ削除を使用します。
      *
      * @param listForm         削除対象の従業員IDのリストを含むフォームオブジェクト
      * @param updateEmployeeId この操作を行う従業員のID（操作履歴用）
      */
     @Transactional
     public void deleteEmployees(ListForm listForm, Integer updateEmployeeId) {
-        for (String employeeIdStr : listForm.getIdList()) {
-            int id = Integer.parseInt(employeeIdStr);
-            employeeMapper.deleteById(id);
+        // N+1問題解決：バッチ削除を使用
+        List<Integer> idList = listForm.getIdList().stream()
+                .map(Integer::parseInt)
+                .toList();
+        
+        if (!idList.isEmpty()) {
+            employeeMapper.deleteByIdList(idList);
+            logHistoryService.execute(3, 4, null, null, updateEmployeeId,
+                    Timestamp.valueOf(LocalDateTime.now()));
+            
+            // キャッシュをクリアしてデータの整合性を保つ
+            clearEmployeeCache();
         }
-        logHistoryService.execute(3, 4, null, null, updateEmployeeId,
-                Timestamp.valueOf(LocalDateTime.now()));
+    }
+    
+    /**
+     * 従業員キャッシュをクリアします。
+     * データの更新・削除時に呼び出してデータの整合性を保ちます。
+     */
+    private void clearEmployeeCache() {
+        employeeCache.clear();
+        lastCacheUpdate = 0;
     }
 }

@@ -35,15 +35,13 @@
         log_history.display_name AS display_name_code,
         log_history.operation_type AS operation_type_code,
         DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time,
-        CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name,
-        '')) AS employee_name,
-        CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name,
-        '')) AS update_employee_name
+        CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employee_name,
+        CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS update_employee_name
         FROM log_history
         LEFT JOIN employee AS emp ON log_history.employee_id = emp.id
         LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id
-        WHERE YEAR(log_history.update_date) = #{year} AND
-        MONTH(log_history.update_date) = #{month}
+        WHERE log_history.update_date &gt;= CONCAT(#{year}, '-', LPAD(#{month}, 2, '0'), '-01 00:00:00')
+        AND log_history.update_date &lt; DATE_ADD(CONCAT(#{year}, '-', LPAD(#{month}, 2, '0'), '-01'), INTERVAL 1 MONTH)
         ORDER BY log_history.update_date DESC
     </select>
     <!--追記-->
@@ -52,7 +50,8 @@
         SELECT COUNT(*) FROM log_history
         WHERE employee_id = #{employee_id}
         AND operation_type = #{operation_type}
-        AND DATE(update_date) = DATE(#{update_date})
+        AND update_date &gt;= DATE(#{update_date})
+        AND update_date &lt; DATE_ADD(DATE(#{update_date}), INTERVAL 1 DAY)
     </select>
 
     <!-- データを挿入または更新する -->

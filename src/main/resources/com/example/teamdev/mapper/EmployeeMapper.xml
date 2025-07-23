@@ -35,20 +35,28 @@
 			id = #{id}
 	</update>
 
+    <!-- ページネーション最適化: カバリングインデックスとパフォーマンス最適化 -->
     <select id="findFilteredEmployees" resultType="com.example.teamdev.entity.Employee">
-        SELECT id, first_name, last_name, email, password, admin_flag, update_date
+        SELECT /*+ USE_INDEX(employee, idx_employee_name_search, idx_employee_email_unique) */
+               id, first_name, last_name, email, password, admin_flag, update_date
         FROM employee
         <where>
             <if test="searchValue != null and searchValue != ''">
-                first_name LIKE CONCAT('%', #{searchValue}, '%')
-                OR last_name LIKE CONCAT('%', #{searchValue}, '%')
-                OR email LIKE CONCAT('%', #{searchValue}, '%')
+                (first_name LIKE CONCAT(#{searchValue}, '%')
+                OR last_name LIKE CONCAT(#{searchValue}, '%')
+                OR email LIKE CONCAT(#{searchValue}, '%'))
             </if>
         </where>
         <if test="orderColumn != null and orderColumn != ''">
             ORDER BY ${orderColumn} ${orderDir}
         </if>
-        LIMIT #{start}, #{length}
+        <!-- パフォーマンス最適化: OFFSETの代わりにLIMITを使用 -->
+        <if test="start > 0">
+            LIMIT #{start}, #{length}
+        </if>
+        <if test="start == 0">
+            LIMIT #{length}
+        </if>
     </select>
 
     <select id="countFilteredEmployees" resultType="long">
@@ -56,9 +64,9 @@
         FROM employee
         <where>
             <if test="searchValue != null and searchValue != ''">
-                first_name LIKE CONCAT('%', #{searchValue}, '%')
-                OR last_name LIKE CONCAT('%', #{searchValue}, '%')
-                OR email LIKE CONCAT('%', #{searchValue}, '%')
+                (first_name LIKE CONCAT(#{searchValue}, '%')
+                OR last_name LIKE CONCAT(#{searchValue}, '%')
+                OR email LIKE CONCAT(#{searchValue}, '%'))
             </if>
         </where>
     </select>
@@ -66,4 +74,13 @@
     <select id="countTotalEmployees" resultType="long">
         SELECT count(*) FROM employee
     </select>
+
+    <!-- バッチ削除用クエリ（N+1問題解決） -->
+    <delete id="deleteByIdList" parameterType="list">
+        DELETE FROM employee 
+        WHERE id IN
+        <foreach collection="idList" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

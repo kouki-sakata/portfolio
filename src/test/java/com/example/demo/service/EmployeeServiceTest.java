@@ -188,36 +188,35 @@ public class EmployeeServiceTest {
 
     @Test
     void getAllEmployees_shouldReturnFilteredEmployees_whenAdminFlagIsProvided() {
-        // Arrange
+        // Arrange - N+1最適化後は全件取得してフィルタリング
         Integer adminFlag = 1;
+        Employee empGeneral = new Employee(); empGeneral.setId(1); empGeneral.setFirst_name("General"); empGeneral.setAdmin_flag(0);
         Employee empAdmin = new Employee(); empAdmin.setId(3); empAdmin.setFirst_name("Admin"); empAdmin.setAdmin_flag(1);
-        List<Employee> expectedAdminEmployees = Arrays.asList(empAdmin);
-        when(employeeMapper.getEmployeeByAdminFlagOrderById(adminFlag)).thenReturn(expectedAdminEmployees);
+        List<Employee> allEmployees = Arrays.asList(empGeneral, empAdmin);
+        when(employeeMapper.getAllOrderById()).thenReturn(allEmployees);
 
         // Act
-        List<Employee> actualAdminEmployees = employeeService.getAllEmployees(adminFlag); // 戻り値の型を List<Employee> に変更
+        List<Employee> actualAdminEmployees = employeeService.getAllEmployees(adminFlag);
 
         // Assert
         assertEquals(1, actualAdminEmployees.size());
-        assertSame(expectedAdminEmployees, actualAdminEmployees);
         assertEquals("Admin", actualAdminEmployees.get(0).getFirst_name());
         assertEquals(1, actualAdminEmployees.get(0).getAdmin_flag());
-        verify(employeeMapper, never()).getAllOrderById();
-        verify(employeeMapper, times(1)).getEmployeeByAdminFlagOrderById(adminFlag);
+        verify(employeeMapper, times(1)).getAllOrderById(); // N+1最適化で全件取得を使用
+        verify(employeeMapper, never()).getEmployeeByAdminFlagOrderById(anyInt());
     }
 
     @Test
     void getAllEmployees_shouldReturnEmptyList_whenNoEmployeesMatch() {
         // Arrange
         when(employeeMapper.getAllOrderById()).thenReturn(new ArrayList<>());
-        when(employeeMapper.getEmployeeByAdminFlagOrderById(anyInt())).thenReturn(new ArrayList<>());
 
         // Act & Assert for adminFlag = null
-        List<Employee> resultNullFlag = employeeService.getAllEmployees(null); // 戻り値の型を List<Employee> に変更
+        List<Employee> resultNullFlag = employeeService.getAllEmployees(null);
         assertTrue(resultNullFlag.isEmpty());
 
         // Act & Assert for adminFlag provided
-        List<Employee> resultWithFlag = employeeService.getAllEmployees(0); // 戻り値の型を List<Employee> に変更
+        List<Employee> resultWithFlag = employeeService.getAllEmployees(0);
         assertTrue(resultWithFlag.isEmpty());
     }
 
@@ -228,9 +227,9 @@ public class EmployeeServiceTest {
         form.setIdList(Arrays.asList("1", "2", "3"));
         Integer updaterId = 100;
         employeeService.deleteEmployees(form, updaterId);
-        verify(employeeMapper, times(1)).deleteById(1);
-        verify(employeeMapper, times(1)).deleteById(2);
-        verify(employeeMapper, times(1)).deleteById(3);
+        // N+1最適化でバッチ削除を使用
+        verify(employeeMapper, times(1)).deleteByIdList(Arrays.asList(1, 2, 3));
+        verify(employeeMapper, never()).deleteById(anyInt());
         verify(logHistoryService, times(1)).execute(eq(3), eq(4), any(), any(), eq(updaterId), any());
     }
 
@@ -241,6 +240,7 @@ public class EmployeeServiceTest {
         Integer updaterId = 100;
         employeeService.deleteEmployees(form, updaterId);
         verify(employeeMapper, never()).deleteById(anyInt());
-        verify(logHistoryService, times(1)).execute(eq(3), eq(4), any(), any(), eq(updaterId), any());
+        verify(employeeMapper, never()).deleteByIdList(any());
+        verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 }
