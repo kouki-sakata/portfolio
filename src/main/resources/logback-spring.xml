@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- プロファイル定義 -->
+    <springProfile name="!prod">
+        <property name="LOG_LEVEL" value="${LOG_LEVEL_ROOT:-DEBUG}"/>
+    </springProfile>
+    
+    <springProfile name="prod">
+        <property name="LOG_LEVEL" value="${LOG_LEVEL_ROOT:-INFO}"/>
+    </springProfile>
+
+    <!-- コンソール出力設定 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{36}) - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!-- ロガー設定 -->
+    
+    <!-- アプリケーションパッケージ -->
+    <logger name="com.example.teamdev" level="${LOG_LEVEL}" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- セキュリティ関連 -->
+    <logger name="com.example.teamdev.service.AuthenticationService" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <logger name="com.example.teamdev.config.SecurityConfig" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- パフォーマンス関連 -->
+    <logger name="com.example.teamdev.service.StampService" level="INFO" additivity="false">
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- Spring Framework -->
+    <logger name="org.springframework.web" level="${LOG_LEVEL_WEB:-INFO}"/>
+    <logger name="org.springframework.security" level="${LOG_LEVEL_SECURITY:-INFO}"/>
+    <logger name="org.springframework.boot.actuate" level="INFO"/>
+    
+    <!-- データベース関連 -->
+    <logger name="org.hibernate" level="${LOG_LEVEL_HIBERNATE:-WARN}"/>
+    <logger name="org.hibernate.SQL" level="${LOG_LEVEL_SQL:-WARN}"/>
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    
+    <!-- MyBatis -->
+    <logger name="com.example.teamdev.mapper" level="${LOG_LEVEL_MAPPER:-INFO}"/>
+    <logger name="org.mybatis" level="WARN"/>
+
+    <!-- 外部ライブラリ -->
+    <logger name="org.thymeleaf" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+    <logger name="org.apache.coyote" level="WARN"/>
+
+    <!-- ルートロガー -->
+    <root level="${LOG_LEVEL}">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <!-- プロファイル別追加設定 -->
+    <springProfile name="dev">
+        <!-- 開発環境では詳細ログを出力 -->
+        <logger name="com.example.teamdev" level="DEBUG"/>
+        <logger name="org.springframework.web" level="DEBUG"/>
+    </springProfile>
+
+    <springProfile name="test">
+        <!-- テスト環境ではコンソール出力のみ -->
+        <root level="WARN">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="prod">
+        <!-- 本番環境では最小限のログ -->
+        <logger name="com.example.teamdev" level="INFO"/>
+        <logger name="org.springframework.web" level="WARN"/>
+        <logger name="org.springframework.security" level="WARN"/>
+    </springProfile>
+</configuration>

@@ -1,11 +1,13 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
+import com.example.teamdev.entity.Employee;
 import com.example.teamdev.form.StampEditForm;
 import com.example.teamdev.service.EmployeeService;
 import com.example.teamdev.service.StampEditService;
 import com.example.teamdev.service.StampHistoryService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import com.example.teamdev.util.TimeFormatUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
@@ -18,12 +20,15 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.thymeleaf.util.StringUtils;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -90,7 +95,7 @@ public class StampEditController {
             return view("search", stampEditForm.getYear(), stampEditForm.getMonth(), Integer.parseInt(stampEditForm.getEmployeeId()), model, session, redirectAttributes);
         }
 
-        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
         if (updateEmployeeId == null) {
             return view("init", "", "", 0, model, session, redirectAttributes);
         }
@@ -109,15 +114,46 @@ public class StampEditController {
         return "redirect:/stampedit/view?year=" + year + "&month=" + month + "&employeeId=" + employeeId;
     }
 
+    @PostMapping("data")
+    @ResponseBody
+    public DataTablesResponse<Map<String, Object>> getSelectEmployeeData(@RequestBody DataTablesRequest request, 
+                                                                          @RequestParam(value = "userType", defaultValue = "general") String userType) {
+        try {
+            int adminFlag = "admin".equals(userType) ? 1 : 0;
+            List<Employee> employees = employeeService.getAllEmployees(adminFlag);
+            
+            List<Map<String, Object>> employeeDataList = employees.stream()
+                .map(employee -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("id", employee.getId());
+                    data.put("firstName", employee.getFirst_name());
+                    data.put("lastName", employee.getLast_name());
+                    data.put("fullName", employee.getFirst_name() + " " + employee.getLast_name());
+                    data.put("email", employee.getEmail());
+                    return data;
+                })
+                .toList();
+            
+            DataTablesResponse<Map<String, Object>> response = new DataTablesResponse<>();
+            response.setDraw(request.getDraw());
+            response.setRecordsTotal(employeeDataList.size());
+            response.setRecordsFiltered(employeeDataList.size());
+            response.setData(employeeDataList);
+            
+            return response;
+        } catch (Exception e) {
+            logger.error("Exception occurred while fetching select employee data for DataTables", e);
+            return new DataTablesResponse<>();
+        }
+    }
+
     @GetMapping("view")
     public String viewAfterRegistration(@RequestParam String year, @RequestParam String month, @RequestParam int employeeId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-        return view("search", year, month, employeeId, model, session, redirectAttributes);
+        return view("view", year, month, employeeId, model, session, redirectAttributes);
     }
 
     private String view(String type, String year, String month, int employeeId, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }

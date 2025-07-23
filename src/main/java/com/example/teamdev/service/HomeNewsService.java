@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.mapper.NewsMapper;
 import com.example.teamdev.util.DateFormatUtil;
@@ -28,8 +29,8 @@ public class HomeNewsService{
 		List<Map<String,Object>>newsMapList = new ArrayList<Map<String,Object>>();
 		Map<String, Object> newsMap = new HashMap<String, Object>();
 
-		//お知らせ情報の公開フラグがTRUEのレコードを、お知らせ日付の降順で表示する
-		List<News> newsList =  mapper.getNewsByReleaseFlagTrue();
+		//お知らせ情報の公開フラグがTRUEのレコードを、お知らせ日付の降順で表示する（4件まで）
+		List<News> newsList =  mapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT);
 		for (News news : newsList) {
 			//お知らせ情報をmapに詰め替え
 			newsMap = new ObjectMapper().convertValue(news, Map.class);

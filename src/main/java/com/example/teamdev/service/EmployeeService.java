@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import com.example.teamdev.dto.DataTablesRequest;
 import com.example.teamdev.dto.DataTablesResponse;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * 従業員情報に関するビジネスロジックを担当するサービスクラス。
@@ -23,31 +24,41 @@ import com.example.teamdev.dto.DataTablesResponse;
 @Service
 public class EmployeeService {
 
-    private final EmployeeMapper employeeMapper; // 従業員情報へのデータアクセスを行うマッパー
-    private final LogHistoryRegistrationService logHistoryService; // 操作履歴の記録を行うサービス
+    private final EmployeeMapper employeeMapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * 必要な依存関係を注入してEmployeeServiceを構築します。
      *
      * @param employeeMapper    従業員マッパー
      * @param logHistoryService ログ履歴サービス
+     * @param passwordEncoder   パスワードエンコーダー
      */
     @Autowired
     public EmployeeService(EmployeeMapper employeeMapper,
-            LogHistoryRegistrationService logHistoryService) {
+            LogHistoryRegistrationService logHistoryService,
+            PasswordEncoder passwordEncoder) {
         this.employeeMapper = employeeMapper;
         this.logHistoryService = logHistoryService;
+        this.passwordEncoder = passwordEncoder;
     }
 
     public DataTablesResponse getEmployeesForDataTables(DataTablesRequest request) {
-        String searchValue = request.getSearch().getValue();
+        String searchValue = "";
+        if (request.getSearch() != null && request.getSearch().getValue() != null) {
+            searchValue = request.getSearch().getValue();
+        }
         String orderColumn = "id"; // Default sort column
         String orderDir = "asc"; // Default sort direction
 
-        if (request.getOrder() != null && !request.getOrder().isEmpty()) {
+        if (request.getOrder() != null && !request.getOrder().isEmpty() && 
+            request.getColumns() != null && !request.getColumns().isEmpty()) {
             int columnIndex = request.getOrder().get(0).getColumn();
-            orderColumn = request.getColumns().get(columnIndex).getData();
-            orderDir = request.getOrder().get(0).getDir();
+            if (columnIndex < request.getColumns().size()) {
+                orderColumn = request.getColumns().get(columnIndex).getData();
+                orderDir = request.getOrder().get(0).getDir();
+            }
         }
 
         List<Employee> employees = employeeMapper.findFilteredEmployees(
@@ -91,7 +102,7 @@ public class EmployeeService {
         entity.setFirst_name(form.getFirstName());
         entity.setLast_name(form.getLastName());
         entity.setEmail(form.getEmail());
-        entity.setPassword(form.getPassword());
+        entity.setPassword(passwordEncoder.encode(form.getPassword()));
         entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
         Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
         entity.setUpdate_date(timestamp);
@@ -132,7 +143,7 @@ public class EmployeeService {
         entity.setLast_name(form.getLastName());
         entity.setEmail(form.getEmail());
         if (form.getPassword() != null && !form.getPassword().trim().isEmpty()) {
-            entity.setPassword(form.getPassword());
+            entity.setPassword(passwordEncoder.encode(form.getPassword()));
         }
         entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
         Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());

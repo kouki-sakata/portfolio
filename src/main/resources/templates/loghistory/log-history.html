@@ -32,7 +32,7 @@
             </div>
         </form>
         <div id="stamp_table" class="bg_white stamp_box margin_tp_2 table-responsive">
-            <table class="table table-striped margin_tp_1">
+            <table class="table table-striped margin_tp_1" id="log-history-table">
                 <thead>
                 <tr>
                     <th>#</th>
@@ -45,16 +45,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="logHistory, index : ${logHistoryList}"
-                    th:with="indexValue=${index.index + 1}">
-                    <td th:text="${indexValue}"></td>
-                    <td th:text="${logHistory.update_date}"></td>
-                    <td th:text="${logHistory.employee_name}"></td>
-                    <td th:text="${logHistory.display_name}"></td>
-                    <td th:text="${logHistory.operation_type}"></td>
-                    <td th:text="${logHistory.stamp_time}"></td>
-                    <td th:text="${logHistory.update_employee_name}"></td>
-                </tr>
+                <!-- DataTables will populate this section dynamically -->
                 </tbody>
             </table>
         </div>

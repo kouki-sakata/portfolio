@@ -5,12 +5,56 @@ $(document).ready(function () {
     // DataTablesの初期化
     const employeeTable = $('#employee-table').DataTable({
         "serverSide": true,
+        "responsive": true,
         "ajax": {
             "url": "/employeemanage/data",
             "type": "POST",
             "contentType": "application/json",
+            "beforeSend": function(xhr) {
+                // CSRF トークンをメタタグまたはDOM要素から取得
+                const csrfToken = window.csrfToken || $('meta[name="_csrf"]').attr('content') || $('input[name="_csrf"]').val();
+                const csrfHeader = window.csrfHeaderName || $('meta[name="_csrf_header"]').attr('content') || 'X-CSRF-TOKEN';
+
+                if (csrfToken) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                    console.log('CSRF Token set:', csrfToken.substring(0, 10) + '...');
+                } else {
+                    console.warn('CSRF Token not available - checking DOM elements');
+                    console.warn('Meta CSRF:', $('meta[name="_csrf"]').attr('content'));
+                    console.warn('Input CSRF:', $('input[name="_csrf"]').val());
+                }
+
+                // 追加のヘッダー設定
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+            },
             "data": function (d) {
-                return JSON.stringify(d);
+                console.log('DataTables request data:', d);
+                const requestData = JSON.stringify(d);
+                console.log('JSON request:', requestData);
+                return requestData;
+            },
+            "error": function(xhr, error, code) {
+                console.error('DataTables Ajax Error Details:');
+                console.error('Status:', xhr.status);
+                console.error('Status Text:', xhr.statusText);
+                console.error('Response Text:', xhr.responseText);
+                console.error('Error:', error);
+                console.error('Code:', code);
+                console.error('Request URL:', '/employeemanage/data');
+                console.error('CSRF Token Available:', !!window.csrfToken);
+                console.error('CSRF Header Name:', window.csrfHeaderName);
+
+                let errorMsg = 'データの取得に失敗しました。';
+                if (xhr.status === 403) {
+                    errorMsg += ' 権限がないか、セッションが切れている可能性があります。';
+                } else if (xhr.status === 500) {
+                    errorMsg += ' サーバーエラーが発生しました。';
+                } else if (xhr.status === 0) {
+                    errorMsg += ' ネットワークエラーまたはCORSの問題があります。';
+                }
+                errorMsg += '\nブラウザの開発者ツールで詳細を確認してください。';
+
+                alert(errorMsg);
             }
         },
         "columns": [
@@ -31,7 +75,7 @@ $(document).ready(function () {
                 "render": function (data, type, row) {
                     return `<input class="admin_flag form-check-input checkbox-large" disabled="disabled" type="checkbox" ${data == 1 ? 'checked' : ''}>`;
                 },
-                "orderable": false
+                "orderable": true
             },
             {
                 "data": null,
@@ -114,10 +158,11 @@ $(document).ready(function () {
                     $('#delete_form').append(`<input type="hidden" name="idList" value="${id}">`);
                 });
                 showButtonLoading("delete");
+                showSuccessMessage("従業員情報を削除中です...", "delete_message_area");
                 $("#delete_form").submit();
             }
         } else {
-            $("#delete_message_area").text("削除する従業員情報を選択してください。");
+            showErrorMessage("削除する従業員情報を選択してください。", "delete_message_area");
         }
     });
 
@@ -194,6 +239,24 @@ $(document).ready(function () {
         button.find(".spinner-border").removeClass("d-none");
     }
 
+    function hideButtonLoading(buttonId) {
+        const button = $("#" + buttonId);
+        button.prop("disabled", false);
+        button.find(".button-text").removeClass("d-none");
+        button.find(".spinner-border").addClass("d-none");
+    }
+
+    function showSuccessMessage(message, elementId = "regist_message_area") {
+        $("#" + elementId).removeClass("text-danger").addClass("text-success").text(message);
+        setTimeout(() => {
+            $("#" + elementId).text("").removeClass("text-success");
+        }, 5000);
+    }
+
+    function showErrorMessage(message, elementId = "regist_message_area") {
+        $("#" + elementId).removeClass("text-success").addClass("text-danger").text(message);
+    }
+
     $('#regist').on('click', function () {
         clearAllErrors();
         let isValidForm = true;
@@ -203,12 +266,24 @@ $(document).ready(function () {
         if (!validateField("input_password", $("#input_password").val())) isValidForm = false;
 
         if (isValidForm) {
-            $("#admin_flag").val($("#input_admin").prop("checked") ? "1" : "0");
-            $("#input_id").removeAttr("disabled");
-            showButtonLoading("regist");
-            $("#regist_form").submit();
+            const isUpdate = $("#input_id").val() !== "";
+            const actionText = isUpdate ? "更新" : "登録";
+
+            if (confirm(`従業員情報を${actionText}します。よろしいですか？`)) {
+                $("#admin_flag").val($("#input_admin").prop("checked") ? "1" : "0");
+                $("#input_id").removeAttr("disabled");
+                showButtonLoading("regist");
+
+                // Show processing message
+                showSuccessMessage(`従業員情報を${actionText}中です...`);
+
+                // フォーム送信前にエラーメッセージをクリア
+                $('.alert-danger').hide();
+
+                $("#regist_form").submit();
+            }
         } else {
-            $("#regist_message_area").text("入力内容にエラーがあります。修正してください。");
+            showErrorMessage("入力内容にエラーがあります。修正してください。");
         }
     });
 });

@@ -2,6 +2,9 @@
     <meta charset="UTF-8">
 <meta content="width=device-width, initial-scale=1.0" name="viewport">
 <title th:text="${pageTitle}"></title> <!-- 各ページでタイトルを設定できるようにする -->
+<!-- CSRF Token -->
+<meta name="_csrf" th:content="${_csrf.token}"/>
+<meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 <!-- favicon -->
 <link rel="icon" th:href="@{/img/favicon.ico}">
 <!-- bootstrap -->
@@ -12,6 +15,9 @@
 <!-- fontawesome -->
 <link href="https://use.fontawesome.com/releases/v6.2.0/css/all.css"
       rel="stylesheet">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap5.min.css">
 <!-- css -->
 <link rel="stylesheet" th:href="@{/css/reset.css}">
 <link rel="stylesheet" th:href="@{/css/style.css}">

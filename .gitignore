@@ -85,6 +85,11 @@ application-local.properties
 application-dev.properties
 local.properties
 
+# 環境変数設定ファイル（機密情報を含むため）
+.env
+.env.local
+.env.production
+
 # 不要であれば削除してよい項目
 # BlueJ files
 *.ctxt

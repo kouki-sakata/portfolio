@@ -27,7 +27,7 @@ CREATE TABLE `employee` (
   `first_name` varchar(30) CHARACTER SET utf8mb4 NOT NULL COMMENT '姓',
   `last_name` varchar(30) CHARACTER SET utf8mb4 NOT NULL COMMENT '名',
   `email` varchar(255) NOT NULL COMMENT 'メールアドレス',
-  `password` varchar(16) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'パスワード',
+  `password` varchar(60) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL COMMENT 'パスワード',
   `admin_flag` int NOT NULL COMMENT '管理者フラグ',
   `update_date` timestamp NULL DEFAULT NULL COMMENT '更新日時',
   PRIMARY KEY (`id`)

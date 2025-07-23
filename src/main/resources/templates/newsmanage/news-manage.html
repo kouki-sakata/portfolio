@@ -64,7 +64,7 @@
         </p>
         <form id="delete_release_form" method="post" th:action="@{delete}">
             <div class="bg_white stamp_box margin_tp_2 table-responsive">
-                <table class="table table-striped margin_tp_1">
+                <table class="table table-striped margin_tp_1" id="news-table">
                     <thead>
                     <tr>
                         <th><input
@@ -78,22 +78,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr class="tbody_tr" th:each="news : ${newsList}">
-                        <input class="id" th:value="${news.id}" type="hidden"/>
-                        <input class="submit_release_flag" type="hidden"/>
-                        <td>
-                            <input class="delete_check selection-days-checkbox-1 form-check-input checkbox-large"
-                                   type="checkbox">
-                        </td>
-                        <td class="date" th:text="${news.news_date}"></td>
-                        <td class="content" th:text="${news.content}"></td>
-                        <td>
-                            <input class="release_flag selection-days-checkbox-1 form-check-input checkbox-large"
-                                   th:checked="${news.release_flag == true}"
-                                   type="checkbox">
-                        </td>
-                        <td><i class="td_btn fa-solid fa-pencil"></i></td>
-                    </tr>
+                    <!-- DataTables will populate this section dynamically -->
                     </tbody>
                 </table>
             </div>

@@ -1,46 +1,90 @@
+<header class="common_header flex flex_just_between flex_align_center"
+        xmlns:th="http://www.w3.org/1999/xhtml">
+    <div class="flex flex_align_center gap_3">
+        <!-- ハンバーガーメニューボタン -->
+        <button class="hamburger_btn">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <a
+                href="/home/init"
+                style="text-decoration: none; color: inherit;"
+                th:href="@{/home/init}">
+            <div class="logo-title">
+                <svg class="logo-svg" height="80" viewBox="0 0 100 100"
+                     width="80"
+                     xmlns="http://www.w3.org/2000/svg">
+                    <!-- Background circle with gradient -->
+                    <defs>
+                        <linearGradient id="headerLogoGradient" x1="0%" x2="100%"
+                                        y1="0%" y2="100%">
+                            <stop offset="0%" style="stop-color:#667eea"/>
+                            <stop offset="100%" style="stop-color:#764ba2"/>
+                        </linearGradient>
+                        <filter id="headerGlow">
+                            <feGaussianBlur result="coloredBlur"
+                                            stdDeviation="2"/>
+                            <feMerge>
+                                <feMergeNode in="coloredBlur"/>
+                                <feMergeNode in="SourceGraphic"/>
+                            </feMerge>
+                        </filter>
+                    </defs>
 
-<header class="common_header flex flex_just_between flex_align_center">
-  <div class="flex flex_align_center gap_3">
-	<!-- ハンバーガーメニューボタン -->
-	<button class="hamburger_btn">
-      <span></span>
-      <span></span>
-      <span></span>
-	</button>
-  <a
-    href="/home/init"
-    th:href="@{/home/init}"
-    style="text-decoration: none; color: inherit;">
-    <div class="logo-title">
-      <img class="db_logo" src="../img/logo-small80_0.png" alt="エナタイスクールロゴ">
-      <h1>
-        enatai school<br>
-        TIME MANAGER
-      </h1>
+                    <!-- Main circle -->
+                    <circle cx="50" cy="50" fill="url(#headerLogoGradient)"
+                            filter="url(#headerGlow)"
+                            r="40"/>
+
+                    <!-- Clock elements for TIME MANAGER -->
+                    <circle cx="50" cy="50" fill="none" opacity="0.4" r="30"
+                            stroke="white" stroke-width="2"/>
+
+                    <!-- Clock hands -->
+                    <line stroke="white" stroke-linecap="round" stroke-width="2.5" x1="50" x2="50"
+                          y1="50" y2="30"/>
+                    <line stroke="white" stroke-linecap="round" stroke-width="2" x1="50" x2="65"
+                          y1="50" y2="50"/>
+
+                    <!-- Center dot -->
+                    <circle cx="50" cy="50" fill="white" r="2.5"/>
+
+                    <!-- Hour markers -->
+                    <circle cx="50" cy="25" fill="white" opacity="0.8" r="1.5"/>
+                    <circle cx="75" cy="50" fill="white" opacity="0.8" r="1.5"/>
+                    <circle cx="50" cy="75" fill="white" opacity="0.8" r="1.5"/>
+                    <circle cx="25" cy="50" fill="white" opacity="0.8" r="1.5"/>
+                </svg>
+                <h1>
+                    TIME MANAGER
+                </h1>
+            </div>
+        </a>
     </div>
-  </a>
-  </div>
-  <!-- ダークモード切替スイッチ -->
-  <div class="flex flex_align_center gap_3">
-    <div class="toggle-label">
-      <span class="toggle-text"></span>
-      <label class="theme-toggle">
-        <input type="checkbox" id="theme-toggle">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-    <form th:action="@{./../signin/init}" method="post" style="display: inline-flex; align-items: center;">
-      <div class="flex flex_align_center gap_3">
-        <i class="fa-solid fa-user"></i>
-        <div class="usr_name" th:text="${employeeName}"></div>
-        <div class="sign_out text_white">
-          <button
-            type="submit"
-            class="btn bg_red_info btn-sm shadow"
-          >SIGN OUT</button>
+    <!-- ダークモード切替スイッチ -->
+    <div class="flex flex_align_center gap_3">
+        <div class="toggle-label">
+            <span class="toggle-text"></span>
+            <label class="theme-toggle">
+                <input id="theme-toggle" type="checkbox">
+                <span class="toggle-slider"></span>
+            </label>
         </div>
-      </div>
-    </form>
-  </div>
+        <form method="post" style="display: inline-flex; align-items: center;"
+              th:action="@{/logout}">
+            <div class="flex flex_align_center gap_3">
+                <i class="fa-solid fa-user"></i>
+                <div class="usr_name" th:text="${employeeName}"></div>
+                <div class="sign_out text_white">
+                    <button
+                            class="btn bg_red_info btn-sm shadow"
+                            type="submit"
+                    >SIGN OUT
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
 </header>
 <script src="./../js/hamburger.js"></script>

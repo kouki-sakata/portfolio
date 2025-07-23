@@ -3,35 +3,93 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: on-failure
+    restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "${SERVER_PORT:-8080}:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/teamdev_db?useSSL=false&allowPublicKeyRetrieval=true&characterEncoding=UTF-8
-      SPRING_DATASOURCE_USERNAME: user
-      SPRING_DATASOURCE_PASSWORD: password
-    volumes:
-      - app_data:/app
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DOCKER_DB_NAME:-teamdev_db}
+      DB_USERNAME: ${DOCKER_DB_USERNAME:-user}
+      DB_PASSWORD: ${DOCKER_DB_PASSWORD:-password}
+      APP_NAME: ${APP_NAME:-TeamDevelop}
+      SERVER_PORT: 8080
+      LOG_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-INFO}
+      LOG_LEVEL_WEB: ${LOG_LEVEL_WEB:-DEBUG}
+      LOG_LEVEL_HIBERNATE: ${LOG_LEVEL_HIBERNATE:-ERROR}
+      JWT_SECRET: ${JWT_SECRET:-default-secret-key-change-in-production}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-default-encryption-key}
+      # JVM Memory settings
+      JAVA_OPTS: "-Xms512m -Xmx1g"
+      # Activate Spring Boot profile
+      # SPRING_PROFILES_ACTIVE: docker
+    
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1.5G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   db:
     image: mysql:8.0
-    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci
+      --innodb-buffer-pool-size=256M
+      --innodb-log-file-size=64M
+      --max-connections=100
+      --slow-query-log=1
+      --slow-query-log-file=/var/log/mysql/slow-query.log
+      --long-query-time=2
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: root_password
-      MYSQL_DATABASE: teamdev_db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DOCKER_DB_NAME:-teamdev_db}
+      MYSQL_USER: ${DOCKER_DB_USERNAME:-user}
+      MYSQL_PASSWORD: ${DOCKER_DB_PASSWORD:-password}
       LANG: C.UTF-8
       LC_ALL: C.UTF-8
     ports:
-      - "3306:3306"
+      - "${DB_PORT:-3306}:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - db_logs:/var/log/mysql
       - ./src/main/resources/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
       - ./src/main/resources/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql
+      # Add MySQL configuration
+      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DOCKER_DB_ROOT_PASSWORD:-root_password}"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 volumes:
-  app_data:
+  app_logs:
   db_data:
+  db_logs:
+
+networks:
+  default:
+    name: teamdev-network

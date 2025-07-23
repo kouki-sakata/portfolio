@@ -1,3 +1,6 @@
+// DataTables変数をグローバルに定義
+let employeeOutputTable;
+
 $(document).ready(function() {
 	// --- 要素のキャッシュ ---
 	const outputForm = $("#output_form");
@@ -5,12 +8,12 @@ $(document).ready(function() {
 	const messageArea = $("#message_area");
 	const radioToggleButtons = $('input[name="tbody_toggle"]'); // "一般" / "管理者" ラジオボタン
 
-	const noAdminTbody = $('#no_admin');
-	const adminTbody = $('#admin');
-
 	const checkboxClass = '.selection-days-checkbox-1';
 	const employeeIdList = 'employeeIdList';
 	const checkAllCheckbox = $('#check-all');
+
+	// DataTablesを初期化
+	initializeDataTable();
 
 	// --- tbody 切り替え機能 ---
 	function setActiveTbody() {
@@ -20,14 +23,10 @@ $(document).ready(function() {
 		outputForm.find(`input[name="${employeeIdList}"]`).remove();
 		checkAllCheckbox.prop('checked', false);
 
-		if (selectedValue === 'no_admin') {
-			noAdminTbody.show();
-			adminTbody.hide();
-			adminTbody.find(checkboxClass).prop('checked', false);
-		} else if (selectedValue === 'admin') {
-			adminTbody.show();
-			noAdminTbody.hide();
-			noAdminTbody.find(checkboxClass).prop('checked', false);
+		// DataTablesをリロード
+		if (employeeOutputTable) {
+			const userType = selectedValue === 'admin' ? 'admin' : 'general';
+			employeeOutputTable.ajax.url('/stampoutput/data?userType=' + userType).load();
 		}
 	}
 
@@ -47,19 +46,7 @@ $(document).ready(function() {
 		// 既存の動的に追加されたID用hidden inputを削除 (再送信時の重複を防ぐため)
 		outputForm.find(`input[type="hidden"][name="${employeeIdList}"]`).remove();
 
-		const activeTbodyValue = $('input[name="tbody_toggle"]:checked').val();
-		let $activeTbody;
-
-		if (activeTbodyValue === 'no_admin') {
-			$activeTbody = noAdminTbody;
-		} else if (activeTbodyValue === 'admin') {
-			$activeTbody = adminTbody;
-		} else {
-			messageArea.text("表示モードが選択されていません。");
-			return;
-		}
-
-		const $checkedCheckboxes = $activeTbody.find(checkboxClass + ':checked');
+		const $checkedCheckboxes = $(checkboxClass + ':checked');
 		const checkedCount = $checkedCheckboxes.length;
 
 		if (checkedCount === 0) {
@@ -69,7 +56,7 @@ $(document).ready(function() {
 
 		// 選択された各IDに対してhidden inputを生成してフォームに追加
 		$checkedCheckboxes.each(function() {
-			const idValue = $(this).closest('tr').find('.id').text();
+			const idValue = $(this).closest('tr').find('.employee-id').text();
 			if (idValue) {
 				$('<input>').attr({
 					type: 'hidden',
@@ -82,24 +69,88 @@ $(document).ready(function() {
 		// フォームを送信
 		outputForm.submit();
 
-		$activeTbody.find(checkboxClass).prop('checked', false);
+		$(checkboxClass).prop('checked', false);
 		document.querySelector('#check-all').checked = false;
 		outputForm.find(`input[name="${employeeIdList}"]`).remove();
 	});
 });
 
-// チェックボックスのトグル関数 (アクティブなtbodyのみ対象)
+// DataTables初期化関数
+function initializeDataTable() {
+    // 既存のDataTablesインスタンスがあれば破棄
+    if ($.fn.DataTable.isDataTable('#employee-output-table')) {
+        $('#employee-output-table').DataTable().destroy();
+    }
+
+    // CSRFトークンを取得
+    const csrfToken = $('meta[name="_csrf"]').attr('content');
+    const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+    employeeOutputTable = $('#employee-output-table').DataTable({
+        "serverSide": false,
+        "responsive": true,
+        "ajax": {
+            "url": "/stampoutput/data?userType=general",
+            "type": "POST",
+            "contentType": "application/json",
+            "beforeSend": function(xhr) {
+                if (csrfHeader && csrfToken) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            },
+            "data": function(d) {
+                return JSON.stringify(d);
+            },
+            "error": function(xhr, error, code) {
+                console.error('DataTables AJAX error:', error);
+                alert('データの取得に失敗しました。');
+            }
+        },
+        "columns": [
+            {
+                "data": null,
+                "orderable": false,
+                "searchable": false,
+                "render": function(data, type, row, meta) {
+                    return `<input class="selection-days-checkbox-1 form-check-input checkbox-large" type="checkbox">`;
+                }
+            },
+            {
+                "data": "id",
+                "title": "ID",
+                "render": function(data, type, row, meta) {
+                    return `<span class="employee-id">${data}</span>`;
+                }
+            },
+            {
+                "data": "fullName",
+                "title": "氏名"
+            },
+            {
+                "data": "email",
+                "title": "メールアドレス"
+            }
+        ],
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
+        },
+        "drawCallback": function(settings) {
+            // DataTablesの描画後にイベントを再バインド
+            bindToggleAllEvent();
+        }
+    });
+}
+
+// 全選択機能のイベントバインド
+function bindToggleAllEvent() {
+    $('#check-all').off('click').on('click', function() {
+        const isChecked = $(this).prop('checked');
+        $('.selection-days-checkbox-1').prop('checked', isChecked);
+    });
+}
+
+// チェックボックスのトグル関数 (DataTables対応)
 function toggleAll(checkbox) {
     const isChecked = $(checkbox).prop('checked');
-    const activeTbodyValue = $('input[name="tbody_toggle"]:checked').val();
-    let $activeTbody;
-
-    if (activeTbodyValue === 'no_admin') {
-        $activeTbody = $('#no_admin');
-    } else if (activeTbodyValue === 'admin') {
-        $activeTbody = $('#admin');
-    } else {
-        return;
-    }
-    $activeTbody.find('.selection-days-checkbox-1').prop('checked', isChecked);
+    $('.selection-days-checkbox-1').prop('checked', isChecked);
 }

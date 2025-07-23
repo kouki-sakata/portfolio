@@ -3,8 +3,7 @@ package com.example.teamdev.controller;
 import com.example.teamdev.form.StampDeleteForm;
 import com.example.teamdev.service.StampDeleteService;
 import com.example.teamdev.service.StampHistoryService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,7 +55,7 @@ public class StampDeleteController {
             return view(stampDeleteForm, stampDeleteForm.getStartYear(), stampDeleteForm.getStartMonth(), model, session, redirectAttributes);
         }
 
-        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
         if (updateEmployeeId == null) {
             return "redirect:/stampdelete/init";
         }
@@ -68,7 +67,7 @@ public class StampDeleteController {
 
     @GetMapping("result")
     public String result(@ModelAttribute StampDeleteForm stampDeleteForm, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }
@@ -79,7 +78,7 @@ public class StampDeleteController {
     }
 
     private String view(@ModelAttribute StampDeleteForm stampDeleteForm, String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }

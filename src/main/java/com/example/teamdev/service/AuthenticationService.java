@@ -2,15 +2,18 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
-// PasswordEncoder関連のインポートは、以前の revert で削除されているはずなので、ここでは不要
 
 /**
  * サインイン（ログイン）処理に関するビジネスロジックを担当するサービスクラスです。
@@ -19,18 +22,22 @@ import java.util.Objects;
 @Service
 public class AuthenticationService {
 
-    private final EmployeeMapper mapper; // 従業員情報へのデータアクセスを行うマッパー
-    // PasswordEncoder のフィールドは以前の revert で削除されている
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
+    
+    private final EmployeeMapper mapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
-     * HomeService03のコンストラクタ。
-     * EmployeeMapperをインジェクションします。
+     * AuthenticationServiceのコンストラクタ。
+     * EmployeeMapperとPasswordEncoderをインジェクションします。
      *
      * @param mapper 従業員マッパー
+     * @param passwordEncoder パスワードエンコーダー
      */
     @Autowired
-    public AuthenticationService(EmployeeMapper mapper) {
+    public AuthenticationService(EmployeeMapper mapper, PasswordEncoder passwordEncoder) {
         this.mapper = mapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -42,34 +49,56 @@ public class AuthenticationService {
      * @return 認証成功時は従業員情報（名前、IDなど）とサインイン時刻を含むMap。失敗時は空のMap。
      */
     public Map<String, Object> execute(Employee employeeFromForm) {
+        long startTime = LogUtil.startPerformanceMeasurement();
         Map<String, Object> map = new HashMap<>();
         String email = employeeFromForm.getEmail();
         String rawPassword = employeeFromForm.getPassword(); // フォームからの平文パスワード
 
-        Employee targetEmployee = mapper.getEmployeeByEmail(email); // メールアドレスで従業員を検索
+        try {
+            logger.info("認証処理開始 - Email: {}", email != null ? email.substring(0, Math.min(email.length(), 3)) + "***" : "null");
+            
+            Employee targetEmployee = mapper.getEmployeeByEmail(email); // メールアドレスで従業員を検索
 
-        if (Objects.nonNull(targetEmployee)) {
-            // 現在は平文パスワードでの比較 (以前のPasswordEncoderの revert を反映)
-            if (targetEmployee.getPassword().equals(rawPassword)) {
-                // パスワードが一致
-                @SuppressWarnings("unchecked") // ObjectMapperによるMap変換のキャスト警告を抑制
-                Map<String, Object> employeeAsMap = new ObjectMapper().convertValue(
-                        targetEmployee, Map.class);
-                map.putAll(employeeAsMap); // マッピングされた従業員情報をそのまま追加
+            if (Objects.nonNull(targetEmployee)) {
+                // BCryptPasswordEncoderでハッシュ化されたパスワードとの比較
+                if (passwordEncoder.matches(rawPassword, targetEmployee.getPassword())) {
+                    // パスワードが一致
+                    @SuppressWarnings("unchecked") // ObjectMapperによるMap変換のキャスト警告を抑制
+                    Map<String, Object> employeeAsMap = new ObjectMapper().convertValue(
+                            targetEmployee, Map.class);
+                    map.putAll(employeeAsMap); // マッピングされた従業員情報をそのまま追加
 
-                String employeeName = targetEmployee.getFirst_name() +
-                        "　" + targetEmployee.getLast_name();
-                map.put("employeeName", employeeName); // 表示用の従業員名
-                map.put("signInTime", LocalDateTime.now()); // サインイン時刻
-                map.remove("password"); // セキュリティのためパスワード情報は削除
-                return map;
+                    String employeeName = targetEmployee.getFirst_name() +
+                            "　" + targetEmployee.getLast_name();
+                    map.put("employeeName", employeeName); // 表示用の従業員名
+                    map.put("signInTime", LocalDateTime.now()); // サインイン時刻
+                    map.remove("password"); // セキュリティのためパスワード情報は削除
+                    
+                    // 認証成功ログ
+                    LogUtil.logAuthentication(email, true, "localhost");
+                    LogUtil.logBusiness("LOGIN", targetEmployee.getId(), "Employee", 
+                        targetEmployee.getId().toString(), "SUCCESS");
+                    logger.info("認証成功 - ユーザー: {}", employeeName);
+                    
+                    return map;
+                } else {
+                    // パスワードが不一致
+                    LogUtil.logAuthentication(email, false, "localhost");
+                    logger.warn("認証失敗 - パスワード不一致 - Email: {}", email);
+                    return map; // 空のMapを返す
+                }
             } else {
-                // パスワードが不一致
+                // メールアドレスに該当する従業員が見つからない
+                LogUtil.logAuthentication(email, false, "localhost");
+                logger.warn("認証失敗 - ユーザーが見つかりません - Email: {}", email);
                 return map; // 空のMapを返す
             }
-        } else {
-            // メールアドレスに該当する従業員が見つからない
-            return map; // 空のMapを返す
+        } catch (Exception e) {
+            LogUtil.logError(logger, "認証処理中にエラーが発生しました", e, null, "email=" + email);
+            return map; // エラー時は空のMapを返す
+        } finally {
+            LogUtil.endPerformanceMeasurement(startTime, "AuthenticationService.execute", 
+                "email=" + (email != null ? email.substring(0, Math.min(email.length(), 3)) + "***" : "null"));
         }
     }
 }

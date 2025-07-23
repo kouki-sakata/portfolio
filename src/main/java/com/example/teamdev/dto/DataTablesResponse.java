@@ -1,13 +1,15 @@
 package com.example.teamdev.dto;
 
-import com.example.teamdev.entity.Employee;
 import lombok.Data;
 import java.util.List;
 
 @Data
-public class DataTablesResponse {
+public class DataTablesResponse<T> {
     private int draw;
     private long recordsTotal;
     private long recordsFiltered;
-    private List<Employee> data;
+    private List<T> data;
+    
+    // 既存コードとの互換性のためのデフォルトコンストラクタ
+    public DataTablesResponse() {}
 }

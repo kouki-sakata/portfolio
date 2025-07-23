@@ -1,32 +1,14 @@
+// DataTables変数をグローバルに定義
+let newsTable;
+
 // 初期表示時にイベントを発火
 $(function () {
-  // 公開チェックボックスの活性非活性設定
+    // DataTablesを初期化
+    initializeDataTable();
+    // 公開チェックボックスの活性非活性設定
     updateCheckBoxes();
 });
-//全選択チェックボックス
-$("#all").change(function() {
-    // "all" チェックボックスの状態を取得
-    let isChecked = $(this).prop("checked");
-    // クラスが "delete_check" のチェックボックスの状態を変更
-    $(".delete_check").prop("checked", isChecked);
-});
-//編集ボタンクリック
-$(".td_btn").click(function() {
-	//クリックした行のデータを「従業員情報　新規登録・変更」にセットする
-    let tr = $(this).closest("tr");
-    let id = tr.find(".id").val();
-    let date = tr.find(".date").text();
-    let content = tr.find(".content").text();
-
-    $("#input_id").val(id);
-    $("#input_date").val(date.replace(/\//g, '-'));
-    $("#input_content").val(content);
-});
-//公開チェックボックス変更
-$('.release_flag').change(function() {
-    $(this).addClass("value_change");
-    updateCheckBoxes();
-});
+// 重複したイベントバインディングを削除（bindEvents関数内で処理）
 //登録ボタンsubmit
 $('#regist').on('click', function() {
 	//必須チェック
@@ -116,3 +98,118 @@ inputContent.addEventListener('keyup', () => {
     count.classList.remove('text_red');
   }
 });
+
+// DataTables初期化関数
+function initializeDataTable() {
+    // 既存のDataTablesインスタンスがあれば破棄
+    if ($.fn.DataTable.isDataTable('#news-table')) {
+        $('#news-table').DataTable().destroy();
+    }
+
+    // CSRFトークンを取得
+    const csrfToken = $('meta[name="_csrf"]').attr('content');
+    const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+
+    newsTable = $('#news-table').DataTable({
+        "serverSide": false,
+        "responsive": true,
+        "ajax": {
+            "url": "/newsmanage/data",
+            "type": "POST",
+            "contentType": "application/json",
+            "beforeSend": function(xhr) {
+                if (csrfHeader && csrfToken) {
+                    xhr.setRequestHeader(csrfHeader, csrfToken);
+                }
+            },
+            "data": function(d) {
+                return JSON.stringify(d);
+            },
+            "error": function(xhr, error, code) {
+                console.error('DataTables AJAX error:', error);
+                alert('データの取得に失敗しました。');
+            }
+        },
+        "columns": [
+            {
+                "data": null,
+                "orderable": false,
+                "searchable": false,
+                "render": function(data, type, row, meta) {
+                    return `
+                        <input type="hidden" class="id" value="${row.id}"/>
+                        <input type="hidden" class="submit_release_flag"/>
+                        <input class="delete_check selection-days-checkbox-1 form-check-input checkbox-large" type="checkbox">
+                    `;
+                }
+            },
+            {
+                "data": "news_date",
+                "title": "日付",
+                "render": function(data, type, row, meta) {
+                    return `<span class="date">${data}</span>`;
+                }
+            },
+            {
+                "data": "content",
+                "title": "内容",
+                "render": function(data, type, row, meta) {
+                    return `<span class="content">${data}</span>`;
+                }
+            },
+            {
+                "data": "release_flag",
+                "title": "公開",
+                "orderable": false,
+                "render": function(data, type, row, meta) {
+                    const checked = data ? 'checked' : '';
+                    return `<input class="release_flag selection-days-checkbox-1 form-check-input checkbox-large" type="checkbox" ${checked}>`;
+                }
+            },
+            {
+                "data": null,
+                "title": "編集",
+                "orderable": false,
+                "searchable": false,
+                "render": function(data, type, row, meta) {
+                    return '<i class="td_btn fa-solid fa-pencil"></i>';
+                }
+            }
+        ],
+        "language": {
+            "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
+        },
+        "drawCallback": function(settings) {
+            // DataTablesの描画後にイベントを再バインド
+            bindEvents();
+            updateCheckBoxes();
+        }
+    });
+}
+
+// イベントバインド関数
+function bindEvents() {
+    // 全選択チェックボックスのイベント
+    $("#all").off('change').on('change', function() {
+        let isChecked = $(this).prop("checked");
+        $(".delete_check").prop("checked", isChecked);
+    });
+
+    // 編集ボタンクリックイベント
+    $(".td_btn").off('click').on('click', function() {
+        let tr = $(this).closest("tr");
+        let id = tr.find(".id").val();
+        let date = tr.find(".date").text();
+        let content = tr.find(".content").text();
+
+        $("#input_id").val(id);
+        $("#input_date").val(date.replace(/\//g, '-'));
+        $("#input_content").val(content);
+    });
+
+    // 公開チェックボックス変更イベント
+    $('.release_flag').off('change').on('change', function() {
+        $(this).addClass("value_change");
+        updateCheckBoxes();
+    });
+}

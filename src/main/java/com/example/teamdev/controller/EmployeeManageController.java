@@ -1,10 +1,12 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
+import com.example.teamdev.exception.DuplicateEmailException;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.service.EmployeeService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,17 +15,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.util.List;
-import java.util.Map;
-import com.example.teamdev.dto.DataTablesRequest;
-import com.example.teamdev.dto.DataTablesResponse;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * 従業員情報の管理（登録、更新、削除、一覧表示）に関連するリクエストを処理するコントローラです。
@@ -51,7 +44,21 @@ public class EmployeeManageController {
     @PostMapping("/data")
     @ResponseBody
     public DataTablesResponse getEmployeeData(@RequestBody DataTablesRequest request) {
-        return employeeService.getEmployeesForDataTables(request);
+        logger.info("DataTables request received: draw={}, start={}, length={}",
+                request.getDraw(), request.getStart(), request.getLength());
+
+        try {
+            DataTablesResponse response = employeeService.getEmployeesForDataTables(
+                    request);
+            logger.info(
+                    "DataTables response sent: recordsTotal={}, recordsFiltered={}, dataSize={}",
+                    response.getRecordsTotal(), response.getRecordsFiltered(),
+                    response.getData() != null ? response.getData().size() : 0);
+            return response;
+        } catch (Exception e) {
+            logger.error("Error processing DataTables request", e);
+            throw e;
+        }
     }
 
     /**
@@ -120,37 +127,66 @@ public class EmployeeManageController {
                     redirectAttributes); // エラー詳細をビューに表示するため、viewメソッドを呼ぶ
         }
 
-        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model,
+                redirectAttributes);
         if (updateEmployeeId == null) {
             return view(model, session, redirectAttributes);
         }
 
         try {
             if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
-                return updateEmployee(employeeManageForm, updateEmployeeId, redirectAttributes);
+                return updateEmployee(employeeManageForm, updateEmployeeId,
+                        redirectAttributes, model, session);
             } else {
-                return createEmployee(employeeManageForm, updateEmployeeId, redirectAttributes);
+                return createEmployee(employeeManageForm, updateEmployeeId,
+                        redirectAttributes, model, session);
             }
         } catch (NumberFormatException e) {
             logger.error("IDの形式が無効です: {}", e.getMessage());
-            model.addAttribute("registResult", "IDの形式が無効です。");
+            model.addAttribute("globalError", "IDの形式が無効です。");
             return view(model, session, redirectAttributes); // エラーメッセージをビューに表示
         }
     }
 
-    
 
-    private String createEmployee(EmployeeManageForm employeeManageForm, Integer updateEmployeeId, RedirectAttributes redirectAttributes) {
-        employeeService.createEmployee(employeeManageForm, updateEmployeeId); // 新規従業員登録
-        redirectAttributes.addFlashAttribute("registResult", "従業員情報を登録しました。");
-        return "redirect:/employeemanage/init";
+    private String createEmployee(EmployeeManageForm employeeManageForm,
+            Integer updateEmployeeId, RedirectAttributes redirectAttributes, Model model,
+            HttpSession session) {
+        try {
+            employeeService.createEmployee(employeeManageForm,
+                    updateEmployeeId); // 新規従業員登録
+            redirectAttributes.addFlashAttribute("registResult",
+                    "従業員情報を登録しました。");
+            return "redirect:/employeemanage/init";
+        } catch (DuplicateEmailException e) {
+            logger.warn("メールアドレス重複エラー: {}", e.getMessage());
+            model.addAttribute("globalError", e.getMessage());
+            model.addAttribute("employeeManageForm", employeeManageForm);
+            return view(model, session, redirectAttributes);
+        }
     }
 
-    private String updateEmployee(EmployeeManageForm employeeManageForm, Integer updateEmployeeId, RedirectAttributes redirectAttributes) {
-        Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
-        employeeService.updateEmployee(employeeId, employeeManageForm, updateEmployeeId); // 従業員情報更新
-        redirectAttributes.addFlashAttribute("registResult", "従業員情報を更新しました。");
-        return "redirect:/employeemanage/init";
+    private String updateEmployee(EmployeeManageForm employeeManageForm,
+            Integer updateEmployeeId, RedirectAttributes redirectAttributes, Model model,
+            HttpSession session) {
+        try {
+            Integer employeeId = Integer.parseInt(employeeManageForm.getEmployeeId());
+            employeeService.updateEmployee(employeeId, employeeManageForm,
+                    updateEmployeeId); // 従業員情報更新
+            redirectAttributes.addFlashAttribute("registResult",
+                    "従業員情報を更新しました。");
+            return "redirect:/employeemanage/init";
+        } catch (com.example.teamdev.exception.DuplicateEmailException e) {
+            logger.warn("メールアドレス重複エラー: {}", e.getMessage());
+            model.addAttribute("globalError", e.getMessage());
+            model.addAttribute("employeeManageForm", employeeManageForm);
+            return view(model, session, redirectAttributes);
+        } catch (com.example.teamdev.exception.EmployeeNotFoundException e) {
+            logger.warn("従業員未検出エラー: {}", e.getMessage());
+            model.addAttribute("globalError", e.getMessage());
+            model.addAttribute("employeeManageForm", employeeManageForm);
+            return view(model, session, redirectAttributes);
+        }
     }
 
     /**
@@ -169,18 +205,21 @@ public class EmployeeManageController {
             RedirectAttributes redirectAttributes,
             HttpSession session) {
 
-        Integer updateEmployeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model,
+                redirectAttributes);
         if (updateEmployeeId == null) {
-            return "redirect:/employeemanage/init"; // エラーメッセージはgetUpdateEmployeeIdで設定済み
+            return "redirect:/employeemanage/init"; // エラーメッセージは getCurrentEmployeeId で設定済み
         }
 
         try {
             employeeService.deleteEmployees(listForm, updateEmployeeId); // 従業員削除処理
-            redirectAttributes.addFlashAttribute("deleteResult", "選択された従業員情報を削除しました。");
+            redirectAttributes.addFlashAttribute("deleteResult",
+                    "選択された従業員情報を削除しました。");
             return "redirect:/employeemanage/init";
         } catch (Exception e) {
             logger.error("従業員の削除中にエラーが発生しました。", e);
-            redirectAttributes.addFlashAttribute("deleteResult", "従業員の削除中にエラーが発生しました。");
+            redirectAttributes.addFlashAttribute("deleteResult",
+                    "従業員の削除中にエラーが発生しました。");
             return "redirect:/employeemanage/init";
         }
     }
@@ -204,9 +243,10 @@ public class EmployeeManageController {
         // SessionUtil.checkSessionの呼び出しはviewメソッドの責務か、呼び出し元の責務か検討の余地あり。
         // ここでは既存の構造を踏襲し、view内にもセッションチェックを残す。
         try {
-            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            String navRedirect = SpringSecurityModelUtil.setNavigation(model,
+                    redirectAttributes);
             if (navRedirect != null) {
-                return navRedirect; // ナビゲーション設定中にセッションタイムアウトが発生した場合
+                return navRedirect; // Spring Security認証でエラーが発生した場合
             }
 
             // フォームオブジェクトがモデルにない場合（例: GETリクエスト時）、空のフォームを追加

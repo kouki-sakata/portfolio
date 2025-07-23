@@ -1,5 +1,6 @@
 package com.example.teamdev.service;
 
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
@@ -42,13 +43,13 @@ public class StampServiceTest {
         employeeId = 1;
         now = LocalDateTime.of(2025, 7, 10, 10, 30, 0); // 固定の日時を設定
         homeForm = new HomeForm();
-        homeForm.setStampTime(now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
+        homeForm.setStampTime(now.format(DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME)));
     }
 
     @Test
     void execute_shouldSaveNewAttendanceStamp() {
-        homeForm.setStampType("1"); // 出勤
-        homeForm.setNightWorkFlag("0"); // 夜勤ではない
+        homeForm.setStampType(AppConstants.Stamp.TYPE_ATTENDANCE); // 出勤
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF); // 夜勤ではない
 
         stampService.execute(homeForm, employeeId);
 
@@ -72,8 +73,8 @@ public class StampServiceTest {
 
     @Test
     void execute_shouldSaveNewLeaveStamp() {
-        homeForm.setStampType("2"); // 退勤
-        homeForm.setNightWorkFlag("0"); // 夜勤ではない
+        homeForm.setStampType(AppConstants.Stamp.TYPE_DEPARTURE); // 退勤
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF); // 夜勤ではない
 
         stampService.execute(homeForm, employeeId);
 
@@ -99,9 +100,9 @@ public class StampServiceTest {
     void execute_shouldHandleNightWorkLeaveStamp() {
         // 翌日午前2時の退勤を想定
         LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 7, 11, 2, 0, 0);
-        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss")));
-        homeForm.setStampType("2"); // 退勤
-        homeForm.setNightWorkFlag("1"); // 夜勤
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME)));
+        homeForm.setStampType(AppConstants.Stamp.TYPE_DEPARTURE); // 退勤
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON); // 夜勤
 
         stampService.execute(homeForm, employeeId);
 
@@ -131,8 +132,8 @@ public class StampServiceTest {
     void execute_shouldCallSaveEvenIfRecordMightExist() {
         // このテストは、ロジック変更により getStampHistoryByYearMonthDayEmployeeId が呼び出されなくなったことを確認する
         // 以前のロジックでは、ここで mapper.getStampHistoryByYearMonthDayEmployeeId が呼び出されていた
-        homeForm.setStampType("1"); // 出勤
-        homeForm.setNightWorkFlag("0"); // 夜勤ではない
+        homeForm.setStampType(AppConstants.Stamp.TYPE_ATTENDANCE); // 出勤
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF); // 夜勤ではない
 
         stampService.execute(homeForm, employeeId);
 

@@ -8,6 +8,8 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.mapper.NewsMapper;
 import com.example.teamdev.util.DateFormatUtil;
@@ -43,5 +45,31 @@ public class NewsManageService{
 			newsMapList.add(newsMap);
 			}
 		return newsMapList;
+	}
+
+	public DataTablesResponse<Map<String, Object>> getNewsForDataTables(DataTablesRequest request) {
+		// すべてのお知らせ情報を取得
+		List<News> allNews = mapper.getNewsOrderByNewsDateDesc();
+		
+		// レスポンス用のデータリストを作成
+		List<Map<String, Object>> newsDataList = new ArrayList<>();
+		
+		for (News news : allNews) {
+			Map<String, Object> newsData = new HashMap<>();
+			newsData.put("id", news.getId());
+			newsData.put("news_date", DateFormatUtil.formatDate(news.getNews_date()));
+			newsData.put("content", news.getContent());
+			newsData.put("release_flag", news.isRelease_flag());
+			newsDataList.add(newsData);
+		}
+		
+		// DataTablesResponse を作成
+		DataTablesResponse<Map<String, Object>> response = new DataTablesResponse<>();
+		response.setDraw(request.getDraw());
+		response.setRecordsTotal(newsDataList.size());
+		response.setRecordsFiltered(newsDataList.size());
+		response.setData(newsDataList);
+		
+		return response;
 	}
 }

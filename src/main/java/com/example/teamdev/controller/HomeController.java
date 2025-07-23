@@ -1,13 +1,12 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.form.HomeForm;
-import com.example.teamdev.form.SignInForm;
-import com.example.teamdev.service.AuthenticationService;
 import com.example.teamdev.service.HomeNewsService;
 import com.example.teamdev.service.StampService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.MessageUtil;
+import com.example.teamdev.util.SecurityUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,13 +34,11 @@ public class HomeController {
 
     private final HomeNewsService homeNewsService;
     private final StampService stampService;
-    private final AuthenticationService authenticationService;
 
     @Autowired
-    public HomeController(HomeNewsService homeNewsService, StampService stampService, AuthenticationService authenticationService) {
+    public HomeController(HomeNewsService homeNewsService, StampService stampService) {
         this.homeNewsService = homeNewsService;
         this.stampService = stampService;
-        this.authenticationService = authenticationService;
     }
 
     @PostMapping("init")
@@ -54,31 +51,6 @@ public class HomeController {
         return view(model, session, redirectAttributes);
     }
 
-    @PostMapping("check")
-    public String check(@Validated SignInForm signInForm, BindingResult bindingResult, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        if (bindingResult.hasErrors()) {
-            logger.warn("Sign-in form validation errors:");
-            for (FieldError error : bindingResult.getFieldErrors()) {
-                logger.warn("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
-            }
-            redirectAttributes.addFlashAttribute("result", "EmailまたはPasswordが空白になっています");
-            return "redirect:/signin";
-        }
-
-        Employee employee = new Employee();
-        employee.setEmail(signInForm.getEmail());
-        employee.setPassword(signInForm.getPassword());
-
-        Map<String, Object> employeeMap = authenticationService.execute(employee);
-
-        if (employeeMap.containsKey("signInTime")) {
-            session.setAttribute("employeeMap", employeeMap);
-            return view(model, session, redirectAttributes);
-        } else {
-            redirectAttributes.addFlashAttribute("result", "EmailまたはPasswordが一致しません");
-            return "redirect:/signin";
-        }
-    }
 
     @PostMapping("regist")
     public String regist(@Validated HomeForm homeForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
@@ -87,29 +59,37 @@ public class HomeController {
             for (FieldError error : bindingResult.getFieldErrors()) {
                 logger.warn("Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
             }
-            redirectAttributes.addFlashAttribute("result", "打刻情報に不備があります。入力内容を確認してください。");
+            redirectAttributes.addFlashAttribute("result", MessageUtil.getMessage("stamp.validation.error"));
             return "redirect:/home/init";
         }
 
-        Integer employeeId = SessionUtil.getLoggedInEmployeeId(session, model, redirectAttributes);
+        Integer employeeId = SecurityUtil.getCurrentEmployeeId();
         if (employeeId == null) {
+            redirectAttributes.addFlashAttribute("result", MessageUtil.getMessage("stamp.user.error"));
             return "redirect:/home/init";
         }
 
         stampService.execute(homeForm, employeeId);
 
-        LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-        String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss"));
-        String type = homeForm.getStampType().equals("1") ? "出勤" : "退勤";
-
-        redirectAttributes.addFlashAttribute("result", type + "時刻を登録しました。（" + newDateTimeString + "）");
+        LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME));
+        String newDateTimeString = dateTime.format(DateTimeFormatter.ofPattern(AppConstants.DateFormat.DISPLAY_DATE_TIME));
+        
+        String messageKey = homeForm.getStampType().equals(AppConstants.Stamp.TYPE_ATTENDANCE) ? 
+                           "stamp.attendance.success" : "stamp.departure.success";
+        String message = MessageUtil.getMessage(messageKey, new Object[]{newDateTimeString});
+        
+        redirectAttributes.addFlashAttribute("result", message);
         return "redirect:/home/init";
     }
 
     private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
-        if (navRedirect != null) {
-            return navRedirect;
+        // Spring Securityから現在のユーザー情報を取得
+        Employee currentEmployee = SecurityUtil.getCurrentEmployee();
+        if (currentEmployee != null) {
+            model.addAttribute("currentUser", currentEmployee);
+            model.addAttribute("employeeName", currentEmployee.getFirst_name() + "　" + currentEmployee.getLast_name());
+            // 管理者フラグをmodelに追加（ナビゲーションメニューで使用）
+            model.addAttribute("adminFlag", String.valueOf(currentEmployee.getAdmin_flag()));
         }
 
         List<Map<String, Object>> newsList = homeNewsService.execute();

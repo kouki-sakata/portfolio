@@ -8,6 +8,7 @@ import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.EmployeeService;
 import com.example.teamdev.service.LogHistoryRegistrationService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,6 +42,9 @@ public class EmployeeServiceTest {
 
     @Mock
     private LogHistoryRegistrationService logHistoryService;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
 
     @InjectMocks
     private EmployeeService employeeService;
@@ -80,10 +84,13 @@ public class EmployeeServiceTest {
     void createEmployee_shouldSaveEmployee_whenEmailDoesNotExist() throws DuplicateEmailException {
         // モック設定を getEmployeeByEmail に修正
         when(employeeMapper.getEmployeeByEmail(manageForm.getEmail())).thenReturn(null);
+        when(passwordEncoder.encode("password")).thenReturn("$2a$10$hashedpassword");
+        
         Employee createdEmployee = employeeService.createEmployee(manageForm, 100);
         assertNotNull(createdEmployee);
         assertEquals(manageForm.getEmail(), createdEmployee.getEmail());
         verify(employeeMapper, times(1)).save(any(Employee.class));
+        verify(passwordEncoder, times(1)).encode("password");
         verify(logHistoryService, times(1)).execute(eq(3), eq(3), any(), any(), eq(100), any());
     }
 
@@ -147,10 +154,13 @@ public class EmployeeServiceTest {
         when(employeeMapper.getById(currentEmployeeId)).thenReturn(Optional.of(employeeToUpdate));
         // モック設定を getEmployeeByEmail に修正
         when(employeeMapper.getEmployeeByEmail("updated@example.com")).thenReturn(null);
+        when(passwordEncoder.encode("password")).thenReturn("$2a$10$hashedpassword");
+        
         Employee updatedEmployee = employeeService.updateEmployee(currentEmployeeId, manageForm, 100);
         assertNotNull(updatedEmployee);
         assertEquals("updated@example.com", updatedEmployee.getEmail());
         verify(employeeMapper, times(1)).upDate(any(Employee.class));
+        verify(passwordEncoder, times(1)).encode("password");
         verify(logHistoryService, times(1)).execute(eq(3), eq(3), any(), eq(currentEmployeeId), eq(100), any());
     }
 

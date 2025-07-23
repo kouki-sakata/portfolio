@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DataTables Debug</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>DataTables Request Debug</h1>
+    
+    <button onclick="testDataTablesRequest()">Test DataTables Request</button>
+    
+    <script>
+    function testDataTablesRequest() {
+        // Simulate DataTables request data
+        const requestData = {
+            "draw": 1,
+            "columns": [
+                {"data": null, "name": "", "searchable": true, "orderable": false, "search": {"value": "", "regex": false}},
+                {"data": "id", "name": "", "searchable": true, "orderable": true, "search": {"value": "", "regex": false}},
+                {"data": "first_name", "name": "", "searchable": true, "orderable": true, "search": {"value": "", "regex": false}},
+                {"data": "last_name", "name": "", "searchable": true, "orderable": true, "search": {"value": "", "regex": false}},
+                {"data": "email", "name": "", "searchable": true, "orderable": true, "search": {"value": "", "regex": false}},
+                {"data": "password", "name": "", "searchable": true, "orderable": true, "search": {"value": "", "regex": false}},
+                {"data": "admin_flag", "name": "", "searchable": true, "orderable": false, "search": {"value": "", "regex": false}},
+                {"data": null, "name": "", "searchable": true, "orderable": false, "search": {"value": "", "regex": false}}
+            ],
+            "order": [{"column": 1, "dir": "asc"}],
+            "start": 0,
+            "length": 10,
+            "search": {"value": "", "regex": false}
+        };
+        
+        console.log('Test request data:', requestData);
+        
+        // Test with actual CSRF token
+        fetch('/employeemanage/data', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(requestData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Success:', data);
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    }
+    </script>
+</body>
+</html>

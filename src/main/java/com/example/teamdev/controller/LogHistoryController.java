@@ -1,10 +1,11 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
 import com.example.teamdev.form.StampHistoryForm;
 import com.example.teamdev.service.LogHistoryQueryService;
 import com.example.teamdev.service.StampHistoryService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,12 +16,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Controller
 @RequestMapping("loghistory")
@@ -59,8 +65,52 @@ public class LogHistoryController {
         return view(stampHistoryForm.getYear(), stampHistoryForm.getMonth(), model, session, redirectAttributes);
     }
 
+    @PostMapping("data")
+    @ResponseBody
+    public DataTablesResponse<Map<String, Object>> getLogHistoryData(@RequestBody DataTablesRequest request,
+                                                                     @RequestParam(value = "year", defaultValue = "") String year,
+                                                                     @RequestParam(value = "month", defaultValue = "") String month) {
+        try {
+            // デフォルト値設定
+            if (year.isEmpty() || month.isEmpty()) {
+                LocalDate currentDate = LocalDate.now();
+                year = String.valueOf(currentDate.getYear());
+                month = String.format("%02d", currentDate.getMonthValue());
+            }
+
+            List<Map<String, Object>> logHistoryList = logHistoryQueryService.execute(year, month);
+
+            // データを連番付きで変換
+            AtomicInteger counter = new AtomicInteger(1);
+            List<Map<String, Object>> logHistoryDataList = logHistoryList.stream()
+                .map(logHistory -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("index", counter.getAndIncrement());
+                    data.put("update_date", logHistory.get("update_date"));
+                    data.put("employee_name", logHistory.get("employee_name"));
+                    data.put("display_name", logHistory.get("display_name"));
+                    data.put("operation_type", logHistory.get("operation_type"));
+                    data.put("stamp_time", logHistory.get("stamp_time"));
+                    data.put("update_employee_name", logHistory.get("update_employee_name"));
+                    return data;
+                })
+                .toList();
+
+            DataTablesResponse<Map<String, Object>> response = new DataTablesResponse<>();
+            response.setDraw(request.getDraw());
+            response.setRecordsTotal(logHistoryDataList.size());
+            response.setRecordsFiltered(logHistoryDataList.size());
+            response.setData(logHistoryDataList);
+
+            return response;
+        } catch (Exception e) {
+            logger.error("Exception occurred while fetching log history data for DataTables", e);
+            return new DataTablesResponse<>();
+        }
+    }
+
     private String view(String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }

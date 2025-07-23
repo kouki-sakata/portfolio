@@ -1,13 +1,14 @@
 package com.example.teamdev.controller;
 
+import com.example.teamdev.dto.DataTablesRequest;
+import com.example.teamdev.dto.DataTablesResponse;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.form.NewsManageForm;
 import com.example.teamdev.service.NewsManageDeletionService;
 import com.example.teamdev.service.NewsManageRegistrationService;
 import com.example.teamdev.service.NewsManageReleaseService;
 import com.example.teamdev.service.NewsManageService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +20,9 @@ import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
@@ -56,21 +59,19 @@ public class NewsManageController {
 
     @PostMapping("regist")
     public String regist(@Validated NewsManageForm newsManageForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         if (bindingResult.hasErrors()) {
-            logger.warn("Validation errors:");
             for (FieldError error : bindingResult.getFieldErrors()) {
-                logger.warn("Field: " + error.getField() + ", Error: " + error.getDefaultMessage());
+                logger.warn("Validation error - Field: {}, Error: {}", error.getField(), error.getDefaultMessage());
             }
             model.addAttribute("registResult", "入力内容にエラーがあります。修正してください。");
             return view(model, session, redirectAttributes);
         }
 
         try {
-            Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-            Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
+            Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
+            if (updateEmployeeId == null) {
+                return view(model, session, redirectAttributes);
+            }
             newsManageRegistrationService.execute(newsManageForm, updateEmployeeId);
             redirectAttributes.addFlashAttribute("registResult", "登録しました");
             return "redirect:/newsmanage/init";
@@ -82,14 +83,13 @@ public class NewsManageController {
 
     @PostMapping("release")
     public String release(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         try {
-            Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-            Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
+            Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
+            if (updateEmployeeId == null) {
+                return "redirect:/newsmanage/init";
+            }
             newsManageReleaseService.execute(listForm, updateEmployeeId);
-            redirectAttributes.addFlashAttribute("delRlsResult", "公開設定を更新しました。");
+            redirectAttributes.addFlashAttribute("releaseResult", "公開しました");
             return "redirect:/newsmanage/init";
         } catch (Exception e) {
             logger.error("Exception occurred during release", e);
@@ -99,14 +99,13 @@ public class NewsManageController {
 
     @PostMapping("delete")
     public String delete(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
-        String redirect = SessionUtil.checkSession(session, redirectAttributes);
-        if (redirect != null) return redirect;
-
         try {
-            Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-            Integer updateEmployeeId = Integer.parseInt(employeeMap.get("id").toString());
+            Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
+            if (updateEmployeeId == null) {
+                return "redirect:/newsmanage/init";
+            }
             newsManageDeletionService.execute(listForm, updateEmployeeId);
-            redirectAttributes.addFlashAttribute("delRlsResult", "削除しました。");
+            redirectAttributes.addFlashAttribute("deleteResult", "削除しました");
             return "redirect:/newsmanage/init";
         } catch (Exception e) {
             logger.error("Exception occurred during deletion", e);
@@ -114,9 +113,20 @@ public class NewsManageController {
         }
     }
 
+    @PostMapping("data")
+    @ResponseBody
+    public DataTablesResponse<Map<String, Object>> getNewsData(@RequestBody DataTablesRequest request) {
+        try {
+            return newsManageService.getNewsForDataTables(request);
+        } catch (Exception e) {
+            logger.error("Exception occurred while fetching news data for DataTables", e);
+            return new DataTablesResponse<>();
+        }
+    }
+
     private String view(Model model, HttpSession session, RedirectAttributes redirectAttributes) {
         try {
-            String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+            String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
             if (navRedirect != null) {
                 return navRedirect;
             }

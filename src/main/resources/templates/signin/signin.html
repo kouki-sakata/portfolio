@@ -3,74 +3,138 @@
 
 <head th:replace="~{common/head_fragment :: head_content(pageTitle='Sign In')}"></head>
 
-<body>
+<body class="modern-signin-body">
 <main>
-    <section
-            class="container d-flex align-items-center justify-content-center min-vh-100 py-4">
-        <div class="signin_block_enhanced p-4 p-md-5 border-0 rounded-3 shadow-sm bg-white"
-             style="max-width: 480px; width: 100%;">
-            <div class="text-center mb-4">
-                <img alt="エナタイスクールロゴ" class="db_logo img-fluid"
-                     src="../img/logo-small80_0.png"
-                     style="max-width: 120px;">
+    <section class="signin-container">
+        <div class="signin-card">
+            <div class="signin-header">
+                <div class="logo-container">
+                    <div class="modern-logo">
+                        <svg class="logo-svg" height="80" viewBox="0 0 100 100"
+                             width="80"
+                             xmlns="http://www.w3.org/2000/svg">
+                            <!-- Background circle with gradient -->
+                            <defs>
+                                <linearGradient id="logoGradient" x1="0%"
+                                                x2="100%" y1="0%" y2="100%">
+                                    <stop offset="0%"
+                                          style="stop-color:#667eea"/>
+                                    <stop offset="100%"
+                                          style="stop-color:#764ba2"/>
+                                </linearGradient>
+                                <filter id="glow">
+                                    <feGaussianBlur result="coloredBlur"
+                                                    stdDeviation="3"/>
+                                    <feMerge>
+                                        <feMergeNode in="coloredBlur"/>
+                                        <feMergeNode in="SourceGraphic"/>
+                                    </feMerge>
+                                </filter>
+                            </defs>
+
+                            <!-- Main circle -->
+                            <circle cx="50" cy="50" fill="url(#logoGradient)"
+                                    filter="url(#glow)"
+                                    r="45"/>
+
+                            <!-- Clock elements for TIME MANAGER -->
+                            <circle cx="50" cy="50" fill="none" opacity="0.3"
+                                    r="35" stroke="white"
+                                    stroke-width="2"/>
+
+                            <!-- Clock hands -->
+                            <line stroke="white" stroke-linecap="round" stroke-width="3" x1="50" x2="50"
+                                  y1="50" y2="25"/>
+                            <line stroke="white" stroke-linecap="round" stroke-width="2" x1="50" x2="65"
+                                  y1="50" y2="50"/>
+
+                            <!-- Center dot -->
+                            <circle cx="50" cy="50" fill="white" r="3"/>
+
+                            <!-- Hour markers -->
+                            <circle cx="50" cy="20" fill="white" opacity="0.8"
+                                    r="2"/>
+                            <circle cx="80" cy="50" fill="white" opacity="0.8"
+                                    r="2"/>
+                            <circle cx="50" cy="80" fill="white" opacity="0.8"
+                                    r="2"/>
+                            <circle cx="20" cy="50" fill="white" opacity="0.8"
+                                    r="2"/>
+                        </svg>
+                    </div>
+                </div>
+                <h1 class="signin-title" th:text="${msg ?: 'サインイン'}">
+                    TIME MANAGER
+                </h1>
+                <p class="signin-subtitle">
+                    メールアドレスとパスワードを入力してサインインしてください
+                </p>
             </div>
-            <h1 class="h3 mb-3 text-center font-weight-bold text-primary text-gradient"
-                th:text="${msg ?: 'サインイン'}">
-                TIME MANAGER
-            </h1>
-            <p class="mb-4 text-center text-muted small">
-                メールアドレスとパスワードを入力してサインインしてください。
-            </p>
-            <form id="signin_form" method="post" novalidate
-                  th:action="@{home/check}">
-                <div class="form-floating mb-3">
+            <form class="signin-form" id="signin_form" method="post" novalidate
+                  th:action="@{/signin/login}">
+                <input th:name="${_csrf.parameterName}"
+                       th:value="${_csrf.token}"
+                       type="hidden"/>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">メールアドレス</label>
                     <input aria-describedby="emailHelp"
-                           class="form-control fs-6 rounded-3"
+                           class="form-input"
                            id="email"
-                           name="email" placeholder="name@example.com"
+                           name="email"
+                           placeholder="name@example.com"
                            required
-                           th:value="${param.email}" type="email">
-                    <label for="email">メールアドレス</label>
-                    <div class="form-text mt-1" id="emailHelp">
-                        入力されたメールアドレスは、ご提供いただいた目的以外で使用することはありません。
+                           th:value="${param.email}"
+                           type="email">
+                    <div class="form-text" id="emailHelp">
+                        入力されたメールアドレスは、ご提供いただいた目的以外で使用することはありません
                     </div>
-                    <div class="invalid-feedback">
-                        有効なメールアドレスを入力してください。
+                    <div class="form-error">
+                        有効なメールアドレスを入力してください
                     </div>
                 </div>
-                <div class="input-group mb-3 position-relative">
-                    <div class="form-floating flex-grow-1">
-                        <input class="form-control fs-6 rounded-3"
-                               id="password" name="password"
-                               placeholder="パスワード" required
+
+                <div class="form-group">
+                    <label class="form-label" for="password">パスワード</label>
+                    <div class="password-input-wrapper">
+                        <input class="form-input"
+                               id="password"
+                               name="password"
+                               placeholder="パスワードを入力してください"
+                               required
                                type="password">
-                        <label for="password">パスワード</label>
+                        <button aria-label="パスワードを表示/非表示"
+                                class="password-toggle"
+                                id="togglePassword"
+                                type="button">
+                            <i class="bi bi-eye-fill" id="toggleIcon"></i>
+                        </button>
                     </div>
-                    <!-- 目のアイコンボタン -->
-                    <button aria-label="パスワードを表示/非表示"
-                            class="btn position-absolute top-50 end-0 translate-middle-y pe-3 bg-transparent border-0 icon-button"
-                            id="togglePassword"
-                            type="button">
-                        <i class="bi bi-eye-fill fs-5" id="toggleIcon"></i>
-                    </button>
                 </div>
-                <!-- ENTERキークリックでサインイン -->
-                <button class="btn bg_blue_info shadow height_3 w-100 mt-4 mb-0"
+
+                <button class="signin-button"
                         id="sign_in"
                         type='submit'>
-                    SIGN IN
+                    <span class="signin-button-text">サインイン</span>
                 </button>
             </form>
-            <div class="message-container mt-4 vh-10">
+            <div class="message-container">
+                <!-- ログアウト成功メッセージ -->
+                <div class="alert alert-success" th:if="${param.logout}">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    ログアウトしました
+                </div>
                 <!-- エラーメッセージ表示（タイムアウト時）-->
-                <p class="text-danger mb-0" id="message_area"
-                   th:text="${result ?: error}"></p>
+                <div class="alert alert-error" th:if="${param.error}">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    ログインに失敗しました。メールアドレスとパスワードを確認してください
+                </div>
+                <p class="error-text" id="message_area" th:text="${result}"></p>
             </div>
         </div>
     </section>
 </main>
 <!-- 共通フッター -->
-<footer th:replace="~{common/footer}"></footer>
 <div th:replace="~{common/body_end_fragment :: body_end_content}"></div>
 <!-- signin.js -->
 <script th:src="@{/js/sign_in.js}"></script>

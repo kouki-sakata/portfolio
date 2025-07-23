@@ -2,8 +2,7 @@ package com.example.teamdev.controller;
 
 import com.example.teamdev.form.StampHistoryForm;
 import com.example.teamdev.service.StampHistoryService;
-import com.example.teamdev.util.ModelUtil;
-import com.example.teamdev.util.SessionUtil;
+import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +56,15 @@ public class StampHistoryController {
     }
 
     private String view(String year, String month, Model model, HttpSession session, RedirectAttributes redirectAttributes) {
-        String navRedirect = ModelUtil.setNavigation(model, session, redirectAttributes);
+        String navRedirect = SpringSecurityModelUtil.setNavigation(model, redirectAttributes);
         if (navRedirect != null) {
             return navRedirect;
         }
 
-        Map<String, Object> employeeMap = (Map<String, Object>) session.getAttribute("employeeMap");
-        Integer employeeId = Integer.parseInt(employeeMap.get("id").toString());
+        Integer employeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
+        if (employeeId == null) {
+            return "redirect:/signin";
+        }
 
         List<Map<String, Object>> stampHistoryList = stampHistoryService.execute(year, month, employeeId);
         List<String> yearList = stampHistoryService.getYearList();

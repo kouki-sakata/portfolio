@@ -31,7 +31,7 @@
         <form id="stamp_edit_form" method="post" th:action="@{search}">
             <input id="employee_id" name="employeeId" type="hidden"/>
             <div class="bg_white stamp_box margin_tp_2">
-                <table class="table table-striped margin_tp_1">
+                <table class="table table-striped margin_tp_1" id="select-employee-table">
                     <thead>
                     <tr>
                         <th>ID</th>
@@ -39,21 +39,8 @@
                         <th>メールアドレス</th>
                     </tr>
                     </thead>
-                    <tbody id="no_admin">
-                    <tr th:each="employee : ${employeeList}">
-                        <td class="id" th:text="${employee.id}"></td>
-                        <td class="td_link"
-                            th:text="${employee.first_name + ' ' + employee.last_name}"></td>
-                        <td class="email" th:text="${employee.email}"></td>
-                    </tr>
-                    </tbody>
-                    <tbody id="admin" style="display:none;">
-                    <tr th:each="admin : ${adminList}">
-                        <td class="id" th:text="${admin.id}"></td>
-                        <td class="td_link"
-                            th:text="${admin.first_name + ' ' + admin.last_name}"></td>
-                        <td class="email" th:text="${admin.email}"></td>
-                    </tr>
+                    <tbody>
+                    <!-- DataTables will populate this section dynamically -->
                     </tbody>
                 </table>
             </div>

@@ -60,7 +60,7 @@
                 <label class="btn btn-outline-primary" for="tbody_toggle_admin">管理者</label>
             </div>
             <div class="bg_white stamp_box margin_tp_2 table-responsive">
-                <table class="table table-striped margin_tp_1">
+                <table class="table table-striped margin_tp_1" id="employee-output-table">
                     <thead>
                     <tr>
                         <th style="width: 100px;">
@@ -76,29 +76,8 @@
                         <th>メールアドレス</th>
                     </tr>
                     </thead>
-                    <!-- 一般ユーザー用リスト -->
-                    <tbody id="no_admin">
-                    <tr th:each="employee : ${employeeList}">
-                        <td><input
-                                class="selection-days-checkbox-1 form-check-input checkbox-large"
-                                type="checkbox">
-                        </td>
-                        <td class="id" th:text="${employee.id}"></td>
-                        <td th:text="${employee.first_name + ' ' + employee.last_name}"></td>
-                        <td class="email" th:text="${employee.email}"></td>
-                    </tr>
-                    </tbody>
-                    <!-- 管理者ユーザー用リスト (初期非表示) -->
-                    <tbody id="admin" style="display:none;">
-                    <tr th:each="admin : ${adminList}">
-                        <td><input
-                                class="selection-days-checkbox-1 form-check-input checkbox-large"
-                                type="checkbox">
-                        </td>
-                        <td class="id" th:text="${admin.id}"></td>
-                        <td th:text="${admin.first_name + ' ' + admin.last_name}"></td>
-                        <td class="email" th:text="${admin.email}"></td>
-                    </tr>
+                    <tbody>
+                    <!-- DataTables will populate this section dynamically -->
                     </tbody>
                 </table>
                 <button class="btn bg_blue_info shadow height_3 w-100 mt-4 mb-0"
