@@ -28,7 +28,12 @@ function initializeDataTable() {
 
     employeeListTable = $('#employee-list-table').DataTable({
         "serverSide": false,
-        "responsive": true,
+        "responsive": {
+            "details": {
+                "type": 'column',
+                "target": 'tr'
+            }
+        },
         "ajax": {
             "url": "/employeelist/data?userType=general",
             "type": "POST",
@@ -49,19 +54,35 @@ function initializeDataTable() {
         "columns": [
             {
                 "data": "id",
-                "title": "ID"
+                "title": "ID",
+                "responsivePriority": 1
             },
             {
                 "data": "fullName",
-                "title": "氏名"
+                "title": "氏名",
+                "responsivePriority": 2
             },
             {
                 "data": "email",
-                "title": "メールアドレス"
+                "title": "メールアドレス",
+                "responsivePriority": 3
             }
         ],
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
-        }
+        },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "ordering": true,
+        "order": [[0, 'asc']],
+        "columnDefs": [
+            {
+                "targets": [0],
+                "className": "text-center"
+            }
+        ]
     });
 }

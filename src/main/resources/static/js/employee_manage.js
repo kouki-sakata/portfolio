@@ -5,7 +5,12 @@ $(document).ready(function () {
     // DataTablesの初期化
     const employeeTable = $('#employee-table').DataTable({
         "serverSide": true,
-        "responsive": true,
+        "responsive": {
+            "details": {
+                "type": 'column',
+                "target": 'tr'
+            }
+        },
         "ajax": {
             "url": "/employeemanage/data",
             "type": "POST",
@@ -60,18 +65,35 @@ $(document).ready(function () {
         "columns": [
             {
                 "data": null,
+                "responsivePriority": 1,
                 "render": function (data, type, row) {
                     return `<input type="checkbox" class="delete_check form-check-input checkbox-large" value="${row.id}">`;
                 },
                 "orderable": false
             },
-            { "data": "id" },
-            { "data": "first_name" },
-            { "data": "last_name" },
-            { "data": "email" },
-            { "data": "password" },
+            { 
+                "data": "id",
+                "responsivePriority": 2
+            },
+            { 
+                "data": "first_name",
+                "responsivePriority": 3
+            },
+            { 
+                "data": "last_name",
+                "responsivePriority": 4
+            },
+            { 
+                "data": "email",
+                "responsivePriority": 5
+            },
+            { 
+                "data": "password",
+                "responsivePriority": 8
+            },
             {
                 "data": "admin_flag",
+                "responsivePriority": 6,
                 "render": function (data, type, row) {
                     return `<input class="admin_flag form-check-input checkbox-large" disabled="disabled" type="checkbox" ${data == 1 ? 'checked' : ''}>`;
                 },
@@ -79,6 +101,7 @@ $(document).ready(function () {
             },
             {
                 "data": null,
+                "responsivePriority": 7,
                 "render": function (data, type, row) {
                     return '<i class="td_btn fa-solid fa-pencil"></i>';
                 },
@@ -88,6 +111,19 @@ $(document).ready(function () {
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
         },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "ordering": true,
+        "order": [[1, 'asc']],
+        "columnDefs": [
+            {
+                "targets": [0, 1, 6, 7],
+                "className": "text-center"
+            }
+        ],
         "initComplete": function (settings, json) {
             hideLoadingWithDelay();
         },

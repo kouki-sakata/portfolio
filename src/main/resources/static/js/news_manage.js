@@ -112,7 +112,12 @@ function initializeDataTable() {
 
     newsTable = $('#news-table').DataTable({
         "serverSide": false,
-        "responsive": true,
+        "responsive": {
+            "details": {
+                "type": 'column',
+                "target": 'tr'
+            }
+        },
         "ajax": {
             "url": "/newsmanage/data",
             "type": "POST",
@@ -135,6 +140,7 @@ function initializeDataTable() {
                 "data": null,
                 "orderable": false,
                 "searchable": false,
+                "responsivePriority": 1,
                 "render": function(data, type, row, meta) {
                     return `
                         <input type="hidden" class="id" value="${row.id}"/>
@@ -146,6 +152,7 @@ function initializeDataTable() {
             {
                 "data": "news_date",
                 "title": "日付",
+                "responsivePriority": 2,
                 "render": function(data, type, row, meta) {
                     return `<span class="date">${data}</span>`;
                 }
@@ -153,6 +160,7 @@ function initializeDataTable() {
             {
                 "data": "content",
                 "title": "内容",
+                "responsivePriority": 3,
                 "render": function(data, type, row, meta) {
                     return `<span class="content">${data}</span>`;
                 }
@@ -161,6 +169,7 @@ function initializeDataTable() {
                 "data": "release_flag",
                 "title": "公開",
                 "orderable": false,
+                "responsivePriority": 4,
                 "render": function(data, type, row, meta) {
                     const checked = data ? 'checked' : '';
                     return `<input class="release_flag selection-days-checkbox-1 form-check-input checkbox-large" type="checkbox" ${checked}>`;
@@ -171,6 +180,7 @@ function initializeDataTable() {
                 "title": "編集",
                 "orderable": false,
                 "searchable": false,
+                "responsivePriority": 5,
                 "render": function(data, type, row, meta) {
                     return '<i class="td_btn fa-solid fa-pencil"></i>';
                 }
@@ -179,6 +189,19 @@ function initializeDataTable() {
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
         },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "ordering": true,
+        "order": [[1, 'desc']],
+        "columnDefs": [
+            {
+                "targets": [0, 3, 4],
+                "className": "text-center"
+            }
+        ],
         "drawCallback": function(settings) {
             // DataTablesの描画後にイベントを再バインド
             bindEvents();

@@ -34,7 +34,12 @@ function initializeDataTable() {
 
     logHistoryTable = $('#log-history-table').DataTable({
         "serverSide": false,
-        "responsive": true,
+        "responsive": {
+            "details": {
+                "type": 'column',
+                "target": 'tr'
+            }
+        },
         "ajax": {
             "url": `/loghistory/data?year=${currentYear}&month=${currentMonth}`,
             "type": "POST",
@@ -55,36 +60,56 @@ function initializeDataTable() {
         "columns": [
             {
                 "data": "index",
-                "title": "#"
+                "title": "#",
+                "responsivePriority": 1
             },
             {
                 "data": "update_date",
-                "title": "更新日時"
+                "title": "更新日時",
+                "responsivePriority": 2
             },
             {
                 "data": "employee_name",
-                "title": "従業員氏名"
+                "title": "従業員氏名",
+                "responsivePriority": 3
             },
             {
                 "data": "display_name",
-                "title": "画面名"
+                "title": "画面名",
+                "responsivePriority": 6
             },
             {
                 "data": "operation_type",
-                "title": "操作種別"
+                "title": "操作種別",
+                "responsivePriority": 4
             },
             {
                 "data": "stamp_time",
-                "title": "打刻時刻"
+                "title": "打刻時刻",
+                "responsivePriority": 5
             },
             {
                 "data": "update_employee_name",
-                "title": "更新者氏名"
+                "title": "更新者氏名",
+                "responsivePriority": 7
             }
         ],
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
-        }
+        },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "ordering": true,
+        "order": [[0, 'asc']],
+        "columnDefs": [
+            {
+                "targets": [0],
+                "className": "text-center"
+            }
+        ]
     });
 }
 

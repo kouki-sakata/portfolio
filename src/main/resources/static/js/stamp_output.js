@@ -88,7 +88,12 @@ function initializeDataTable() {
 
     employeeOutputTable = $('#employee-output-table').DataTable({
         "serverSide": false,
-        "responsive": true,
+        "responsive": {
+            "details": {
+                "type": 'column',
+                "target": 'tr'
+            }
+        },
         "ajax": {
             "url": "/stampoutput/data?userType=general",
             "type": "POST",
@@ -111,6 +116,7 @@ function initializeDataTable() {
                 "data": null,
                 "orderable": false,
                 "searchable": false,
+                "responsivePriority": 1,
                 "render": function(data, type, row, meta) {
                     return `<input class="selection-days-checkbox-1 form-check-input checkbox-large" type="checkbox">`;
                 }
@@ -118,22 +124,42 @@ function initializeDataTable() {
             {
                 "data": "id",
                 "title": "ID",
+                "responsivePriority": 2,
                 "render": function(data, type, row, meta) {
                     return `<span class="employee-id">${data}</span>`;
                 }
             },
             {
                 "data": "fullName",
-                "title": "氏名"
+                "title": "氏名",
+                "responsivePriority": 3
             },
             {
                 "data": "email",
-                "title": "メールアドレス"
+                "title": "メールアドレス",
+                "responsivePriority": 4
             }
         ],
         "language": {
             "url": "//cdn.datatables.net/plug-ins/1.11.5/i18n/ja.json"
         },
+        "pageLength": 10,
+        "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
+        "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
+               "<'row'<'col-sm-12'tr>>" +
+               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+        "ordering": true,
+        "order": [[1, 'asc']],
+        "columnDefs": [
+            {
+                "targets": [0],
+                "className": "text-center"
+            },
+            {
+                "targets": [1],
+                "className": "text-center"
+            }
+        ],
         "drawCallback": function(settings) {
             // DataTablesの描画後にイベントを再バインド
             bindToggleAllEvent();
