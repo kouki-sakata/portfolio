@@ -1,9 +1,9 @@
 $(document).ready(function () {
-    let loadingStartTime;
-    const minimumLoadingTime = 500; // 最小表示時間（ミリ秒）
+    // 共通ローディング処理を初期化
+    const datatableLoading = createDataTablesLoading();
 
-    // DataTablesの初期化
-    const employeeTable = $('#employee-table').DataTable({
+    // DataTablesの設定
+    let employeeTableConfig = {
         "serverSide": true,
         "responsive": {
             "details": {
@@ -123,30 +123,14 @@ $(document).ready(function () {
                 "targets": [0, 1, 6, 7],
                 "className": "text-center"
             }
-        ],
-        "initComplete": function (settings, json) {
-            hideLoadingWithDelay();
-        },
-        "preDrawCallback": function (settings) {
-            showLoading();
-        },
-        "drawCallback": function (settings) {
-            hideLoadingWithDelay();
-        }
-    });
+        ]
+    };
 
-    function showLoading() {
-        loadingStartTime = new Date().getTime();
-        $('#loading-overlay').addClass('show');
-    }
-
-    function hideLoadingWithDelay() {
-        const elapsedTime = new Date().getTime() - loadingStartTime;
-        const remainingTime = minimumLoadingTime - elapsedTime;
-        setTimeout(() => {
-            $('#loading-overlay').removeClass('show');
-        }, remainingTime > 0 ? remainingTime : 0);
-    }
+    // 共通ローディング処理を適用
+    employeeTableConfig = datatableLoading.applyLoadingToConfig(employeeTableConfig);
+    
+    // DataTablesを初期化
+    const employeeTable = $('#employee-table').DataTable(employeeTableConfig);
 
     // --- イベントデリゲーション ---
 

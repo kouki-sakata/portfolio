@@ -1,5 +1,7 @@
 // DataTables変数をグローバルに定義
 let logHistoryTable;
+// 共通ローディング処理を初期化
+const datatableLoading = createDataTablesLoading();
 
 // 初期処理
 $(function () {
@@ -32,7 +34,8 @@ function initializeDataTable() {
     const currentYear = $('#select_year').val() || new Date().getFullYear();
     const currentMonth = $('#select_month').val() || String(new Date().getMonth() + 1).padStart(2, '0');
 
-    logHistoryTable = $('#log-history-table').DataTable({
+    // DataTables設定を作成
+    let logHistoryTableConfig = {
         "serverSide": false,
         "responsive": {
             "details": {
@@ -110,7 +113,13 @@ function initializeDataTable() {
                 "className": "text-center"
             }
         ]
-    });
+    };
+    
+    // 共通ローディング処理を適用
+    logHistoryTableConfig = datatableLoading.applyLoadingToConfig(logHistoryTableConfig);
+    
+    // DataTablesを初期化
+    logHistoryTable = $('#log-history-table').DataTable(logHistoryTableConfig);
 }
 
 // DataTablesをリロードする関数

@@ -7,7 +7,7 @@
 <!-- メインコンテンツ -->
 <main class="main_content">
     <!-- ナビ選択用の設定値 -->
-    <input type="hidden" id="target_nav" value="stamp-edit"/>
+    <input id="target_nav" type="hidden" value="stamp-edit"/>
     <!-- 共通ナビ -->
     <nav th:replace="~{common/navigation}"></nav>
     <!-- コンテンツ -->
@@ -16,55 +16,63 @@
             <!-- 氏名 -->
             <div class="d-flex flex-column mb-auto">
                 <div class="weight_600 mb-1">氏名</div>
-                <input type="text"
+                <input class="form-control mb-0 weight_700"
                        name="employeeName"
+                       readonly
                        th:value="${stampHistoryList[0].employee_name}"
-                       class="form-control mb-0 weight_700"
-                       readonly/>
+                       type="text"/>
             </div>
             <!-- 検索フォーム -->
-            <form id="search_form" th:action="@{search}" method="post"
-                  class="d-flex align-items-end gap-4 flex-wrap">
-                <input type="hidden" id="employee_id" name="employeeId"
-                       th:value="${stampHistoryList[0].employee_id}"/>
+            <form class="d-flex align-items-end gap-4 flex-wrap"
+                  id="search_form" method="post"
+                  th:action="@{search}">
+                <input id="employee_id" name="employeeId"
+                       th:value="${stampHistoryList[0].employee_id}"
+                       type="hidden"/>
                 <!-- 年 -->
                 <div class="d-flex flex-column">
-                    <label for="edit_select_year"
-                           class="weight_600 mb-1">年</label>
-                    <select name="year" id="edit_select_year" class="form-select">
-                        <option th:each="item : ${yearList}" th:value="${item}"
+                    <label class="weight_600 mb-1"
+                           for="edit_select_year">年</label>
+                    <select class="form-select" id="edit_select_year"
+                            name="year">
+                        <option th:each="item : ${yearList}"
+                                th:selected="${item == selectYear}"
                                 th:text="${item}"
-                                th:selected="${item == selectYear}"></option>
+                                th:value="${item}"></option>
                     </select>
                 </div>
                 <!-- 月 -->
                 <div class="d-flex flex-column">
-                    <label for="edit_select_month"
-                           class="weight_600 mb-1">月</label>
-                    <select name="month" id="edit_select_month" class="form-select">
-                        <option th:each="item : ${monthList}" th:value="${item}"
+                    <label class="weight_600 mb-1"
+                           for="edit_select_month">月</label>
+                    <select class="form-select" id="edit_select_month"
+                            name="month">
+                        <option th:each="item : ${monthList}"
+                                th:selected="${item == selectMonth}"
                                 th:text="${item}"
-                                th:selected="${item == selectMonth}"></option>
+                                th:value="${item}"></option>
                     </select>
                 </div>
                 <!-- 検索ボタン -->
                 <div class="d-flex align-items-end">
-                    <button type="submit" id="search"
-                            class="btn bg_blue_info shadow"
-                            style="height: 2.5rem; min-width: 140px; padding: 0 20px;">
+                    <button class="btn bg_blue_info shadow" id="search"
+                            style="height: 2.5rem; min-width: 140px; padding: 0 20px;"
+                            type="submit">
                         検索
                     </button>
                 </div>
             </form>
         </div>
-        <form id="regist_form" th:action="@{regist}" method="post">
-            <input type="hidden" id="employee_id" name="employeeId"
-                   th:value="${stampHistoryList[0].employee_id}"/>
-            <input type="hidden" id="year" name="year"
-                   th:value="${selectYear}"/>
-            <input type="hidden" id="month" name="month"
-                   th:value="${selectMonth}"/>
-            <div id="stamp_table" class="bg_white stamp_box margin_tp_2 table-responsive">
+        <form id="regist_form" method="post" th:action="@{regist}">
+            <input id="employee_id" name="employeeId"
+                   th:value="${stampHistoryList[0].employee_id}"
+                   type="hidden"/>
+            <input id="year" name="year" th:value="${selectYear}"
+                   type="hidden"/>
+            <input id="month" name="month" th:value="${selectMonth}"
+                   type="hidden"/>
+            <div class="bg_white stamp_box margin_tp_2 table-responsive"
+                 id="stamp_table">
                 <table class="table table-striped margin_tp_1">
                     <thead>
                     <tr>
@@ -79,28 +87,31 @@
                     <tbody>
                     <tr class="tbody_tr"
                         th:each="stampHistory : ${stampHistoryList}">
-                        <input type="hidden" name="id"
-                               th:value="${stampHistory.id}"/>
-                        <input type="hidden" name="year"
-                               th:value="${stampHistory.year}"/>
-                        <input type="hidden" name="month"
-                               th:value="${stampHistory.month}"/>
-                        <input type="hidden" name="employeeId"
-                               th:value="${stampHistory.employee_id}"/>
-                        <input type="hidden" name="day"
-                               th:value="${stampHistory.day}"/>
+                        <input name="id" th:value="${stampHistory.id}"
+                               type="hidden"/>
+                        <input name="year" th:value="${stampHistory.year}"
+                               type="hidden"/>
+                        <input name="month" th:value="${stampHistory.month}"
+                               type="hidden"/>
+                        <input name="employeeId"
+                               th:value="${stampHistory.employee_id}"
+                               type="hidden"/>
+                        <input name="day" th:value="${stampHistory.day}"
+                               type="hidden"/>
                         <td class="day" name="day"
                             th:text="${stampHistory.day}"></td>
                         <td class="day_of_week"
                             th:text="${stampHistory.day_of_week}"></td>
-                        <td><input name="inTime" placeholder=""
-                                   class="form-control form-control-sm"
-                                   type="time"
-                                   th:value="${stampHistory.in_time}"></td>
-                        <td><input name="outTime" placeholder=""
-                                   class="form-control form-control-sm"
-                                   type="time"
-                                   th:value="${stampHistory.out_time}"></td>
+                        <td><input class="form-control form-control-sm"
+                                   name="inTime"
+                                   placeholder=""
+                                   th:value="${stampHistory.in_time}"
+                                   type="time"></td>
+                        <td><input class="form-control form-control-sm"
+                                   name="outTime"
+                                   placeholder=""
+                                   th:value="${stampHistory.out_time}"
+                                   type="time"></td>
                         <td th:text="${stampHistory.update_employee_name}"></td>
                         <td th:text="${stampHistory.update_date}"></td>
                     </tr>
@@ -113,28 +124,31 @@
                    th:text="${result != null ? result : ''}"></p>
                 <!-- 右側：ボタン -->
                 <div class="d-flex gap-2">
-                    <form id="regist_form" th:action="@{/register}"
-                          method="post" class="mb-0">
-                        <button type="submit" id="regist"
-                                class="btn bg_blue_info shadow height_3 btn-width-150">
+                    <form class="mb-0" id="regist_form"
+                          method="post" th:action="@{/register}">
+                        <button class="btn bg_blue_info shadow height_3 btn-width-150"
+                                id="regist"
+                                type="submit">
                             登録
                         </button>
                     </form>
-                    <form id="back_form" th:action="@{init}" method="post"
-                          class="mb-0">
-                        <button type="submit" id="back"
-                                class="btn bg_blue_info shadow height_3 btn-width-150">
+                    <form class="mb-0" id="back_form" method="post"
+                          th:action="@{init}">
+                        <button class="btn bg_blue_info shadow height_3 btn-width-150"
+                                id="back"
+                                type="submit">
                             戻る
                         </button>
                     </form>
                 </div>
             </div>
+        </form>
     </section>
 </main>
 <!-- 共通フッター -->
 <footer th:replace="~{common/footer}"></footer>
 <div th:replace="~{common/body_end_fragment :: body_end_content}"></div>
 <!-- stamp_edit.js -->
-<script src="./../js/stamp_edit.js"></script>
+<script th:src="@{/js/stamp_edit.js}"></script>
 </body>
 </html>

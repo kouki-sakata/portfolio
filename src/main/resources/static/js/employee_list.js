@@ -1,5 +1,7 @@
 // DataTables変数をグローバルに定義
 let employeeListTable;
+// 共通ローディング処理を初期化
+const datatableLoading = createDataTablesLoading();
 
 $(function () {
     // DataTablesを初期化
@@ -26,7 +28,8 @@ function initializeDataTable() {
     const csrfToken = $('meta[name="_csrf"]').attr('content');
     const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 
-    employeeListTable = $('#employee-list-table').DataTable({
+    // DataTables設定を作成
+    let employeeListTableConfig = {
         "serverSide": false,
         "responsive": {
             "details": {
@@ -84,5 +87,11 @@ function initializeDataTable() {
                 "className": "text-center"
             }
         ]
-    });
+    };
+    
+    // 共通ローディング処理を適用
+    employeeListTableConfig = datatableLoading.applyLoadingToConfig(employeeListTableConfig);
+    
+    // DataTablesを初期化
+    employeeListTable = $('#employee-list-table').DataTable(employeeListTableConfig);
 }

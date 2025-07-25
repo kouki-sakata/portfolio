@@ -1,5 +1,7 @@
 // DataTables変数をグローバルに定義
 let employeeOutputTable;
+// 共通ローディング処理を初期化
+const datatableLoading = createDataTablesLoading();
 
 $(document).ready(function() {
 	// --- 要素のキャッシュ ---
@@ -86,7 +88,8 @@ function initializeDataTable() {
     const csrfToken = $('meta[name="_csrf"]').attr('content');
     const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 
-    employeeOutputTable = $('#employee-output-table').DataTable({
+    // DataTables設定を作成
+    let employeeOutputTableConfig = {
         "serverSide": false,
         "responsive": {
             "details": {
@@ -164,7 +167,13 @@ function initializeDataTable() {
             // DataTablesの描画後にイベントを再バインド
             bindToggleAllEvent();
         }
-    });
+    };
+    
+    // 共通ローディング処理を適用
+    employeeOutputTableConfig = datatableLoading.applyLoadingToConfig(employeeOutputTableConfig);
+    
+    // DataTablesを初期化
+    employeeOutputTable = $('#employee-output-table').DataTable(employeeOutputTableConfig);
 }
 
 // 全選択機能のイベントバインド

@@ -1,5 +1,7 @@
 // DataTables変数をグローバルに定義
 let selectEmployeeTable;
+// 共通ローディング処理を初期化
+const datatableLoading = createDataTablesLoading();
 
 $(function () {
     // DataTablesを初期化
@@ -26,7 +28,8 @@ function initializeDataTable() {
     const csrfToken = $('meta[name="_csrf"]').attr('content');
     const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 
-    selectEmployeeTable = $('#select-employee-table').DataTable({
+    // DataTables設定を作成
+    let selectEmployeeTableConfig = {
         "serverSide": false,
         "responsive": {
             "details": {
@@ -87,7 +90,13 @@ function initializeDataTable() {
                 "className": "text-center"
             }
         ]
-    });
+    };
+    
+    // 共通ローディング処理を適用
+    selectEmployeeTableConfig = datatableLoading.applyLoadingToConfig(selectEmployeeTableConfig);
+    
+    // DataTablesを初期化
+    selectEmployeeTable = $('#select-employee-table').DataTable(selectEmployeeTableConfig);
 
     // 行クリック時のイベントハンドラー（DataTables用に修正）
     $('#select-employee-table tbody').on('click', '.td_link', function () {

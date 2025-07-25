@@ -1,5 +1,7 @@
 // DataTables変数をグローバルに定義
 let newsTable;
+// 共通ローディング処理を初期化
+const datatableLoading = createDataTablesLoading();
 
 // 初期表示時にイベントを発火
 $(function () {
@@ -110,7 +112,8 @@ function initializeDataTable() {
     const csrfToken = $('meta[name="_csrf"]').attr('content');
     const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
 
-    newsTable = $('#news-table').DataTable({
+    // DataTables設定を作成
+    let newsTableConfig = {
         "serverSide": false,
         "responsive": {
             "details": {
@@ -207,7 +210,13 @@ function initializeDataTable() {
             bindEvents();
             updateCheckBoxes();
         }
-    });
+    };
+    
+    // 共通ローディング処理を適用
+    newsTableConfig = datatableLoading.applyLoadingToConfig(newsTableConfig);
+    
+    // DataTablesを初期化
+    newsTable = $('#news-table').DataTable(newsTableConfig);
 }
 
 // イベントバインド関数
