@@ -163,6 +163,44 @@ Bootによる実践的なWebアプリケーション開発スキルの習得を�
 
 5. **ブラウザで `http://localhost:8080` にアクセスしてください。**
 
+### ⚙️ 環境設定（Environment Profiles）
+
+本アプリケーションは、環境に応じて異なる設定を適用できます。
+
+#### 本番環境（デフォルト）
+```bash
+# デフォルト設定で起動
+./gradlew bootRun
+```
+
+#### 開発環境
+```bash
+# 開発環境設定を使用
+./gradlew bootRun --args='--spring.profiles.active=dev'
+
+# または環境変数で指定
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
+```
+
+#### テスト環境（パスワードマイグレーション無効）
+```bash
+# テスト環境設定を使用（起動時のパスワードマイグレーションが無効化されます）
+./gradlew bootRun --args='--spring.profiles.active=test'
+
+# または環境変数で指定
+SPRING_PROFILES_ACTIVE=test ./gradlew bootRun
+```
+
+#### 個別設定による制御
+環境変数でパスワードマイグレーションのみを制御することも可能です：
+```bash
+# パスワードマイグレーションを無効化
+PASSWORD_MIGRATION_ENABLED=false ./gradlew bootRun
+
+# 環境識別子を設定
+APP_ENVIRONMENT=test ./gradlew bootRun
+```
+
 ### 🔧 開発用コマンド
 
 ```bash

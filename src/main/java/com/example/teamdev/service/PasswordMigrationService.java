@@ -39,7 +39,11 @@ public class PasswordMigrationService {
      */
     @Transactional
     public void migratePasswords() {
+        logger.info("パスワードマイグレーション処理を開始します");
+        
         List<Employee> employees = employeeMapper.getAllOrderById();
+        int migratedCount = 0;
+        int skippedCount = 0;
         
         for (Employee employee : employees) {
             String currentPassword = employee.getPassword();
@@ -49,16 +53,20 @@ public class PasswordMigrationService {
                 !currentPassword.startsWith(AppConstants.Security.BCRYPT_PREFIX_2B) && 
                 !currentPassword.startsWith(AppConstants.Security.BCRYPT_PREFIX_2Y)) {
                 
-                logger.info(MessageUtil.getMessageJa("password.migration.processing", new Object[]{employee.getId()}));
+                logger.debug("従業員ID: {} のパスワードをマイグレーション中", employee.getId());
                 
                 String hashedPassword = passwordEncoder.encode(currentPassword);
                 employee.setPassword(hashedPassword);
                 employee.setUpdate_date(Timestamp.valueOf(LocalDateTime.now()));
                 
                 employeeMapper.upDate(employee);
+                migratedCount++;
+            } else {
+                skippedCount++;
             }
         }
         
-        logger.info(MessageUtil.getMessageJa("password.migration.complete"));
+        logger.info("パスワードマイグレーション完了 - マイグレーション対象: {}件, スキップ: {}件", 
+                   migratedCount, skippedCount);
     }
 }

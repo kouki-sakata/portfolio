@@ -25,6 +25,12 @@ public class StartupConfig implements CommandLineRunner {
     
     @Value("${app.version:1.0.0}")
     private String applicationVersion;
+    
+    @Value("${app.startup.password-migration.enabled:true}")
+    private boolean passwordMigrationEnabled;
+    
+    @Value("${app.environment:production}")
+    private String environment;
 
     @Autowired
     public StartupConfig(PasswordMigrationService passwordMigrationService) {
@@ -40,9 +46,14 @@ public class StartupConfig implements CommandLineRunner {
         long startTime = LogUtil.startPerformanceMeasurement();
         
         try {
-            logger.info("パスワードマイグレーション処理開始");
-            passwordMigrationService.migratePasswords();
-            logger.info("パスワードマイグレーション処理完了");
+            // パスワードマイグレーションの実行判定
+            if (passwordMigrationEnabled) {
+                logger.info("パスワードマイグレーション処理開始");
+                passwordMigrationService.migratePasswords();
+                logger.info("パスワードマイグレーション処理完了");
+            } else {
+                logger.info("パスワードマイグレーション処理はスキップされました（環境: {}）", environment);
+            }
             
             LogUtil.logBusiness("STARTUP", null, "Application", applicationName, "SUCCESS");
             
