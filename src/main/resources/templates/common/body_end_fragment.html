@@ -5,11 +5,18 @@
         src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <!-- jquery -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-<!-- DataTables JS (安定版) -->
-<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<!-- DataTables JS (安定版) - 依存関係順序で読み込み -->
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js" 
+        onerror="console.error('DataTables core library failed to load')"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js" 
+        onerror="console.error('DataTables Bootstrap5 integration failed to load')"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js" 
+        onerror="console.error('DataTables Responsive extension failed to load')"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js" 
+        onerror="console.error('DataTables Responsive Bootstrap5 integration failed to load')"></script>
+<!-- DataTables共通ローディング処理 - DataTables読み込み完了後 -->
+<script th:src="@{/js/datatables-loading.js}" 
+        onerror="console.error('DataTables loading library failed to load')"></script>
 <!-- common.js -->
 <script th:src="@{/js/common.js}"></script>
 <!-- darkmode-init.js -->

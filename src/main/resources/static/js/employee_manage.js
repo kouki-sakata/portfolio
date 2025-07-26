@@ -22,11 +22,13 @@ $(document).ready(function () {
 
                 if (csrfToken) {
                     xhr.setRequestHeader(csrfHeader, csrfToken);
-                    console.log('CSRF Token set:', csrfToken.substring(0, 10) + '...');
+                    // Development環境でのみCSRFトークン確認ログを出力
+                    devLog('CSRF Token set:', csrfToken.substring(0, 10) + '...');
                 } else {
-                    console.warn('CSRF Token not available - checking DOM elements');
-                    console.warn('Meta CSRF:', $('meta[name="_csrf"]').attr('content'));
-                    console.warn('Input CSRF:', $('input[name="_csrf"]').val());
+                    // CSRF Token debugging - development only
+                    devWarn('CSRF Token not available - checking DOM elements');
+                    devWarn('Meta CSRF:', $('meta[name="_csrf"]').attr('content'));
+                    devWarn('Input CSRF:', $('input[name="_csrf"]').val());
                 }
 
                 // 追加のヘッダー設定

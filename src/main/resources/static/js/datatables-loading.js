@@ -286,8 +286,37 @@ class DataTablesLoading {
     }
 }
 
-// グローバルファクトリ関数
+// 依存関係チェック機能
+function checkDataTablesDependencies() {
+    const dependencies = {
+        'jQuery': typeof window.$ !== 'undefined',
+        'DataTables': typeof window.$ !== 'undefined' && typeof $.fn.DataTable !== 'undefined',
+        'DataTables Responsive': typeof window.$ !== 'undefined' && typeof $.fn.DataTable !== 'undefined' && $.fn.DataTable.Responsive
+    };
+    
+    const missing = Object.keys(dependencies).filter(dep => !dependencies[dep]);
+    
+    if (missing.length > 0) {
+        console.warn('DataTables Loading: Missing dependencies:', missing.join(', '));
+        return false;
+    }
+    
+    return true;
+}
+
+// グローバルファクトリ関数（依存関係チェック付き）
 window.createDataTablesLoading = function() {
+    if (!checkDataTablesDependencies()) {
+        console.error('DataTables Loading: Required dependencies not loaded. Creating fallback instance.');
+        // フォールバック用の最小限の実装を返す
+        return {
+            applySkeletonLoadingToConfig: function(config, tableId) {
+                console.warn('DataTables Loading: Using fallback mode for', tableId);
+                return config;
+            }
+        };
+    }
+    
     return new DataTablesLoading();
 };
 

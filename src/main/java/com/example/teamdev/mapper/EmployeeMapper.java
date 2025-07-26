@@ -28,6 +28,10 @@ public interface EmployeeMapper {
 	@Select("SELECT * FROM employee ORDER BY id")
 	List<Employee> getAllOrderById();
 
+	// 先頭から指定件数のレコードをID昇順で取得（マイグレーション事前チェック用）
+	@Select("SELECT * FROM employee ORDER BY id LIMIT #{limit}")
+	List<Employee> getTopEmployees(@Param("limit") int limit);
+
 	// 指定のidで1レコードを取得する
 	@Select("SELECT * FROM employee WHERE id = #{id}")
 	Optional<Employee> getById(@Param("id") Integer id);
