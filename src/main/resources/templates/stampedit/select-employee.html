@@ -31,12 +31,8 @@
         <form id="stamp_edit_form" method="post" th:action="@{search}">
             <input id="employee_id" name="employeeId" type="hidden"/>
             <div class="bg_white stamp_box margin_tp_2">
-                <div class="loading-overlay" id="loading-overlay">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-                <table class="table table-striped margin_tp_1" id="select-employee-table">
+                <table class="table table-striped margin_tp_1"
+                       id="select-employee-table" style="width: 100%">
                     <thead>
                     <tr>
                         <th>ID</th>

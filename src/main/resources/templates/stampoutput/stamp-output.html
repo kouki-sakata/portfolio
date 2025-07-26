@@ -60,17 +60,14 @@
                 <label class="btn btn-outline-primary" for="tbody_toggle_admin">管理者</label>
             </div>
             <div class="bg_white stamp_box margin_tp_2 table-responsive">
-                <div class="loading-overlay" id="loading-overlay">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-                <table class="table table-striped margin_tp_1" id="employee-output-table">
+                <table class="table table-striped margin_tp_1"
+                       id="employee-output-table" style="width: 100%">
                     <thead>
                     <tr>
                         <th style="width: 100px;">
                             <label for="check-all">
-                                <input class="form-check-input checkbox-large" id="check-all"
+                                <input class="form-check-input checkbox-large"
+                                       id="check-all"
                                        onclick="toggleAll(this)" title="全選択"
                                        type="checkbox">
                                 <i class="icon triangle-icon"></i>
@@ -91,10 +88,10 @@
                     出力
                 </button>
             </div>
-            </div>
             <div class="text_white2">
-            <p class="mt-4 text-danger" id="message_area"
-               th:text="${result}"></p>
+                <p class="mt-4 text-danger" id="message_area"
+                   th:text="${result}"></p>
+            </div>
         </form>
     </section>
 </main>
