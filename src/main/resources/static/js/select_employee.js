@@ -58,11 +58,13 @@ function initializeDataTable() {
             {
                 "data": "id",
                 "title": "ID",
+                "width": "80px",
                 "responsivePriority": 1
             },
             {
                 "data": "fullName",
                 "title": "氏名",
+                "width": "200px",
                 "responsivePriority": 2,
                 "render": function(data, type, row) {
                     return '<span class="td_link" style="cursor: pointer; color: blue; text-decoration: underline;">' + data + '</span>';
@@ -71,6 +73,7 @@ function initializeDataTable() {
             {
                 "data": "email",
                 "title": "メールアドレス",
+                "width": "300px",
                 "responsivePriority": 3
             }
         ],
@@ -92,8 +95,8 @@ function initializeDataTable() {
         ]
     };
     
-    // 共通ローディング処理を適用
-    selectEmployeeTableConfig = datatableLoading.applyLoadingToConfig(selectEmployeeTableConfig);
+    // 共通スケルトンローディング処理を適用
+    selectEmployeeTableConfig = datatableLoading.applySkeletonLoadingToConfig(selectEmployeeTableConfig, 'select-employee-table');
     
     // DataTablesを初期化
     selectEmployeeTable = $('#select-employee-table').DataTable(selectEmployeeTableConfig);

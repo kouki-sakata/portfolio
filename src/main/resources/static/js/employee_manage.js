@@ -15,7 +15,7 @@ $(document).ready(function () {
             "url": "/employeemanage/data",
             "type": "POST",
             "contentType": "application/json",
-            "beforeSend": function(xhr) {
+            "beforeSend": function (xhr) {
                 // CSRF トークンをメタタグまたはDOM要素から取得
                 const csrfToken = window.csrfToken || $('meta[name="_csrf"]').attr('content') || $('input[name="_csrf"]').val();
                 const csrfHeader = window.csrfHeaderName || $('meta[name="_csrf_header"]').attr('content') || 'X-CSRF-TOKEN';
@@ -33,22 +33,10 @@ $(document).ready(function () {
                 xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             },
             "data": function (d) {
-                console.log('DataTables request data:', d);
                 const requestData = JSON.stringify(d);
-                console.log('JSON request:', requestData);
                 return requestData;
             },
-            "error": function(xhr, error, code) {
-                console.error('DataTables Ajax Error Details:');
-                console.error('Status:', xhr.status);
-                console.error('Status Text:', xhr.statusText);
-                console.error('Response Text:', xhr.responseText);
-                console.error('Error:', error);
-                console.error('Code:', code);
-                console.error('Request URL:', '/employeemanage/data');
-                console.error('CSRF Token Available:', !!window.csrfToken);
-                console.error('CSRF Header Name:', window.csrfHeaderName);
-
+            "error": function (xhr, error, code) {
                 let errorMsg = 'データの取得に失敗しました。';
                 if (xhr.status === 403) {
                     errorMsg += ' 権限がないか、セッションが切れている可能性があります。';
@@ -65,34 +53,41 @@ $(document).ready(function () {
         "columns": [
             {
                 "data": null,
+                "width": "60px",
                 "responsivePriority": 1,
                 "render": function (data, type, row) {
                     return `<input type="checkbox" class="delete_check form-check-input checkbox-large" value="${row.id}">`;
                 },
                 "orderable": false
             },
-            { 
+            {
                 "data": "id",
+                "width": "80px",
                 "responsivePriority": 2
             },
-            { 
+            {
                 "data": "first_name",
+                "width": "120px",
                 "responsivePriority": 3
             },
-            { 
+            {
                 "data": "last_name",
+                "width": "120px",
                 "responsivePriority": 4
             },
-            { 
+            {
                 "data": "email",
+                "width": "250px",
                 "responsivePriority": 5
             },
-            { 
+            {
                 "data": "password",
+                "width": "150px",
                 "responsivePriority": 8
             },
             {
                 "data": "admin_flag",
+                "width": "80px",
                 "responsivePriority": 6,
                 "render": function (data, type, row) {
                     return `<input class="admin_flag form-check-input checkbox-large" disabled="disabled" type="checkbox" ${data == 1 ? 'checked' : ''}>`;
@@ -101,6 +96,7 @@ $(document).ready(function () {
             },
             {
                 "data": null,
+                "width": "60px",
                 "responsivePriority": 7,
                 "render": function (data, type, row) {
                     return '<i class="td_btn fa-solid fa-pencil"></i>';
@@ -114,8 +110,8 @@ $(document).ready(function () {
         "pageLength": 10,
         "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
         "dom": "<'row'<'col-sm-12 col-md-6'l><'col-sm-12 col-md-6'f>>" +
-               "<'row'<'col-sm-12'tr>>" +
-               "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
+            "<'row'<'col-sm-12'tr>>" +
+            "<'row'<'col-sm-12 col-md-5'i><'col-sm-12 col-md-7'p>>",
         "ordering": true,
         "order": [[1, 'asc']],
         "columnDefs": [
@@ -123,12 +119,13 @@ $(document).ready(function () {
                 "targets": [0, 1, 6, 7],
                 "className": "text-center"
             }
+
         ]
     };
 
-    // 共通ローディング処理を適用
-    employeeTableConfig = datatableLoading.applyLoadingToConfig(employeeTableConfig);
-    
+    // 共通スケルトンローディング処理を適用
+    employeeTableConfig = datatableLoading.applySkeletonLoadingToConfig(employeeTableConfig, 'employee-table');
+
     // DataTablesを初期化
     const employeeTable = $('#employee-table').DataTable(employeeTableConfig);
 
@@ -237,8 +234,8 @@ $(document).ready(function () {
                 break;
             case "input_password":
                 if ($("#input_id").val() === "" && value.trim() === "") { // 新規登録時のみ必須
-                     displayError(fieldId, "パスワードを入力してください。");
-                     isValid = false;
+                    displayError(fieldId, "パスワードを入力してください。");
+                    isValid = false;
                 } else if (value.trim() !== "" && (value.length < 8 || value.length > 16)) {
                     displayError(fieldId, "パスワードは8文字以上、16文字以内で入力してください。");
                     isValid = false;

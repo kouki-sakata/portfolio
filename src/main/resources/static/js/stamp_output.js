@@ -117,6 +117,7 @@ function initializeDataTable() {
         "columns": [
             {
                 "data": null,
+                "width": "60px",
                 "orderable": false,
                 "searchable": false,
                 "responsivePriority": 1,
@@ -127,6 +128,7 @@ function initializeDataTable() {
             {
                 "data": "id",
                 "title": "ID",
+                "width": "80px",
                 "responsivePriority": 2,
                 "render": function(data, type, row, meta) {
                     return `<span class="employee-id">${data}</span>`;
@@ -135,11 +137,13 @@ function initializeDataTable() {
             {
                 "data": "fullName",
                 "title": "氏名",
+                "width": "200px",
                 "responsivePriority": 3
             },
             {
                 "data": "email",
                 "title": "メールアドレス",
+                "width": "300px",
                 "responsivePriority": 4
             }
         ],
@@ -169,8 +173,8 @@ function initializeDataTable() {
         }
     };
     
-    // 共通ローディング処理を適用
-    employeeOutputTableConfig = datatableLoading.applyLoadingToConfig(employeeOutputTableConfig);
+    // 共通スケルトンローディング処理を適用
+    employeeOutputTableConfig = datatableLoading.applySkeletonLoadingToConfig(employeeOutputTableConfig, 'employee-output-table');
     
     // DataTablesを初期化
     employeeOutputTable = $('#employee-output-table').DataTable(employeeOutputTableConfig);

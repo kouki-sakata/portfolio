@@ -64,36 +64,43 @@ function initializeDataTable() {
             {
                 "data": "index",
                 "title": "#",
+                "width": "50px",
                 "responsivePriority": 1
             },
             {
                 "data": "update_date",
                 "title": "更新日時",
+                "width": "150px",
                 "responsivePriority": 2
             },
             {
                 "data": "employee_name",
                 "title": "従業員氏名",
+                "width": "150px",
                 "responsivePriority": 3
             },
             {
                 "data": "display_name",
                 "title": "画面名",
+                "width": "120px",
                 "responsivePriority": 6
             },
             {
                 "data": "operation_type",
                 "title": "操作種別",
+                "width": "100px",
                 "responsivePriority": 4
             },
             {
                 "data": "stamp_time",
                 "title": "打刻時刻",
+                "width": "120px",
                 "responsivePriority": 5
             },
             {
                 "data": "update_employee_name",
                 "title": "更新者氏名",
+                "width": "150px",
                 "responsivePriority": 7
             }
         ],
@@ -115,8 +122,8 @@ function initializeDataTable() {
         ]
     };
     
-    // 共通ローディング処理を適用
-    logHistoryTableConfig = datatableLoading.applyLoadingToConfig(logHistoryTableConfig);
+    // 共通スケルトンローディング処理を適用
+    logHistoryTableConfig = datatableLoading.applySkeletonLoadingToConfig(logHistoryTableConfig, 'log-history-table');
     
     // DataTablesを初期化
     logHistoryTable = $('#log-history-table').DataTable(logHistoryTableConfig);

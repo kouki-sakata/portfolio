@@ -6,7 +6,7 @@ const datatableLoading = createDataTablesLoading();
 $(function () {
     // DataTablesを初期化
     initializeDataTable();
-    
+
     // ラジオボタン変更イベント
     $('input[name="tbody_toggle"]').on("change", function () {
         const selectedValue = $(this).val();
@@ -58,16 +58,19 @@ function initializeDataTable() {
             {
                 "data": "id",
                 "title": "ID",
+                "width": "80px",
                 "responsivePriority": 1
             },
             {
                 "data": "fullName",
                 "title": "氏名",
+                "width": "200px",
                 "responsivePriority": 2
             },
             {
                 "data": "email",
                 "title": "メールアドレス",
+                "width": "300px",
                 "responsivePriority": 3
             }
         ],
@@ -88,10 +91,10 @@ function initializeDataTable() {
             }
         ]
     };
-    
-    // 共通ローディング処理を適用
-    employeeListTableConfig = datatableLoading.applyLoadingToConfig(employeeListTableConfig);
-    
+
+    // 共通スケルトンローディング処理を適用
+    employeeListTableConfig = datatableLoading.applySkeletonLoadingToConfig(employeeListTableConfig, 'employee-list-table');
+
     // DataTablesを初期化
     employeeListTable = $('#employee-list-table').DataTable(employeeListTableConfig);
 }

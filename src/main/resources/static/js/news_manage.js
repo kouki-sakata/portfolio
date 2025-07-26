@@ -141,6 +141,7 @@ function initializeDataTable() {
         "columns": [
             {
                 "data": null,
+                "width": "60px",
                 "orderable": false,
                 "searchable": false,
                 "responsivePriority": 1,
@@ -155,6 +156,7 @@ function initializeDataTable() {
             {
                 "data": "news_date",
                 "title": "日付",
+                "width": "120px",
                 "responsivePriority": 2,
                 "render": function(data, type, row, meta) {
                     return `<span class="date">${data}</span>`;
@@ -163,6 +165,7 @@ function initializeDataTable() {
             {
                 "data": "content",
                 "title": "内容",
+                "width": "400px",
                 "responsivePriority": 3,
                 "render": function(data, type, row, meta) {
                     return `<span class="content">${data}</span>`;
@@ -171,6 +174,7 @@ function initializeDataTable() {
             {
                 "data": "release_flag",
                 "title": "公開",
+                "width": "80px",
                 "orderable": false,
                 "responsivePriority": 4,
                 "render": function(data, type, row, meta) {
@@ -181,6 +185,7 @@ function initializeDataTable() {
             {
                 "data": null,
                 "title": "編集",
+                "width": "60px",
                 "orderable": false,
                 "searchable": false,
                 "responsivePriority": 5,
@@ -211,10 +216,10 @@ function initializeDataTable() {
             updateCheckBoxes();
         }
     };
-    
-    // 共通ローディング処理を適用
-    newsTableConfig = datatableLoading.applyLoadingToConfig(newsTableConfig);
-    
+
+    // 共通スケルトンローディング処理を適用
+    newsTableConfig = datatableLoading.applySkeletonLoadingToConfig(newsTableConfig, 'news-table');
+
     // DataTablesを初期化
     newsTable = $('#news-table').DataTable(newsTableConfig);
 }
