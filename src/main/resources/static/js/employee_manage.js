@@ -37,6 +37,13 @@ function initializeEmployeeTable() {
                 }
             },
             "data": function (d) {
+                // バリデーション用の最小値を確保
+                if (d.length <= 0) {
+                    d.length = 10; // デフォルト値
+                }
+                if (d.start < 0) {
+                    d.start = 0;
+                }
                 return JSON.stringify(d);
             },
             "dataSrc": function(json) {

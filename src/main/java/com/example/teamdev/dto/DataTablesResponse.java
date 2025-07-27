@@ -9,6 +9,7 @@ public class DataTablesResponse<T> {
     private long recordsTotal;
     private long recordsFiltered;
     private List<T> data;
+    private String error; // エラーメッセージ用
     
     // 既存コードとの互換性のためのデフォルトコンストラクタ
     public DataTablesResponse() {}

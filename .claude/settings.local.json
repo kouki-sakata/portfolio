@@ -22,7 +22,12 @@
       "Bash(cat **)",
       "Bash(osascript -e:*)",
       "mcp__context7__resolve-library-id",
-      "mcp__context7__get-library-docs"
+      "mcp__context7__get-library-docs",
+      "Bash(grep:*)",
+      "mcp__playwright__browser_navigate",
+      "mcp__playwright__browser_type",
+      "mcp__playwright__browser_click",
+      "Bash(pkill:*)"
     ],
     "deny": [
       "Bash(sudo:*)",

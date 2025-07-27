@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -43,7 +44,8 @@ public class EmployeeManageController {
 
     @PostMapping("/data")
     @ResponseBody
-    public DataTablesResponse getEmployeeData(@RequestBody DataTablesRequest request) {
+    @PreAuthorize("hasRole('ADMIN')")
+    public DataTablesResponse getEmployeeData(@Validated @RequestBody DataTablesRequest request) {
         logger.info("DataTables request received: draw={}, start={}, length={}",
                 request.getDraw(), request.getStart(), request.getLength());
 
@@ -109,6 +111,7 @@ public class EmployeeManageController {
      * @return 成功時は従業員管理画面へのリダイレクトパス、バリデーションエラー時や処理失敗時は従業員管理画面のビュー名
      */
     @PostMapping("regist")
+    @PreAuthorize("hasRole('ADMIN')")
     public String regist(
             @Validated EmployeeManageForm employeeManageForm,
             BindingResult bindingResult,
@@ -205,6 +208,7 @@ public class EmployeeManageController {
      * @return 従業員管理画面へのリダイレクトパス
      */
     @PostMapping("delete")
+    @PreAuthorize("hasRole('ADMIN')")
     public String delete(
             ListForm listForm,
             Model model,

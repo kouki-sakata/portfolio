@@ -54,7 +54,7 @@ $('#release').click(function() {
     // 要素が1つも存在しない場合はエラー
     if (elementCount === 0) {
         $("#delete_release_message_area").text("変更箇所がありません。");
-    }else{
+    } else {
 		//必須チェックOKの場合は変更箇所のみname属性を設定してsubmitする
 		let index = 0;
 		$('.tbody_tr').each(function() {
@@ -131,11 +131,27 @@ function initializeDataTable() {
                 }
             },
             "data": function(d) {
-                return JSON.stringify(d);
+                // クライアントサイドモード用の空のリクエスト
+                return JSON.stringify({
+                    draw: 1,
+                    start: 0,
+                    length: 1000  // 全件取得用
+                });
+            },
+            "dataSrc": function(json) {
+                // クライアントサイドモードではデータを直接返す
+                return json.data || [];
             },
             "error": function(xhr, error, code) {
                 console.error('DataTables AJAX error:', error);
-                alert('データの取得に失敗しました。');
+                console.error('XHR status:', xhr.status);
+                console.error('XHR response:', xhr.responseText);
+                
+                let errorMessage = 'データの取得に失敗しました。';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage += '\n詳細: ' + xhr.responseJSON.error;
+                }
+                alert(errorMessage);
             }
         },
         "columns": [
@@ -175,7 +191,7 @@ function initializeDataTable() {
                 "data": "release_flag",
                 "title": "公開",
                 "width": "80px",
-                "orderable": false,
+                "orderable": true,
                 "responsivePriority": 4,
                 "render": function(data, type, row, meta) {
                     const checked = data ? 'checked' : '';

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -58,6 +59,7 @@ public class NewsManageController {
     }
 
     @PostMapping("regist")
+    @PreAuthorize("hasRole('ADMIN')")
     public String regist(@Validated NewsManageForm newsManageForm, BindingResult bindingResult, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
         if (bindingResult.hasErrors()) {
             for (FieldError error : bindingResult.getFieldErrors()) {
@@ -82,6 +84,7 @@ public class NewsManageController {
     }
 
     @PostMapping("release")
+    @PreAuthorize("hasRole('ADMIN')")
     public String release(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
         try {
             Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
@@ -98,6 +101,7 @@ public class NewsManageController {
     }
 
     @PostMapping("delete")
+    @PreAuthorize("hasRole('ADMIN')")
     public String delete(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
         try {
             Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
@@ -115,12 +119,21 @@ public class NewsManageController {
 
     @PostMapping("data")
     @ResponseBody
+    @PreAuthorize("hasRole('ADMIN')")
     public DataTablesResponse<Map<String, Object>> getNewsData(@RequestBody DataTablesRequest request) {
         try {
+            logger.info("Received DataTables request: draw={}, start={}, length={}", 
+                request.getDraw(), request.getStart(), request.getLength());
             return newsManageService.getNewsForDataTables(request);
         } catch (Exception e) {
             logger.error("Exception occurred while fetching news data for DataTables", e);
-            return new DataTablesResponse<>();
+            // エラー詳細情報を含むレスポンスを返す
+            DataTablesResponse<Map<String, Object>> errorResponse = new DataTablesResponse<>();
+            errorResponse.setDraw(request != null ? request.getDraw() : 1);
+            errorResponse.setRecordsTotal(0);
+            errorResponse.setRecordsFiltered(0);
+            errorResponse.setError("データ取得エラー: " + e.getMessage());
+            return errorResponse;
         }
     }
 
