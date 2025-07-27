@@ -195,7 +195,21 @@ function initializeDataTable() {
             }
         ],
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/ja.json"
+            "emptyTable": "テーブルにデータがありません",
+            "info": "_START_ から _END_ まで（全 _TOTAL_ 件）",
+            "infoEmpty": "0 件中 0 から 0 まで表示",
+            "infoFiltered": "（全 _MAX_ 件より抽出）",
+            "lengthMenu": "_MENU_ 件表示",
+            "loadingRecords": "読み込み中...",
+            "processing": "処理中...",
+            "search": "検索:",
+            "zeroRecords": "一致するレコードがありません",
+            "paginate": {
+                "first": "最初",
+                "last": "最後",
+                "next": "次",
+                "previous": "前"
+            }
         },
         "pageLength": 10,
         "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],

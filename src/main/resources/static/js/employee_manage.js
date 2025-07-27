@@ -1,55 +1,52 @@
+// 共通ローディング処理を初期化（依存関係の確認付き）
+let datatableLoading;
+
 $(document).ready(function () {
-    // 共通ローディング処理を初期化
-    const datatableLoading = createDataTablesLoading();
+    // DataTablesローディングライブラリが利用可能になるまで待機
+    function initializeWhenReady() {
+        if (typeof window.createDataTablesLoading === 'function') {
+            datatableLoading = createDataTablesLoading();
+            initializeEmployeeTable();
+        } else {
+            console.log('Waiting for DataTables loading library...');
+            setTimeout(initializeWhenReady, 100);
+        }
+    }
+    initializeWhenReady();
+});
+
+function initializeEmployeeTable() {
+    // 既存のDataTablesインスタンスがあれば破棄
+    if ($.fn.DataTable.isDataTable('#employee-table')) {
+        $('#employee-table').DataTable().destroy();
+    }
 
     // DataTablesの設定
     let employeeTableConfig = {
+        "processing": false,
         "serverSide": true,
-        "responsive": {
-            "details": {
-                "type": 'column',
-                "target": 'tr'
-            }
-        },
         "ajax": {
             "url": "/employeemanage/data",
             "type": "POST",
             "contentType": "application/json",
-            "beforeSend": function (xhr) {
-                // CSRF トークンをメタタグまたはDOM要素から取得
-                const csrfToken = window.csrfToken || $('meta[name="_csrf"]').attr('content') || $('input[name="_csrf"]').val();
-                const csrfHeader = window.csrfHeaderName || $('meta[name="_csrf_header"]').attr('content') || 'X-CSRF-TOKEN';
-
-                if (csrfToken) {
+            "beforeSend": function(xhr) {
+                const csrfToken = $('meta[name="_csrf"]').attr('content');
+                const csrfHeader = $('meta[name="_csrf_header"]').attr('content');
+                if (csrfHeader && csrfToken) {
                     xhr.setRequestHeader(csrfHeader, csrfToken);
-                    // Development環境でのみCSRFトークン確認ログを出力
-                    devLog('CSRF Token set:', csrfToken.substring(0, 10) + '...');
-                } else {
-                    // CSRF Token debugging - development only
-                    devWarn('CSRF Token not available - checking DOM elements');
-                    devWarn('Meta CSRF:', $('meta[name="_csrf"]').attr('content'));
-                    devWarn('Input CSRF:', $('input[name="_csrf"]').val());
                 }
-
-                // 追加のヘッダー設定
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
             },
             "data": function (d) {
-                const requestData = JSON.stringify(d);
-                return requestData;
+                return JSON.stringify(d);
             },
-            "error": function (xhr, error, code) {
-                let errorMsg = 'データの取得に失敗しました。';
-                if (xhr.status === 403) {
-                    errorMsg += ' 権限がないか、セッションが切れている可能性があります。';
-                } else if (xhr.status === 500) {
-                    errorMsg += ' サーバーエラーが発生しました。';
-                } else if (xhr.status === 0) {
-                    errorMsg += ' ネットワークエラーまたはCORSの問題があります。';
-                }
-                errorMsg += '\nブラウザの開発者ツールで詳細を確認してください。';
-
-                alert(errorMsg);
+            "dataSrc": function(json) {
+                return json.data || [];
+            },
+            "error": function(xhr, error, code) {
+                console.error('DataTables AJAX error:', error);
+                console.error('XHR status:', xhr.status);
+                console.error('XHR response:', xhr.responseText);
+                alert('データの取得に失敗しました。');
             }
         },
         "columns": [
@@ -107,7 +104,21 @@ $(document).ready(function () {
             }
         ],
         "language": {
-            "url": "//cdn.datatables.net/plug-ins/1.13.7/i18n/ja.json"
+            "emptyTable": "テーブルにデータがありません",
+            "info": "_START_ から _END_ まで（全 _TOTAL_ 件）",
+            "infoEmpty": "0 件中 0 から 0 まで表示",
+            "infoFiltered": "（全 _MAX_ 件より抽出）",
+            "lengthMenu": "_MENU_ 件表示",
+            "loadingRecords": "読み込み中...",
+            "processing": "処理中...",
+            "search": "検索:",
+            "zeroRecords": "一致するレコードがありません",
+            "paginate": {
+                "first": "最初",
+                "last": "最後",
+                "next": "次",
+                "previous": "前"
+            }
         },
         "pageLength": 10,
         "lengthMenu": [[5, 10, 25, 50], [5, 10, 25, 50]],
@@ -121,15 +132,26 @@ $(document).ready(function () {
                 "targets": [0, 1, 6, 7],
                 "className": "text-center"
             }
-
-        ]
+        ],
+        "drawCallback": function(settings) {
+            // データ描画完了後にスケルトンを非表示
+            if (datatableLoading && typeof datatableLoading.hideSkeletonLoadingWithDelay === 'function') {
+                datatableLoading.hideSkeletonLoadingWithDelay('employee-table');
+            }
+        }
     };
 
-    // 共通スケルトンローディング処理を適用
-    employeeTableConfig = datatableLoading.applySkeletonLoadingToConfig(employeeTableConfig, 'employee-table');
+    // 初回ロード時にスケルトンを表示
+    datatableLoading.showSkeletonLoading('employee-table', employeeTableConfig.columns, employeeTableConfig.columnDefs);
 
     // DataTablesを初期化
-    const employeeTable = $('#employee-table').DataTable(employeeTableConfig);
+    let employeeTable;
+    try {
+        employeeTable = $('#employee-table').DataTable(employeeTableConfig);
+    } catch (error) {
+        console.error('DataTables initialization failed:', error);
+    }
+
 
     // --- イベントデリゲーション ---
 
@@ -305,4 +327,4 @@ $(document).ready(function () {
             showErrorMessage("入力内容にエラーがあります。修正してください。");
         }
     });
-});
+}

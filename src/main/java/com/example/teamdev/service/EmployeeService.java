@@ -77,9 +77,13 @@ public class EmployeeService {
             }
         }
 
+        // length が 0 の場合は デフォルト値を設定
+        int length = request.getLength() > 0 ? request.getLength() : 10;
+        int start = request.getStart() >= 0 ? request.getStart() : 0;
+        
         List<Employee> employees = employeeMapper.findFilteredEmployees(
-                request.getStart(),
-                request.getLength(),
+                start,
+                length,
                 searchValue,
                 orderColumn,
                 orderDir
@@ -89,11 +93,24 @@ public class EmployeeService {
         long totalRecords = employeeMapper.countTotalEmployees();
         long filteredRecords = searchValue.isEmpty() ? totalRecords : employeeMapper.countFilteredEmployees(searchValue);
 
-        DataTablesResponse response = new DataTablesResponse();
+        // DataTables用にEmployeeエンティティをMapに変換
+        List<Map<String, Object>> employeeDataList = new ArrayList<>();
+        for (Employee emp : employees) {
+            Map<String, Object> empData = new ConcurrentHashMap<>();
+            empData.put("id", emp.getId());
+            empData.put("first_name", emp.getFirst_name());
+            empData.put("last_name", emp.getLast_name());
+            empData.put("email", emp.getEmail());
+            empData.put("password", emp.getPassword());
+            empData.put("admin_flag", emp.getAdmin_flag());
+            employeeDataList.add(empData);
+        }
+
+        DataTablesResponse<Map<String, Object>> response = new DataTablesResponse<>();
         response.setDraw(request.getDraw());
         response.setRecordsTotal(totalRecords);
         response.setRecordsFiltered(filteredRecords);
-        response.setData(employees);
+        response.setData(employeeDataList);
 
         return response;
     }

@@ -22,8 +22,7 @@
 <link rel="stylesheet" th:href="@{/css/reset.css}">
 <link rel="stylesheet" th:href="@{/css/style.css}">
 <link rel="stylesheet" th:href="@{/css/skeleton-loading.css}">
-<!-- DataTables共通ローディング処理 -->
-<script th:src="@{/js/datatables-loading.js}"></script>
+<!-- DataTables共通ローディング処理は body_end で読み込み -->
 <!-- ダークモードちらつき防止スクリプト（インライン用） -->
 <script>
   (function() {
