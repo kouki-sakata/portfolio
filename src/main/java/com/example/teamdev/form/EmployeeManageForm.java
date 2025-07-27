@@ -18,6 +18,16 @@ import lombok.NoArgsConstructor;
 public class EmployeeManageForm {
 
 	/**
+	 * 新規作成時のバリデーショングループ
+	 */
+	public interface CreateGroup {}
+
+	/**
+	 * 更新時のバリデーショングループ
+	 */
+	public interface UpdateGroup {}
+
+	/**
 	 * 従業員ID
 	 */
 	private String employeeId;
@@ -40,9 +50,9 @@ public class EmployeeManageForm {
 	/**
 	 * パスワード
 	 */
-	@Size(min=8,max=16)
-	@Pattern(regexp = "^[a-zA-Z0-9]+$")
-	@NotBlank
+	@Size(min=8,max=16, groups = {CreateGroup.class, UpdateGroup.class})
+	@Pattern(regexp = "^[a-zA-Z0-9]+$", groups = {CreateGroup.class, UpdateGroup.class})
+	@NotBlank(groups = CreateGroup.class)  // 新規作成時のみ必須
 	private String password;
 	/**
 	 * 管理者フラグ

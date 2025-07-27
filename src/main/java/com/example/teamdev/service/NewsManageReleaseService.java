@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.teamdev.entity.News;
 import com.example.teamdev.form.ListForm;
@@ -23,6 +24,7 @@ public class NewsManageReleaseService{
 	@Autowired
 	LogHistoryRegistrationService logHistoryService;
 
+	@Transactional
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
 
 		boolean release = false;

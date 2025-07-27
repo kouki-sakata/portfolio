@@ -5,6 +5,7 @@ import com.example.teamdev.dto.DataTablesResponse;
 import com.example.teamdev.exception.DuplicateEmailException;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
+import org.springframework.validation.annotation.Validated;
 import com.example.teamdev.service.EmployeeService;
 import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
@@ -14,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
@@ -135,9 +135,15 @@ public class EmployeeManageController {
 
         try {
             if (employeeManageForm.getEmployeeId() != null && !employeeManageForm.getEmployeeId().trim().isEmpty()) {
+                // 更新の場合：パスワードは任意
                 return updateEmployee(employeeManageForm, updateEmployeeId,
                         redirectAttributes, model, session);
             } else {
+                // 新規作成の場合：パスワードは必須（フロントエンドで制御されるが、バックエンドでも検証）
+                if (employeeManageForm.getPassword() == null || employeeManageForm.getPassword().trim().isEmpty()) {
+                    model.addAttribute("globalError", "新規登録時はパスワードが必須です。");
+                    return view(model, session, redirectAttributes);
+                }
                 return createEmployee(employeeManageForm, updateEmployeeId,
                         redirectAttributes, model, session);
             }

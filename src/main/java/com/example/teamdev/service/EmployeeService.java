@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.example.teamdev.dto.DataTablesRequest;
 import com.example.teamdev.dto.DataTablesResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Set;
 
 /**
  * 従業員情報に関するビジネスロジックを担当するサービスクラス。
@@ -35,6 +36,10 @@ public class EmployeeService {
     private final Map<String, List<Employee>> employeeCache = new ConcurrentHashMap<>();
     private volatile long lastCacheUpdate = 0;
     private static final long CACHE_DURATION_MS = 5 * 60 * 1000; // 5分
+    
+    // SQLインジェクション対策: ホワイトリスト定義
+    private static final Set<String> ALLOWED_COLUMNS = Set.of("id", "first_name", "last_name", "email", "admin_flag");
+    private static final Set<String> ALLOWED_DIRECTIONS = Set.of("asc", "desc");
 
     /**
      * 必要な依存関係を注入してEmployeeServiceを構築します。
@@ -61,7 +66,7 @@ public class EmployeeService {
         String searchValue = (request.getSearch() != null && request.getSearch().getValue() != null) 
                 ? request.getSearch().getValue().trim() : "";
         
-        // ソート情報の効率的な取得
+        // ソート情報の効率的な取得とセキュリティ検証
         String orderColumn = "id";
         String orderDir = "asc";
         
@@ -71,8 +76,15 @@ public class EmployeeService {
             if (columnIndex >= 0 && columnIndex < request.getColumns().size()) {
                 String column = request.getColumns().get(columnIndex).getData();
                 if (column != null && !column.trim().isEmpty()) {
-                    orderColumn = column;
-                    orderDir = request.getOrder().get(0).getDir();
+                    // SQLインジェクション対策: カラム名の検証
+                    if (ALLOWED_COLUMNS.contains(column)) {
+                        orderColumn = column;
+                    }
+                    // ソート方向の検証
+                    String dir = request.getOrder().get(0).getDir();
+                    if (dir != null && ALLOWED_DIRECTIONS.contains(dir.toLowerCase())) {
+                        orderDir = dir.toLowerCase();
+                    }
                 }
             }
         }
