@@ -1,86 +1,168 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!-- プロファイル定義 -->
-    <springProfile name="!prod">
-        <property name="LOG_LEVEL" value="${LOG_LEVEL_ROOT:-DEBUG}"/>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    
+    <!-- プロファイル別のログ設定 -->
+    <springProfile name="dev">
+        <property name="LOG_FILE" value="logs/teamdev-dev.log"/>
+        <property name="LOG_LEVEL_ROOT" value="INFO"/>
+        <property name="LOG_LEVEL_APP" value="DEBUG"/>
+    </springProfile>
+    
+    <springProfile name="staging">
+        <property name="LOG_FILE" value="logs/teamdev-staging.log"/>
+        <property name="LOG_LEVEL_ROOT" value="INFO"/>
+        <property name="LOG_LEVEL_APP" value="INFO"/>
     </springProfile>
     
     <springProfile name="prod">
-        <property name="LOG_LEVEL" value="${LOG_LEVEL_ROOT:-INFO}"/>
+        <property name="LOG_FILE" value="logs/teamdev-prod.log"/>
+        <property name="LOG_LEVEL_ROOT" value="WARN"/>
+        <property name="LOG_LEVEL_APP" value="WARN"/>
     </springProfile>
 
     <!-- コンソール出力設定 -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) %magenta([%thread]) %cyan(%logger{36}) - %msg%n</pattern>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %highlight(%-5level) [%thread] [%X{userId:-anonymous}] %cyan(%logger{36}) - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!-- ロガー設定 -->
-    
-    <!-- アプリケーションパッケージ -->
-    <logger name="com.example.teamdev" level="${LOG_LEVEL}" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
+    <!-- ファイル出力設定（通常ログ） -->
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_FILE:-logs/teamdev.log}</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{userId:-anonymous}] [%X{requestId:-}] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE:-logs/teamdev}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>100MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
 
-    <!-- セキュリティ関連 -->
-    <logger name="com.example.teamdev.service.AuthenticationService" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
+    <!-- エラーログ専用設定 -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/teamdev-error.log</file>
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{userId:-anonymous}] [%X{requestId:-}] %logger{36} - %msg%n%ex</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/teamdev-error.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>2GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
 
-    <logger name="com.example.teamdev.config.SecurityConfig" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
+    <!-- セキュリティログ専用設定 -->
+    <appender name="SECURITY_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/teamdev-security.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] [%X{userId:-anonymous}] [%X{sessionId:-}] [%X{remoteAddr:-}] %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/teamdev-security.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>50MB</maxFileSize>
+            <maxHistory>180</maxHistory>
+            <totalSizeCap>5GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
 
-    <!-- パフォーマンス関連 -->
-    <logger name="com.example.teamdev.service.StampService" level="INFO" additivity="false">
-        <appender-ref ref="CONSOLE"/>
-    </logger>
-
-    <!-- Spring Framework -->
-    <logger name="org.springframework.web" level="${LOG_LEVEL_WEB:-INFO}"/>
-    <logger name="org.springframework.security" level="${LOG_LEVEL_SECURITY:-INFO}"/>
-    <logger name="org.springframework.boot.actuate" level="INFO"/>
-    
-    <!-- データベース関連 -->
-    <logger name="org.hibernate" level="${LOG_LEVEL_HIBERNATE:-WARN}"/>
-    <logger name="org.hibernate.SQL" level="${LOG_LEVEL_SQL:-WARN}"/>
-    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="WARN"/>
-    <logger name="com.zaxxer.hikari" level="WARN"/>
-    
-    <!-- MyBatis -->
-    <logger name="com.example.teamdev.mapper" level="${LOG_LEVEL_MAPPER:-INFO}"/>
-    <logger name="org.mybatis" level="WARN"/>
-
-    <!-- 外部ライブラリ -->
-    <logger name="org.thymeleaf" level="WARN"/>
-    <logger name="org.apache.catalina" level="WARN"/>
-    <logger name="org.apache.coyote" level="WARN"/>
-
-    <!-- ルートロガー -->
-    <root level="${LOG_LEVEL}">
-        <appender-ref ref="CONSOLE"/>
-    </root>
-
-    <!-- プロファイル別追加設定 -->
+    <!-- 開発環境専用設定 -->
     <springProfile name="dev">
-        <!-- 開発環境では詳細ログを出力 -->
-        <logger name="com.example.teamdev" level="DEBUG"/>
-        <logger name="org.springframework.web" level="DEBUG"/>
+        <logger name="com.example.teamdev" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <logger name="org.springframework.web" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
     </springProfile>
 
+    <!-- ステージング環境専用設定 -->
+    <springProfile name="staging">
+        <logger name="com.example.teamdev" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <logger name="com.example.teamdev.aspect.SessionValidationAspect" level="INFO" additivity="false">
+            <appender-ref ref="SECURITY_FILE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- 本番環境専用設定 -->
+    <springProfile name="prod">
+        <logger name="com.example.teamdev" level="WARN" additivity="false">
+            <appender-ref ref="FILE"/>
+        </logger>
+        <logger name="com.example.teamdev.security" level="INFO" additivity="false">
+            <appender-ref ref="SECURITY_FILE"/>
+        </logger>
+        <logger name="com.example.teamdev.aspect.SessionValidationAspect" level="INFO" additivity="false">
+            <appender-ref ref="SECURITY_FILE"/>
+            <appender-ref ref="FILE"/>
+        </logger>
+        <logger name="org.springframework.security" level="WARN" additivity="false">
+            <appender-ref ref="SECURITY_FILE"/>
+        </logger>
+        <root level="WARN">
+            <appender-ref ref="FILE"/>
+            <appender-ref ref="ERROR_FILE"/>
+        </root>
+    </springProfile>
+
+    <!-- テスト環境設定 -->
     <springProfile name="test">
-        <!-- テスト環境ではコンソール出力のみ -->
         <root level="WARN">
             <appender-ref ref="CONSOLE"/>
         </root>
     </springProfile>
 
+    <!-- SQLインジェクション対策：MyBatisのSQLログを制限 -->
     <springProfile name="prod">
-        <!-- 本番環境では最小限のログ -->
-        <logger name="com.example.teamdev" level="INFO"/>
-        <logger name="org.springframework.web" level="WARN"/>
-        <logger name="org.springframework.security" level="WARN"/>
+        <logger name="com.example.teamdev.mapper" level="ERROR" additivity="false">
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
+        <logger name="org.apache.ibatis" level="ERROR" additivity="false">
+            <appender-ref ref="ERROR_FILE"/>
+        </logger>
     </springProfile>
+
+    <!-- 監査ログ用設定（重要な操作の記録） -->
+    <logger name="AUDIT" level="INFO" additivity="false">
+        <appender-ref ref="SECURITY_FILE"/>
+    </logger>
+
+    <!-- 外部ライブラリログレベル制御 -->
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.hibernate.SQL" level="WARN"/>
+    <logger name="com.zaxxer.hikari" level="WARN"/>
+    <logger name="org.thymeleaf" level="WARN"/>
+    <logger name="org.apache.catalina" level="WARN"/>
+    <logger name="org.apache.coyote" level="WARN"/>
+    <logger name="org.mybatis" level="WARN"/>
+
 </configuration>

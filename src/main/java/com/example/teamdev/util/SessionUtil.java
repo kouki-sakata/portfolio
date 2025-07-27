@@ -51,14 +51,15 @@ public class SessionUtil {
                     "セッションエラーが発生しました。再度ログインしてください。");
             return null;
         }
-        try {
-            return Integer.parseInt(loggedInEmployeeMap.get("id").toString());
-        } catch (NumberFormatException e) {
-            logger.error("セッション内の従業員IDの形式が無効です: {}",
-                    loggedInEmployeeMap.get("id"), e);
-            model.addAttribute("registResult",
-                    "セッション内の従業員IDの形式が不正です。再度ログインしてください。");
-            return null;
-        }
+        
+        // NumberUtilを使用した安全な変換
+        return NumberUtil.safeObjectToInt(loggedInEmployeeMap.get("id"))
+                .orElseGet(() -> {
+                    logger.error("セッション内の従業員IDの形式が無効です: {}",
+                            loggedInEmployeeMap.get("id"));
+                    model.addAttribute("registResult",
+                            "セッション内の従業員IDの形式が不正です。再度ログインしてください。");
+                    return null;
+                });
     }
 }

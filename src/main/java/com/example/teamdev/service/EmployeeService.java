@@ -13,12 +13,14 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import com.example.teamdev.dto.DataTablesRequest;
 import com.example.teamdev.dto.DataTablesResponse;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 import java.util.Set;
 
 /**
@@ -31,11 +33,6 @@ public class EmployeeService {
     private final EmployeeMapper employeeMapper;
     private final LogHistoryRegistrationService logHistoryService;
     private final PasswordEncoder passwordEncoder;
-    
-    // クエリキャッシュの実装検討: 単純なメモリキャッシュ
-    private final Map<String, List<Employee>> employeeCache = new ConcurrentHashMap<>();
-    private volatile long lastCacheUpdate = 0;
-    private static final long CACHE_DURATION_MS = 5 * 60 * 1000; // 5分
     
     // SQLインジェクション対策: ホワイトリスト定義
     private static final Set<String> ALLOWED_COLUMNS = Set.of("id", "first_name", "last_name", "email", "admin_flag");
@@ -61,6 +58,10 @@ public class EmployeeService {
      * DataTables用の従業員データを取得します。
      * パフォーマンス最適化: デフォルト値の処理とバリデーション改善
      */
+    @Cacheable(value = "employeeDataTables", 
+               key = "#request.search?.value + '_' + #request.start + '_' + #request.length + '_' + " +
+                     "(#request.order != null && !#request.order.empty ? #request.order[0].column : 'id') + '_' + " +
+                     "(#request.order != null && !#request.order.empty ? #request.order[0].dir : 'asc')")
     public DataTablesResponse getEmployeesForDataTables(DataTablesRequest request) {
         // パフォーマンス最適化: 検索値の早期初期化
         String searchValue = (request.getSearch() != null && request.getSearch().getValue() != null) 
@@ -108,7 +109,7 @@ public class EmployeeService {
         // DataTables用にEmployeeエンティティをMapに変換
         List<Map<String, Object>> employeeDataList = new ArrayList<>();
         for (Employee emp : employees) {
-            Map<String, Object> empData = new ConcurrentHashMap<>();
+            Map<String, Object> empData = new HashMap<>();
             empData.put("id", emp.getId());
             empData.put("first_name", emp.getFirst_name());
             empData.put("last_name", emp.getLast_name());
@@ -137,6 +138,7 @@ public class EmployeeService {
      * @throws DuplicateEmailException メールアドレスが重複している場合
      */
     @Transactional
+    @CacheEvict(value = {"employees", "employeeDataTables"}, allEntries = true)
     public Employee createEmployee(EmployeeManageForm form,
             Integer updateEmployeeId) throws DuplicateEmailException {
         if (employeeMapper.getEmployeeByEmail(form.getEmail()) != null) {
@@ -171,6 +173,7 @@ public class EmployeeService {
      * @throws EmployeeNotFoundException 更新対象の従業員が見つからない場合
      */
     @Transactional
+    @CacheEvict(value = {"employees", "employeeDataTables", "employeeById"}, allEntries = true)
     public Employee updateEmployee(Integer employeeId, EmployeeManageForm form,
             Integer updateEmployeeId)
             throws DuplicateEmailException, EmployeeNotFoundException {
@@ -207,6 +210,7 @@ public class EmployeeService {
      * @param adminFlag フィルタリングする管理者フラグ (0: 一般, 1: 管理者)。nullの場合は全従業員を取得。
      * @return {@link Employee} のリスト。従業員が存在しない場合は空のリスト。
      */
+    @Cacheable(value = "employees", key = "#adminFlag != null ? #adminFlag : 'all'")
     public List<Employee> getAllEmployees(Integer adminFlag) {
         if (adminFlag == null) {
             // 管理者フラグが指定されていない場合は全件取得
@@ -238,6 +242,7 @@ public class EmployeeService {
      * @param updateEmployeeId この操作を行う従業員のID（操作履歴用）
      */
     @Transactional
+    @CacheEvict(value = {"employees", "employeeDataTables", "employeeById"}, allEntries = true)
     public void deleteEmployees(ListForm listForm, Integer updateEmployeeId) {
         // N+1問題解決：バッチ削除を使用
         List<Integer> idList = listForm.getIdList().stream()
@@ -258,8 +263,8 @@ public class EmployeeService {
      * 従業員キャッシュをクリアします。
      * データの更新・削除時に呼び出してデータの整合性を保ちます。
      */
-    private void clearEmployeeCache() {
-        employeeCache.clear();
-        lastCacheUpdate = 0;
+    @CacheEvict(value = {"employees", "employeeDataTables", "employeeById"}, allEntries = true)
+    public void clearEmployeeCache() {
+        // Spring Cacheで自動的にキャッシュがクリアされるため、特別な処理は不要
     }
 }
