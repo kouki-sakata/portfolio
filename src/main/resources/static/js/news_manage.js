@@ -55,21 +55,55 @@ $('#release').click(function() {
     if (elementCount === 0) {
         $("#delete_release_message_area").text("変更箇所がありません。");
     } else {
+		// 既存のname属性をクリア
+		$('.submit_release_flag').removeAttr('name').val('');
+		$('.id').removeAttr('name');
+		
 		//必須チェックOKの場合は変更箇所のみname属性を設定してsubmitする
 		let index = 0;
-		$('.tbody_tr').each(function() {
-	        // tbody_tr内のrelease_flagクラスを持つ要素で、value_changeクラスがある場合
-	        $(this).find('.release_flag.value_change').each(function() {
-	            // 変更行の.submit_release_flagにname属性と値を設定
-		        $(this).closest('tr').find('.submit_release_flag').attr('name', 'editList[' + index +'][releaseFlag]');
-		        let isChecked = $(this).prop('checked');
-			    let submitValue = isChecked ? "true" : "false";
-			    $(this).closest('tr').find('.submit_release_flag').val(submitValue);
-		        // 変更行の.idにname属性を設定
-		        $(this).closest('tr').find('.id').attr('name', 'editList[' + index +'][id]');
-		        index++;
-	        });
-    	});
+		
+		// DataTablesの全ての行を対象にする
+		newsTable.rows().every(function(rowIdx, tableLoop, rowLoop) {
+			let rowNode = this.node();
+			let $row = $(rowNode);
+			
+			// 該当行でrelease_flagの変更があるかチェック
+			let $releaseFlag = $row.find('.release_flag.value_change');
+			if ($releaseFlag.length > 0) {
+				console.log('Processing changed row:', index);
+				
+				// IDを取得
+				let id = $row.find('.id').val();
+				let isChecked = $releaseFlag.prop('checked');
+				let submitValue = isChecked ? "true" : "false";
+				
+				console.log('ID:', id, 'Release Flag:', submitValue);
+				
+				// hiddenフィールドを動的に作成してフォームに追加
+				let idInput = $('<input>').attr({
+					type: 'hidden',
+					name: 'editList[' + index + '][id]',
+					value: id
+				});
+				
+				let releaseFlagInput = $('<input>').attr({
+					type: 'hidden',
+					name: 'editList[' + index + '][releaseFlag]',
+					value: submitValue
+				});
+				
+				$('#delete_release_form').append(idInput).append(releaseFlagInput);
+				index++;
+			}
+		});
+		
+		console.log('Total items to submit:', index);
+		
+		if (index === 0) {
+			$("#delete_release_message_area").text("変更箇所がありません。");
+			return;
+		}
+		
     	// フォームのアクションを変更
 	    let newAction = "release";
 	    $("#delete_release_form").attr("action", newAction);
@@ -244,6 +278,11 @@ function initializeDataTable() {
             // DataTablesの描画後にイベントを再バインド
             bindEvents();
             updateCheckBoxes();
+            
+            // 各行にクラスを追加してJavaScriptでの行識別を改善
+            $('#news-table tbody tr').each(function(index) {
+                $(this).addClass('tbody_tr data-row-' + index);
+            });
         }
     };
 
@@ -277,6 +316,8 @@ function bindEvents() {
     // 公開チェックボックス変更イベント
     $('.release_flag').off('change').on('change', function() {
         $(this).addClass("value_change");
+        console.log('Release flag changed for ID:', $(this).closest('tr').find('.id').val());
+        console.log('New value:', $(this).prop('checked'));
         updateCheckBoxes();
     });
 }

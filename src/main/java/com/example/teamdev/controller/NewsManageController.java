@@ -10,6 +10,7 @@ import com.example.teamdev.service.NewsManageReleaseService;
 import com.example.teamdev.service.NewsManageService;
 import com.example.teamdev.util.SpringSecurityModelUtil;
 import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,18 +86,59 @@ public class NewsManageController {
 
     @PostMapping("release")
     @PreAuthorize("hasRole('ADMIN')")
-    public String release(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session) {
+    public String release(ListForm listForm, Model model, RedirectAttributes redirectAttributes, HttpSession session, HttpServletRequest request) {
+        logger.debug("NewsManageController.release started");
+        
+        // リクエストパラメータをすべてログ出力
+        logger.info("=== Request Parameters ===");
+        request.getParameterMap().forEach((key, values) -> {
+            logger.info("Parameter: {} = {}", key, java.util.Arrays.toString(values));
+        });
+        logger.info("=== End Request Parameters ===");
+        
+        logger.info("Release request received - ListForm: {}", listForm);
+        if (listForm != null) {
+            logger.info("ListForm.idList: {}", listForm.getIdList());
+            logger.info("ListForm.editList: {}", listForm.getEditList());
+            if (listForm.getEditList() != null) {
+                logger.info("EditList size: {}", listForm.getEditList().size());
+                for (int i = 0; i < listForm.getEditList().size(); i++) {
+                    logger.info("EditList[{}]: {}", i, listForm.getEditList().get(i));
+                }
+            }
+        }
+        
         try {
-            Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
-            if (updateEmployeeId == null) {
+            if (listForm == null) {
+                logger.error("ListForm is null in release request");
+                redirectAttributes.addFlashAttribute("releaseResult", "エラー: 無効なリクエストです");
                 return "redirect:/newsmanage/init";
             }
+            
+            if (listForm.getEditList() == null || listForm.getEditList().isEmpty()) {
+                logger.warn("EditList is null or empty in release request");
+                redirectAttributes.addFlashAttribute("releaseResult", "エラー: 選択されたアイテムがありません");
+                return "redirect:/newsmanage/init";
+            }
+            
+            logger.debug("ListForm contains {} items", listForm.getEditList().size());
+            
+            Integer updateEmployeeId = SpringSecurityModelUtil.getCurrentEmployeeId(model, redirectAttributes);
+            if (updateEmployeeId == null) {
+                logger.error("updateEmployeeId is null");
+                return "redirect:/newsmanage/init";
+            }
+            
+            logger.info("Calling newsManageReleaseService.execute with updateEmployeeId: {}", updateEmployeeId);
             newsManageReleaseService.execute(listForm, updateEmployeeId);
+            
+            logger.info("Release operation completed successfully");
             redirectAttributes.addFlashAttribute("releaseResult", "公開しました");
             return "redirect:/newsmanage/init";
         } catch (Exception e) {
             logger.error("Exception occurred during release", e);
-            return "error";
+            redirectAttributes.addFlashAttribute("releaseResult", "エラーが発生しました: " + e.getMessage());
+            return "redirect:/newsmanage/init";
         }
     }
 

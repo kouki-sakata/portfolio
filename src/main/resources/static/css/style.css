@@ -428,9 +428,10 @@ section {
   }
 
   section {
-    margin: 0 1.3rem;
-    width: auto; /* gridに任せる */
-    padding: 0;
+    margin: 0 auto;
+    padding: 0 1.3rem;
+    width: 100%;
+    max-width: 1500px;
   }
 
   .common_header {
