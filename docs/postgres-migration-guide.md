@@ -87,6 +87,12 @@ LOAD DATABASE
 4. Smoke Test を実行（ログイン、打刻、履歴閲覧、従業員編集など）
 5. メンテナンスを解除し、メトリクスを監視
 
+> デプロイ切替時に必要なアクション（運用担当向け）
+> - GitHub Actions / GitHub Secrets を PostgreSQL 用に更新（項番 9 を参照）
+> - インフラ環境（AWS Elastic Beanstalk / ECS / Docker）側の接続文字列を Postgres に書き換え
+> - pgloader リハーサルで使用したログと手順を元に、実環境でも差分取り込みを実施
+> - 切り戻し手順（旧 MySQL サービス再有効化、旧 Jar 再デプロイ）が即座に実行できる状態で待機
+
 ## 7. ロールバック戦略
 
 - 切り戻し用に旧 MySQL のスナップショットを保持
