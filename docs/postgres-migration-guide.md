@@ -52,6 +52,8 @@ LOAD DATABASE
 
 3. `pgloader migration.load` を実行
 
+> Rehearsal: ステージング環境での手順書とテンプレートを `docs/pgloader/` に配置しました。`staging-migration.load` をコピーし、pgloader 実行後に取得したログを残してください。
+
 ### 3.2 CSV 経由の手動移行（小規模データ向け）
 
 1. `mysqldump --tab` でテーブルごとに TSV を吐き出す
@@ -103,6 +105,24 @@ A. Docker が動作していること／`DOCKER_HOST` 設定が正しいこと�
 
 ご不明点があれば Issue または Slack で連絡してください。
 
+## 9. Secrets / 接続情報のローテーション手順
+
+1. **GitHub Secrets の更新**
+   - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USERNAME`, `DB_PASSWORD` を PostgreSQL 用の値へ変更。
+   - `SPRING_PROFILES_ACTIVE` を `test`/`staging`/`prod` それぞれで確認し、既存パイプラインが参照するシークレット名の差分を洗い出す。
+   - Secrets 更新後に `workflow_dispatch` で `ci.yml` をトリガーし、接続が成功することを確認。
+
+2. **AWS / EB / ECS 等のデプロイメント環境**
+   - Parameter Store / Secrets Manager / 環境変数に登録されている MySQL 資格情報を PostgreSQL のものに更新。
+   - ローテーション時はメンテナンスモードを有効化し、アプリケーション再起動時に新しい接続先が利用されることを確認。
+
+3. **ローカル `.env`**
+   - チームメンバー全員に最新テンプレート（`.env.example`）を共有し、MySQL のままになっている項目がないかチェック。
+
+4. **監査・証跡**
+   - Secrets を更新した日時・担当者・検証結果をチケットに追記し、コンプライアンス要件を満たす。
+
+
 ## 付録: ローカル検証ログ (2025-09-25)
 
 - `.env` を PostgreSQL 用のポート (`5432`)・資格情報に更新し、`DOCKER_DB_*` 変数を `teamdev_user` / `teamdev_pass` へ統一。
@@ -110,3 +130,4 @@ A. Docker が動作していること／`DOCKER_HOST` 設定が正しいこと�
 - `psql` で `\dt` を実行して `employee`, `log_history`, `news`, `stamp_history` テーブルが作成済みであることを確認。
 - `SELECT COUNT(*) FROM employee;` の結果 `100` が返り、`02_data.sql` の初期データがロードされていることを検証。
 - `.github/workflows/feature.yml` の統合テスト用サービスを MySQL から PostgreSQL 16 に切り替え、CI でも `01_schema.sql` / `02_data.sql` を適用するよう更新。
+- `docs/pgloader/` にステージングリハーサル用の pgloader テンプレートと手順を追加（本番前に staging-migration.local.load を作成して実行ログを収集すること）。
