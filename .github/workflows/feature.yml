@@ -21,53 +21,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # 全履歴を取得（差分チェックのため）
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # 全履歴を取得（差分チェックのため）
 
-    - name: Check branch naming convention
-      run: |
-        BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
-        echo "Checking branch name: $BRANCH_NAME"
-        
-        if [[ ! "$BRANCH_NAME" =~ ^(feature|bugfix|hotfix)/.+ ]]; then
-          echo "❌ Branch name must start with 'feature/', 'bugfix/', or 'hotfix/'"
-          exit 1
-        fi
-        
-        if [[ ${#BRANCH_NAME} -gt 50 ]]; then
-          echo "❌ Branch name is too long (max 50 characters)"
-          exit 1
-        fi
-        
-        echo "✅ Branch name is valid"
+      - name: Check branch naming convention
+        run: |
+          BRANCH_NAME=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}
+          echo "Checking branch name: $BRANCH_NAME"
+          
+          if [[ ! "$BRANCH_NAME" =~ ^(feature|bugfix|hotfix)/.+ ]]; then
+            echo "❌ Branch name must start with 'feature/', 'bugfix/', or 'hotfix/'"
+            exit 1
+          fi
+          
+          if [[ ${#BRANCH_NAME} -gt 50 ]]; then
+            echo "❌ Branch name is too long (max 50 characters)"
+            exit 1
+          fi
+          
+          echo "✅ Branch name is valid"
 
-    - name: Check commit messages
-      run: |
-        # 最新のコミットメッセージをチェック
-        COMMIT_MSG=$(git log -1 --pretty=format:"%s")
-        echo "Checking commit message: $COMMIT_MSG"
-        
-        # コミットメッセージの形式をチェック（例: feat: 新機能, fix: バグ修正）
-        if [[ ! "$COMMIT_MSG" =~ ^(feat|fix|docs|style|refactor|test|chore):.+ ]]; then
-          echo "⚠️ Commit message should follow conventional format: type: description"
-          echo "   Examples: feat: add new feature, fix: resolve bug"
-        fi
+      - name: Check commit messages
+        run: |
+          # 最新のコミットメッセージをチェック
+          COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+          echo "Checking commit message: $COMMIT_MSG"
+          
+          # コミットメッセージの形式をチェック（例: feat: 新機能, fix: バグ修正）
+          if [[ ! "$COMMIT_MSG" =~ ^(feat|fix|docs|style|refactor|test|chore):.+ ]]; then
+            echo "⚠️ Commit message should follow conventional format: type: description"
+            echo "   Examples: feat: add new feature, fix: resolve bug"
+          fi
 
-    - name: Check for large files
-      run: |
-        # 大きなファイルをチェック（5MB以上）
-        LARGE_FILES=$(find . -type f -size +5M -not -path "./.git/*" -not -path "./build/*" -not -path "./.gradle/*")
-        
-        if [ -n "$LARGE_FILES" ]; then
-          echo "❌ Large files detected (>5MB):"
-          echo "$LARGE_FILES"
-          echo "Consider using Git LFS or reducing file size"
-          exit 1
-        fi
-        
-        echo "✅ No large files detected"
+      - name: Check for large files
+        run: |
+          # 大きなファイルをチェック（5MB以上）
+          LARGE_FILES=$(find . -type f -size +5M -not -path "./.git/*" -not -path "./build/*" -not -path "./.gradle/*")
+          
+          if [ -n "$LARGE_FILES" ]; then
+            echo "❌ Large files detected (>5MB):"
+            echo "$LARGE_FILES"
+            echo "Consider using Git LFS or reducing file size"
+            exit 1
+          fi
+          
+          echo "✅ No large files detected"
 
   quick-test:
     name: Quick Tests
@@ -75,49 +75,49 @@ jobs:
     needs: validate
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'eclipse-temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Compile code
-      run: ./gradlew compileJava compileTestJava
+      - name: Compile code
+        run: ./gradlew compileJava compileTestJava
 
-    - name: Run unit tests (fast)
-      run: ./gradlew test --parallel --max-workers=4
-      env:
-        SPRING_PROFILES_ACTIVE: test
-        LOG_LEVEL_ROOT: ERROR
+      - name: Run unit tests (fast)
+        run: ./gradlew test --parallel --max-workers=4
+        env:
+          SPRING_PROFILES_ACTIVE: test
+          LOG_LEVEL_ROOT: ERROR
 
-    - name: Check code style
-      run: ./gradlew checkstyleMain checkstyleTest || true
+      - name: Check code style
+        run: ./gradlew checkstyleMain checkstyleTest || true
 
-    - name: Upload quick test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: quick-test-results
-        path: |
-          build/test-results/test/
-          build/reports/tests/test/
-          build/reports/checkstyle/
+      - name: Upload quick test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: quick-test-results
+          path: |
+            build/test-results/test/
+            build/reports/tests/test/
+            build/reports/checkstyle/
 
   security-check:
     name: Security Check
@@ -125,118 +125,118 @@ jobs:
     needs: validate
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'eclipse-temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Run security scan (quick)
-      run: |
-        # 軽量なセキュリティチェック
-        ./gradlew dependencyCheckAnalyze --info || true
+      - name: Run security scan (quick)
+        run: |
+          # 軽量なセキュリティチェック
+          ./gradlew dependencyCheckAnalyze --info || true
 
-    - name: Scan for secrets
-      uses: gitleaks/gitleaks-action@v2
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Scan for secrets
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Check for hardcoded credentials
-      run: |
-        # 簡単なパターンマッチングでハードコードされた認証情報をチェック
-        echo "Checking for potential hardcoded secrets..."
-        
-        # パスワード、APIキー、トークンなどのパターン
-        PATTERNS=(
-          "password\s*=\s*['\"][^'\"]+['\"]"
-          "api[_-]?key\s*=\s*['\"][^'\"]+['\"]"
-          "secret\s*=\s*['\"][^'\"]+['\"]"
-          "token\s*=\s*['\"][^'\"]+['\"]"
-        )
-        
-        for pattern in "${PATTERNS[@]}"; do
-          MATCHES=$(grep -r -i -E "$pattern" src/ || true)
-          if [ -n "$MATCHES" ]; then
-            echo "⚠️ Potential hardcoded secret found:"
-            echo "$MATCHES"
-          fi
-        done
+      - name: Check for hardcoded credentials
+        run: |
+          # 簡単なパターンマッチングでハードコードされた認証情報をチェック
+          echo "Checking for potential hardcoded secrets..."
+          
+          # パスワード、APIキー、トークンなどのパターン
+          PATTERNS=(
+            "password\s*=\s*['\"][^'\"]+['\"]"
+            "api[_-]?key\s*=\s*['\"][^'\"]+['\"]"
+            "secret\s*=\s*['\"][^'\"]+['\"]"
+            "token\s*=\s*['\"][^'\"]+['\"]"
+          )
+          
+          for pattern in "${PATTERNS[@]}"; do
+            MATCHES=$(grep -r -i -E "$pattern" src/ || true)
+            if [ -n "$MATCHES" ]; then
+              echo "⚠️ Potential hardcoded secret found:"
+              echo "$MATCHES"
+            fi
+          done
 
   code-analysis:
     name: Code Analysis
     runs-on: ubuntu-latest
-    needs: [validate, quick-test]
+    needs: [ validate, quick-test ]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'eclipse-temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Analyze code complexity
-      run: |
-        echo "Analyzing code complexity..."
-        # シンプルな複雑度分析
-        find src/main/java -name "*.java" | xargs wc -l | sort -n | tail -10 > complexity-report.txt
-        echo "Top 10 largest files:"
-        cat complexity-report.txt
+      - name: Analyze code complexity
+        run: |
+          echo "Analyzing code complexity..."
+          # シンプルな複雑度分析
+          find src/main/java -name "*.java" | xargs wc -l | sort -n | tail -10 > complexity-report.txt
+          echo "Top 10 largest files:"
+          cat complexity-report.txt
 
-    - name: Check TODOs and FIXMEs
-      run: |
-        echo "Checking for TODOs and FIXMEs..."
-        TODO_COUNT=$(grep -r -i "TODO\|FIXME\|XXX\|HACK" src/ | wc -l || echo "0")
-        echo "Found $TODO_COUNT TODO/FIXME comments"
-        
-        if [ "$TODO_COUNT" -gt 20 ]; then
-          echo "⚠️ High number of TODO/FIXME comments ($TODO_COUNT)"
-          echo "Consider addressing some before merging"
-        fi
+      - name: Check TODOs and FIXMEs
+        run: |
+          echo "Checking for TODOs and FIXMEs..."
+          TODO_COUNT=$(grep -r -i "TODO\|FIXME\|XXX\|HACK" src/ | wc -l || echo "0")
+          echo "Found $TODO_COUNT TODO/FIXME comments"
+          
+          if [ "$TODO_COUNT" -gt 20 ]; then
+            echo "⚠️ High number of TODO/FIXME comments ($TODO_COUNT)"
+            echo "Consider addressing some before merging"
+          fi
 
-    - name: Upload analysis results
-      uses: actions/upload-artifact@v4
-      with:
-        name: code-analysis
-        path: complexity-report.txt
+      - name: Upload analysis results
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-analysis
+          path: complexity-report.txt
 
   integration-test:
     name: Integration Tests
     runs-on: ubuntu-latest
-    needs: [quick-test, security-check]
+    needs: [ quick-test, security-check ]
     if: contains(github.event.head_commit.message, '[full-test]') || github.event_name == 'pull_request'
 
     services:
@@ -255,127 +255,127 @@ jobs:
           --health-retries=5
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'eclipse-temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Wait for PostgreSQL
-      env:
-        PGPASSWORD: test_password
-      run: |
-        for i in {1..30}; do
-          if pg_isready -h 127.0.0.1 -p 5432 -d teamdev_test_db -U test_user; then
-            echo "PostgreSQL is ready"
-            break
-          fi
-          echo "Waiting for PostgreSQL..."
-          sleep 2
-        done
+      - name: Wait for PostgreSQL
+        env:
+          PGPASSWORD: test_password
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -d teamdev_test_db -U test_user; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL..."
+            sleep 2
+          done
 
-    - name: Install PostgreSQL client
-      run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
 
-    - name: Set up test database
-      env:
-        PGPASSWORD: test_password
-      run: |
-        psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/01_schema.sql
-        psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/02_data.sql
+      - name: Set up test database
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/01_schema.sql
+          psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/02_data.sql
 
-    - name: Run integration tests
-      run: ./gradlew test integrationTest || true
-      env:
-        DB_HOST: 127.0.0.1
-        DB_PORT: 5432
-        DB_NAME: teamdev_test_db
-        DB_USERNAME: test_user
-        DB_PASSWORD: test_password
-        SPRING_PROFILES_ACTIVE: test
+      - name: Run integration tests
+        run: ./gradlew test integrationTest || true
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_NAME: teamdev_test_db
+          DB_USERNAME: test_user
+          DB_PASSWORD: test_password
+          SPRING_PROFILES_ACTIVE: test
 
-    - name: Upload integration test results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: integration-test-results
-        path: |
-          build/test-results/
-          build/reports/tests/
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integration-test-results
+          path: |
+            build/test-results/
+            build/reports/tests/
 
   build-test:
     name: Build Test
     runs-on: ubuntu-latest
-    needs: [quick-test]
+    needs: [ quick-test ]
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up JDK 21
-      uses: actions/setup-java@v4
-      with:
-        java-version: ${{ env.JAVA_VERSION }}
-        distribution: 'eclipse-temurin'
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
 
-    - name: Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
+      - name: Cache Gradle packages
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
 
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Build application
-      run: ./gradlew build -x test
+      - name: Build application
+        run: ./gradlew build -x test
 
-    - name: Test Docker build
-      run: |
-        docker build -t teamdev:feature-test .
-        echo "Docker image built successfully"
+      - name: Test Docker build
+        run: |
+          docker build -t teamdev:feature-test .
+          echo "Docker image built successfully"
 
   summary:
     name: Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [validate, quick-test, security-check, code-analysis, build-test]
+    needs: [ validate, quick-test, security-check, code-analysis, build-test ]
     if: always()
 
     steps:
-    - name: Generate summary
-      run: |
-        echo "## Feature Branch Pipeline Summary" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo "### Results:" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Validation: ${{ needs.validate.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Quick Tests: ${{ needs.quick-test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Security Check: ${{ needs.security-check.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Code Analysis: ${{ needs.code-analysis.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "- ✅ Build Test: ${{ needs.build-test.result }}" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        
-        if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.quick-test.result }}" == "success" && "${{ needs.security-check.result }}" == "success" && "${{ needs.build-test.result }}" == "success" ]]; then
-          echo "🎉 **All checks passed!** This branch is ready for review." >> $GITHUB_STEP_SUMMARY
-        else
-          echo "❌ **Some checks failed.** Please review the results above." >> $GITHUB_STEP_SUMMARY
-        fi
+      - name: Generate summary
+        run: |
+          echo "## Feature Branch Pipeline Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Validation: ${{ needs.validate.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Quick Tests: ${{ needs.quick-test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Security Check: ${{ needs.security-check.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code Analysis: ${{ needs.code-analysis.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Build Test: ${{ needs.build-test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "${{ needs.validate.result }}" == "success" && "${{ needs.quick-test.result }}" == "success" && "${{ needs.security-check.result }}" == "success" && "${{ needs.build-test.result }}" == "success" ]]; then
+            echo "🎉 **All checks passed!** This branch is ready for review." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "❌ **Some checks failed.** Please review the results above." >> $GITHUB_STEP_SUMMARY
+          fi
