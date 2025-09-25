@@ -147,14 +147,14 @@ Bootによる実践的なWebアプリケーション開発スキルの習得を�
 
 2. **データベースをセットアップします。**
    ```bash
-   # MySQLサーバーを起動
-   # データベースとテーブルを作成
-   mysql -u root -p < src/main/resources/01_schema.sql
-   mysql -u root -p < src/main/resources/02_data.sql
+   # PostgreSQL サーバーを起動
+   # スキーマとサンプルデータを流し込みます
+   psql -U postgres -f src/main/resources/01_schema.sql
+   psql -U postgres -f src/main/resources/02_data.sql
    ```
 
 3. **アプリケーション設定を確認します。**
-   `src/main/resources/application.properties` のMySQL接続情報を環境に合わせて変更してください。
+   `src/main/resources/application.properties` のPostgreSQL接続情報を環境に合わせて変更してください。
 
 4. **アプリケーションをビルド・実行します。**
    ```bash

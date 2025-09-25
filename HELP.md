@@ -16,7 +16,7 @@ For further reference, please consider the following sections:
 The following guides illustrate how to use some features concretely:
 
 * [MyBatis Quick Start](https://github.com/mybatis/spring-boot-starter/wiki/Quick-Start)
-* [Accessing data with MySQL](https://spring.io/guides/gs/accessing-data-mysql/)
+* [Accessing data with PostgreSQL](https://spring.io/guides/gs/accessing-data-postgresql/)
 * [Handling Form Submission](https://spring.io/guides/gs/handling-form-submission/)
 * [Validation](https://spring.io/guides/gs/validating-form-input/)
 * [Building a RESTful Web Service](https://spring.io/guides/gs/rest-service/)

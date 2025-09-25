@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
  * アプリケーション全体で発生する例外をハンドルするコントローラアドバイスクラスです。
  * 特定のカスタム例外や汎用的な例外を捕捉し、適切なエラーレスポンス（エラーページへの遷移やリダイレクト）を返します。
  */
+@Profile("legacy-ui")
 @ControllerAdvice
 public class GlobalExceptionHandler {
 

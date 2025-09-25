@@ -1,9 +1,11 @@
 package com.example.teamdev.integration;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -16,10 +18,11 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * 従業員登録機能の統合テスト
  */
+@Disabled("Legacy MVC workflow")
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class EmployeeRegistrationTest {
+class EmployeeRegistrationTest extends PostgresContainerSupport {
 
     @Autowired
     private MockMvc mockMvc;

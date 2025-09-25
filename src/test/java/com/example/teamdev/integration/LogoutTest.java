@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -11,43 +12,42 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * ログアウト機能のテスト
+ * ログアウトフローのテスト（SPA構成対応）
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class LogoutTest {
+class LogoutTest extends PostgresContainerSupport {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testHomePageContainsLogoutButton() throws Exception {
+    void testHomeRouteForwardsToSpa() throws Exception {
         mockMvc.perform(get("/home/init"))
-                .andExpect(status().isOk())
-                .andExpect(view().name("./home/home"))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("サインアウト")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("logout-form")))
-                .andExpect(content().string(org.hamcrest.Matchers.containsString("performLogout")));
+            .andExpect(status().isOk())
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testLogoutFunctionality() throws Exception {
-        mockMvc.perform(post("/logout")
-                .with(csrf()))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/signin?logout=true"));
+    void testLogoutFunctionality() throws Exception {
+        mockMvc.perform(post("/logout").with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/signin?logout=true"));
     }
 
     @Test
-    public void testLogoutWithoutAuthentication() throws Exception {
-        mockMvc.perform(post("/logout")
-                .with(csrf()))
-                .andExpect(status().is3xxRedirection());
+    void testLogoutWithoutAuthentication() throws Exception {
+        mockMvc.perform(post("/logout").with(csrf()))
+            .andExpect(status().is3xxRedirection())
+            .andExpect(redirectedUrl("/signin?logout=true"));
     }
 }

@@ -38,7 +38,7 @@ docker-compose ps
 
 - アプリケーション: http://localhost:8080
 - ヘルスチェック: http://localhost:8080/actuator/health
-- データベース: localhost:3306
+- データベース: localhost:5432
 
 ## Docker サービス構成
 
@@ -52,11 +52,11 @@ docker-compose ps
 
 ### データベースコンテナ (db)
 
-- **ベースイメージ**: mysql:8.0
-- **文字セット**: utf8mb4
-- **パフォーマンス調整**: InnoDB最適化設定
-- **ログ**: スロークエリログ有効
-- **ヘルスチェック**: mysqladmin ping
+- **ベースイメージ**: postgres:16
+- **ロケール/タイムゾーン**: Asia/Tokyo
+- **拡張機能**: uuid-ossp を初回起動時に有効化
+- **初期化**: `01_schema.sql` と `02_data.sql` を自動適用
+- **ヘルスチェック**: pg_isready
 
 ## 主な改善点
 
@@ -71,7 +71,7 @@ docker-compose ps
 
 - マルチステージビルドによるイメージサイズ最適化
 - JVM コンテナ対応設定
-- MySQL パフォーマンス調整
+- PostgreSQL チューニング（共有バッファ、拡張の自動設定）
 - リソース制限とリザベーション
 
 ### 運用性
@@ -107,7 +107,7 @@ docker-compose ps
    ```bash
    # ポート使用状況確認
    lsof -i :8080
-   lsof -i :3306
+   lsof -i :5432
    ```
 
 ### クリーンアップ
@@ -137,7 +137,7 @@ docker-compose logs -f
 
 # コンテナ内でシェル実行
 docker-compose exec app sh
-docker-compose exec db mysql -u root -p
+docker-compose exec db psql -U ${DOCKER_DB_USERNAME:-user} -d ${DOCKER_DB_NAME:-teamdev_db}
 ```
 
 ## 本番環境での注意事項

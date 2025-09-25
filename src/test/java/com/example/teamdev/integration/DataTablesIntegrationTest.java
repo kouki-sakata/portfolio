@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
@@ -28,7 +29,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
     "spring.jpa.hibernate.ddl-auto=none"
 })
 @org.junit.jupiter.api.Disabled("データベース接続問題により一時的に無効化")
-public class DataTablesIntegrationTest {
+public class DataTablesIntegrationTest extends PostgresContainerSupport {
 
     @Autowired
     private MockMvc mockMvc;

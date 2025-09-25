@@ -107,6 +107,18 @@ compile_check() {
     fi
 }
 
+# フロントエンドチェック
+run_frontend_checks() {
+    log_info "フロントエンドチェック実行中..."
+    
+    if ./gradlew npmLint npmTypecheck npmTest --quiet; then
+        log_success "フロントエンドチェック成功"
+    else
+        log_error "フロントエンドチェック失敗"
+        exit 1
+    fi
+}
+
 # ユニットテスト実行
 run_unit_tests() {
     log_info "ユニットテスト実行中..."
@@ -168,7 +180,7 @@ build_test() {
         log_success "ビルド成功"
         
         # JARファイルの確認
-        if [ -f "build/libs/"*.jar ]; then
+        if ls build/libs/*.jar > /dev/null 2>&1; then
             JAR_SIZE=$(du -h build/libs/*.jar | cut -f1)
             log_info "生成されたJARファイルサイズ: $JAR_SIZE"
         fi
@@ -259,12 +271,14 @@ main() {
             check_prerequisites
             check_branch_name
             compile_check
+            run_frontend_checks
             run_unit_tests
             ;;
         --full)
             check_prerequisites
             check_branch_name
             compile_check
+            run_frontend_checks
             run_unit_tests
             security_check
             build_test
@@ -277,6 +291,7 @@ main() {
             ;;
         --test)
             check_prerequisites
+            run_frontend_checks
             run_unit_tests
             ;;
         --build)
@@ -296,6 +311,7 @@ main() {
             check_prerequisites
             check_branch_name
             compile_check
+            run_frontend_checks
             run_unit_tests
             ;;
         *)

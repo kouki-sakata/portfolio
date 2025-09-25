@@ -1,6 +1,5 @@
 package com.example.teamdev.config;
 
-import com.example.teamdev.constant.AppConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,6 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @Configuration
 @EnableWebSecurity
@@ -24,15 +24,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .ignoringRequestMatchers("/actuator/**")
+            )
             .authorizeHttpRequests(authz -> authz
-                // 静的リソースとパブリックページを許可
-                .requestMatchers("/", "/signin", "/signin/**").permitAll()
-                .requestMatchers("/css/**", "/js/**", "/img/**").permitAll()
-                .requestMatchers("/favicon.ico", "/robots.txt", "/sitemap.xml").permitAll()
+                .requestMatchers(
+                    "/",
+                    "/index.html",
+                    "/favicon.ico",
+                    "/manifest.webmanifest",
+                    "/assets/**",
+                    "/signin",
+                    "/signin/**"
+                ).permitAll()
                 .requestMatchers("/webjars/**", "/error/**").permitAll()
-                // 管理者機能
+                .requestMatchers("/api/public/**").permitAll()
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/employeemanage/**", "/newsmanage/**").hasRole("ADMIN")
-                // その他は認証必須
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
@@ -40,7 +49,7 @@ public class SecurityConfig {
                 .loginProcessingUrl("/signin/login")
                 .usernameParameter("email")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/home/init", true)
+                .defaultSuccessUrl("/", true)
                 .failureUrl("/signin?error=true")
                 .permitAll()
             )
@@ -64,14 +73,14 @@ public class SecurityConfig {
                 )
                 .contentSecurityPolicy(csp -> csp
                     .policyDirectives("default-src 'self'; " +
-                        "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://ajax.googleapis.com https://cdn.datatables.net; " +
-                        "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.datatables.net https://use.fontawesome.com; " +
-                        "font-src 'self' https://cdn.jsdelivr.net https://use.fontawesome.com; " +
+                        "script-src 'self'; " +
+                        "style-src 'self' 'unsafe-inline'; " +
+                        "font-src 'self'; " +
                         "img-src 'self' data:; " +
-                        "connect-src 'self'")
+                        "connect-src 'self'; " +
+                        "frame-ancestors 'none'")
                 )
-            )
-;
+            );
 
         return http.build();
     }

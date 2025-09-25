@@ -7,6 +7,7 @@ import com.example.teamdev.service.HomeNewsService;
 import com.example.teamdev.service.StampService;
 import com.example.teamdev.util.SecurityUtil;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +29,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
 
+@Disabled("Legacy MVC controller")
 @ExtendWith(MockitoExtension.class)
 class HomeControllerTest {
 

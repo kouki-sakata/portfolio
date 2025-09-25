@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
+import org.springframework.context.annotation.Profile;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
@@ -22,6 +23,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 /**
  * 従業員情報の管理（登録、更新、削除、一覧表示）に関連するリクエストを処理するコントローラです。
  */
+@Profile("legacy-ui")
 @Controller
 @RequestMapping("employeemanage")
 public class EmployeeManageController {

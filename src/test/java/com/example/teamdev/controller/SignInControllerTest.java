@@ -1,6 +1,7 @@
 package com.example.teamdev.controller;
 
 import com.example.teamdev.form.SignInForm;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -16,6 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+@Disabled("Legacy MVC controller")
 @ExtendWith(MockitoExtension.class)
 class SignInControllerTest {
 

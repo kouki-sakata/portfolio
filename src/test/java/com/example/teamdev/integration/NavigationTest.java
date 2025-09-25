@@ -4,65 +4,55 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
- * ナビゲーションボタンのCSRF保護テスト
+ * SPAナビゲーションルートのフォワード挙動と権限制御のテスト
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
-public class NavigationTest {
+class NavigationTest extends PostgresContainerSupport {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testHomeNavigationWithCSRF() throws Exception {
-        mockMvc.perform(post("/home/init")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("./home/home"));
+    void testHomeNavigationForwardsToSpa() throws Exception {
+        mockMvc.perform(get("/home/init"))
+            .andExpect(status().isOk())
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testStampHistoryNavigationWithCSRF() throws Exception {
-        mockMvc.perform(post("/stamphistory/init")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("./stamphistory/stamp-history"));
+    void testStampHistoryNavigationForwardsToSpa() throws Exception {
+        mockMvc.perform(get("/stamphistory/init"))
+            .andExpect(status().isOk())
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testEmployeeListNavigationWithCSRF() throws Exception {
-        mockMvc.perform(post("/employeelist/init")
-                .with(csrf()))
-                .andExpect(status().isOk());
+    void testEmployeeListNavigationForwardsToSpa() throws Exception {
+        mockMvc.perform(get("/employeelist/init"))
+            .andExpect(status().isOk())
+            .andExpect(forwardedUrl("/index.html"));
     }
 
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"ADMIN"})
-    public void testAdminNavigationWithCSRF() throws Exception {
-        mockMvc.perform(post("/employeemanage/init")
-                .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(view().name("./employeemanage/employee-manage"));
-    }
-
-    @Test
-    @WithMockUser(username = "test@gmail.com", roles = {"USER"})
-    public void testNavigationWithoutCSRF_ShouldFail() throws Exception {
-        // CSRF なしでリクエスト - 403 Forbidden になるはず
-        mockMvc.perform(post("/home/init"))
-                .andExpect(status().isForbidden());
+    void testAdminNavigationForwardsToSpa() throws Exception {
+        mockMvc.perform(get("/employeemanage/init"))
+            .andExpect(status().isOk())
+            .andExpect(forwardedUrl("/index.html"));
     }
 }

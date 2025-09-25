@@ -1,9 +1,12 @@
+import com.github.gradle.node.npm.task.NpmTask
+
 plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.3'
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.owasp.dependencycheck' version '8.4.0'
 	id 'org.sonarqube' version '4.4.1.3373'
+	id 'com.github.node-gradle.node' version '7.1.0'
 }
 
 group = 'com.example'
@@ -26,23 +29,114 @@ repositories {
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
-	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-	runtimeOnly 'com.mysql:mysql-connector-j'
+	runtimeOnly 'org.postgresql:postgresql'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+node {
+	download = true
+	version = '20.19.0'
+	npmVersion = '10.8.3'
+	nodeProjectDir = file("${project.projectDir}/frontend")
+	npmInstallCommand = 'ci'
+}
+
+final def frontendDir = file("${project.projectDir}/frontend")
+
+tasks.named('npmInstall', NpmTask) {
+	description = 'Install frontend dependencies'
+	group = 'frontend'
+	workingDir = frontendDir
+	args = ['ci']
+	inputs.files(
+		file("${frontendDir}/package.json"),
+		file("${frontendDir}/package-lock.json")
+	)
+	outputs.dir(file("${frontendDir}/node_modules"))
+}
+
+tasks.register('npmLint', NpmTask) {
+	description = 'Run frontend lint checks'
+	group = 'verification'
+	dependsOn 'npmInstall'
+	workingDir = frontendDir
+	args = ['run', 'lint']
+	environment = [CI: 'true']
+	inputs.dir(file("${frontendDir}/src"))
+	outputs.upToDateWhen { false }
+}
+
+tasks.register('npmTypecheck', NpmTask) {
+	description = 'Run TypeScript type checks'
+	group = 'verification'
+	dependsOn 'npmInstall'
+	workingDir = frontendDir
+	args = ['run', 'typecheck']
+	environment = [CI: 'true']
+	inputs.dir(file("${frontendDir}/src"))
+	outputs.upToDateWhen { false }
+}
+
+tasks.register('npmTest', NpmTask) {
+	description = 'Run frontend unit tests'
+	group = 'verification'
+	dependsOn 'npmInstall'
+	workingDir = frontendDir
+	args = ['run', 'test']
+	environment = [CI: 'true']
+	inputs.dir(file("${frontendDir}/src"))
+	outputs.upToDateWhen { false }
+}
+
+tasks.register('npmBuild', NpmTask) {
+	description = 'Build frontend assets'
+	group = 'build'
+	dependsOn 'npmInstall'
+	workingDir = frontendDir
+	args = ['run', 'build']
+	environment = [CI: 'true']
+	inputs.dir(file("${frontendDir}/src"))
+	inputs.files(
+		file("${frontendDir}/package.json"),
+		file("${frontendDir}/package-lock.json"),
+		file("${frontendDir}/tsconfig.app.json"),
+		file("${frontendDir}/tsconfig.node.json"),
+		file("${frontendDir}/tsconfig.vitest.json"),
+		file("${frontendDir}/vite.config.ts")
+	)
+	outputs.dir(file("${frontendDir}/dist"))
+}
+
+tasks.named('processResources') {
+	dependsOn 'npmBuild'
+	from("${frontendDir}/dist") {
+		into 'static'
+	}
+}
+
+tasks.named('check') {
+	dependsOn 'npmLint'
+	dependsOn 'npmTypecheck'
+	dependsOn 'npmTest'
+}
+
+tasks.named('clean') {
+	delete file("${frontendDir}/dist")
 }
 
 tasks.named('test') {
@@ -98,4 +192,3 @@ sonar {
 		].join(',')
 	}
 }
-

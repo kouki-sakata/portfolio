@@ -1,19 +1,21 @@
 # Stage 1: Build the application
 FROM gradle:8.14.2-jdk21-jammy AS build
 
-# The gradle user is already included in the base image.
-
 WORKDIR /app
 
 # Copy gradle wrapper and build files first for better caching
 COPY --chown=gradle:gradle gradle/ gradle/
 COPY --chown=gradle:gradle gradlew build.gradle settings.gradle ./
 
+# Copy frontend dependency manifests for caching
+COPY --chown=gradle:gradle frontend/package.json frontend/package-lock.json frontend/
+
 # Download dependencies (cached layer)
 RUN ./gradlew dependencies --no-daemon
 
 # Copy source code
 COPY --chown=gradle:gradle src/ src/
+COPY --chown=gradle:gradle frontend/ frontend/
 
 # Build application
 RUN ./gradlew clean build -x test --no-daemon
