@@ -12,7 +12,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -30,7 +30,7 @@ class AuthenticationIntegrationTest extends PostgresContainerSupport {
     void testUnauthenticatedAccessRedirectsToSignin() throws Exception {
         mockMvc.perform(get("/home/init"))
             .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrlPattern("**/signin"));
+            .andExpect(redirectedUrl("/signin"));
     }
 
     @Test

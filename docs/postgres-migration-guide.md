@@ -102,3 +102,10 @@ A. Docker が動作していること／`DOCKER_HOST` 設定が正しいこと�
 ---
 
 ご不明点があれば Issue または Slack で連絡してください。
+
+## 付録: ローカル検証ログ (2025-09-25)
+
+- `.env` を PostgreSQL 用のポート (`5432`)・資格情報に更新し、`DOCKER_DB_*` 変数を `teamdev_user` / `teamdev_pass` へ統一。
+- `docker compose -f docker-compose.yml up -d db` で PostgreSQL 16 コンテナを起動し、ヘルスチェックが `healthy` になることを確認。
+- `psql` で `\dt` を実行して `employee`, `log_history`, `news`, `stamp_history` テーブルが作成済みであることを確認。
+- `SELECT COUNT(*) FROM employee;` の結果 `100` が返り、`02_data.sql` の初期データがロードされていることを検証。

@@ -13,8 +13,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.forwardedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -39,15 +37,13 @@ class LogoutTest extends PostgresContainerSupport {
     @Test
     @WithMockUser(username = "test@gmail.com", roles = {"USER"})
     void testLogoutFunctionality() throws Exception {
-        mockMvc.perform(post("/logout").with(csrf()))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/signin?logout=true"));
+        mockMvc.perform(post("/api/auth/logout").with(csrf()))
+            .andExpect(status().isNoContent());
     }
 
     @Test
     void testLogoutWithoutAuthentication() throws Exception {
-        mockMvc.perform(post("/logout").with(csrf()))
-            .andExpect(status().is3xxRedirection())
-            .andExpect(redirectedUrl("/signin?logout=true"));
+        mockMvc.perform(post("/api/auth/logout").with(csrf()))
+            .andExpect(status().isNoContent());
     }
 }
