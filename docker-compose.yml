@@ -11,7 +11,7 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      DB_PORT: 3306
+      DB_PORT: 5432
       DB_NAME: ${DOCKER_DB_NAME:-teamdev_db}
       DB_USERNAME: ${DOCKER_DB_USERNAME:-user}
       DB_PASSWORD: ${DOCKER_DB_PASSWORD:-password}
@@ -22,11 +22,7 @@ services:
       LOG_LEVEL_HIBERNATE: ${LOG_LEVEL_HIBERNATE:-ERROR}
       JWT_SECRET: ${JWT_SECRET:-default-secret-key-change-in-production}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-default-encryption-key}
-      # JVM Memory settings
       JAVA_OPTS: "-Xms512m -Xmx1g"
-      # Activate Spring Boot profile
-      # SPRING_PROFILES_ACTIVE: docker
-    
     deploy:
       resources:
         limits:
@@ -43,33 +39,20 @@ services:
       start_period: 60s
 
   db:
-    image: mysql:8.0
-    command: >
-      --character-set-server=utf8mb4
-      --collation-server=utf8mb4_unicode_ci
-      --innodb-buffer-pool-size=256M
-      --innodb-log-file-size=64M
-      --max-connections=100
-      --slow-query-log=1
-      --slow-query-log-file=/var/log/mysql/slow-query.log
-      --long-query-time=2
+    image: postgres:16
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DOCKER_DB_ROOT_PASSWORD:-root_password}
-      MYSQL_DATABASE: ${DOCKER_DB_NAME:-teamdev_db}
-      MYSQL_USER: ${DOCKER_DB_USERNAME:-user}
-      MYSQL_PASSWORD: ${DOCKER_DB_PASSWORD:-password}
-      LANG: C.UTF-8
-      LC_ALL: C.UTF-8
+      POSTGRES_DB: ${DOCKER_DB_NAME:-teamdev_db}
+      POSTGRES_USER: ${DOCKER_DB_USERNAME:-user}
+      POSTGRES_PASSWORD: ${DOCKER_DB_PASSWORD:-password}
+      TZ: Asia/Tokyo
     ports:
-      - "${DB_PORT:-3306}:3306"
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - db_data:/var/lib/mysql
-      - db_logs:/var/log/mysql
-      - ./src/main/resources/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
-      - ./src/main/resources/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql
-      # Add MySQL configuration
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/custom.cnf:ro
+      - db_data:/var/lib/postgresql/data
+      - ./src/main/resources/01_schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+      - ./src/main/resources/02_data.sql:/docker-entrypoint-initdb.d/02_data.sql:ro
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/03_extensions.sql:ro
     deploy:
       resources:
         limits:
@@ -79,16 +62,14 @@ services:
           cpus: '0.25'
           memory: 256M
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DOCKER_DB_ROOT_PASSWORD:-root_password}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DOCKER_DB_USERNAME:-user} -d ${DOCKER_DB_NAME:-teamdev_db}"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 30s
 
 volumes:
-  app_logs:
   db_data:
-  db_logs:
 
 networks:
   default:
