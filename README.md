@@ -1,262 +1,163 @@
-# TeamDev 勤怠管理システム
+# TeamDevelop Bravo 勤怠管理システム
+
+モバイルフレンドリーな React + Spring Boot SPA 版の勤怠管理システムです。既存の Thymeleaf 実装を置き換え、PostgreSQL へのマイグレーションと合わせてフロントエンド／バックエンドを再構築しました。
 
 ## 🌐 デプロイ先 & テストアカウント
 
-**URL:** http://my-spring-app-env.eba-kmwuwpfp.ap-northeast-1.elasticbeanstalk.com/
+- **URL:** http://my-spring-app-env.eba-kmwuwpfp.ap-northeast-1.elasticbeanstalk.com/
+- **テストユーザー:** `test@gmail.com`
+- **パスワード:** `test`
 
-下記アカウントでログインしてお試しいただけます。
+> ⚠️ 本番環境は移行作業中です。最新の UI はローカルまたはステージングで確認してください。
 
-* **ユーザ名:** `test@gmail.com`
-* **パスワード:** `test`
+## 🧰 技術スタック
 
-⚠️ **注意**
-本プロジェクトは現在も開発を継続しており、機能追加やリファクタリングを随時行っています。
+| レイヤー | 採用技術 |
+| :-- | :-- |
+| **フロントエンド** | React 19, TypeScript, Vite, React Router 7, React Query 5, Vitest, ESLint / Prettier |
+| **バックエンド** | Java 21, Spring Boot 3.4, Spring Security, MyBatis, Testcontainers |
+| **データベース** | PostgreSQL 16 (コンテナ・ローカル・本番共通) |
+| **ビルド/パッケージ** | Gradle 8.14.2, npm 10, Docker, Docker Compose |
+| **CI/CD** | GitHub Actions (フロント lint/test + Gradle test/build + Docker build, SonarCloud, 依存性スキャン) |
 
----
+![新しい React ホーム画面](frontend/public/img/home.png)
 
-## 📸 スクリーンショット
+## ✨ 主な改善ポイント
 
-![home.png](src/main/resources/static/img/home.png)
+- **SPA 化:** React + TypeScript + React Query によるシングルページ構成。Spring MVC 側は API と SPA フォワーダーのみを提供。
+- **認証まわりの再設計:** `/api/auth` エンドポイントでセッションベースのログイン／ログアウト／セッション確認を実装。CSRF トークンは Cookie + `X-XSRF-TOKEN` で自動送出。
+- **従業員・打刻周り API:** 従業員管理、打刻登録、打刻履歴を JSON API 化し、React から呼び出す構成へ移行。
+- **PostgreSQL 移行:** MySQL 依存を排除し、Docker Compose／Testcontainers／CI すべてを Postgres 16 に統一。初期化スクリプトは `src/main/resources/01_schema.sql` / `02_data.sql` で管理。
+- **CI 拡充:** `npm run lint` & `npm run test` を Gradle テストと連携して実行、Vite ビルドをリリースフローへ組み込み済み。
 
-## 🛠️ 技術スタック
+## 🏗️ アーキテクチャ概要
 
-| カテゴリ | 技術 |
-| :--- | :--- |
-| **バックエンド** | Java 21, Spring Boot 3.x, Spring Security |
-| **フロントエンド** | HTML5, CSS3, JavaScript ES6, jQuery, DataTables |
-| **テンプレートエンジン** | Thymeleaf |
-| **データベース** | MySQL 8.0 |
-| **ビルドツール** | Gradle 8.14.2 |
-| **コンテナ** | Docker, Docker Compose |
-| **インフラ** | AWS Elastic Beanstalk |
-| **セキュリティ** | CSRF保護, パスワードハッシュ化, 認証・認可 |
-| **開発・連携ツール**| Git, GitHub, GitHub Actions (CI/CD) |
+```
+frontend/       # React + Vite (SPA)
+  ├─ src/app    # ルーティングとレイアウト
+  ├─ src/features
+  └─ src/shared
+src/main/java/
+  ├─ config/    # SecurityConfig など
+  ├─ controller/api/  # REST API 群
+  └─ util/      # SecurityUtil など共通処理
+src/test/java/  # JUnit + Testcontainers
+```
 
-## ✨ 概要
+- SPA ビルド成果物は `./gradlew build` 実行時に `frontend` から生成し、Spring Boot の静的リソースとして配備。
+- 開発モードでは Vite Dev Server (ポート 5173) と Spring Boot を並走させる構成をサポート。
 
-本アプリケーションは、職業訓練校のチーム開発で制作した企業向けの勤怠管理システムです。
+## 🚀 セットアップ
 
-チームメンバーと協力し、要件定義から設計、実装、テストまでの一連の開発プロセスを経験しました。本プロジェクトを通じて、Gitを用いたチームでの共同開発手法や、Spring
-Bootによる実践的なWebアプリケーション開発スキルの習得を目的としています。
+### 1. Docker Compose を使う（推奨）
 
-## 🌟 主な機能
+```bash
+# リポジトリ取得
+git clone https://github.com/your-org/TeamDevelopBravo.git
+cd TeamDevelopBravo-main
 
-### 🏠 ホーム画面
-* **モダンなUI:** Glassmorphism デザインとSVGアニメーションロゴを採用
-* **出退勤打刻:** 出勤・退勤時刻を記録します
-* **夜勤対応:** 日をまたぐ勤務に対応した打刻が可能です
-* **お知らせ表示:** 管理者が設定した重要なお知らせを表示します（公開フラグで制御）
+# 環境変数テンプレートをコピー
+cp .env.example .env
 
-### 👥 従業員管理
-* **従業員情報の登録・更新:** 従業員の基本情報を管理します
-* **管理者権限設定:** 管理者フラグにより、特定の従業員に管理者権限を付与できます
-* **一括削除:** 複数の従業員情報を一括で削除できます
-* **メールアドレス重複チェック:** 登録時のリアルタイムチェックで、データの一意性を保証します
-* **DataTables統合:** ページング、ソート、検索機能付きの高機能テーブル表示
+# コンテナ起動
+docker-compose up -d
 
-### 📊 データ管理・表示機能
-* **DataTables統合:** 以下の画面で高機能なテーブル表示を実装
-  - お知らせ管理画面
-  - 従業員情報画面
-  - 従業員情報出力画面
-  - 打刻記録編集画面（従業員選択）
-  - 操作履歴画面
-* **操作履歴記録:** 全てのデータ操作（登録・更新・削除）の履歴を記録し、追跡可能です
-* **日付フォーマット統一:** `yyyy-MM-dd` と `yyyy/MM/dd` 形式を自動で相互変換し、表示を統一します
+# 初回のみログ確認
+docker-compose logs -f app
+```
 
-### 🔒 セキュリティ機能
-* **Spring Security統合:** 包括的な認証・認可システム
-* **CSRF保護:** すべてのフォーム送信でCSRFトークンによる保護
-* **パスワードハッシュ化:** BCryptによる安全なパスワード管理
-* **セッション管理:** 安全なセッション管理とタイムアウト機能
+- アプリ: http://localhost:8080
+- ヘルスチェック: http://localhost:8080/actuator/health
+- PostgreSQL: `localhost:5432` (`DOCKER_DB_USERNAME` / `DOCKER_DB_PASSWORD`)
 
-## 💡 工夫した点・アピールポイント
+### 2. ローカルで直接実行
 
-### 🎨 UI/UXの改善
-* **モダンなデザイン:** サインイン画面をshadcn/ui風のglassmorphismデザインに刷新
-* **SVGロゴ:** 時計をモチーフとしたアニメーション付きSVGロゴを自作
-* **DataTables統合:** 6つの主要画面にDataTablesを導入し、検索・ソート・ページング機能を実装
-* **レスポンシブ対応:** Bootstrap 5とDataTablesの responsive オプションでモバイル対応
-
-### 🔧 技術的な挑戦
-
-* **共通処理のモジュール化:**
-  日付フォーマットの変換など、複数箇所で利用されるロジックを`DateFormatUtil`などのユーティリティクラスに切り出しました。これにより、コードの重複を削減し、メンテナンス性を向上させています。
-
-* **データ整合性の担保:**
-  データベースのトランザクション管理を徹底し、従業員情報の一括削除や更新時にデータ不整合が発生しないよう設計しました。また、リアルタイムの入力検証によるメールアドレスの重複チェック機能も実装しています。
-
-* **セキュリティ強化:**
-  - Spring Securityによる包括的な認証・認可システム
-  - CSRFトークンによる攻撃対策
-  - BCryptによるパスワードハッシュ化
-  - 包括的エラーハンドリングとロギング
-
-* **DataTables最適化:**
-  - サーバーサイドでのデータ処理とJSON応答
-  - 重複初期化防止機能
-  - 日本語化対応
-  - CSRF対応のAjax通信
-
-### 🏗️ 開発環境の整備
-* **Docker化:** 開発環境をDocker Composeで統一し、環境構築の簡素化を実現
-* **CI/CDパイプライン:** GitHub Actionsによる自動ビルド・テスト・デプロイ
-* **テストデータ拡充:** 操作履歴テーブルに100件のテストデータを追加し、DataTablesの動作検証を充実
-
-### 👥 チーム開発のプロセス
-* **コーディング規約の策定:**
-  チーム内で変数名やインデントなどのコーディング規約を定め、コードの可読性と保守性を高めました。
-
-## 🏁 セットアップと実行方法
-
-ローカル環境で本プロジェクトをセットアップする手順です。
-
-### 🐳 Docker を使用した環境構築（推奨）
-
-1. **リポジトリをクローンします。**
-   ```bash
-   git clone [リポジトリのURL]
-   cd TeamDevelopBravo-main
-   ```
-
-2. **Docker Compose で環境を起動します。**
-   ```bash
-   # 環境変数ファイルをコピー
-   cp .env.example .env
-   
-   # Docker環境を起動
-   docker-compose up -d
-   ```
-
-3. **ブラウザで `http://localhost:8080` にアクセスしてください。**
-
-### 💻 ローカル環境での直接実行
-
-#### 前提条件
-* Java 21
-* MySQL 8.0
-* Gradle 8.14.2
+#### 必要要件
+- Java 21 (Eclipse Temurin 推奨)
+- Node.js 20
+- PostgreSQL 16
 
 #### 手順
 
-1. **リポジトリをクローンします。**
-   ```bash
-   git clone [リポジトリのURL]
-   cd TeamDevelopBravo-main
-   ```
-
-2. **データベースをセットアップします。**
-   ```bash
-   # PostgreSQL サーバーを起動
-   # スキーマとサンプルデータを流し込みます
-   psql -U postgres -f src/main/resources/01_schema.sql
-   psql -U postgres -f src/main/resources/02_data.sql
-   ```
-
-3. **アプリケーション設定を確認します。**
-   `src/main/resources/application.properties` のPostgreSQL接続情報を環境に合わせて変更してください。
-
-4. **アプリケーションをビルド・実行します。**
-   ```bash
-   ./gradlew bootRun
-   ```
-
-5. **ブラウザで `http://localhost:8080` にアクセスしてください。**
-
-### ⚙️ 環境設定（Environment Profiles）
-
-本アプリケーションは、環境に応じて異なる設定を適用できます。
-
-#### 本番環境（デフォルト）
 ```bash
-# デフォルト設定で起動
+# 1. リポジトリ取得
+git clone https://github.com/your-org/TeamDevelopBravo.git
+cd TeamDevelopBravo-main
+
+# 2. フロント依存をセットアップ
+npm install --prefix frontend
+
+# 3. PostgreSQL を準備
+createdb timemanagerdb
+psql -d timemanagerdb -f src/main/resources/01_schema.sql
+psql -d timemanagerdb -f src/main/resources/02_data.sql
+
+# 4. バックエンドを起動
+SPRING_PROFILES_ACTIVE=dev \
+DB_USERNAME=postgres DB_PASSWORD=postgres \
 ./gradlew bootRun
+
+# 5. （任意）Vite Dev Server を起動しホットリロード利用
+npm run dev --prefix frontend
 ```
 
-#### 開発環境
-```bash
-# 開発環境設定を使用
-./gradlew bootRun --args='--spring.profiles.active=dev'
+> Vite Dev Server を併用する場合は、`.env.development` (または `frontend/.env.local`) に `VITE_API_BASE_URL=http://localhost:8080/api` を設定してください。
 
-# または環境変数で指定
-SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
-```
+## 🔐 環境変数 & シークレット管理
 
-#### テスト環境（パスワードマイグレーション無効）
-```bash
-# テスト環境設定を使用（起動時のパスワードマイグレーションが無効化されます）
-./gradlew bootRun --args='--spring.profiles.active=test'
+| 変数 | 用途 | デフォルト | 備考 |
+| :-- | :-- | :-- | :-- |
+| `DB_HOST` / `DB_PORT` / `DB_NAME` | PostgreSQL 接続先 | `localhost` / `5432` / `timemanagerdb` | CI では `127.0.0.1` を利用 |
+| `DB_USERNAME` / `DB_PASSWORD` | DB 認証情報 | `postgres` / `postgres` | **本番では必ずシークレットストアに保管** |
+| `JWT_SECRET` | 認証トークン用シークレット | placeholder | 32〜64 文字以上を推奨 |
+| `ENCRYPTION_KEY` | アプリ内暗号化キー | placeholder | 32 文字以上 |
+| `LOG_LEVEL_*` | ログレベル | `INFO` 等 | 監査要件に応じて調整 |
+| `VITE_API_BASE_URL` | フロントエンドの API ルート | `/api` | Dev Server 利用時に上書き |
 
-# または環境変数で指定
-SPRING_PROFILES_ACTIVE=test ./gradlew bootRun
-```
+**運用のベストプラクティス**
+1. ローカル : `.env` / `frontend/.env.local` に保存 (Git 管理外)
+2. CI : GitHub Secrets (`DB_PASSWORD`, `JWT_SECRET` など) で提供
+3. 本番 : AWS Secrets Manager 等を使用し、Elastic Beanstalk / ECS に注入
 
-#### 個別設定による制御
-環境変数でパスワードマイグレーションのみを制御することも可能です：
-```bash
-# パスワードマイグレーションを無効化
-PASSWORD_MIGRATION_ENABLED=false ./gradlew bootRun
+## 🗃️ PostgreSQL 移行ガイド
 
-# 環境識別子を設定
-APP_ENVIRONMENT=test ./gradlew bootRun
-```
+MySQL からのデータ移行や既存環境の切り替え手順は [docs/postgres-migration-guide.md](docs/postgres-migration-guide.md) を参照してください。
 
-### 🔧 開発用コマンド
+- 事前チェックリスト
+- `pgloader` を使った移行例
+- 本番切り戻し戦略
+- GitHub Actions / Docker Compose の更新ポイント
 
-```bash
-# テスト実行
-./gradlew test
+## 🧪 テスト & ビルド
 
-# ビルド
-./gradlew build
+| コマンド | 説明 |
+| :-- | :-- |
+| `npm run lint --prefix frontend` | React コードの Lint |
+| `npm run test --prefix frontend` | Vitest + jsdom |
+| `npm run build --prefix frontend` | Vite 本番ビルド |
+| `./gradlew test` | Spring + Testcontainers を用いた統合テスト |
+| `./gradlew build` | Jar 作成 + Vite ビルド（`npmBuild` タスク連携） |
+| `./scripts/dev-workflow.sh --quick` | コンパイル + ユニットテスト (既存スクリプト) |
 
-# Docker イメージビルド
-docker build -t teamdev:latest .
+> `./gradlew test` は Testcontainers で PostgreSQL を起動するため、Docker が動作する環境で実行してください。
 
-# 開発ワークフロー実行
-./scripts/dev-workflow.sh
-```
+## 🧭 CI/CD サマリ
 
-## 📁 プロジェクト構成
+- `ci.yml`
+  - Node 20 + npm ci
+  - `npm run lint` / `npm run test`
+  - PostgreSQL サービスを起動して `./gradlew test`
+  - `./gradlew build` / SonarCloud / Docker build
+- `feature.yml`
+  - ブランチ命名規則チェック
+  - Quick test (コンパイル + 並列テスト)
+  - セキュリティチェック (OWASP Dependency Check)
+  - Docker ビルド検証
 
-```
-TeamDevelopBravo-main/
-├── .github/                    # GitHub Actions CI/CD設定
-├── docker/                     # Docker関連設定
-├── scripts/                    # 開発用スクリプト
-├── src/
-│   ├── main/
-│   │   ├── java/com/example/teamdev/
-│   │   │   ├── config/         # Spring設定クラス
-│   │   │   ├── controller/     # MVCコントローラー
-│   │   │   ├── dto/           # DataTables用DTO
-│   │   │   ├── entity/        # データベースエンティティ
-│   │   │   ├── mapper/        # MyBatisマッパー
-│   │   │   ├── service/       # ビジネスロジック
-│   │   │   ├── util/          # ユーティリティクラス
-│   │   │   └── exception/     # 例外クラス
-│   │   └── resources/
-│   │       ├── static/        # CSS, JS, 画像ファイル
-│   │       ├── templates/     # Thymeleafテンプレート
-│   │       ├── *.sql         # データベーススキーマ・データ
-│   │       └── *.properties  # アプリケーション設定
-│   └── test/                  # テストコード
-├── build.gradle              # Gradle設定
-├── docker-compose.yml        # Docker Compose設定
-└── README.md                 # このファイル
-```
+## 📄 ライセンス
 
-## 🎯 今後の拡張予定
+社内利用を想定したプロジェクトのためライセンスは未定義です。外部公開する場合は各種依存ライセンスを確認のうえ適切なライセンスファイルを用意してください。
 
-### ✅ 完了済み
-* **ユーザー認証・認可機能の強化** - Spring Securityによる包括的セキュリティ実装
-* **CI/CDパイプラインの構築** - GitHub Actionsによる自動化
-* **DataTables統合** - 高機能テーブル表示の全画面実装
-* **UI/UXの改善** - モダンなデザインへの刷新
+---
 
-### 🚀 今後の計画
-* **REST API化** - バックエンドのAPIサーバー化
-* **フロントエンドのモダン化** - React/Vue.jsへの置き換え検討
-* **テストカバレッジの向上** - JUnitによる単体テストの充実
-* **パフォーマンス最適化** - データベースクエリ最適化
-* **多言語対応** - 国際化機能の拡充
+フィードバックや改善提案は Issue / Pull Request で歓迎しています！

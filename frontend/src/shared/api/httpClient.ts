@@ -35,27 +35,54 @@ const raiseError = async (response: Response): Promise<never> => {
   throw httpError
 }
 
-const mergeHeaders = (headers: HeadersInit | undefined) => {
+const getCsrfToken = () => {
+  if (typeof document === 'undefined') {
+    return undefined
+  }
+  const token = document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('XSRF-TOKEN='))
+  if (!token) {
+    return undefined
+  }
+  return decodeURIComponent(token.split('=')[1] ?? '')
+}
+
+const buildHeaders = (headers: HeadersInit | undefined, body: BodyInit | null | undefined) => {
   const merged = new Headers(headers)
 
-  if (!merged.has('Content-Type')) {
+  const shouldSetJsonContentType =
+    body !== undefined && body !== null && !(body instanceof FormData) && !(body instanceof URLSearchParams)
+
+  if (shouldSetJsonContentType && !merged.has('Content-Type')) {
     merged.set('Content-Type', 'application/json')
+  }
+
+  if (!merged.has('X-XSRF-TOKEN')) {
+    const csrfToken = getCsrfToken()
+    if (csrfToken) {
+      merged.set('X-XSRF-TOKEN', csrfToken)
+    }
   }
 
   return merged
 }
 
 export const httpClient = async <T>(path: string, options: HttpClientOptions = {}) => {
-  const { parseJson = true, method, headers, credentials, ...requestInit } = options
+  const { parseJson = true, method, headers, credentials, body, ...requestInit } = options
 
   const normalizedMethod = (method ?? 'GET').toUpperCase() as HttpMethod
 
-  const response = await fetch(buildUrl(path), {
-    ...requestInit,
-    method: normalizedMethod,
-    headers: mergeHeaders(headers),
-    credentials: credentials ?? 'include',
-  })
+  const response = await fetch(
+    buildUrl(path),
+    {
+      ...requestInit,
+      method: normalizedMethod,
+      headers: buildHeaders(headers, body),
+      credentials: credentials ?? 'include',
+      ...(body !== undefined ? { body } : {}),
+    }
+  )
 
   if (!response.ok) {
     await raiseError(response)

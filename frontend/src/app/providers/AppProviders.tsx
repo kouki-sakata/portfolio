@@ -6,11 +6,14 @@ import { StrictMode } from 'react'
 
 import { queryClient } from '@/app/config/queryClient'
 import { AppRoutes } from '@/app/routes/AppRoutes'
+import { AuthProvider } from '@/features/auth/context/AuthProvider'
 
 export const AppProviders = () => (
   <StrictMode>
     <QueryClientProvider client={queryClient}>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
       {import.meta.env.DEV ? <ReactQueryDevtools initialIsOpen={false} /> : null}
     </QueryClientProvider>
   </StrictMode>

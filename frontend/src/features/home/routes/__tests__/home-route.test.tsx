@@ -1,16 +1,32 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { HomeRoute } from '@/features/home/routes/HomeRoute'
 
 describe('HomeRoute', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
   it('renders call to action', () => {
-    render(<HomeRoute />)
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+
+    queryClient.setQueryData(['home', 'overview'], {
+      employee: { id: 1, firstName: '太郎', lastName: '山田', email: 'taro@example.com', admin: false },
+      news: [],
+    })
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <HomeRoute />
+      </QueryClientProvider>,
+    )
 
     expect(
       screen.getByRole('heading', {
         level: 1,
-        name: '勤怠とお知らせ管理をもっとスマートに',
+        name: 'おはようございます、山田 太郎 さん',
       }),
     ).toBeInTheDocument()
   })
