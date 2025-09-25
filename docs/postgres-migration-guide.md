@@ -109,3 +109,4 @@ A. Docker が動作していること／`DOCKER_HOST` 設定が正しいこと�
 - `docker compose -f docker-compose.yml up -d db` で PostgreSQL 16 コンテナを起動し、ヘルスチェックが `healthy` になることを確認。
 - `psql` で `\dt` を実行して `employee`, `log_history`, `news`, `stamp_history` テーブルが作成済みであることを確認。
 - `SELECT COUNT(*) FROM employee;` の結果 `100` が返り、`02_data.sql` の初期データがロードされていることを検証。
+- `.github/workflows/feature.yml` の統合テスト用サービスを MySQL から PostgreSQL 16 に切り替え、CI でも `01_schema.sql` / `02_data.sql` を適用するよう更新。
