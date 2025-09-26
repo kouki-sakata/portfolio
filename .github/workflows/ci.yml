@@ -421,7 +421,12 @@ jobs:
           SPRING_SQL_INIT_MODE: never
           LOG_LEVEL_ROOT: WARN
         run: |
-          nohup bash -c 'java -jar build/libs/*.jar' > backend.log 2>&1 &
+          BOOT_JAR=$(ls build/libs/*-SNAPSHOT.jar | grep -v plain | head -n 1 || true)
+          if [ -z "$BOOT_JAR" ]; then
+            echo "Boot jar not found. Listing libs:"; ls -la build/libs; exit 1;
+          fi
+          echo "Starting backend with jar: $BOOT_JAR"
+          nohup bash -c "java -jar $BOOT_JAR" > backend.log 2>&1 &
           for i in {1..60}; do
             if curl -sf http://127.0.0.1:8080/actuator/health >/dev/null; then
               echo "Backend is up"; exit 0; fi
