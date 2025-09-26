@@ -15,13 +15,15 @@ export const SignInPage = () => {
     setError(null);
     try {
       await login(formState);
+      // biome-ignore lint/complexity/noVoid: navigate returns void; no async handling required
       void navigate("/");
     } catch (err) {
       // ログイン失敗時の詳細はユーザーに開示しない（セキュリティ/UX）ため、常に同一メッセージを表示
       // CI/E2E 環境の差異（401/403/その他）にも頑健
       setError("メールアドレスまたはパスワードが正しくありません。");
       // 開発者向けにデバッグ用途でコンソールへは詳細を出す
-      if (process.env.NODE_ENV !== "production") {
+      if (!import.meta.env.PROD) {
+        // biome-ignore lint/suspicious/noConsole: emit diagnostic info in non-production environments
         console.debug("Login failed:", err as HttpClientError);
       }
     }
@@ -33,6 +35,7 @@ export const SignInPage = () => {
       <form
         className="auth-card__form"
         onSubmit={(event) => {
+          // biome-ignore lint/complexity/noVoid: submission handler intentionally returns a promise
           void handleSubmit(event);
         }}
       >
