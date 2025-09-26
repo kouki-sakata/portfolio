@@ -392,21 +392,47 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps
 
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Wait for PostgreSQL
+        env:
+          PGPASSWORD: test_password
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h 127.0.0.1 -p 5432 -d teamdev_test_db -U test_user; then
+              echo "PostgreSQL is ready"; break; fi
+            echo "Waiting for PostgreSQL..."; sleep 2;
+          done
+
+      - name: Set up test database
+        env:
+          PGPASSWORD: test_password
+        run: |
+          psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/01_schema.sql
+          psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/02_data.sql
+
       - name: Start backend API
         env:
           SPRING_PROFILES_ACTIVE: test
           SPRING_DATASOURCE_URL: jdbc:postgresql://127.0.0.1:5432/teamdev_test_db
           SPRING_DATASOURCE_USERNAME: test_user
           SPRING_DATASOURCE_PASSWORD: test_password
+          SPRING_SQL_INIT_MODE: never
           LOG_LEVEL_ROOT: WARN
         run: |
           nohup bash -c 'java -jar build/libs/*.jar' > backend.log 2>&1 &
           for i in {1..60}; do
             if curl -sf http://127.0.0.1:8080/actuator/health >/dev/null; then
-              echo "Backend is up"; break; fi
+              echo "Backend is up"; exit 0; fi
+            # If process exited, show logs and fail fast
+            if ! pgrep -f "java .*build/libs/.*\.jar" >/dev/null; then
+              echo "Backend process exited. Dumping logs:";
+              sed -n '1,200p' backend.log || true; exit 1;
+            fi
             echo "Waiting for backend..."; sleep 2;
           done
-          test $i -lt 60
+          echo "Backend did not become healthy in time. Last 200 lines:"; tail -n 200 backend.log || true; exit 1
 
       - name: Run Playwright E2E tests
         working-directory: frontend
