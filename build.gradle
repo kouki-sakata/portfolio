@@ -58,6 +58,43 @@ node {
 	npmInstallCommand = 'ci'
 }
 
+// --- Optional: OpenAPI contract test wiring (enable with -PenableOpenApiContract) ---
+def enableOpenApiContract = project.hasProperty('enableOpenApiContract')
+
+if (enableOpenApiContract) {
+    logger.lifecycle("OpenAPI contract tests are ENABLED (-PenableOpenApiContract)")
+
+    sourceSets {
+        contractTest {
+            java.srcDir 'src/contractTest/java'
+            resources.srcDir 'src/contractTest/resources'
+            compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+    }
+
+    configurations {
+        contractTestImplementation.extendsFrom testImplementation
+        contractTestRuntimeOnly.extendsFrom testRuntimeOnly
+    }
+
+    dependencies {
+        // OpenAPI v3 parser and operation validator
+        contractTestImplementation 'org.openapi4j:openapi-parser:1.0.9'
+        contractTestImplementation 'org.openapi4j:openapi-operation-validator:1.0.9'
+    }
+
+    tasks.register('contractTest', Test) {
+        description = 'Run OpenAPI contract tests (requires -PenableOpenApiContract)'
+        group = 'verification'
+        testClassesDirs = sourceSets.contractTest.output.classesDirs
+        classpath = sourceSets.contractTest.runtimeClasspath
+        useJUnitPlatform()
+        shouldRunAfter tasks.named('apiTest')
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+}
+
 final def frontendDir = file("${project.projectDir}/frontend")
 
 tasks.named('npmInstall', NpmTask) {

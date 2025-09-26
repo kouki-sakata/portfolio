@@ -157,6 +157,7 @@ MySQL
 | `npm run build --prefix frontend`    | Vite 本番ビルド                          |
 | `./gradlew test`                     | Spring + Testcontainers を用いた統合テスト   |
 | `./gradlew apiTest`                  | `@Tag("api")` 付のAPI集中テスト                  |
+| `./gradlew contractTest -PenableOpenApiContract` | OpenAPI契約テスト（openapi4j, 制約解除時） |
 | `./gradlew build`                    | Jar 作成 + Vite ビルド（`npmBuild` タスク連携） |
 | `./scripts/dev-workflow.sh --quick`  | コンパイル + ユニットテスト (既存スクリプト)           |
 
@@ -207,3 +208,7 @@ MySQL
 ---
 
 フィードバックや改善提案は Issue / Pull Request で歓迎しています！
+- 契約検証（openapi4j）
+  - ネットワーク/依存取得の制約がない環境で以下を実行:
+    - `./gradlew contractTest -PenableOpenApiContract`
+  - 仕組み: `src/contractTest/java` にopenapi4jベースのテストを配置し、Gradleの `-PenableOpenApiContract` が指定された時のみ依存追加・タスク登録されます。
