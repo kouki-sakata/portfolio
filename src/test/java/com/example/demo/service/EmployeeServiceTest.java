@@ -44,6 +44,9 @@ public class EmployeeServiceTest {
     private LogHistoryRegistrationService logHistoryService;
 
     @Mock
+    private com.example.teamdev.mapper.LogHistoryMapper logHistoryMapper;
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     @InjectMocks

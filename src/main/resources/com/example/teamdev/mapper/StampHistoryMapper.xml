@@ -7,36 +7,35 @@
     <select id="getStampHistoryByYearMonthEmployeeId" parameterType="map"
             resultType="com.example.teamdev.entity.StampHistoryDisplay">
         SELECT
-        COALESCE(sh.id, NULL) AS id,
-        DATE_FORMAT(gd.date, '%Y') AS year,
-        DATE_FORMAT(gd.date, '%m') AS month,
-        DATE_FORMAT(gd.date, '%d') AS day,
-        CASE DAYOFWEEK(gd.date)
-        WHEN 1 THEN '日'
-        WHEN 2 THEN '月'
-        WHEN 3 THEN '火'
-        WHEN 4 THEN '水'
-        WHEN 5 THEN '木'
-        WHEN 6 THEN '金'
-        WHEN 7 THEN '土'
-        END AS day_of_week,
-        #{employeeId} AS employee_id,
-        CONCAT_WS(' ', emp.first_name, emp.last_name) AS employee_name,
-        CONCAT_WS(' ', emp2.first_name, emp2.last_name) AS update_employee_name,
-        TIME_FORMAT(sh.in_time, '%H:%i') AS in_time,
-        TIME_FORMAT(sh.out_time, '%H:%i') AS out_time,
-        DATE_FORMAT(sh.update_date, '%Y/%m/%d %H:%i') AS update_date
-        FROM
-        (
-        <foreach collection="datesInMonth" item="date" separator="UNION ALL">
-            SELECT #{date} AS date
-        </foreach>
+            sh.id AS id,
+            to_char(gd.date, 'YYYY') AS year,
+            to_char(gd.date, 'MM') AS month,
+            to_char(gd.date, 'DD') AS day,
+            CASE EXTRACT(DOW FROM gd.date)
+                WHEN 0 THEN '日'
+                WHEN 1 THEN '月'
+                WHEN 2 THEN '火'
+                WHEN 3 THEN '水'
+                WHEN 4 THEN '木'
+                WHEN 5 THEN '金'
+                WHEN 6 THEN '土'
+            END AS day_of_week,
+            #{employeeId} AS employee_id,
+            concat_ws(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employee_name,
+            concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS update_employee_name,
+            to_char(sh.in_time, 'HH24:MI') AS in_time,
+            to_char(sh.out_time, 'HH24:MI') AS out_time,
+            to_char(sh.update_date, 'YYYY/MM/DD HH24:MI') AS update_date
+        FROM (
+            <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
+                SELECT CAST(#{date} AS DATE) AS date
+            </foreach>
         ) AS gd
         LEFT JOIN stamp_history sh ON
-        YEAR(gd.date) = sh.year AND
-        MONTH(gd.date) = sh.month AND
-        DAY(gd.date) = sh.day AND
-        sh.employee_id = #{employeeId}
+            to_char(gd.date, 'YYYY') = sh.year AND
+            to_char(gd.date, 'MM') = sh.month AND
+            to_char(gd.date, 'DD') = sh.day AND
+            sh.employee_id = #{employeeId}
         LEFT JOIN employee emp ON emp.id = #{employeeId}
         LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
         ORDER BY gd.date ASC
@@ -47,17 +46,12 @@
     <!--③IFNULL関数追記-->
     <insert id="save" parameterType="com.example.teamdev.entity.StampHistory">
         INSERT INTO stamp_history (
-        id, year, month, day, employee_id, in_time, out_time,
-        update_employee_id, update_date
+            id, year, month, day, employee_id, in_time, out_time,
+            update_employee_id, update_date
         ) VALUES (
-        #{id}, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime},
-        #{updateEmployeeId}, #{updateDate}
+            DEFAULT, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime},
+            #{updateEmployeeId}, #{updateDate}
         )
-        ON DUPLICATE KEY UPDATE
-        in_time = IFNULL(in_time, VALUES(in_time)),
-        out_time = IFNULL(out_time, VALUES(out_time)),
-        update_employee_id = VALUES(update_employee_id),
-        update_date = VALUES(update_date)
     </insert>
     <!--更新の追記-->
     <update id="update" parameterType="com.example.teamdev.entity.StampHistory">

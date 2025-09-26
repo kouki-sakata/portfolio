@@ -169,6 +169,18 @@ MySQL
 `SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`）。初回は
 `npm run --prefix frontend playwright install --with-deps` でブラウザをセットアップしてください。
 
+### 🤖 Ultracite クイックスタート（推奨）
+
+- 事前準備: `nvm install 20.19.0 && nvm use 20.19.0`（または Node 20.19.0 を用意）
+- 一時実行: `npx ultracite@latest`（もしくは `npm i -g ultracite && ultracite`）
+- コマンド（Ultraciteから実行できる主要タスク）
+  - API集中テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew apiTest`
+  - 全テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew test`
+  - 契約テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew -PenableOpenApiContract contractTest`
+  - フロントLint/Unit: `npm run lint --prefix frontend` / `npm run test --prefix frontend`
+- 設定ファイル: `ultracite.config.json`
+- 詳細: `docs/ultracite-setup.md`
+
 ### 🔍 Swagger(OpenAPI) を使った API テスト
 
 1. `git checkout -b chore/add-swagger` など新しいブランチで作業を開始。

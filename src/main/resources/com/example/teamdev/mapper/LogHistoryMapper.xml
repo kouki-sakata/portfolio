@@ -49,29 +49,36 @@
     <select id="existsLogHistoryForToday" parameterType="map" resultType="int">
         SELECT COUNT(*) FROM log_history
         WHERE employee_id = #{employee_id}
-        AND operation_type = #{operation_type}
-        AND update_date &gt;= DATE(#{update_date})
-        AND update_date &lt; DATE_ADD(DATE(#{update_date}), INTERVAL 1 DAY)
+          AND operation_type = #{operation_type}
+          AND update_date &gt;= date_trunc('day', CAST(#{update_date} AS timestamp))
+          AND update_date &lt; (date_trunc('day', CAST(#{update_date} AS timestamp)) + INTERVAL '1 day')
     </select>
 
     <!-- データを挿入または更新する -->
     <insert id="save" parameterType="com.example.teamdev.entity.LogHistory">
         INSERT INTO log_history (
-        id,
-        display_name,
-        operation_type,
-        stamp_time,
-        employee_id,
-        update_employee_id,
-        update_date
+            display_name,
+            operation_type,
+            stamp_time,
+            employee_id,
+            update_employee_id,
+            update_date
         ) VALUES (
-        #{id},
-        #{display_name},
-        #{operation_type},
-        #{stamp_time},
-        #{employee_id},
-        #{update_employee_id},
-        #{update_date}
+            #{display_name},
+            #{operation_type},
+            #{stamp_time},
+            #{employee_id},
+            #{update_employee_id},
+            #{update_date}
         )
     </insert>
+
+    <!-- バッチ削除: 従業員IDに紐づく履歴を削除 -->
+    <delete id="deleteByEmployeeIds" parameterType="list">
+        DELETE FROM log_history
+        WHERE employee_id IN
+        <foreach collection="list" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
 </mapper>

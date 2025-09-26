@@ -16,12 +16,12 @@ import com.example.teamdev.entity.News;
 @Mapper
 public interface NewsMapper {
 	//公開フラグtrueのレコードをすべて、お知らせ日付の降順で取得する
-	@Select("SELECT * FROM news WHERE release_flag = true ORDER BY news_date DESC")
-	List<News> getNewsByReleaseFlagTrue();
+    @Select("SELECT * FROM news WHERE release_flag = 1 ORDER BY news_date DESC")
+    List<News> getNewsByReleaseFlagTrue();
 
 	//公開フラグtrueのレコードを指定件数まで、お知らせ日付の降順で取得する
-	@Select("SELECT * FROM news WHERE release_flag = true ORDER BY news_date DESC LIMIT #{limit}")
-	List<News> getNewsByReleaseFlagTrueWithLimit(@Param("limit") int limit);
+    @Select("SELECT * FROM news WHERE release_flag = 1 ORDER BY news_date DESC LIMIT #{limit}")
+    List<News> getNewsByReleaseFlagTrueWithLimit(@Param("limit") int limit);
 
 	//お知らせ日付の降順で取得する
 	@Select("SELECT * FROM news ORDER BY news_date DESC")
