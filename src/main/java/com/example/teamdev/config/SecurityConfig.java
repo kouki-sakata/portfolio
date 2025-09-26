@@ -48,7 +48,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers("/actuator/**")
+                // Allow health endpoints and login endpoint without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login")
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
