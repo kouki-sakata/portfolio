@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/stamp-history")
@@ -27,6 +28,7 @@ public class StampHistoryRestController {
         this.stampHistoryService = stampHistoryService;
     }
 
+    @Operation(summary = "打刻履歴取得", description = "年・月の指定がなければ当月を返却")
     @GetMapping
     public ResponseEntity<StampHistoryResponse> history(
         @RequestParam(value = "year", required = false) String year,

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -44,6 +45,7 @@ public class HomeRestController {
         this.stampService = stampService;
     }
 
+    @Operation(summary = "ホーム概要", description = "ログイン中の従業員情報とお知らせ一覧を返却")
     @GetMapping("/overview")
     public ResponseEntity<HomeDashboardResponse> overview() {
         Employee currentEmployee = SecurityUtil.getCurrentEmployee();
@@ -59,6 +61,7 @@ public class HomeRestController {
         return ResponseEntity.ok(response);
     }
 
+    @Operation(summary = "打刻", description = "出勤/退勤の打刻を記録")
     @PostMapping("/stamps")
     public ResponseEntity<StampResponse> stamp(@Valid @RequestBody StampRequest request) {
         Integer employeeId = SecurityUtil.getCurrentEmployeeId();

@@ -156,6 +156,7 @@ MySQL
 | `npm run test:e2e --prefix frontend` | Playwright を利用した E2E(UI) テスト        |
 | `npm run build --prefix frontend`    | Vite 本番ビルド                          |
 | `./gradlew test`                     | Spring + Testcontainers を用いた統合テスト   |
+| `./gradlew apiTest`                  | `@Tag("api")` 付のAPI集中テスト                  |
 | `./gradlew build`                    | Jar 作成 + Vite ビルド（`npmBuild` タスク連携） |
 | `./scripts/dev-workflow.sh --quick`  | コンパイル + ユニットテスト (既存スクリプト)           |
 
@@ -179,6 +180,12 @@ MySQL
 1. Swagger で API の挙動とテストケースを整理 → 統合テストを順次追加。
 2. API が安定したら、React 側はサービス層モックやユニットテストでカバーを強化。
 3. 最後に Playwright E2E で UI フロー（ログイン成功／失敗）を確認し、全体の整合性を取る。
+
+### 🌱 プロファイル運用
+
+- `SPRING_PROFILES_ACTIVE=dev` : 開発向け。Swagger UI 有効、詳細ログ。
+- `SPRING_PROFILES_ACTIVE=test` : テスト向け。Testcontainers などを利用。
+- `SPRING_PROFILES_ACTIVE=prod` : 本番向け。Swagger UI 無効、ログ抑制。
 
 ## 🧭 CI/CD サマリ
 
