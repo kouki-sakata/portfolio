@@ -34,6 +34,12 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
     css: true,
+    // Exclude E2E (Playwright) specs from Vitest discovery
+    exclude: [
+      'e2e/**',
+      'playwright.config.ts',
+      // default vitest excludes are preserved implicitly
+    ],
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html', 'lcov'],
