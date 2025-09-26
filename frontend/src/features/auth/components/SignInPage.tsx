@@ -18,7 +18,8 @@ export const SignInPage = () => {
       void navigate('/')
     } catch (err) {
       const httpError = err as HttpClientError
-      if (httpError.status === 401) {
+      // 認証失敗やCSRF/権限により 401/403 の可能性があるため、どちらもユーザー向けには同一メッセージを表示
+      if (httpError.status === 401 || httpError.status === 403) {
         setError('メールアドレスまたはパスワードが正しくありません。')
         return
       }
