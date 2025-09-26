@@ -111,6 +111,18 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: test
 
+      - name: Generate coverage reports
+        run: ./gradlew jacocoTestReport jacocoApiTestReport --no-daemon
+
+      - name: Upload coverage reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: feature-coverage-reports
+          path: |
+            build/reports/jacoco/test/html/
+            build/reports/jacoco/jacocoApiTestReport/html/
+
       - name: Check code style
         run: ./gradlew checkstyleMain checkstyleTest || true
 
