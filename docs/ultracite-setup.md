@@ -5,16 +5,16 @@ Ultracite 導入ガイド（TeamDevelop Bravo）
 
 前提
 ----
-- Node.js 20.19.0（`.nvmrc`に準拠）
+- Node.js 22.12.0（`.nvmrc`に準拠）
 - Docker（Testcontainersを利用するテストで必要）
 
 ```
 # nvmがある場合
-nvm install 20.19.0
-nvm use 20.19.0
+nvm install 22.12.0
+nvm use 22.12.0
 
 # バージョン確認
-node -v  # v20.19.0
+node -v  # v22.12.0
 npm -v
 ```
 
@@ -43,7 +43,7 @@ npm -v
 
 CI連携
 -----
-- GitHub ActionsはNodeを `20.19.0` に固定済み。
+- GitHub ActionsはNodeを `22.12.0` に固定済み。
 - 契約テスト:
   - 手動（workflow_dispatch）またはPRラベル`contract-test`で `contract-test` ジョブが動作
   - 成果物: `contract-test-reports`, `openapi.json`

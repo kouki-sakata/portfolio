@@ -171,7 +171,7 @@ MySQL
 
 ### 🤖 Ultracite クイックスタート（推奨）
 
-- 事前準備: `nvm install 20.19.0 && nvm use 20.19.0`（または Node 20.19.0 を用意）
+- 事前準備: `nvm install 22.12.0 && nvm use 22.12.0`（または Node 22.12.0 を用意）
 - 一時実行: `npx ultracite@latest`（もしくは `npm i -g ultracite && ultracite`）
 - コマンド（Ultraciteから実行できる主要タスク）
   - API集中テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew apiTest`
@@ -203,7 +203,7 @@ MySQL
 ## 🧭 CI/CD サマリ
 
 - `ci.yml`
-    - Node 20 + npm ci
+    - Node 22 + npm ci
     - `npm run lint` / `npm run test`
     - PostgreSQL サービスを起動して `./gradlew test`
     - `./gradlew build` / SonarCloud / Docker build
