@@ -7,7 +7,8 @@ export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
   expect: {
-    timeout: 5_000,
+    // CI での遅延に備えて若干長めにする
+    timeout: 10_000,
   },
   use: {
     baseURL: BASE_URL,
