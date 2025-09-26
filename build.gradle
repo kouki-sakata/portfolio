@@ -1,12 +1,13 @@
 import com.github.gradle.node.npm.task.NpmTask
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.owasp.dependencycheck' version '8.4.0'
-	id 'org.sonarqube' version '4.4.1.3373'
-	id 'com.github.node-gradle.node' version '7.1.0'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.owasp.dependencycheck' version '8.4.0'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'com.github.node-gradle.node' version '7.1.0'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -141,7 +142,52 @@ tasks.named('clean') {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// Dedicated API test task (runs only tests tagged with 'api')
+tasks.register('apiTest', Test) {
+    description = 'Run API-focused tests (@Tag("api")).'
+    group = 'verification'
+    useJUnitPlatform {
+        includeTags 'api'
+    }
+    // Keep JVM arg parity with other Test tasks
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    shouldRunAfter tasks.named('test')
+}
+
+// Jacoco coverage reports
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.register('jacocoApiTestReport', JacocoReport) {
+    dependsOn tasks.named('apiTest')
+    executionData fileTree(dir: project.buildDir, includes: [
+        'jacoco/test.exec',
+        'jacoco/apiTest.exec',
+        'jacoco/*.exec'
+    ])
+    sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom files(sourceSets.main.output)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+// Optionally include coverage in the verification lifecycle
+tasks.named('check') {
+    dependsOn 'jacocoTestReport'
 }
 
 tasks.named('bootRun') {

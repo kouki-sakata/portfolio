@@ -108,6 +108,11 @@ jobs:
           LOG_LEVEL_ROOT: WARN
           SPRING_PROFILES_ACTIVE: test
 
+      - name: Run API tests (tagged)
+        run: ./gradlew apiTest
+        env:
+          SPRING_PROFILES_ACTIVE: test
+
       - name: Generate test report
         uses: dorny/test-reporter@v1
         if: success() || failure()

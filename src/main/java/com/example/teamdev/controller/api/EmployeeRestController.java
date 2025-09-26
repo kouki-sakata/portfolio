@@ -26,9 +26,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/employees")
+@Tag(name = "Employees", description = "従業員 管理 API")
 public class EmployeeRestController {
 
     private final EmployeeService employeeService;

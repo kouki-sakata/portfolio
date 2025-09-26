@@ -2,6 +2,7 @@ package com.example.teamdev.integration;
 
 import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
+@Tag("api")
 class AuthRestControllerIntegrationTest extends PostgresContainerSupport {
 
     private static final String USER_EMAIL = "test.user@example.com";

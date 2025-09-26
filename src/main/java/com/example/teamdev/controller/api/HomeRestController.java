@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -29,6 +30,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/home")
+@Tag(name = "Home", description = "ホーム ダッシュボード/打刻 API")
 public class HomeRestController {
 
     private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME);

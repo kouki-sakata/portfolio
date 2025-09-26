@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.tags.Tag;
 
 @RestController
 @RequestMapping("/api/stamp-history")
+@Tag(name = "Stamp History", description = "打刻履歴 API")
 public class StampHistoryRestController {
 
     private final StampHistoryService stampHistoryService;
