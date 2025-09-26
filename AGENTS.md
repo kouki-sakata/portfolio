@@ -5,6 +5,9 @@
 When implementing code, always refer to context7 and proceed with
 implementation.
 
+Before you start coding, please get the latest documentation using context7 (MCP
+server).
+
 ## Project Structure & Module Organization
 
 This Spring Boot app keeps domain code under
