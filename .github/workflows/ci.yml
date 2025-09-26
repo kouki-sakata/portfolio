@@ -99,7 +99,7 @@ jobs:
           psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/02_data.sql
 
       - name: Run unit tests
-        run: ./gradlew test
+        run: ./gradlew test --rerun-tasks --no-daemon
         env:
           DB_HOST: 127.0.0.1
           DB_PORT: 5432
@@ -110,12 +110,12 @@ jobs:
           SPRING_PROFILES_ACTIVE: test
 
       - name: Run API tests (tagged)
-        run: ./gradlew apiTest
+        run: ./gradlew apiTest --rerun-tasks --no-daemon
         env:
           SPRING_PROFILES_ACTIVE: test
 
       - name: Generate coverage reports
-        run: ./gradlew jacocoTestReport jacocoApiTestReport
+        run: ./gradlew jacocoTestReport jacocoApiTestReport --no-daemon
 
       - name: Upload coverage reports
         uses: actions/upload-artifact@v4

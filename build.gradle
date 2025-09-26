@@ -200,6 +200,8 @@ jacoco {
 }
 
 tasks.register('jacocoApiTestReport', JacocoReport) {
+    // Ensure both unit tests and apiTest have produced coverage data
+    dependsOn tasks.named('test')
     dependsOn tasks.named('apiTest')
     executionData fileTree(dir: project.buildDir, includes: [
         'jacoco/test.exec',
