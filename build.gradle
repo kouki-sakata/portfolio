@@ -45,9 +45,12 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:postgresql'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    // OpenAPI contract tooling (future extension)
+    testImplementation 'org.openapi4j:openapi-operation-validator:1.0.9'
+    testImplementation 'org.openapi4j:openapi-parser:1.0.9'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 node {
@@ -182,6 +185,23 @@ tasks.named('jacocoTestReport', JacocoReport) {
     reports {
         xml.required.set(true)
         html.required.set(true)
+    }
+}
+
+// Optional coverage gate (kept detached from 'check' to avoid sudden pipeline failures)
+tasks.register('jacocoCoverageVerification', JacocoCoverageVerification) {
+    dependsOn tasks.named('test')
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limits {
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.25
+                }
+            }
+        }
     }
 }
 
