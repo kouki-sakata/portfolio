@@ -343,7 +343,7 @@ jobs:
 
   e2e:
     name: E2E Tests (Playwright)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: [ build ]
 
     services:
@@ -388,8 +388,9 @@ jobs:
           name: jar-artifacts
           path: build/libs/
 
-      - name: Install Playwright browsers
-        uses: microsoft/playwright-github-action@v1
+      - name: Install Playwright browsers and system deps
+        working-directory: frontend
+        run: npx playwright install --with-deps
 
       - name: Start backend API
         env:
