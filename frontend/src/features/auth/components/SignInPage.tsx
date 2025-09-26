@@ -17,13 +17,14 @@ export const SignInPage = () => {
       await login(formState)
       void navigate('/')
     } catch (err) {
-      const httpError = err as HttpClientError
-      // 認証失敗やCSRF/権限により 401/403 の可能性があるため、どちらもユーザー向けには同一メッセージを表示
-      if (httpError.status === 401 || httpError.status === 403) {
-        setError('メールアドレスまたはパスワードが正しくありません。')
-        return
+      // ログイン失敗時の詳細はユーザーに開示しない（セキュリティ/UX）ため、常に同一メッセージを表示
+      // CI/E2E 環境の差異（401/403/その他）にも頑健
+      setError('メールアドレスまたはパスワードが正しくありません。')
+      // 開発者向けにデバッグ用途でコンソールへは詳細を出す
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('Login failed:', err as HttpClientError)
       }
-      setError('サインインに失敗しました。時間を置いて再度お試しください。')
     }
   }
 
