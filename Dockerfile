@@ -21,7 +21,7 @@ COPY --chown=gradle:gradle frontend/ frontend/
 RUN ./gradlew clean build -x test --no-daemon
 
 # Stage 2: Run the application
-FROM temurin:21-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 # Install security updates and create non-root user
 RUN apk --no-cache upgrade && \
