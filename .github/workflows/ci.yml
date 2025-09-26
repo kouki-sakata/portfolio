@@ -131,9 +131,7 @@ jobs:
         if: success() || failure()
         with:
           name: JUnit Test Results
-          path: |
-            build/test-results/test/*.xml
-            build/test-results/apiTest/*.xml
+          path: build/test-results/**/*.xml
           reporter: java-junit
 
       - name: Upload test results
