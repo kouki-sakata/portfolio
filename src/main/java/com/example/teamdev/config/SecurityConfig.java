@@ -59,7 +59,13 @@ public class SecurityConfig {
                     "/assets/**"
                 ).permitAll()
                 .requestMatchers("/signin", "/signin/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/public/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/session", "/api/public/**").permitAll()
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers("/employeemanage/**", "/newsmanage/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
