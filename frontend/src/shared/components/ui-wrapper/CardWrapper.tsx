@@ -53,7 +53,7 @@ export function CardWrapper({
     // Use shadcn/ui Card components
     return (
       <ShadcnCard className={className} data-testid="card-wrapper">
-        {(header || description) && (
+        {(header ?? description) && (
           <CardHeader data-testid="card-header">
             {header && (
               typeof header === 'string' ? (
@@ -97,9 +97,9 @@ export function CardWrapper({
   )
 
   return (
-    <div className={legacyClasses}>
-      {(header || description) && (
-        <div className="card__header">
+    <div className={legacyClasses} data-testid="card-wrapper">
+      {(header ?? description) && (
+        <div className="card__header" data-testid="card-header">
           {header && (
             typeof header === 'string' ? (
               <h3 className="card__title">{header}</h3>
@@ -118,7 +118,7 @@ export function CardWrapper({
       </div>
 
       {footer && (
-        <div className="card__footer">
+        <div className="card__footer" data-testid="card-footer">
           {footer}
         </div>
       )}

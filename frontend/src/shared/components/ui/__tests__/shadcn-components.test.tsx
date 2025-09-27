@@ -6,7 +6,7 @@ import { beforeAll, describe, expect, it, vi } from 'vitest'
 beforeAll(() => {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation((query: string) => ({
       matches: false,
       media: query,
       onchange: null,
@@ -118,17 +118,18 @@ describe('shadcn/ui Components', () => {
     })
 
     it('should apply correct styles to Card', () => {
-      const { container } = render(<Card>Content</Card>)
-      const card = container.firstChild
+      render(<Card data-testid="card">Content</Card>)
+      const card = screen.getByTestId('card')
       expect(card).toHaveClass('rounded-xl')
       expect(card).toHaveClass('border')
       expect(card).toHaveClass('bg-card')
     })
 
     it('should support className prop', () => {
-      const { container } = render(<Card className="custom-class">Content</Card>)
-      const card = container.querySelector('.custom-class')
+      render(<Card className="custom-class" data-testid="custom-card">Content</Card>)
+      const card = screen.getByTestId('custom-card')
       expect(card).toBeInTheDocument()
+      expect(card).toHaveClass('custom-class')
     })
   })
 
@@ -152,12 +153,12 @@ describe('shadcn/ui Components', () => {
       expect(input).toBeDisabled()
     })
 
-    it('should handle value changes', async () => {
-      const { rerender } = render(<Input value="" onChange={() => {}} />)
+    it('should handle value changes', () => {
+      const { rerender } = render(<Input value="" onChange={vi.fn()} />)
       const input = screen.getByRole('textbox')
       expect(input.value).toBe('')
 
-      rerender(<Input value="test value" onChange={() => {}} />)
+      rerender(<Input value="test value" onChange={vi.fn()} />)
       expect(input.value).toBe('test value')
     })
 

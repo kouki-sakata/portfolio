@@ -64,10 +64,8 @@ describe('shadcn/ui Integration', () => {
       expect(cn('px-2 py-1', 'px-4')).toBe('py-1 px-4')
 
       // Test conditional classes
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      expect(cn('bg-red-500', true && 'bg-blue-500')).toBe('bg-blue-500')
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      expect(cn('text-sm', false && 'text-lg')).toBe('text-sm')
+      expect(cn('bg-red-500', 'bg-blue-500')).toBe('bg-blue-500')
+      expect(cn('text-sm', undefined)).toBe('text-sm')
 
       // Test Tailwind conflict resolution
       expect(cn('p-2', 'p-4')).toBe('p-4')

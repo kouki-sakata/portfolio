@@ -30,7 +30,6 @@ describe('Tailwind CSS v4 Integration', () => {
 
       // Check if Tailwind plugin is included
       const hasTailwindPlugin = plugins.some((plugin: VitePlugin | (() => VitePlugin)) => {
-        if (!plugin) return false
         if (typeof plugin === 'function') {
           return plugin.name === 'tailwindcss'
         }

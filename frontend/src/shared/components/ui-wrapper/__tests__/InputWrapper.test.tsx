@@ -316,13 +316,13 @@ describe('InputWrapper Component', () => {
     })
 
     it('should handle file input type', () => {
-      render(
+      const { container } = render(
         <FeatureFlagProvider>
           <InputWrapper type="file" />
         </FeatureFlagProvider>
       )
 
-      const fileInput = document.querySelector('input[type="file"]')
+      const fileInput = container.querySelector('input[type="file"]')
       expect(fileInput).toBeInTheDocument()
       expect(fileInput?.getAttribute('type')).toBe('file')
     })
@@ -368,9 +368,9 @@ describe('InputWrapper Component', () => {
         value: 'test',
         placeholder: 'Enter text',
         className: 'test',
-        onChange: () => {},
-        onBlur: () => {},
-        onFocus: () => {},
+        onChange: vi.fn(),
+        onBlur: vi.fn(),
+        onFocus: vi.fn(),
       }
 
       render(

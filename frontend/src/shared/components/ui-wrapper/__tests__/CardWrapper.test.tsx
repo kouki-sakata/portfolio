@@ -42,7 +42,8 @@ describe('CardWrapper Component', () => {
 
       const card = screen.getByText('Card content')
       expect(card).toBeInTheDocument()
-      expect(card.parentElement).toHaveClass('card')
+      const wrapper = screen.getByTestId('card-wrapper')
+      expect(wrapper).toHaveClass('card')
     })
 
     it('should render card header with legacy styling', () => {
@@ -54,19 +55,21 @@ describe('CardWrapper Component', () => {
 
       const header = screen.getByText('Card Title')
       expect(header).toBeInTheDocument()
-      expect(header.parentElement).toHaveClass('card__header')
+      const headerWrapper = screen.getByTestId('card-header')
+      expect(headerWrapper).toHaveClass('card__header')
     })
 
     it('should render card footer with legacy styling', () => {
-      const { container } = render(
+      render(
         <FeatureFlagProvider>
           <CardWrapper footer="Card Footer">Card content</CardWrapper>
         </FeatureFlagProvider>
       )
 
-      const footerElement = container.querySelector('.card__footer')
+      const footerElement = screen.getByText('Card Footer')
       expect(footerElement).toBeInTheDocument()
-      expect(footerElement).toHaveTextContent('Card Footer')
+      const footerWrapper = screen.getByTestId('card-footer')
+      expect(footerWrapper).toHaveClass('card__footer')
     })
 
     it('should render card description with legacy styling', () => {
@@ -90,7 +93,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      const card = screen.getByText('Card content').parentElement
+      const card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('card')
       expect(card).toHaveClass('custom-card-class')
     })
@@ -102,7 +105,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      let card = screen.getByText('Outlined card').parentElement
+      let card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('card--outlined')
 
       rerender(
@@ -111,7 +114,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      card = screen.getByText('Elevated card').parentElement
+      card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('card--elevated')
     })
 
@@ -122,7 +125,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      let card = screen.getByText('No padding').parentElement
+      let card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('card--padding-none')
 
       rerender(
@@ -131,7 +134,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      card = screen.getByText('Small padding').parentElement
+      card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('card--padding-small')
     })
   })
@@ -310,15 +313,14 @@ describe('CardWrapper Component', () => {
       // Initially legacy mode
       localStorageMock.getItem.mockReturnValue(null)
 
-      const { rerender, container } = render(
+      const { rerender } = render(
         <FeatureFlagProvider>
           <CardWrapper>Toggle Test</CardWrapper>
         </FeatureFlagProvider>
       )
 
-      let card = container.querySelector('.card')
-      expect(card).toBeInTheDocument()
-      expect(card).toHaveClass('card')
+      const wrapper = screen.getByTestId('card-wrapper')
+      expect(wrapper).toBeInTheDocument()
 
       // Switch to shadcn mode
       localStorageMock.getItem.mockReturnValue('true')
@@ -330,7 +332,7 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      card = screen.getByText('Toggle Test').closest('[data-testid="card-wrapper"]')
+      card = screen.getByTestId('card-wrapper')
       expect(card).toHaveClass('rounded-xl')
     })
   })

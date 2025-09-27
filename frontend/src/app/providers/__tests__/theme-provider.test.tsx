@@ -2,17 +2,18 @@ import { act, render, renderHook, screen, waitFor } from '@testing-library/react
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { ThemeProvider, useTheme } from '../theme-provider'
+import { ThemeProvider } from '../theme-provider'
+import { useTheme } from '../use-theme'
 
 describe('ThemeProvider', () => {
   // Mock localStorage
   const localStorageMock = {
-    getItem: vi.fn(),
-    setItem: vi.fn(),
-    clear: vi.fn(),
-    removeItem: vi.fn(),
+    getItem: vi.fn<[string], string | null>(),
+    setItem: vi.fn<[string, string], void>(),
+    clear: vi.fn<[], void>(),
+    removeItem: vi.fn<[string], void>(),
     length: 0,
-    key: vi.fn(),
+    key: vi.fn<[number], string | null>(),
   }
 
   // Mock matchMedia
@@ -344,8 +345,8 @@ describe('ThemeProvider', () => {
       await userEvent.click(button)
       await waitFor(() => {
         expect(button).toHaveTextContent('Toggle Theme: dark')
-        expect(document.documentElement.classList.contains('dark')).toBe(true)
       })
+      expect(document.documentElement.classList.contains('dark')).toBe(true)
 
       // Click to change to system
       await userEvent.click(button)
@@ -357,8 +358,8 @@ describe('ThemeProvider', () => {
       await userEvent.click(button)
       await waitFor(() => {
         expect(button).toHaveTextContent('Toggle Theme: light')
-        expect(document.documentElement.classList.contains('light')).toBe(true)
       })
+      expect(document.documentElement.classList.contains('light')).toBe(true)
     })
   })
 })
