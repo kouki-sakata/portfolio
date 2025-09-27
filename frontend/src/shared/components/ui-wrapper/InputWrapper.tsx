@@ -1,7 +1,8 @@
 import React from 'react'
+
 import { cn } from '@/lib/utils'
 import { Input as ShadcnInput } from '@/shared/components/ui/input'
-import { useFeatureFlag, FEATURE_FLAGS } from '@/shared/lib/feature-flags'
+import { FEATURE_FLAGS,useFeatureFlag } from '@/shared/lib/feature-flags'
 
 // InputWrapper prop types
 export interface InputWrapperProps extends Omit<React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>, 'size'> {
@@ -86,8 +87,8 @@ export function InputWrapper({
   const legacyClasses = cn(
     'input',
     type === 'textarea' && 'input--textarea',
-    variant && variant !== 'default' && `input--${variant}`,
-    inputSize && inputSize !== 'medium' && `input--${inputSize}`,
+    variant !== 'default' && `input--${variant}`,
+    inputSize !== 'medium' && `input--${inputSize}`,
     disabled && 'input--disabled',
     className
   )

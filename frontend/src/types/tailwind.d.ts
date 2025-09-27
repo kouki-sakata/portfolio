@@ -2,18 +2,20 @@
 
 declare module 'tailwindcss/types/config' {
   import { Config } from 'tailwindcss'
+
   export default Config
 }
 
 declare module '@tailwindcss/vite' {
   import { Plugin } from 'vite'
+
   const plugin: () => Plugin
   export default plugin
 }
 
 // Extend the global CSS module declarations for Tailwind utilities
 declare module '*.css' {
-  const content: { [className: string]: string }
+  const content: Record<string, string>
   export default content
 }
 
@@ -102,10 +104,6 @@ export type TailwindClassName = string
 export type ConditionalClassName<T extends string> = T | `${T}` | undefined | null | false
 
 // Utility function type for merging class names
-export interface ClassNameUtil {
-  (
-    ...classes: Array<
-      TailwindClassName | ConditionalClassName<TailwindClassName> | Record<string, boolean>
-    >
-  ): string
-}
+export type ClassNameUtil = (
+    ...classes: (TailwindClassName | ConditionalClassName<TailwindClassName> | Record<string, boolean>)[]
+  ) => string

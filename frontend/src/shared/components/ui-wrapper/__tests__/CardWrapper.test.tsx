@@ -1,7 +1,9 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
-import { CardWrapper, type CardWrapperProps } from '../CardWrapper'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { FeatureFlagProvider } from '@/shared/lib/feature-flags'
+
+import { CardWrapper, type CardWrapperProps } from '../CardWrapper'
 
 describe('CardWrapper Component', () => {
   const localStorageMock = {
@@ -38,9 +40,9 @@ describe('CardWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      const card = screen.getByText('Card content').parentElement
+      const card = screen.getByText('Card content')
       expect(card).toBeInTheDocument()
-      expect(card).toHaveClass('card')
+      expect(card.parentElement).toHaveClass('card')
     })
 
     it('should render card header with legacy styling', () => {
@@ -371,7 +373,7 @@ describe('CardWrapper Component', () => {
     })
 
     it('should handle all padding types', () => {
-      const paddings: Array<NonNullable<CardWrapperProps['padding']>> = ['none', 'small', 'medium', 'large']
+      const paddings: NonNullable<CardWrapperProps['padding']>[] = ['none', 'small', 'medium', 'large']
 
       paddings.forEach((padding) => {
         render(

@@ -1,4 +1,5 @@
 import React from 'react'
+
 import { cn } from '@/lib/utils'
 import {
   Card as ShadcnCard,
@@ -8,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card'
-import { useFeatureFlag, FEATURE_FLAGS } from '@/shared/lib/feature-flags'
+import { FEATURE_FLAGS,useFeatureFlag } from '@/shared/lib/feature-flags'
 
 // CardWrapper prop types
 export interface CardWrapperProps {

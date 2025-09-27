@@ -1,6 +1,6 @@
-import { describe, it, expect } from 'vitest'
 import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
+import { describe, expect,it } from 'vitest'
 
 describe('shadcn/ui Integration', () => {
   describe('Configuration', () => {
@@ -128,7 +128,7 @@ describe('shadcn/ui Integration', () => {
       }
 
       // Check for required utilities
-      expect(deps['clsx']).toBeDefined()
+      expect(deps.clsx).toBeDefined()
       expect(deps['tailwind-merge']).toBeDefined()
       expect(deps['class-variance-authority']).toBeDefined()
     })

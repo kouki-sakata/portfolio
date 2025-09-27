@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ButtonWrapper, type ButtonWrapperProps } from '../ButtonWrapper'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { FeatureFlagProvider } from '@/shared/lib/feature-flags'
+
+import { ButtonWrapper, type ButtonWrapperProps } from '../ButtonWrapper'
 
 describe('ButtonWrapper Component', () => {
   const localStorageMock = {
@@ -273,7 +275,9 @@ describe('ButtonWrapper Component', () => {
         size: 'medium',
         disabled: false,
         className: 'test',
-        onClick: () => {},
+        onClick: () => {
+          // Test onClick handler
+        },
         children: 'Test',
         type: 'button',
       }

@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { render, screen, act, renderHook, waitFor } from '@testing-library/react'
+import { act, render, renderHook, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ThemeProvider, useTheme } from '../theme-provider'
 
 describe('ThemeProvider', () => {
@@ -273,8 +274,8 @@ describe('ThemeProvider', () => {
         return (
           <div>
             <span>Theme: {theme}</span>
-            <button onClick={() => setTheme('dark')}>Set Dark</button>
-            <button onClick={() => setTheme('light')}>Set Light</button>
+            <button onClick={() => { setTheme('dark'); }}>Set Dark</button>
+            <button onClick={() => { setTheme('light'); }}>Set Light</button>
           </div>
         )
       }

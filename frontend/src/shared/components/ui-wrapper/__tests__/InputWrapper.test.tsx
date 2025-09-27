@@ -1,8 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { InputWrapper, type InputWrapperProps } from '../InputWrapper'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { FeatureFlagProvider } from '@/shared/lib/feature-flags'
+
+import { InputWrapper, type InputWrapperProps } from '../InputWrapper'
 
 describe('InputWrapper Component', () => {
   const localStorageMock = {
@@ -71,7 +73,7 @@ describe('InputWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      let input = screen.getByPlaceholderText('Email') as HTMLInputElement
+      let input = screen.getByPlaceholderText('Email')
       expect(input.type).toBe('email')
 
       rerender(
@@ -80,7 +82,7 @@ describe('InputWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      input = screen.getByPlaceholderText('Password') as HTMLInputElement
+      input = screen.getByPlaceholderText('Password')
       expect(input.type).toBe('password')
 
       rerender(
@@ -89,7 +91,7 @@ describe('InputWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      input = screen.getByPlaceholderText('Number') as HTMLInputElement
+      input = screen.getByPlaceholderText('Number')
       expect(input.type).toBe('number')
     })
 
@@ -146,7 +148,7 @@ describe('InputWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole('textbox')
       expect(input.value).toBe('Initial value')
     })
 
@@ -320,9 +322,9 @@ describe('InputWrapper Component', () => {
         </FeatureFlagProvider>
       )
 
-      const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+      const fileInput = document.querySelector('input[type="file"]')
       expect(fileInput).toBeInTheDocument()
-      expect(fileInput.type).toBe('file')
+      expect(fileInput?.getAttribute('type')).toBe('file')
     })
   })
 
@@ -381,7 +383,7 @@ describe('InputWrapper Component', () => {
     })
 
     it('should handle all variant types', () => {
-      const variants: Array<NonNullable<InputWrapperProps['variant']>> = ['default', 'error', 'success']
+      const variants: NonNullable<InputWrapperProps['variant']>[] = ['default', 'error', 'success']
 
       variants.forEach((variant) => {
         render(
@@ -397,7 +399,7 @@ describe('InputWrapper Component', () => {
     })
 
     it('should handle all size types', () => {
-      const sizes: Array<NonNullable<InputWrapperProps['inputSize']>> = ['small', 'medium', 'large']
+      const sizes: NonNullable<InputWrapperProps['inputSize']>[] = ['small', 'medium', 'large']
 
       sizes.forEach((inputSize) => {
         render(

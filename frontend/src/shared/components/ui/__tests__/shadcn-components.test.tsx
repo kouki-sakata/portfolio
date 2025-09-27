@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeAll, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { beforeAll, describe, expect, it, vi } from 'vitest'
 
 // Mock window.matchMedia for sonner
 beforeAll(() => {
@@ -154,7 +154,7 @@ describe('shadcn/ui Components', () => {
 
     it('should handle value changes', async () => {
       const { rerender } = render(<Input value="" onChange={() => {}} />)
-      const input = screen.getByRole('textbox') as HTMLInputElement
+      const input = screen.getByRole('textbox')
       expect(input.value).toBe('')
 
       rerender(<Input value="test value" onChange={() => {}} />)

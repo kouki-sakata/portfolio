@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
 import { existsSync } from 'fs'
 import { resolve } from 'path'
+import { describe, expect,it } from 'vitest'
+
 import * as viteConfig from '../../vite.config'
 
 describe('Tailwind CSS v4 Integration', () => {
