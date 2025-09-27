@@ -1,4 +1,7 @@
 .serena/
+.claude
+.mcp.json
+CLAUDE.md
 
 # Compiled class files
 *.class

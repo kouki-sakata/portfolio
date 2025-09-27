@@ -1,0 +1,91 @@
+{
+  "feature": "attendance-management",
+  "name": "武道ONE 勤怠管理システム",
+  "description": "マルチテナント型勤怠管理システムのMVP開発仕様",
+  "language": "ja",
+  "version": "1.0.0",
+  "created_at": "2024-08-27",
+  "updated_at": "2025-09-22",
+  "author": "武道ONE開発チーム",
+  "phases": {
+    "requirements": {
+      "status": "completed",
+      "completed_at": "2025-09-10",
+      "file": "requirements.md",
+      "items_count": 10,
+      "format": "EARS"
+    },
+    "design": {
+      "status": "completed",
+      "completed_at": "2025-09-10",
+      "file": "design.md",
+      "has_diagrams": true,
+      "format": "Requirements-mapped"
+    },
+    "tasks": {
+      "status": "enhanced",
+      "completed_at": "2025-09-22",
+      "file": "tasks.md",
+      "total_tasks": 47,
+      "completed_tasks": 4,
+      "backend_tasks": 18,
+      "frontend_tasks": 16,
+      "integration_tasks": 7,
+      "server_components_tasks": 3,
+      "performance_tasks": 3,
+      "edge_deployment_tasks": 3
+    },
+    "implementation": {
+      "status": "pending",
+      "started_at": null,
+      "estimated_duration": "4.5 months",
+      "deployment_target": "Vercel + Supabase"
+    }
+  },
+  "metadata": {
+    "project_type": "SaaS",
+    "architecture": "Multi-tenant",
+    "technology_stack": {
+      "frontend": "Next.js 15",
+      "backend": "Supabase",
+      "database": "PostgreSQL",
+      "hosting": "Vercel"
+    },
+    "target_users": "中小規模組織（10〜100名）",
+    "release_strategy": "段階的リリース（3ステージ）"
+  },
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": true
+    }
+  },
+  "status": "implementation_in_progress",
+  "next_action": "開発環境構築（プロジェクトセットアップ）",
+  "blockers": [],
+  "notes": [
+    "Phase 1: MVP機能実装（4.5ヶ月）",
+    "Phase 2: 機能拡張版（2.5ヶ月）",
+    "RLSによるテナント分離が必須",
+    "E2Eテスト優先実装",
+    "要件をEARS形式に更新（2025-09-10）",
+    "設計ドキュメントを要件マッピング形式に更新（2025-09-10）",
+    "実装タスクを41タスクに詳細化（2025-09-10）",
+    "UI/バックエンド完全分離構造に再編成（2025-09-10）",
+    "バックエンド18タスク、フロントエンド16タスク、統合7タスク",
+    "各Sectionごとに専用テストスイートを配置",
+    "強化版設計書作成（2025-09-22）- Server Components、DAL、RLS最適化",
+    "強化版タスク作成（2025-09-22）- 41タスクをNext.js 15ベストプラクティスで再構成",
+    "Turbopack設定、Edge deployment、多層キャッシング戦略を追加",
+    "tasks.mdを既存構造維持しつつ強化要素を差分追加（2025-09-22）",
+    "総タスク数47（既存41+強化6）、完了済み4タスク"
+  ]
+}
