@@ -2,6 +2,25 @@ import { existsSync, readFileSync } from 'fs'
 import { resolve } from 'path'
 import { describe, expect,it } from 'vitest'
 
+// Type definitions for components.json
+interface ComponentsConfig {
+  style: string
+  tailwind?: {
+    baseColor?: string
+    cssVariables?: boolean
+  }
+  aliases?: {
+    components?: string
+    utils?: string
+  }
+}
+
+// Type definition for package.json
+interface PackageJson {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+}
+
 describe('shadcn/ui Integration', () => {
   describe('Configuration', () => {
     it('should have components.json configuration file', () => {
@@ -12,7 +31,7 @@ describe('shadcn/ui Integration', () => {
     it('should have correct components.json settings', () => {
       const configPath = resolve(__dirname, '../../components.json')
       if (existsSync(configPath)) {
-        const config = JSON.parse(readFileSync(configPath, 'utf-8'))
+        const config = JSON.parse(readFileSync(configPath, 'utf-8')) as ComponentsConfig
 
         // Check path alias configuration
         expect(config.aliases?.components).toBe('@/shared/components')
@@ -45,7 +64,9 @@ describe('shadcn/ui Integration', () => {
       expect(cn('px-2 py-1', 'px-4')).toBe('py-1 px-4')
 
       // Test conditional classes
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       expect(cn('bg-red-500', true && 'bg-blue-500')).toBe('bg-blue-500')
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       expect(cn('text-sm', false && 'text-lg')).toBe('text-sm')
 
       // Test Tailwind conflict resolution
@@ -120,11 +141,11 @@ describe('shadcn/ui Integration', () => {
   describe('Dependencies', () => {
     it('should have required dependencies installed', () => {
       const packagePath = resolve(__dirname, '../../package.json')
-      const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8'))
+      const packageJson = JSON.parse(readFileSync(packagePath, 'utf-8')) as PackageJson
 
       const deps = {
-        ...packageJson.dependencies,
-        ...packageJson.devDependencies
+        ...(packageJson.dependencies ?? {}),
+        ...(packageJson.devDependencies ?? {})
       }
 
       // Check for required utilities

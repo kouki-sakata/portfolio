@@ -13,7 +13,7 @@ export function useToast() {
   const showToast = (options: Toast) => {
     const { title, description, variant, duration = 4000 } = options
 
-    const message = title || ''
+    const message = title ?? ''
     const sonnerOptions = {
       description,
       duration,

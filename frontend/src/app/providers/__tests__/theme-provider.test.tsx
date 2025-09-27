@@ -145,7 +145,9 @@ describe('ThemeProvider', () => {
   describe('useTheme Hook', () => {
     it.skip('should throw error when used outside ThemeProvider', () => {
       // Suppress console.error for this test
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {})
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {
+        // Intentionally empty to suppress error output
+      })
 
       expect(() => {
         renderHook(() => useTheme())
@@ -295,8 +297,8 @@ describe('ThemeProvider', () => {
 
       await waitFor(() => {
         expect(document.documentElement.classList.contains('dark')).toBe(true)
-        expect(document.documentElement.classList.contains('light')).toBe(false)
       })
+      expect(document.documentElement.classList.contains('light')).toBe(false)
 
       // Change back to light theme
       const lightButton = screen.getByRole('button', { name: /set light/i })
@@ -304,8 +306,8 @@ describe('ThemeProvider', () => {
 
       await waitFor(() => {
         expect(document.documentElement.classList.contains('light')).toBe(true)
-        expect(document.documentElement.classList.contains('dark')).toBe(false)
       })
+      expect(document.documentElement.classList.contains('dark')).toBe(false)
     })
   })
 

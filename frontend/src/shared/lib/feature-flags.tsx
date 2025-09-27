@@ -2,19 +2,13 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 
 import {
   FEATURE_FLAGS,
-  type FeatureFlagName,
   getFeatureFlag,
-  resetFeatureFlags,
   setFeatureFlag,
   STORAGE_KEY_PREFIX} from './feature-flags-constants'
 
 // Re-export constants and functions from feature-flags-constants
-export {
-  FEATURE_FLAGS,
-  type FeatureFlagName,
-  getFeatureFlag,
-  resetFeatureFlags,
-  setFeatureFlag} from './feature-flags-constants'
+// These are re-exported from a separate file to avoid fast refresh issues
+export type { FeatureFlagName } from './feature-flags-constants'
 
 // React Context for Feature Flags
 interface FeatureFlagContextValue {

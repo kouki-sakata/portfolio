@@ -1,8 +1,14 @@
-import { existsSync } from 'fs'
+import { existsSync, readdirSync } from 'fs'
 import { resolve } from 'path'
 import { describe, expect,it } from 'vitest'
 
 import * as viteConfig from '../../vite.config'
+
+// Type for Vite plugin
+interface VitePlugin {
+  name: string
+  [key: string]: unknown
+}
 
 describe('Tailwind CSS v4 Integration', () => {
   describe('Configuration Files', () => {
@@ -20,14 +26,17 @@ describe('Tailwind CSS v4 Integration', () => {
   describe('Vite Configuration', () => {
     it('should have @tailwindcss/vite plugin configured', () => {
       const config = viteConfig.default
-      const plugins = config.plugins || []
+      const plugins = config.plugins ?? []
 
       // Check if Tailwind plugin is included
-      const hasTailwindPlugin = plugins.some((plugin: any) => {
-        return plugin && (
+      const hasTailwindPlugin = plugins.some((plugin: VitePlugin | (() => VitePlugin)) => {
+        if (!plugin) return false
+        if (typeof plugin === 'function') {
+          return plugin.name === 'tailwindcss'
+        }
+        return (
           plugin.name === 'tailwindcss' ||
-          plugin.name === '@tailwindcss/vite' ||
-          (typeof plugin === 'function' && plugin.name === 'tailwindcss')
+          plugin.name === '@tailwindcss/vite'
         )
       })
 
@@ -91,7 +100,7 @@ describe('Tailwind CSS v4 Integration', () => {
   })
 
   describe('Build Process', () => {
-    it('should include Tailwind in the build output', async () => {
+    it('should include Tailwind in the build output', () => {
       // This test would verify the build output includes Tailwind CSS
       // In a real CI environment, we'd check the dist folder
       const buildOutputPath = resolve(__dirname, '../../dist/assets')
@@ -99,8 +108,8 @@ describe('Tailwind CSS v4 Integration', () => {
       // Note: This test assumes a build has been run
       // In practice, you might want to run a build in CI before testing
       if (existsSync(buildOutputPath)) {
-        const files = require('fs').readdirSync(buildOutputPath)
-        const hasCSSOutput = files.some((file: string) => file.endsWith('.css'))
+        const files = readdirSync(buildOutputPath)
+        const hasCSSOutput = files.some((file) => file.endsWith('.css'))
         expect(hasCSSOutput).toBe(true)
       } else {
         // If no build output, mark as pending

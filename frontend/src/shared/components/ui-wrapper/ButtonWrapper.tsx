@@ -2,7 +2,8 @@ import React from 'react'
 
 import { cn } from '@/lib/utils'
 import { Button as ShadcnButton, type ButtonProps as ShadcnButtonProps } from '@/shared/components/ui/button'
-import { FEATURE_FLAGS,useFeatureFlag } from '@/shared/lib/feature-flags'
+import { useFeatureFlag } from '@/shared/lib/feature-flags'
+import { FEATURE_FLAGS } from '@/shared/lib/feature-flags-exports'
 
 // ButtonWrapper prop types
 export interface ButtonWrapperProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {

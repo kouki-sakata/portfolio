@@ -1,22 +1,20 @@
-/// <reference types="tailwindcss" />
+// Type definitions for Tailwind CSS
 
 declare module 'tailwindcss/types/config' {
-  import { Config } from 'tailwindcss'
+  import type { Config } from 'tailwindcss'
 
-  export default Config
+  export { Config }
 }
 
 declare module '@tailwindcss/vite' {
-  import { Plugin } from 'vite'
+  import type { Plugin } from 'vite'
 
-  const plugin: () => Plugin
-  export default plugin
+  export const plugin: () => Plugin
 }
 
 // Extend the global CSS module declarations for Tailwind utilities
 declare module '*.css' {
-  const content: Record<string, string>
-  export default content
+  export const content: Record<string, string>
 }
 
 // Type definitions for custom theme extensions

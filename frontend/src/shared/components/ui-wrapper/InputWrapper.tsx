@@ -2,7 +2,8 @@ import React from 'react'
 
 import { cn } from '@/lib/utils'
 import { Input as ShadcnInput } from '@/shared/components/ui/input'
-import { FEATURE_FLAGS,useFeatureFlag } from '@/shared/lib/feature-flags'
+import { useFeatureFlag } from '@/shared/lib/feature-flags'
+import { FEATURE_FLAGS } from '@/shared/lib/feature-flags-exports'
 
 // InputWrapper prop types
 export interface InputWrapperProps extends Omit<React.InputHTMLAttributes<HTMLInputElement | HTMLTextAreaElement>, 'size'> {

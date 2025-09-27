@@ -9,7 +9,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/shared/components/ui/card'
-import { FEATURE_FLAGS,useFeatureFlag } from '@/shared/lib/feature-flags'
+import { useFeatureFlag } from '@/shared/lib/feature-flags'
+import { FEATURE_FLAGS } from '@/shared/lib/feature-flags-exports'
 
 // CardWrapper prop types
 export interface CardWrapperProps {

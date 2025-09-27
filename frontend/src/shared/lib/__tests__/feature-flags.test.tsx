@@ -2,13 +2,12 @@ import { act, render, renderHook, screen } from '@testing-library/react'
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
+import { FeatureFlagProvider, useFeatureFlag } from '../feature-flags'
 import {
   FEATURE_FLAGS,
-  FeatureFlagProvider,
   getFeatureFlag,
   resetFeatureFlags,
-  setFeatureFlag,
-  useFeatureFlag} from '../feature-flags'
+  setFeatureFlag} from '../feature-flags-exports'
 
 describe('Feature Flag System', () => {
   const localStorageMock = {
