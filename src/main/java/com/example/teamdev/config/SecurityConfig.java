@@ -48,7 +48,8 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf
                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                .ignoringRequestMatchers("/actuator/**")
+                // Allow health endpoints and login endpoint without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login")
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(
@@ -59,7 +60,13 @@ public class SecurityConfig {
                     "/assets/**"
                 ).permitAll()
                 .requestMatchers("/signin", "/signin/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/public/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/session", "/api/public/**").permitAll()
+                .requestMatchers(
+                    "/swagger-ui.html",
+                    "/swagger-ui/**",
+                    "/v3/api-docs",
+                    "/v3/api-docs/**"
+                ).permitAll()
                 .requestMatchers("/employeemanage/**", "/newsmanage/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

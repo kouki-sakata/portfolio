@@ -26,7 +26,7 @@ public class StampService {
 	@Autowired
 	    LogHistoryRegistrationService logHistoryService;
 
-	public void execute(HomeForm homeForm, Integer employeeId) {
+    public void execute(HomeForm homeForm, Integer employeeId) {
 
 		int stampType = Integer.parseInt(homeForm.getStampType());
 		int nightWorkFlag = Integer.parseInt(homeForm.getNightWorkFlag());
@@ -57,23 +57,45 @@ public class StampService {
 		String month = dateParts[1];
 		String day = dateParts[2];
 
-		StampHistory entity = new StampHistory();
-		entity.setYear(year);
-		entity.setMonth(month);
-		entity.setDay(day);
-		entity.setEmployeeId(employeeId);
+        StampHistory entity = new StampHistory();
+        entity.setYear(year);
+        entity.setMonth(month);
+        entity.setDay(day);
+        entity.setEmployeeId(employeeId);
 
-		if (stampType == 1) {
-			entity.setInTime(stampTime);
-		} else if (stampType == 2) {
-			entity.setOutTime(stampTime);
-		}
+        if (stampType == 1) {
+            entity.setInTime(stampTime);
+        } else if (stampType == 2) {
+            entity.setOutTime(stampTime);
+        }
 
-		entity.setUpdateEmployeeId(employeeId);
-		Timestamp date = Timestamp.valueOf(LocalDateTime.now());
-		entity.setUpdateDate(date);
+        entity.setUpdateEmployeeId(employeeId);
+        Timestamp date = Timestamp.valueOf(LocalDateTime.now());
+        entity.setUpdateDate(date);
 
-		mapper.save(entity);
-		logHistoryService.execute(1, stampType, stampTime, employeeId, employeeId, date);
-	}
+        // Upsert behavior portable across DBs:
+        // If a record for (employeeId, year, month, day) exists, update it;
+        // otherwise insert a new record. When updating, only set in/out time if not already present.
+        StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
+        if (existing != null) {
+            entity.setId(existing.getId());
+            if (entity.getInTime() == null) {
+                entity.setInTime(existing.getInTime());
+            } else if (existing.getInTime() != null) {
+                // Keep existing inTime if already set
+                entity.setInTime(existing.getInTime());
+            }
+            if (entity.getOutTime() == null) {
+                entity.setOutTime(existing.getOutTime());
+            } else if (existing.getOutTime() != null) {
+                // Keep existing outTime if already set
+                entity.setOutTime(existing.getOutTime());
+            }
+            mapper.update(entity);
+        } else {
+            mapper.save(entity);
+        }
+
+        logHistoryService.execute(1, stampType, stampTime, employeeId, employeeId, date);
+    }
 }

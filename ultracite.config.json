@@ -1,0 +1,59 @@
+{
+  "version": 1,
+  "project": {
+    "name": "TeamDevelop Bravo",
+    "language": ["java", "typescript"],
+    "packageManager": "gradle+npm"
+  },
+  "workspace": {
+    "root": ".",
+    "include": [
+      "src/main/java",
+      "src/test/java",
+      "src/contractTest/java",
+      "src/main/resources",
+      "frontend/src"
+    ],
+    "exclude": [
+      "build",
+      ".gradle",
+      ".git",
+      "logs",
+      "docker",
+      "frontend/node_modules",
+      "frontend/dist"
+    ]
+  },
+  "commands": {
+    "backend": {
+      "apiTest": "SPRING_PROFILES_ACTIVE=test ./gradlew apiTest",
+      "testAll": "SPRING_PROFILES_ACTIVE=test ./gradlew test",
+      "contractTest": "SPRING_PROFILES_ACTIVE=test ./gradlew -PenableOpenApiContract contractTest",
+      "build": "./gradlew build"
+    },
+    "frontend": {
+      "lint": "npm run lint --prefix frontend",
+      "typecheck": "npm run typecheck --prefix frontend",
+      "test": "npm run test --prefix frontend",
+      "build": "npm run build --prefix frontend"
+    }
+  },
+  "editors": {
+    "vscode": true,
+    "cursor": false,
+    "zed": false
+  },
+  "conventions": {
+    "tests": {
+      "apiTag": "api",
+      "junit": true,
+      "testcontainers": true
+    },
+    "openapi": {
+      "enabled": true,
+      "contractTestTask": "contractTest",
+      "enableProperty": "enableOpenApiContract"
+    }
+  }
+}
+

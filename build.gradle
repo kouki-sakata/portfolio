@@ -1,12 +1,13 @@
 import com.github.gradle.node.npm.task.NpmTask
 
 plugins {
-	id 'java'
-	id 'org.springframework.boot' version '3.4.3'
-	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.owasp.dependencycheck' version '8.4.0'
-	id 'org.sonarqube' version '4.4.1.3373'
-	id 'com.github.node-gradle.node' version '7.1.0'
+    id 'java'
+    id 'org.springframework.boot' version '3.4.3'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id 'org.owasp.dependencycheck' version '8.4.0'
+    id 'org.sonarqube' version '4.4.1.3373'
+    id 'com.github.node-gradle.node' version '7.1.0'
+    id 'jacoco'
 }
 
 group = 'com.example'
@@ -35,6 +36,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
 	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.4'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.6.0'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'org.postgresql:postgresql'
@@ -43,17 +45,54 @@ dependencies {
 	testImplementation 'org.springframework.boot:spring-boot-starter-security'
 	testImplementation 'org.springframework.security:spring-security-test'
 	testImplementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter-test:3.0.4'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:postgresql'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.testcontainers:junit-jupiter'
+    testImplementation 'org.testcontainers:postgresql'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 node {
 	download = true
-	version = '20.19.0'
-	npmVersion = '10.8.3'
+	version = '22.12.0'
+	npmVersion = '10.9.2'
 	nodeProjectDir = file("${project.projectDir}/frontend")
 	npmInstallCommand = 'ci'
+}
+
+// --- Optional: OpenAPI contract test wiring (enable with -PenableOpenApiContract) ---
+def enableOpenApiContract = project.hasProperty('enableOpenApiContract')
+
+if (enableOpenApiContract) {
+    logger.lifecycle("OpenAPI contract tests are ENABLED (-PenableOpenApiContract)")
+
+    sourceSets {
+        contractTest {
+            java.srcDir 'src/contractTest/java'
+            resources.srcDir 'src/contractTest/resources'
+            compileClasspath += sourceSets.main.output + sourceSets.test.output + configurations.testRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+    }
+
+    configurations {
+        contractTestImplementation.extendsFrom testImplementation
+        contractTestRuntimeOnly.extendsFrom testRuntimeOnly
+    }
+
+    dependencies {
+        // OpenAPI v3 parser and operation validator
+        contractTestImplementation 'org.openapi4j:openapi-parser:1.0.9'
+        contractTestImplementation 'org.openapi4j:openapi-operation-validator:1.0.9'
+    }
+
+    tasks.register('contractTest', Test) {
+        description = 'Run OpenAPI contract tests (requires -PenableOpenApiContract)'
+        group = 'verification'
+        testClassesDirs = sourceSets.contractTest.output.classesDirs
+        classpath = sourceSets.contractTest.runtimeClasspath
+        useJUnitPlatform()
+        shouldRunAfter tasks.named('apiTest')
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
 }
 
 final def frontendDir = file("${project.projectDir}/frontend")
@@ -140,7 +179,71 @@ tasks.named('clean') {
 }
 
 tasks.named('test') {
-	useJUnitPlatform()
+    useJUnitPlatform()
+}
+
+// Dedicated API test task (runs only tests tagged with 'api')
+tasks.register('apiTest', Test) {
+    description = 'Run API-focused tests (@Tag("api")).'
+    group = 'verification'
+    useJUnitPlatform {
+        includeTags 'api'
+    }
+    // Keep JVM arg parity with other Test tasks
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    shouldRunAfter tasks.named('test')
+}
+
+// Jacoco coverage reports
+jacoco {
+    toolVersion = '0.8.12'
+}
+
+tasks.register('jacocoApiTestReport', JacocoReport) {
+    // Ensure both unit tests and apiTest have produced coverage data
+    dependsOn tasks.named('test')
+    dependsOn tasks.named('apiTest')
+    executionData fileTree(dir: project.buildDir, includes: [
+        'jacoco/test.exec',
+        'jacoco/apiTest.exec',
+        'jacoco/*.exec'
+    ])
+    sourceDirectories.setFrom files(sourceSets.main.allSource.srcDirs)
+    classDirectories.setFrom files(sourceSets.main.output)
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+tasks.named('jacocoTestReport', JacocoReport) {
+    dependsOn tasks.named('test')
+    reports {
+        xml.required.set(true)
+        html.required.set(true)
+    }
+}
+
+// Optional coverage gate (kept detached from 'check' to avoid sudden pipeline failures)
+tasks.register('jacocoCoverageVerification', JacocoCoverageVerification) {
+    dependsOn tasks.named('test')
+    violationRules {
+        rule {
+            element = 'BUNDLE'
+            limits {
+                limit {
+                    counter = 'LINE'
+                    value = 'COVEREDRATIO'
+                    minimum = 0.25
+                }
+            }
+        }
+    }
+}
+
+// Optionally include coverage in the verification lifecycle
+tasks.named('check') {
+    dependsOn 'jacocoTestReport'
 }
 
 tasks.named('bootRun') {

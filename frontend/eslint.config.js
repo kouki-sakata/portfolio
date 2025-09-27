@@ -10,7 +10,8 @@ import tseslint from 'typescript-eslint'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 const projectConfigs = tseslint.config({
-  files: ['**/*.{ts,tsx}'],
+  // Type-aware linting is applied only to application source under src/
+  files: ['src/**/*.{ts,tsx}'],
   extends: [
     js.configs.recommended,
     ...tseslint.configs.strictTypeChecked,
@@ -45,6 +46,33 @@ const projectConfigs = tseslint.config({
 export default defineConfig([
   globalIgnores(['dist', 'coverage', 'build']),
   ...projectConfigs,
+  // Lint E2E and Playwright config without type-aware rules to avoid TS project lookup errors
+  {
+    files: ['e2e/**/*.{ts,tsx}', 'playwright.config.ts'],
+    extends: [
+      js.configs.recommended,
+      ...tseslint.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        // Do not provide `project` here; run without type-checking
+      },
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    plugins: {
+      import: importPlugin,
+      'simple-import-sort': simpleImportSort,
+    },
+    rules: {
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+      'import/newline-after-import': ['error', { count: 1 }],
+      'import/no-default-export': 'off',
+    },
+  },
   {
     files: ['src/test/**/*.{ts,tsx}', '**/__tests__/**/*.{ts,tsx}'],
     plugins: {

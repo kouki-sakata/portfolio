@@ -109,3 +109,6 @@ frontend/coverage/
 frontend/.eslintcache
 frontend/.vite/
 frontend/.tmp/
+frontend/test-results/
+frontend/playwright-report/
+frontend/.playwright/

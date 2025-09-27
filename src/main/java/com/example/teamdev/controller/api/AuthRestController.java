@@ -19,6 +19,9 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
+import org.springframework.security.web.csrf.CsrfToken;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -28,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Auth", description = "認証/セッション API")
 public class AuthRestController {
 
     private final AuthenticationManager authenticationManager;
@@ -44,6 +48,7 @@ public class AuthRestController {
         this.employeeMapper = employeeMapper;
     }
 
+    @Operation(summary = "ログイン", description = "メールとパスワードでログインし、セッションを開始します")
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
         @Valid @RequestBody LoginRequest request,
@@ -69,8 +74,12 @@ public class AuthRestController {
         }
     }
 
+    @Operation(summary = "セッション状態取得", description = "現在の認証状態と従業員概要を返します")
     @GetMapping("/session")
-    public ResponseEntity<SessionResponse> session() {
+    public ResponseEntity<SessionResponse> session(CsrfToken csrfToken) {
+        if (csrfToken != null) {
+            csrfToken.getToken();
+        }
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.ok(new SessionResponse(false, null));

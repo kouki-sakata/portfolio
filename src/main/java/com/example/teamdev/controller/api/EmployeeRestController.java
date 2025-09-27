@@ -26,9 +26,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
 @RequestMapping("/api/employees")
+@Tag(name = "Employees", description = "従業員 管理 API")
 public class EmployeeRestController {
 
     private final EmployeeService employeeService;
@@ -37,6 +40,7 @@ public class EmployeeRestController {
         this.employeeService = employeeService;
     }
 
+    @Operation(summary = "従業員一覧", description = "管理者のみ絞り込み可能（adminOnly=true）")
     @GetMapping
     public ResponseEntity<EmployeeListResponse> list(@RequestParam(name = "adminOnly", defaultValue = "false") boolean adminOnly) {
         Integer filterFlag = adminOnly ? 1 : null;
@@ -47,6 +51,7 @@ public class EmployeeRestController {
         return ResponseEntity.ok(new EmployeeListResponse(summaries));
     }
 
+    @Operation(summary = "従業員作成", description = "新規ユーザーを作成（ADMIN権限が必要）")
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeSummaryResponse> create(@Valid @RequestBody EmployeeUpsertRequest request) {
@@ -63,6 +68,7 @@ public class EmployeeRestController {
         }
     }
 
+    @Operation(summary = "従業員更新", description = "既存ユーザーを更新（ADMIN権限が必要）")
     @PutMapping("/{employeeId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EmployeeSummaryResponse> update(
@@ -81,6 +87,7 @@ public class EmployeeRestController {
         }
     }
 
+    @Operation(summary = "従業員削除", description = "複数IDに対応（ADMIN権限が必要）")
     @DeleteMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@Valid @RequestBody EmployeeDeleteRequest request) {

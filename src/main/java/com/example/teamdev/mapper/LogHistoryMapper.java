@@ -30,5 +30,8 @@ public interface LogHistoryMapper {
 	void save(LogHistory entity);
 
 	// existsLogHistoryForTodayメゾット
-	int existsLogHistoryForToday(java.util.Map<String, Object> params);
+    int existsLogHistoryForToday(java.util.Map<String, Object> params);
+
+    // バッチ削除: 指定した従業員IDの履歴を削除
+    int deleteByEmployeeIds(java.util.List<Integer> employeeIds);
 }

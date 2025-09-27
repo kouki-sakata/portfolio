@@ -6,6 +6,7 @@ import com.example.teamdev.exception.EmployeeNotFoundException;
 import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.mapper.LogHistoryMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ public class EmployeeService {
 
     private final EmployeeMapper employeeMapper;
     private final LogHistoryRegistrationService logHistoryService;
+    private final LogHistoryMapper logHistoryMapper;
     private final PasswordEncoder passwordEncoder;
     
     // SQLインジェクション対策: ホワイトリスト定義
@@ -48,10 +50,12 @@ public class EmployeeService {
     @Autowired
     public EmployeeService(EmployeeMapper employeeMapper,
             LogHistoryRegistrationService logHistoryService,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            LogHistoryMapper logHistoryMapper) {
         this.employeeMapper = employeeMapper;
         this.logHistoryService = logHistoryService;
         this.passwordEncoder = passwordEncoder;
+        this.logHistoryMapper = logHistoryMapper;
     }
 
     /**
@@ -250,6 +254,8 @@ public class EmployeeService {
                 .toList();
         
         if (!idList.isEmpty()) {
+            // 先に履歴を削除してFK制約違反を回避
+            logHistoryMapper.deleteByEmployeeIds(idList);
             employeeMapper.deleteByIdList(idList);
             logHistoryService.execute(3, 4, null, null, updateEmployeeId,
                     Timestamp.valueOf(LocalDateTime.now()));
