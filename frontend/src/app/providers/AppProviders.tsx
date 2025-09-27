@@ -1,4 +1,4 @@
-import '@/styles/global.css'
+import '@/styles/globals.css'
 
 import { QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'

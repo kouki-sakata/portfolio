@@ -2,7 +2,7 @@
 
 ## UIフレームワーク基盤構築
 
-- [ ] 1. TailwindCSS v4とVite統合の設定
+- [x] 1. TailwindCSS v4とVite統合の設定
   - npm install -D tailwindcss@next @tailwindcss/vite をインストール
   - vite.config.tsに@tailwindcss/viteプラグインを追加
   - tailwind.config.tsを作成してデザイントークンを設定

@@ -1,0 +1,52 @@
+@import "tailwindcss";
+
+/* Custom layer for legacy styles that will be migrated */
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  body {
+    @apply m-0 min-h-screen;
+  }
+}
+
+/* Custom utility classes */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-hero {
+    background: linear-gradient(135deg, rgba(221, 243, 255, 1) 0%, rgba(191, 219, 254, 1) 100%);
+  }
+
+  .gradient-button {
+    background: linear-gradient(135deg, #1d4ed8, #2563eb);
+  }
+}
+
+/* Animation keyframes that Tailwind doesn't provide by default */
+@layer base {
+  @keyframes slide-in {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-out {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+}
