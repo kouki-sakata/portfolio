@@ -1,5 +1,7 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent,render, screen } from '@testing-library/react';
+import { expect } from 'vitest';
 import { vi } from 'vitest';
+
 import { CardWrapper } from '../CardWrapper';
 
 // Mock card component

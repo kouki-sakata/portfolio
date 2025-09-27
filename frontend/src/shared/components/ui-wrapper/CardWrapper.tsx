@@ -1,4 +1,4 @@
-import { type ReactNode, type MouseEvent, type FocusEvent, type KeyboardEvent } from 'react';
+import { type FocusEvent, type KeyboardEvent,type MouseEvent, type ReactNode } from 'react';
 
 interface CardWrapperProps {
   children: ReactNode;

@@ -1,5 +1,7 @@
 import { render, screen } from '@testing-library/react';
+import { expect } from 'vitest';
 import { vi } from 'vitest';
+
 import { ThemeProvider } from '../theme-provider';
 
 // Fix void type errors by using proper typing

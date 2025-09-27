@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from 'react';
+import { createContext, type ReactNode,useContext, useState } from 'react';
 
 // Fixed: Separate constants into a different file to resolve React refresh warning
 export interface FeatureFlags {
@@ -22,7 +22,7 @@ interface FeatureFlagsContextType {
   updateFlag: (flag: keyof FeatureFlags, value: boolean) => void;
 }
 
-const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(undefined);
+export const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(undefined);
 
 interface FeatureFlagsProviderProps {
   children: ReactNode;
@@ -59,18 +59,3 @@ export const FeatureFlagsProvider = ({ children, initialFlags }: FeatureFlagsPro
   );
 };
 
-export const useFeatureFlags = (): FeatureFlagsContextType => {
-  const context = useContext(FeatureFlagsContext);
-  
-  if (!context) {
-    throw new Error('useFeatureFlags must be used within a FeatureFlagsProvider');
-  }
-  
-  return context;
-};
-
-// Hook for checking a specific feature flag
-export const useFeatureFlag = (flag: keyof FeatureFlags): boolean => {
-  const { isEnabled } = useFeatureFlags();
-  return isEnabled(flag);
-};
