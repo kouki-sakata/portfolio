@@ -16,7 +16,7 @@
   - ダークモードサポートのためのテーマプロバイダーを設定
   - _Requirements: 3.1, 3.4_
 
-- [ ] 3. コンポーネントラッパー層の実装
+- [x] 3. コンポーネントラッパー層の実装
   - frontend/src/shared/components/ui-wrapper/にラッパーコンポーネントディレクトリを作成
   - ButtonWrapper、CardWrapper、InputWrapperコンポーネントを実装
   - 既存UIとshadcn/uiを切り替えるfeatureFlagシステムを実装
