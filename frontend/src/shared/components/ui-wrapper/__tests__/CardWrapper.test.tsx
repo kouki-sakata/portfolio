@@ -1,6 +1,5 @@
 import { fireEvent,render, screen } from '@testing-library/react';
-import { expect } from 'vitest';
-import { vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { CardWrapper } from '../CardWrapper';
 
