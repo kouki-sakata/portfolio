@@ -109,7 +109,8 @@ describe('InputWrapper', () => {
       />
     );
 
-    const input = screen.getByLabelText('Test Input');
+    // Fixed: Use getByRole since label contains nested span element
+    const input = screen.getByRole('textbox', { name: /test input/i });
     expect(input).toHaveAttribute('required');
     expect(input).toHaveAttribute('aria-required', 'true');
   });
