@@ -1,4 +1,7 @@
-import { createContext, type ReactNode, useState } from 'react';
+import { type ReactNode, useState } from 'react';
+
+import type { FeatureFlagsContextType } from './feature-flags-context';
+import { FeatureFlagsContext } from './feature-flags-context';
 
 // Fixed: Separate constants into a different file to resolve React refresh warning
 export interface FeatureFlags {
@@ -15,14 +18,6 @@ const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   ANALYTICS: true,
   BETA_FEATURES: false,
 };
-
-interface FeatureFlagsContextType {
-  flags: FeatureFlags;
-  isEnabled: (flag: keyof FeatureFlags) => boolean;
-  updateFlag: (flag: keyof FeatureFlags, value: boolean) => void;
-}
-
-export const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(undefined);
 
 interface FeatureFlagsProviderProps {
   children: ReactNode;

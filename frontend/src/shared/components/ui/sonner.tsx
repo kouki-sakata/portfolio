@@ -1,5 +1,4 @@
 import { useTheme } from '../../../app/providers/use-theme';
-import { toast } from './toast';
 
 interface SonnerProps {
   theme?: 'light' | 'dark' | 'system';
@@ -20,5 +19,3 @@ export const Sonner = ({ theme, className }: SonnerProps) => {
     </div>
   );
 };
-
-export { toast };

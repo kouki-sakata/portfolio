@@ -164,7 +164,9 @@ describe('CardWrapper', () => {
 
   // Fixed: Proper error handling without unsafe assignments
   it('should handle component errors gracefully', () => {
-    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {
+      // Mock implementation to suppress console.error in tests
+    });
     
     const ThrowError = () => {
       throw new Error('Test error');
