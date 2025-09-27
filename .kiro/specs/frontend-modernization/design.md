@@ -74,9 +74,9 @@ graph TB
 
 ```mermaid
 graph LR
-    P1[Phase 1: 基盤構築] --> P2[Phase 2: 認証・ホーム]
-    P2 --> P3[Phase 3: 従業員・打刻]
-    P3 --> P4[Phase 4: 完全移行]
+    P1["Phase 1: 基盤構築"] --> P2["Phase 2: 認証・ホーム"]
+    P2 --> P3["Phase 3: 従業員・打刻"]
+    P3 --> P4["Phase 4: 完全移行"]
 
     P1 --> |2-3日| P2
     P2 --> |3-4日| P3
