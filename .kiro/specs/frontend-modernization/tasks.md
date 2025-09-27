@@ -9,7 +9,7 @@
   - frontend/src/styles/globals.cssにTailwindディレクティブを追加
   - _Requirements: 3.3, 6.1_
 
-- [ ] 2. shadcn/ui初期設定とコンポーネントインストール
+- [x] 2. shadcn/ui初期設定とコンポーネントインストール
   - npx shadcn@latest initでコンポーネントライブラリを初期化
   - components.jsonでtsconfig pathとstyle設定を構成
   - Button、Card、Toast、Input、Label基本コンポーネントを追加
