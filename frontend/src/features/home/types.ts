@@ -11,3 +11,14 @@ export interface HomeDashboardResponse {
   employee: EmployeeSummary
   news: HomeNewsItem[]
 }
+
+export interface StampRequest {
+  stampType: '1' | '2'
+  stampTime: string
+  nightWorkFlag: '0' | '1'
+}
+
+export interface StampResponse {
+  message: string
+  success: boolean
+}

@@ -2,6 +2,17 @@
 
 GitHub Actions CI 状況を監視して、完了まで追跡します。
 
+## Implementation Notes
+
+- **Development Approach**:
+    - Utilize **context7** for all development activities.
+    - Consistently apply software development **best practices**.
+- **Coding Standards (TypeScript)**:
+    - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
+      must be fully type-safe.
+    - **ESLint Rules**: Adhere to the TypeScript-ESLint rulesets:
+      `strictTypeChecked` and `stylisticTypeChecked`.
+
 ### 使い方
 
 ```bash

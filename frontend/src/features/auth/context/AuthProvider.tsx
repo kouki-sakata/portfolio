@@ -45,7 +45,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   })
 
   const handleLogin = async (payload: LoginRequest) => {
-    await loginMutation.mutateAsync(payload)
+    const response = await loginMutation.mutateAsync(payload)
+    return response.employee
   }
 
   const handleLogout = async () => {
