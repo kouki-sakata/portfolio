@@ -8,6 +8,7 @@ import { queryClient } from '@/app/config/queryClient'
 import { AppRoutes } from '@/app/routes/AppRoutes'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { SessionTimeoutNotification } from '@/features/auth/components/SessionTimeoutNotification'
 import { AuthProvider } from '@/features/auth/context/AuthProvider'
 
 export const AppProviders = () => (
@@ -16,6 +17,7 @@ export const AppProviders = () => (
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <AppRoutes />
+          <SessionTimeoutNotification />
           <Toaster />
         </AuthProvider>
         {import.meta.env.DEV ? <ReactQueryDevtools initialIsOpen={false} /> : null}
