@@ -1,13 +1,8 @@
 import { createContext } from 'react'
 
-import type { EmployeeSummary, LoginRequest } from '@/features/auth/types'
+import type { EnhancedAuthContextValue } from '@/features/auth/types/auth-context.types'
 
-export interface AuthContextValue {
-  user: EmployeeSummary | null
-  authenticated: boolean
-  loading: boolean
-  login: (payload: LoginRequest) => Promise<EmployeeSummary>
-  logout: () => Promise<void>
-}
+// AuthContextValue型をエクスポート（EnhancedAuthContextValueのエイリアスとして）
+export type AuthContextValue = EnhancedAuthContextValue
 
-export const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+export const AuthContext = createContext<EnhancedAuthContextValue | undefined>(undefined)

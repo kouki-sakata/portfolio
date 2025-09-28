@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useEffect, useMemo } from 'react'
 
-import { AuthContext, type AuthContextValue } from '@/features/auth/context/internal/AuthContext'
+import { AuthContext } from '@/features/auth/context/internal/AuthContext'
 import { createAuthService, type IAuthService } from '@/features/auth/services/AuthService'
 import { getSessionManager, type ISessionManager } from '@/features/auth/services/SessionManager'
 import type { LoginRequest } from '@/features/auth/types'
@@ -69,15 +69,32 @@ export const AuthProviderRefactored = ({
   }, [sessionQuery.data, sessionManager])
 
   // コンテキスト値の作成
-  const contextValue: AuthContextValue = useMemo(() => ({
+  // TODO: 完全なEnhancedAuthContextValueの実装に移行する必要があります
+  // 現在は未実装の機能にデフォルト値を提供しています
+  const contextValue = useMemo(() => ({
+    // 基本認証機能（実装済み）
     user: sessionQuery.data?.employee ?? null,
     authenticated: sessionQuery.data?.authenticated ?? false,
     loading: sessionQuery.isLoading || loginMutation.isPending || logoutMutation.isPending,
     login: (credentials: LoginRequest) => loginMutation.mutateAsync(credentials),
     logout: () => logoutMutation.mutateAsync(),
+
+    // セッション管理機能（未実装 - デフォルト値）
+    sessionInfo: null,
+    refreshSession: async () => {
+      await sessionQuery.refetch()
+    },
+    isSessionExpiring: false,
+    timeUntilExpiry: null,
+    sessionTimeoutWarning: false,
+
+    // CSRF保護（未実装 - デフォルト値）
+    csrfToken: null,
+    refreshCsrfToken: () => {
+      // TODO: CSRF実装時に更新
+    },
   }), [
-    sessionQuery.data,
-    sessionQuery.isLoading,
+    sessionQuery,
     loginMutation,
     logoutMutation,
   ])
