@@ -506,87 +506,87 @@ jobs:
             echo "SONAR_TOKEN not set, skipping SonarCloud analysis"
           fi
 
-  deployment-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: [ test, build, security-scan, docker-build ]
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+#  deployment-staging:
+#    name: Deploy to Staging
+#    runs-on: ubuntu-latest
+#    needs: [ test, build, security-scan, docker-build ]
+#    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+#
+#    environment:
+#      name: staging
+#      url: https://staging.teamdev.example.com
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Download build artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: jar-artifacts
+#          path: build/libs/
+#
+#      - name: Deploy to staging
+#        run: |
+#          echo "Deploying to staging environment..."
+#          # ここに実際のデプロイメント処理を実装
+#          # 例: kubectl apply, docker compose up, etc.
+#
+#      - name: Run integration tests
+#        run: |
+#          echo "Running integration tests against staging..."
+#          # ここに統合テストの実行処理を実装
 
-    environment:
-      name: staging
-      url: https://staging.teamdev.example.com
+#      - name: Notify deployment status
+#        uses: 8398a7/action-slack@v3
+#        if: always()
+#        with:
+#          status: ${{ job.status }}
+#          channel: '#deployments'
+#          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+#          text: |
+#            Staging deployment ${{ job.status }}
+#            Branch: ${{ github.ref }}
+#            Commit: ${{ github.sha }}
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: jar-artifacts
-          path: build/libs/
-
-      - name: Deploy to staging
-        run: |
-          echo "Deploying to staging environment..."
-          # ここに実際のデプロイメント処理を実装
-          # 例: kubectl apply, docker compose up, etc.
-
-      - name: Run integration tests
-        run: |
-          echo "Running integration tests against staging..."
-          # ここに統合テストの実行処理を実装
-
-      - name: Notify deployment status
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          text: |
-            Staging deployment ${{ job.status }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
-
-  deployment-production:
-    name: Deploy to Production
-    runs-on: ubuntu-latest
-    needs: [ test, build, security-scan, docker-build ]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
-    environment:
-      name: production
-      url: https://teamdev.example.com
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: jar-artifacts
-          path: build/libs/
-
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production environment..."
-          # ここに実際のプロダクションデプロイメント処理を実装
-
-      - name: Run smoke tests
-        run: |
-          echo "Running smoke tests against production..."
-          # ここに本番環境でのスモークテストを実装
-
-      - name: Notify deployment status
-        uses: 8398a7/action-slack@v3
-        if: always()
-        with:
-          status: ${{ job.status }}
-          channel: '#deployments'
-          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
-          text: |
-            Production deployment ${{ job.status }}
-            Branch: ${{ github.ref }}
-            Commit: ${{ github.sha }}
+#  deployment-production:
+#    name: Deploy to Production
+#    runs-on: ubuntu-latest
+#    needs: [ test, build, security-scan, docker-build ]
+#    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#
+#    environment:
+#      name: production
+#      url: https://teamdev.example.com
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#
+#      - name: Download build artifacts
+#        uses: actions/download-artifact@v4
+#        with:
+#          name: jar-artifacts
+#          path: build/libs/
+#
+#      - name: Deploy to production
+#        run: |
+#          echo "Deploying to production environment..."
+#          # ここに実際のプロダクションデプロイメント処理を実装
+#
+#      - name: Run smoke tests
+#        run: |
+#          echo "Running smoke tests against production..."
+#          # ここに本番環境でのスモークテストを実装
+#
+#      - name: Notify deployment status
+#        uses: 8398a7/action-slack@v3
+#        if: always()
+#        with:
+#          status: ${{ job.status }}
+#          channel: '#deployments'
+#          webhook_url: ${{ secrets.SLACK_WEBHOOK }}
+#          text: |
+#            Production deployment ${{ job.status }}
+#            Branch: ${{ github.ref }}
+#            Commit: ${{ github.sha }}

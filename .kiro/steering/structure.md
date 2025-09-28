@@ -21,6 +21,8 @@ TeamDevelopBravo-main/
 ├── docker/           # Docker設定ファイル
 ├── docs/             # プロジェクトドキュメント
 ├── frontend/         # React SPAフロントエンド
+├── openapi/          # OpenAPI仕様定義
+│   └── openapi.yaml  # API仕様ファイル（自動生成元）
 ├── gradle/           # Gradle Wrapper
 ├── logs/             # アプリケーションログ
 ├── node_modules/     # Node.js依存関係（ルート）
@@ -205,20 +207,20 @@ frontend/
 │   ├── assets/       # アセットファイル
 │   ├── features/     # 機能別モジュール
 │   │   ├── auth/     # 認証機能
-│   │   │   ├── api/
+│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
 │   │   │   ├── components/
 │   │   │   ├── hooks/
 │   │   │   └── types/
 │   │   ├── employee/ # 従業員管理
-│   │   │   ├── api/
+│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
 │   │   │   ├── components/
 │   │   │   └── types/
 │   │   ├── home/     # ホーム画面
-│   │   │   ├── api/
+│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
 │   │   │   ├── components/
 │   │   │   └── types/
 │   │   └── stamp/    # 打刻機能
-│   │       ├── api/
+│   │       ├── api/      # OpenAPIから生成されたAPIクライアント
 │   │       ├── components/
 │   │       └── types/
 │   ├── shared/       # 共通コンポーネント
@@ -239,6 +241,7 @@ frontend/
 ├── .eslintrc.json     # ESLint設定
 ├── .prettierrc        # Prettier設定
 ├── index.html         # HTMLテンプレート
+├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
 ├── package.json       # 依存関係とスクリプト
 ├── package-lock.json  # ロックファイル
 ├── playwright.config.ts # Playwright設定
@@ -270,6 +273,8 @@ frontend/
 - **RESTful**: リソースベースのAPI設計
 - **DTOパターン**: データ転送用オブジェクトの活用
 - **統一レスポンス**: 一貫性のあるレスポンス形式
+- **OpenAPI駆動開発**: バックエンドのAPI仕様から自動的にTypeScript型を生成
+- **型安全な通信**: フロント/バック間の型の一貫性を自動保証
 
 ## ファイル命名規則
 

@@ -18,7 +18,7 @@
 
 ### コアフレームワーク
 - **React 19**: 最新のReactフレームワーク（v19.1.1）
-- **TypeScript**: 型安全な開発（v5.8.3、strictモード有効）
+- **TypeScript**: 型安全な開発（v5.8.3、strictモード有効 - exactOptionalPropertyTypes除く）
 - **Vite**: 高速ビルドツール（v7.1.7）
 - **React Router 7**: SPAルーティング（v7.9.2）
 
@@ -33,6 +33,7 @@
 - **Vitest**: 単体テストフレームワーク（v3.2.4）
 - **Playwright**: E2Eテスト（v1.49.1）
 - **Testing Library**: React テストユーティリティ
+- **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
 
 ### ビルド設定
 ```bash
@@ -46,6 +47,7 @@ npm run test         # Vitestテスト実行
 npm run test:watch   # テストウォッチモード
 npm run test:e2e     # Playwright E2Eテスト
 npm run format       # Prettierフォーマット
+npm run openapi      # OpenAPI仕様からTypeScript型生成
 ```
 
 ## バックエンド
