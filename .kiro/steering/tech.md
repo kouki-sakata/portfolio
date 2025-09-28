@@ -24,7 +24,13 @@
 
 ### UIライブラリ
 - **React Query 5**: サーバー状態管理（v5.90.2）
-- **カスタムコンポーネント**: 独自実装のUIコンポーネント
+- **shadcn/ui**: Radix UIベースのコンポーネントライブラリ
+  - Radix UI React Label (v2.1.7)
+  - Radix UI React Slot (v1.2.3)
+  - Radix UI React Toast (v1.2.15)
+- **Tailwind CSS 4**: ユーティリティファーストCSS（v4.1.13）
+- **Lucide React**: アイコンライブラリ（v0.544.0）
+- **class-variance-authority**: コンポーネントバリアント管理（v0.7.1）
 - **レスポンシブデザイン**: モバイルファースト設計
 
 ### 開発ツール
@@ -34,6 +40,8 @@
 - **Playwright**: E2Eテスト（v1.49.1）
 - **Testing Library**: React テストユーティリティ
 - **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
+- **openapi-zod-client**: OpenAPIからZodスキーマを生成（v1.18.3）
+- **Zod**: ランタイムスキーマバリデーション（v3.25.76）
 
 ### ビルド設定
 ```bash
@@ -47,7 +55,9 @@ npm run test         # Vitestテスト実行
 npm run test:watch   # テストウォッチモード
 npm run test:e2e     # Playwright E2Eテスト
 npm run format       # Prettierフォーマット
-npm run openapi      # OpenAPI仕様からTypeScript型生成
+npm run generate:api # OpenAPI仕様からTypeScript型とZodスキーマを生成
+npm run generate:api-types    # TypeScript型のみ生成
+npm run generate:zod-schemas   # Zodスキーマのみ生成
 ```
 
 ## バックエンド

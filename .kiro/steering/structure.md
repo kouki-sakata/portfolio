@@ -229,6 +229,12 @@ frontend/
 │   │   ├── hooks/
 │   │   ├── types/
 │   │   └── utils/
+│   ├── components/   # shadcn/uiコンポーネント
+│   │   └── ui/       # UIプリミティブ
+│   ├── hooks/        # グローバルフック
+│   ├── lib/          # ユーティリティライブラリ
+│   ├── schemas/      # Zodスキーマ定義
+│   │   └── api.ts    # OpenAPIから生成されたスキーマ
 │   ├── styles/       # グローバルスタイル
 │   │   └── index.css
 │   ├── test/         # テストユーティリティ
@@ -238,22 +244,19 @@ frontend/
 ├── .env.development   # 開発環境変数
 ├── .env.example       # 環境変数テンプレート
 ├── .env.local         # ローカル設定（git-ignored）
-├── .eslintrc.json     # ESLint設定
-├── .prettierrc        # Prettier設定
+├── components.json    # shadcn/ui設定
+├── eslint.config.js   # ESLint設定（Flat Config）
 ├── index.html         # HTMLテンプレート
 ├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
 ├── package.json       # 依存関係とスクリプト
 ├── package-lock.json  # ロックファイル
 ├── playwright.config.ts # Playwright設定
-├── postcss.config.js  # PostCSS設定
 ├── README.md          # フロントエンドREADME
-├── tailwind.config.js # Tailwind CSS設定
 ├── tsconfig.app.json  # TypeScript設定（アプリ）
 ├── tsconfig.json      # TypeScript設定（メイン）
 ├── tsconfig.node.json # TypeScript設定（Node）
 ├── tsconfig.vitest.json # TypeScript設定（テスト）
-├── vite.config.ts     # Vite設定
-└── vitest.config.ts   # Vitest設定
+└── vite.config.ts     # Vite設定
 ```
 
 ## コード編成パターン

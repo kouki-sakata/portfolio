@@ -51,11 +51,13 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 
 ### 技術的優位性
 
-- **モダンなSPA**: React + Spring Bootによる高速で快適なUX
+- **モダンなSPA**: React 19 + Spring Boot 3.4による高速で快適なUX
 - **リアルタイムAPI**: RESTful APIによる即座のデータ反映
 - **セキュアな設計**: Spring Securityによる堅牢な認証・認可
-- **スケーラビリティ**: PostgreSQL + MyBatisによる効率的なデータ管理
+- **スケーラビリティ**: PostgreSQL 16 + MyBatisによる効率的なデータ管理
 - **開発効率化**: OpenAPI仕様によるフロント/バックエンドの自動型同期
+- **型安全性**: TypeScript + Zodによるランタイム/コンパイルタイムの二重検証
+- **UIコンポーネント**: shadcn/ui + Tailwind CSS 4によるモダンなデザインシステム
 
 ### ビジネス価値
 
@@ -108,6 +110,8 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 ### 開発中/計画中
 
 - ✅ OpenAPI TypeScript型生成パイプライン（完了）
+- ✅ shadcn/uiコンポーネントライブラリ導入（完了）
+- ✅ Tailwind CSS 4への移行（完了）
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー
