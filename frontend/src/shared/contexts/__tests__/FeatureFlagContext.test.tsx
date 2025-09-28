@@ -124,8 +124,10 @@ describe('FeatureFlagContext', () => {
 
       const stored = localStorage.getItem('featureFlags');
       expect(stored).toBeTruthy();
-      const parsed = JSON.parse(stored) as { useShadcnUI: boolean };
-      expect(parsed.useShadcnUI).toBe(true);
+      if (stored) {
+        const parsed = JSON.parse(stored) as { useShadcnUI: boolean };
+        expect(parsed.useShadcnUI).toBe(true);
+      }
     });
 
     it('should load feature flags from localStorage on mount', () => {

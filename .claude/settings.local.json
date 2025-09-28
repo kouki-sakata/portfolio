@@ -90,7 +90,8 @@
       "Bash(npx jest:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "mcp__serena__find_referencing_symbols"
+      "mcp__serena__find_referencing_symbols",
+      "Bash(./gradlew:*)"
     ],
     "deny": [
       "Bash(touch:*)",

@@ -49,7 +49,7 @@ export const ButtonWrapper = forwardRef<HTMLButtonElement, ButtonWrapperProps>(
           ref={ref}
           variant={variant}
           size={size}
-          asChild={asChild}
+          {...(asChild !== undefined && { asChild })}
           className={className}
           disabled={disabled ?? loading}
           {...props}
@@ -64,7 +64,7 @@ export const ButtonWrapper = forwardRef<HTMLButtonElement, ButtonWrapperProps>(
       <CustomButton
         ref={ref}
         className={className}
-        loading={loading}
+        {...(loading !== undefined && { loading })}
         disabled={disabled}
         {...props}
       >
