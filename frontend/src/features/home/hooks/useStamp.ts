@@ -1,6 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { useState, useCallback } from 'react'
+import { useCallback,useState } from 'react'
+
 import { createHomeRepository, type IHomeRepository } from '@/features/home/repositories/HomeRepository'
+import type { StampRequest, StampResponse } from '@/features/home/types'
 
 const HOME_DASHBOARD_KEY = ['home', 'overview'] as const
 
@@ -12,9 +14,9 @@ export const useStamp = (repository: IHomeRepository = createHomeRepository()) =
   const queryClient = useQueryClient()
   const [message, setMessage] = useState<string | null>(null)
 
-  const stampMutation = useMutation({
-    mutationFn: repository.submitStamp.bind(repository),
-    onSuccess: (response) => {
+  const stampMutation = useMutation<StampResponse, Error, StampRequest>({
+    mutationFn: (request: StampRequest) => repository.submitStamp(request),
+    onSuccess: (response: StampResponse) => {
       setMessage(response.message)
       void queryClient.invalidateQueries({ queryKey: HOME_DASHBOARD_KEY })
     },

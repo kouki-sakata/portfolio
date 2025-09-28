@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import type { IHttpClient } from '@/shared/repositories/types'
-import { defaultHttpClient } from '@/shared/repositories/httpClientAdapter'
+
 import type { HomeDashboardResponse, StampRequest, StampResponse } from '@/features/home/types'
+import { defaultHttpClient } from '@/shared/repositories/httpClientAdapter'
+import type { IHttpClient } from '@/shared/repositories/types'
 
 /**
  * Zodスキーマ定義

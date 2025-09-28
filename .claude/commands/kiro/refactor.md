@@ -1,6 +1,18 @@
 ## Refactor
 
-安全で段階的なコードリファクタリングを実施し、SOLID 原則の遵守状況を定量的に評価します。技術的負債を可視化し、改善の優先順位を明確にします。
+安全で段階的なコードリファクタリングを実施し、SOLID
+原則の遵守状況を定量的に評価します。技術的負債を可視化し、改善の優先順位を明確にします。
+
+## Implementation Notes
+
+- **Development Approach**:
+    - Utilize **context7** for all development activities.
+    - Consistently apply software development **best practices**.
+- **Coding Standards (TypeScript)**:
+    - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
+      must be fully type-safe.
+    - **ESLint Rules**: Adhere to the TypeScript-ESLint rulesets:
+      `strictTypeChecked` and `stylisticTypeChecked`.
 
 ### 使い方
 
@@ -150,47 +162,47 @@ D - Dependency Inversion(20 点)
 
 #### 優先順位マトリクス
 
-| 優先度                    | 影響度 | 修正コスト | 対応期限   | 具体例                               | 推奨アクション               |
-| ------------------------- | ------ | ---------- | ---------- | ------------------------------------ | ---------------------------- |
-| **Critical(即座対応)**    | 高     | 低         | 1 週間以内 | God Object、循環依存                 | 即座にリファクタリング開始   |
-| **Important(計画的対応)** | 高     | 高         | 1 ヶ月以内 | 大規模な責務分離、アーキテクチャ変更 | スプリント計画に組み込み     |
-| **Watch(監視対象)**       | 低     | 高         | 3 ヶ月以内 | 複雑度の高い内部処理                 | メトリクス監視、悪化時対応   |
-| **Acceptable(許容範囲)**  | 低     | 低         | 対応不要   | 軽微なコードの臭い                   | 通常のリファクタリングで対応 |
+| 優先度                  | 影響度 | 修正コスト | 対応期限   | 具体例                | 推奨アクション        |
+|----------------------|-----|-------|--------|--------------------|----------------|
+| **Critical(即座対応)**   | 高   | 低     | 1 週間以内 | God Object、循環依存    | 即座にリファクタリング開始  |
+| **Important(計画的対応)** | 高   | 高     | 1 ヶ月以内 | 大規模な責務分離、アーキテクチャ変更 | スプリント計画に組み込み   |
+| **Watch(監視対象)**      | 低   | 高     | 3 ヶ月以内 | 複雑度の高い内部処理         | メトリクス監視、悪化時対応  |
+| **Acceptable(許容範囲)** | 低   | 低     | 対応不要   | 軽微なコードの臭い          | 通常のリファクタリングで対応 |
 
 ### リファクタリング手順
 
 1. **現状分析と測定**
-   - 複雑度測定 (循環的・認知的)
-   - SOLID スコア算出 (0-100 点)
-   - 技術的負債の定量化 (時間/コスト)
-   - 優先順位マトリクス作成
+    - 複雑度測定 (循環的・認知的)
+    - SOLID スコア算出 (0-100 点)
+    - 技術的負債の定量化 (時間/コスト)
+    - 優先順位マトリクス作成
 
 2. **段階的実行**
-   - 小さなステップ (15-30 分単位)
-   - 各変更後のテスト実行
-   - 頻繁なコミット
-   - SOLID スコアの継続測定
+    - 小さなステップ (15-30 分単位)
+    - 各変更後のテスト実行
+    - 頻繁なコミット
+    - SOLID スコアの継続測定
 
 3. **品質確認**
-   - テストカバレッジ維持
-   - パフォーマンス測定
-   - 技術的負債の削減確認
-   - コードレビュー
+    - テストカバレッジ維持
+    - パフォーマンス測定
+    - 技術的負債の削減確認
+    - コードレビュー
 
 ### よくあるコードの臭いと負債スコア
 
-| コードの臭い            | 検出基準                 | 負債スコア  | 改善手法                |
-| ----------------------- | ------------------------ | ----------- | ----------------------- |
-| **God Object**          | 責務 >3, メソッド >20    | 高 (15-20h) | Extract Class, SRP 適用 |
-| **Long Method**         | 行数 >50, 複雑度 >10     | 中 (5-10h)  | Extract Method          |
-| **Duplicate Code**      | 重複率 >30%              | 高 (10-15h) | Extract Method/Class    |
-| **Large Class**         | 行数 >300, メソッド >15  | 高 (10-20h) | Extract Class           |
-| **Long Parameter List** | パラメータ >4            | 低 (2-5h)   | Parameter Object        |
-| **Feature Envy**        | 他クラス参照 >5          | 中 (5-10h)  | Move Method             |
-| **Data Clumps**         | 同じ引数群の繰り返し     | 低 (3-5h)   | Extract Class           |
-| **Primitive Obsession** | プリミティブ型の過度使用 | 中 (5-8h)   | Replace with Object     |
-| **Switch Statements**   | case >5                  | 中 (5-10h)  | Strategy Pattern        |
-| **Shotgun Surgery**     | 変更時の影響箇所 >3      | 高 (10-15h) | Move Method/Field       |
+| コードの臭い                  | 検出基準              | 負債スコア      | 改善手法                  |
+|-------------------------|-------------------|------------|-----------------------|
+| **God Object**          | 責務 >3, メソッド >20   | 高 (15-20h) | Extract Class, SRP 適用 |
+| **Long Method**         | 行数 >50, 複雑度 >10   | 中 (5-10h)  | Extract Method        |
+| **Duplicate Code**      | 重複率 >30%          | 高 (10-15h) | Extract Method/Class  |
+| **Large Class**         | 行数 >300, メソッド >15 | 高 (10-20h) | Extract Class         |
+| **Long Parameter List** | パラメータ >4          | 低 (2-5h)   | Parameter Object      |
+| **Feature Envy**        | 他クラス参照 >5         | 中 (5-10h)  | Move Method           |
+| **Data Clumps**         | 同じ引数群の繰り返し        | 低 (3-5h)   | Extract Class         |
+| **Primitive Obsession** | プリミティブ型の過度使用      | 中 (5-8h)   | Replace with Object   |
+| **Switch Statements**   | case >5           | 中 (5-10h)  | Strategy Pattern      |
+| **Shotgun Surgery**     | 変更時の影響箇所 >3       | 高 (10-15h) | Move Method/Field     |
 
 ### 実践例：SOLID スコア評価
 

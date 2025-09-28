@@ -1,4 +1,4 @@
-import type { IHttpClient, HttpRequestOptions } from './types'
+import type { HttpRequestOptions,IHttpClient } from './types'
 
 /**
  * インターセプター型定義
@@ -83,11 +83,7 @@ export class InterceptableHttpClient implements IHttpClient {
     } catch (error) {
       for (const interceptor of this.responseInterceptors) {
         if (interceptor.onError) {
-          try {
-            await interceptor.onError(error)
-          } catch (handledError) {
-            throw handledError
-          }
+          await interceptor.onError(error)
         }
       }
       throw error
@@ -145,12 +141,13 @@ export const createAuthInterceptor = (getToken: () => string | null): RequestInt
   onRequest: (path, options) => {
     const token = getToken()
     if (token && !path.includes('/auth/login')) {
+      // Handle different HeadersInit types
+      const headers = new Headers(options.headers)
+      headers.set('Authorization', `Bearer ${token}`)
+
       return {
         ...options,
-        headers: {
-          ...options.headers,
-          Authorization: `Bearer ${token}`,
-        },
+        headers,
       }
     }
     return options

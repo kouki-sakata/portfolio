@@ -73,7 +73,7 @@ export class SessionManager implements ISessionManager {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach(callback => callback(this.session))
+    this.listeners.forEach(callback => { callback(this.session); })
   }
 }
 
@@ -84,9 +84,7 @@ export class SessionManager implements ISessionManager {
 let sessionManagerInstance: ISessionManager | null = null
 
 export const getSessionManager = (): ISessionManager => {
-  if (!sessionManagerInstance) {
-    sessionManagerInstance = new SessionManager()
-  }
+  sessionManagerInstance ??= new SessionManager()
   return sessionManagerInstance
 }
 

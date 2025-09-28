@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { type ReactNode, useEffect, useMemo } from 'react'
+
 import { AuthContext, type AuthContextValue } from '@/features/auth/context/internal/AuthContext'
 import { createAuthService, type IAuthService } from '@/features/auth/services/AuthService'
 import { getSessionManager, type ISessionManager } from '@/features/auth/services/SessionManager'
@@ -42,7 +43,7 @@ export const AuthProviderRefactored = ({
     mutationFn: (credentials: LoginRequest) => authService.login(credentials),
     onSuccess: (employee) => {
       sessionManager.setSession(employee)
-      queryClient.invalidateQueries({ queryKey: AUTH_SESSION_KEY })
+      void queryClient.invalidateQueries({ queryKey: AUTH_SESSION_KEY })
     },
   })
 

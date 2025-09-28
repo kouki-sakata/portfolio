@@ -1,4 +1,4 @@
-import { useState, memo } from 'react'
+import { memo,useState } from 'react'
 
 /**
  * StampCardのProps
@@ -34,7 +34,7 @@ export const StampCard = memo(({
           <input
             type="checkbox"
             checked={nightWork}
-            onChange={(event) => setNightWork(event.target.checked)}
+            onChange={(event) => { setNightWork(event.target.checked); }}
             disabled={isLoading}
           />
           夜勤扱い

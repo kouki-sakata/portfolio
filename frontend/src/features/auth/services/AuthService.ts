@@ -1,6 +1,7 @@
 import type { IAuthRepository } from '@/features/auth/repositories/AuthRepository'
 import { authRepository } from '@/features/auth/repositories/AuthRepository'
 import type { EmployeeSummary, LoginRequest, SessionResponse } from '@/features/auth/types'
+import type { RepositoryError } from '@/shared/repositories/types'
 
 /**
  * 認証サービスインターフェース
@@ -27,6 +28,18 @@ export class AuthenticationError extends Error {
 }
 
 /**
+ * Type guard for RepositoryError
+ */
+const isRepositoryError = (error: unknown): error is RepositoryError => {
+  return (
+    error instanceof Error &&
+    'code' in error &&
+    'status' in error &&
+    typeof (error as RepositoryError).status === 'number'
+  )
+}
+
+/**
  * 認証サービス実装
  * Open/Closed Principle: 拡張可能な設計
  */
@@ -38,9 +51,8 @@ export class AuthService implements IAuthService {
       const response = await this.repository.login(credentials)
       return response.employee
     } catch (error) {
-      if (error instanceof Error && 'status' in error) {
-        const httpError = error as any
-        if (httpError.status === 401) {
+      if (isRepositoryError(error)) {
+        if (error.status === 401) {
           throw new AuthenticationError(
             'Invalid email or password',
             'INVALID_CREDENTIALS'
@@ -67,9 +79,8 @@ export class AuthService implements IAuthService {
     try {
       return await this.repository.getSession()
     } catch (error) {
-      if (error instanceof Error && 'status' in error) {
-        const httpError = error as any
-        if (httpError.status === 401) {
+      if (isRepositoryError(error)) {
+        if (error.status === 401) {
           return {
             authenticated: false,
             employee: null,

@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+
 import { createHomeRepository, type IHomeRepository } from '@/features/home/repositories/HomeRepository'
 
 const HOME_DASHBOARD_KEY = ['home', 'overview'] as const

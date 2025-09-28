@@ -1,7 +1,8 @@
 import { z } from 'zod'
-import type { IHttpClient } from '@/shared/repositories/types'
-import { defaultHttpClient } from '@/shared/repositories/httpClientAdapter'
+
 import type { LoginRequest, LoginResponse, SessionResponse } from '@/features/auth/types'
+import { defaultHttpClient } from '@/shared/repositories/httpClientAdapter'
+import type { IHttpClient } from '@/shared/repositories/types'
 
 /**
  * Zodスキーマによるランタイムバリデーション

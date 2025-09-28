@@ -1,5 +1,26 @@
 import { httpClient } from '@/shared/api/httpClient'
-import type { IHttpClient, HttpRequestOptions, RepositoryError } from './types'
+
+import type { HttpRequestOptions, IHttpClient, RepositoryError } from './types'
+
+/**
+ * HTTPエラーの型定義
+ */
+interface HttpError extends Error {
+  status: number
+  message: string
+  payload?: unknown
+}
+
+/**
+ * Type guard for HttpError
+ */
+const isHttpError = (error: unknown): error is HttpError => {
+  return (
+    error instanceof Error &&
+    'status' in error &&
+    typeof (error as HttpError).status === 'number'
+  )
+}
 
 /**
  * HttpClientAdapter
@@ -10,13 +31,12 @@ export const createHttpClientAdapter = (): IHttpClient => {
   const handleError = (error: unknown): never => {
     const repoError = new Error() as RepositoryError
 
-    if (error instanceof Error && 'status' in error) {
-      const httpError = error as any
-      repoError.message = httpError.message
-      repoError.status = httpError.status
-      repoError.details = httpError.payload
+    if (isHttpError(error)) {
+      repoError.message = error.message
+      repoError.status = error.status
+      repoError.details = error.payload
 
-      switch (httpError.status) {
+      switch (error.status) {
         case 404:
           repoError.code = 'NOT_FOUND'
           break
@@ -25,7 +45,7 @@ export const createHttpClientAdapter = (): IHttpClient => {
           repoError.code = 'UNAUTHORIZED'
           break
         default:
-          repoError.code = httpError.status >= 500 ? 'NETWORK_ERROR' : 'VALIDATION_ERROR'
+          repoError.code = error.status >= 500 ? 'NETWORK_ERROR' : 'VALIDATION_ERROR'
       }
     } else {
       repoError.code = 'UNKNOWN'

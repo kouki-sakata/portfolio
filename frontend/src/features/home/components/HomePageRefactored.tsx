@@ -1,8 +1,9 @@
 import { PageLoader } from '@/shared/components/layout/PageLoader'
-import { StampCard } from './StampCard'
-import { NewsSection } from './NewsSection'
-import { useStamp } from '../hooks/useStamp'
+
 import { useDashboard } from '../hooks/useDashboard'
+import { useStamp } from '../hooks/useStamp'
+import { NewsSection } from './NewsSection'
+import { StampCard } from './StampCard'
 
 /**
  * リファクタリング後のHomePageコンポーネント
