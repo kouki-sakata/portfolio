@@ -71,7 +71,7 @@ describe('Navigation Types', () => {
       expect(group.id).toBe('main');
       expect(group.title).toBe('メイン');
       expect(group.items).toHaveLength(1);
-      expect(group.items[0].id).toBe('home');
+      expect(group.items[0]!.id).toBe('home');
     });
 
     it('titleなしのNavigationGroupを作成できる', () => {
@@ -166,8 +166,8 @@ describe('Navigation Types', () => {
       };
 
       expect(group.items).toHaveLength(2);
-      expect(group.items[0].id).toBe('home');
-      expect(group.items[1].badge).toBe(2);
+      expect(group.items[0]!.id).toBe('home');
+      expect(group.items[1]!.badge).toBe(2);
     });
 
     it('複数のNavigationGroupを配列として扱える', () => {
@@ -198,8 +198,8 @@ describe('Navigation Types', () => {
       ];
 
       expect(groups).toHaveLength(2);
-      expect(groups[0].title).toBe('メイン');
-      expect(groups[1].title).toBeUndefined();
+      expect(groups[0]!.title).toBe('メイン');
+      expect(groups[1]!.title).toBeUndefined();
     });
   });
 });

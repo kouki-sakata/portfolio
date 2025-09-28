@@ -9,7 +9,7 @@ import {
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 
-import { NavigationGroup, NavigationItem } from '@/shared/types/navigation';
+import type { NavigationGroup, NavigationItem } from '@/shared/types/navigation';
 import { cn } from '@/shared/utils/cn';
 
 interface AppSidebarProps {

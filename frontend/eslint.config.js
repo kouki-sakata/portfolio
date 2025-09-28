@@ -88,6 +88,7 @@ export default defineConfig([
     },
     rules: {
       ...testingLibrary.configs.react.rules,
+      '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
   {
