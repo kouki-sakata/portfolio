@@ -6,7 +6,7 @@ export interface AuthContextValue {
   user: EmployeeSummary | null
   authenticated: boolean
   loading: boolean
-  login: (payload: LoginRequest) => Promise<void>
+  login: (payload: LoginRequest) => Promise<EmployeeSummary>
   logout: () => Promise<void>
 }
 

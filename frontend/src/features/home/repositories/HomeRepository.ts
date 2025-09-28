@@ -11,6 +11,7 @@ const NewsItemSchema = z.object({
   id: z.number(),
   newsDate: z.string(),
   content: z.string(),
+  released: z.boolean(),
 })
 
 const EmployeeSchema = z.object({
@@ -18,6 +19,7 @@ const EmployeeSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
   email: z.string().email(),
+  admin: z.boolean(),
 })
 
 const HomeDashboardResponseSchema = z.object({
