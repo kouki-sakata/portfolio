@@ -94,7 +94,9 @@ describe('AuthProvider', () => {
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000), // 8 hours from now
       }
-      mockSessionManager.getSession.mockReturnValue(mockSessionData)
+      ;(mockSessionManager.getSession as MockedFunction<typeof mockSessionManager.getSession>).mockReturnValue(
+        mockSessionData,
+      )
 
       const { result } = renderHook(() => useAuth(), { wrapper: createWrapper })
 
@@ -196,7 +198,9 @@ describe('AuthProvider', () => {
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000),
       }
-      mockSessionManager.getSession.mockReturnValue(mockSessionData)
+      ;(mockSessionManager.getSession as MockedFunction<typeof mockSessionManager.getSession>).mockReturnValue(
+        mockSessionData,
+      )
 
       const { result } = renderHook(() => useAuth(), { wrapper: createWrapper })
 
@@ -327,7 +331,9 @@ describe('AuthProvider', () => {
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + 8 * 60 * 60 * 1000),
       }
-      mockSessionManager.getSession.mockReturnValue(mockSessionData)
+      ;(mockSessionManager.getSession as MockedFunction<typeof mockSessionManager.getSession>).mockReturnValue(
+        mockSessionData,
+      )
 
       const { result } = renderHook(() => useAuth(), { wrapper: createWrapper })
 
