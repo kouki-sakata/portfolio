@@ -29,7 +29,7 @@
     - ラッパーコンポーネントのTypeScript型定義を作成
     - _Requirements: 1.3, 3.1_
 
-- [ ] 
+- [x]
     4. OpenAPI TypeScript型生成パイプラインの構築
 
     - openapi-typescriptとopenapi-zod-clientをインストール
