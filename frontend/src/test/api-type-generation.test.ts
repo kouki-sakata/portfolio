@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { execSync } from 'child_process';
 import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
+import { beforeAll, describe, expect, it } from 'vitest';
 
 describe('OpenAPI Type Generation', () => {
   const apiTypesPath = join(__dirname, '../types/types.gen.ts');
@@ -11,14 +11,14 @@ describe('OpenAPI Type Generation', () => {
     it('should have npm script for generating TypeScript types', () => {
       const packageJson = JSON.parse(
         readFileSync(join(__dirname, '../../package.json'), 'utf-8')
-      );
+      ) as { scripts: Record<string, string> };
       expect(packageJson.scripts).toHaveProperty('generate:api-types');
     });
 
     it('should have npm script for generating Zod schemas', () => {
       const packageJson = JSON.parse(
         readFileSync(join(__dirname, '../../package.json'), 'utf-8')
-      );
+      ) as { scripts: Record<string, string> };
       expect(packageJson.scripts).toHaveProperty('generate:zod-schemas');
     });
   });
@@ -28,8 +28,8 @@ describe('OpenAPI Type Generation', () => {
       // Run generation scripts
       try {
         execSync('npm run generate:api', { cwd: join(__dirname, '../..') });
-      } catch (error) {
-        // Allow test to fail in RED phase
+      } catch {
+        // Allow test to fail in RED phase - error intentionally ignored
       }
     });
 
