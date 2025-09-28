@@ -92,7 +92,10 @@
       "Bash(gh pr create:*)",
       "mcp__serena__find_referencing_symbols",
       "Bash(./gradlew:*)",
-      "Bash(gh pr checks:*)"
+      "Bash(gh pr checks:*)",
+      "Bash(npx eslint:*)",
+      "SlashCommand(/kiro:check-github-ci)",
+      "Bash(gh run view:*)"
     ],
     "deny": [
       "Bash(touch:*)",
