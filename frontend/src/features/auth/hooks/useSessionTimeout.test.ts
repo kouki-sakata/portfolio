@@ -103,8 +103,12 @@ describe('useSessionTimeout', () => {
         vi.advanceTimersByTime(5000) // 5秒進める
       })
 
-      expect(result.current.timeRemaining).toBeLessThan(initialTime)
-      expect(result.current.timeRemaining).toBeGreaterThan(initialTime - 10000)
+      if (initialTime !== null) {
+        expect(result.current.timeRemaining).toBeLessThan(initialTime)
+        expect(result.current.timeRemaining).toBeGreaterThan(initialTime - 10000)
+      } else {
+        throw new Error('Expected initialTime to be non-null')
+      }
     })
 
     it('セッション情報がnullの場合はタイマーを開始しない', () => {

@@ -1,4 +1,4 @@
-import { QueryClient } from '@tanstack/react-query'
+import { QueryClient, QueryCache } from '@tanstack/react-query'
 
 import { createGlobalErrorHandler } from '@/app/config/error-interceptor'
 
@@ -6,8 +6,17 @@ import { createGlobalErrorHandler } from '@/app/config/error-interceptor'
  * QueryClient設定を作成
  * エラーインターセプターは後から設定される
  */
+let globalErrorHandler: ((error: unknown) => void) | undefined
+
 const createQueryClient = () => {
   return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => {
+        if (globalErrorHandler) {
+          globalErrorHandler(error)
+        }
+      },
+    }),
     defaultOptions: {
       queries: {
         staleTime: 30_000,
@@ -31,21 +40,9 @@ export const configureQueryClientErrorHandler = (
   logout: () => Promise<void>,
   redirect: (path: string) => void
 ): void => {
-  const errorHandler = createGlobalErrorHandler({
+  globalErrorHandler = createGlobalErrorHandler({
     onLogout: logout,
     onRedirect: redirect,
     loginPath: '/auth/signin',
-  })
-
-  // グローバルエラーハンドラーを設定
-  queryClient.setDefaultOptions({
-    queries: {
-      ...queryClient.getDefaultOptions().queries,
-      onError: errorHandler,
-    },
-    mutations: {
-      ...queryClient.getDefaultOptions().mutations,
-      onError: errorHandler,
-    },
   })
 }

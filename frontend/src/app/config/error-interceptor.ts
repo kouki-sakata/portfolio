@@ -1,4 +1,4 @@
-import type { QueryCache } from '@tanstack/react-query'
+import { QueryCache } from '@tanstack/react-query'
 
 import type { HttpClientError } from '@/shared/api/httpClient'
 
@@ -94,9 +94,9 @@ export const createGlobalErrorHandler = (
 export const createQueryCacheErrorHandler = (
   config: ErrorInterceptorConfig
 ): QueryCache => {
-  return {
+  return new QueryCache({
     onError: (error: unknown) => {
       void handle401Error(error, config)
     },
-  } as QueryCache
+  })
 }

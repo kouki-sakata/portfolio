@@ -163,7 +163,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
   // グローバル401エラーハンドラーの設定
   useEffect(() => {
-    configureQueryClientErrorHandler(() => void handleLogout(), navigate)
+    configureQueryClientErrorHandler(handleLogout, navigate)
   }, [navigate])
 
   // セッション変更の監視
