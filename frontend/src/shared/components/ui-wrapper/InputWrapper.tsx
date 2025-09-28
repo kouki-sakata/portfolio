@@ -1,8 +1,10 @@
 import { type ChangeEvent, type FocusEvent, type HTMLInputTypeAttribute } from 'react';
+
 import { Input as ShadcnInput } from '@/components/ui/input';
 import { Label as ShadcnLabel } from '@/components/ui/label';
-import { useFeatureFlag } from '../../contexts/FeatureFlagContext';
 import { cn } from '@/lib/utils';
+
+import { useFeatureFlag } from '../../hooks/use-feature-flag';
 
 interface InputWrapperProps {
   label: string;

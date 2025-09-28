@@ -1,17 +1,9 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 
-interface FeatureFlags {
-  useShadcnUI: boolean;
-}
-
-interface FeatureFlagContextValue {
-  flags: FeatureFlags;
-  toggleFlag: (flag: keyof FeatureFlags) => void;
-  setFlag: (flag: keyof FeatureFlags, value: boolean) => void;
-  isEnabled: (flag: keyof FeatureFlags) => boolean;
-}
-
-const FeatureFlagContext = createContext<FeatureFlagContextValue | null>(null);
+import {
+  FeatureFlagContext,
+  type FeatureFlagContextValue,
+  type FeatureFlags} from '../hooks/use-feature-flag';
 
 const DEFAULT_FLAGS: FeatureFlags = {
   useShadcnUI: false,
@@ -34,7 +26,7 @@ export const FeatureFlagProvider = ({
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         try {
-          const parsed = JSON.parse(stored);
+          const parsed = JSON.parse(stored) as Partial<FeatureFlags>;
           return { ...DEFAULT_FLAGS, ...parsed, ...initialFlags };
         } catch (error) {
           console.error('Failed to parse stored feature flags:', error);
@@ -83,12 +75,4 @@ export const FeatureFlagProvider = ({
   );
 };
 
-export const useFeatureFlag = (): FeatureFlagContextValue => {
-  const context = useContext(FeatureFlagContext);
-
-  if (!context) {
-    throw new Error('useFeatureFlag must be used within a FeatureFlagProvider');
-  }
-
-  return context;
-};
+// useFeatureFlag has been moved to ../hooks/use-feature-flag

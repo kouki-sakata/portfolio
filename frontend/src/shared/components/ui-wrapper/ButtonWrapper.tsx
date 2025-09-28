@@ -1,7 +1,9 @@
-import { forwardRef, type ButtonHTMLAttributes, type ReactNode } from 'react';
+import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from 'react';
+
 import { Button as ShadcnButton, type ButtonProps as ShadcnButtonProps } from '@/components/ui/button';
-import { useFeatureFlag } from '../../contexts/FeatureFlagContext';
 import { cn } from '@/lib/utils';
+
+import { useFeatureFlag } from '../../hooks/use-feature-flag';
 
 export interface ButtonWrapperProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
@@ -24,7 +26,7 @@ const CustomButton = forwardRef<HTMLButtonElement, ButtonWrapperProps>(
           'disabled:opacity-50 disabled:cursor-not-allowed',
           className
         )}
-        disabled={disabled || loading}
+        disabled={disabled ?? loading}
         {...props}
       >
         {loading ? 'Loading...' : children}
@@ -49,7 +51,7 @@ export const ButtonWrapper = forwardRef<HTMLButtonElement, ButtonWrapperProps>(
           size={size}
           asChild={asChild}
           className={className}
-          disabled={disabled || loading}
+          disabled={disabled ?? loading}
           {...props}
         >
           {loading ? 'Loading...' : children}

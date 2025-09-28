@@ -1,7 +1,9 @@
-import { renderHook, act } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
-import { ReactNode } from 'react';
-import { FeatureFlagProvider, useFeatureFlag } from '../FeatureFlagContext';
+import { act, renderHook } from '@testing-library/react';
+import { type ReactNode } from 'react';
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import { useFeatureFlag } from '../../hooks/use-feature-flag';
+import { FeatureFlagProvider } from '../FeatureFlagContext';
 
 describe('FeatureFlagContext', () => {
   beforeEach(() => {
@@ -96,7 +98,9 @@ describe('FeatureFlagContext', () => {
     it('should throw error when used outside provider', () => {
       // This test expects the hook to throw an error
       const consoleError = console.error;
-      console.error = () => {}; // Suppress error output in test
+      console.error = () => {
+        // Suppress error output in test
+      };
 
       expect(() => {
         renderHook(() => useFeatureFlag());
@@ -120,7 +124,7 @@ describe('FeatureFlagContext', () => {
 
       const stored = localStorage.getItem('featureFlags');
       expect(stored).toBeTruthy();
-      const parsed = JSON.parse(stored!);
+      const parsed = JSON.parse(stored) as { useShadcnUI: boolean };
       expect(parsed.useShadcnUI).toBe(true);
     });
 

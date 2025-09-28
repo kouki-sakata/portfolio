@@ -1,8 +1,9 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi, beforeEach } from 'vitest';
-import { InputWrapper } from '../InputWrapper';
+import { beforeEach,describe, expect, it, vi } from 'vitest';
+
 import { FeatureFlagProvider } from '../../../contexts/FeatureFlagContext';
+import { InputWrapper } from '../InputWrapper';
 
 describe('InputWrapper', () => {
   beforeEach(() => {
