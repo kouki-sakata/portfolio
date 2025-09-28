@@ -1,0 +1,533 @@
+openapi: 3.0.3
+info:
+  title: TeamDevelop Bravo API
+  description: 勤怠管理システムの REST API ドキュメント
+  version: v1
+  contact:
+    name: TeamDevelop SRE
+    email: sre@example.com
+  license:
+    name: Apache License Version 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+servers:
+  - url: http://localhost:8080
+    description: Development server
+  - url: https://api.teamdevelop.example.com
+    description: Production server
+tags:
+  - name: Auth
+    description: 認証/セッション API
+  - name: Employees
+    description: 従業員管理 API
+  - name: Home
+    description: ホーム ダッシュボード/打刻 API
+  - name: Stamp History
+    description: 打刻履歴 API
+paths:
+  /api/auth/login:
+    post:
+      tags:
+        - Auth
+      summary: ログイン
+      description: メールとパスワードでログインし、セッションを開始します
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: ログイン成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: 認証失敗
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/auth/logout:
+    post:
+      tags:
+        - Auth
+      summary: ログアウト
+      description: セッションを終了します
+      operationId: logout
+      responses:
+        '204':
+          description: ログアウト成功
+  /api/auth/session:
+    get:
+      tags:
+        - Auth
+      summary: セッション状態取得
+      description: 現在の認証状態と従業員概要を返します
+      operationId: getSession
+      responses:
+        '200':
+          description: セッション情報
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+  /api/employees:
+    get:
+      tags:
+        - Employees
+      summary: 従業員一覧
+      description: 管理者のみ絞り込み可能（adminOnly=true）
+      operationId: listEmployees
+      parameters:
+        - name: adminOnly
+          in: query
+          description: 管理者のみ表示
+          required: false
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: 従業員一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeListResponse'
+    post:
+      tags:
+        - Employees
+      summary: 従業員作成
+      description: 新規ユーザーを作成（ADMIN権限が必要）
+      operationId: createEmployee
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpsertRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeSummaryResponse'
+        '400':
+          description: リクエストエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Employees
+      summary: 従業員削除
+      description: 複数IDに対応（ADMIN権限が必要）
+      operationId: deleteEmployees
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeDeleteRequest'
+      responses:
+        '204':
+          description: 削除成功
+  /api/employees/{employeeId}:
+    put:
+      tags:
+        - Employees
+      summary: 従業員更新
+      description: 既存ユーザーを更新（ADMIN権限が必要）
+      operationId: updateEmployee
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EmployeeUpsertRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EmployeeSummaryResponse'
+        '404':
+          description: 従業員が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: メールアドレス重複
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/home/overview:
+    get:
+      tags:
+        - Home
+      summary: ホーム概要
+      description: ログイン中の従業員情報とお知らせ一覧を返却
+      operationId: getHomeOverview
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: ホーム画面情報
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HomeDashboardResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/home/stamps:
+    post:
+      tags:
+        - Home
+      summary: 打刻
+      description: 出勤/退勤の打刻を記録
+      operationId: stamp
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampRequest'
+      responses:
+        '200':
+          description: 打刻成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/stamp-history:
+    get:
+      tags:
+        - Stamp History
+      summary: 打刻履歴取得
+      description: 年・月の指定がなければ当月を返却
+      operationId: getStampHistory
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: year
+          in: query
+          description: 年（YYYY形式）
+          required: false
+          schema:
+            type: string
+        - name: month
+          in: query
+          description: 月（MM形式）
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 打刻履歴
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampHistoryResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        password:
+          type: string
+          format: password
+          description: パスワード
+    LoginResponse:
+      type: object
+      required:
+        - employee
+      properties:
+        employee:
+          $ref: '#/components/schemas/EmployeeSummaryResponse'
+    SessionResponse:
+      type: object
+      required:
+        - authenticated
+      properties:
+        authenticated:
+          type: boolean
+          description: 認証状態
+        employee:
+          $ref: '#/components/schemas/EmployeeSummaryResponse'
+          nullable: true
+    EmployeeSummaryResponse:
+      type: object
+      required:
+        - id
+        - firstName
+        - lastName
+        - email
+        - admin
+      properties:
+        id:
+          type: integer
+          description: 従業員ID
+        firstName:
+          type: string
+          description: 名
+        lastName:
+          type: string
+          description: 姓
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        admin:
+          type: boolean
+          description: 管理者フラグ
+    EmployeeListResponse:
+      type: object
+      required:
+        - employees
+      properties:
+        employees:
+          type: array
+          items:
+            $ref: '#/components/schemas/EmployeeSummaryResponse'
+    EmployeeUpsertRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - admin
+      properties:
+        firstName:
+          type: string
+          description: 名
+        lastName:
+          type: string
+          description: 姓
+        email:
+          type: string
+          format: email
+          description: メールアドレス
+        password:
+          type: string
+          format: password
+          description: パスワード（新規作成時必須）
+          nullable: true
+        admin:
+          type: boolean
+          description: 管理者フラグ
+    EmployeeDeleteRequest:
+      type: object
+      required:
+        - ids
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+          description: 削除対象の従業員IDリスト
+    HomeDashboardResponse:
+      type: object
+      required:
+        - employee
+        - news
+      properties:
+        employee:
+          $ref: '#/components/schemas/EmployeeSummaryResponse'
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/HomeNewsItem'
+    HomeNewsItem:
+      type: object
+      required:
+        - id
+        - content
+        - newsDate
+        - releaseFlag
+      properties:
+        id:
+          type: integer
+          description: お知らせID
+        content:
+          type: string
+          description: お知らせ内容
+        newsDate:
+          type: string
+          description: お知らせ日付
+        releaseFlag:
+          type: boolean
+          description: 公開フラグ
+    StampRequest:
+      type: object
+      required:
+        - stampTime
+        - stampType
+        - nightWorkFlag
+      properties:
+        stampTime:
+          type: string
+          format: date-time
+          description: 打刻時刻（ISO形式）
+        stampType:
+          type: string
+          enum:
+            - '1'
+            - '2'
+          description: 打刻種別（1:出勤、2:退勤）
+        nightWorkFlag:
+          type: string
+          enum:
+            - '0'
+            - '1'
+          description: 夜勤フラグ（0:通常、1:夜勤）
+    StampResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: 打刻結果メッセージ
+    StampHistoryResponse:
+      type: object
+      required:
+        - year
+        - month
+        - years
+        - months
+        - entries
+      properties:
+        year:
+          type: string
+          description: 対象年
+        month:
+          type: string
+          description: 対象月
+        years:
+          type: array
+          items:
+            type: string
+          description: 選択可能な年リスト
+        months:
+          type: array
+          items:
+            type: string
+          description: 選択可能な月リスト
+        entries:
+          type: array
+          items:
+            $ref: '#/components/schemas/StampHistoryEntryResponse'
+    StampHistoryEntryResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          nullable: true
+          description: 打刻履歴ID
+        year:
+          type: string
+          nullable: true
+          description: 年
+        month:
+          type: string
+          nullable: true
+          description: 月
+        day:
+          type: string
+          nullable: true
+          description: 日
+        dayOfWeek:
+          type: string
+          nullable: true
+          description: 曜日
+        employeeId:
+          type: integer
+          nullable: true
+          description: 従業員ID
+        employeeName:
+          type: string
+          nullable: true
+          description: 従業員名
+        updateEmployeeName:
+          type: string
+          nullable: true
+          description: 更新者名
+        inTime:
+          type: string
+          nullable: true
+          description: 出勤時刻
+        outTime:
+          type: string
+          nullable: true
+          description: 退勤時刻
+        updateDate:
+          type: string
+          nullable: true
+          description: 更新日時
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: エラーメッセージ
+        details:
+          type: object
+          additionalProperties: true
+          description: エラー詳細情報
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION

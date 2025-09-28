@@ -44,7 +44,15 @@ const projectConfigs = tseslint.config({
 })
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage', 'build']),
+  globalIgnores([
+    'dist',
+    'coverage',
+    'build',
+    // Auto-generated files from OpenAPI
+    'src/types/**/*.gen.ts',
+    'src/types/index.ts',
+    'src/schemas/api.ts'
+  ]),
   ...projectConfigs,
   // Lint E2E and Playwright config without type-aware rules to avoid TS project lookup errors
   {
