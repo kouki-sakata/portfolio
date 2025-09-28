@@ -1,16 +1,16 @@
+import {
+  Bell,
+  Clock,
+  FileText,
+  History,
+  Home,
+  Settings,
+  Users} from 'lucide-react';
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { cn } from '@/shared/utils/cn';
+
 import { NavigationGroup, NavigationItem } from '@/shared/types/navigation';
-import {
-  Home,
-  Clock,
-  History,
-  Bell,
-  Users,
-  Settings,
-  FileText
-} from 'lucide-react';
+import { cn } from '@/shared/utils/cn';
 
 interface AppSidebarProps {
   /** サイドバーが開いているかどうか */
@@ -168,6 +168,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
           onClick={onClose}
           aria-hidden="true"
+          data-testid="sidebar-overlay"
         />
       )}
 
@@ -184,6 +185,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0',
           className
         )}
+        data-testid="app-sidebar"
       >
         {/* ヘッダー部分 */}
         <div className="p-4 border-b border-gray-200">

@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
 import { Menu, X } from 'lucide-react';
+import React, { useState } from 'react';
+
 import { cn } from '@/shared/utils/cn';
+
 import { AppSidebar } from './AppSidebar';
 
 interface MobileNavigationProps {

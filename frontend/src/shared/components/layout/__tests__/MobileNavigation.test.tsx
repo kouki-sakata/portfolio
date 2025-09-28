@@ -1,22 +1,34 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent,render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import { MobileNavigation } from '../MobileNavigation';
+
+// NavLink プロパティの型定義
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  className?: string | ((props: { isActive: boolean }) => string);
+  onClick?: React.MouseEventHandler;
+}
 
 // react-router-domのNavLinkをモック
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
-    NavLink: ({ to, children, className, onClick }: any) => (
-      <a
-        href={to}
-        className={typeof className === 'function' ? className({ isActive: false }) : className}
-        onClick={onClick}
-      >
-        {children}
-      </a>
-    ),
+    NavLink: ({ to, children, className, onClick }: NavLinkProps) => {
+      const classValue = typeof className === 'function' ? className({ isActive: false }) : className;
+      return (
+        <a
+          href={to}
+          className={classValue}
+          onClick={onClick}
+        >
+          {children}
+        </a>
+      );
+    },
   };
 });
 
@@ -107,10 +119,8 @@ describe('MobileNavigation', () => {
     fireEvent.click(menuButton);
 
     // オーバーレイをクリック
-    const overlay = document.querySelector('.bg-black.bg-opacity-50');
-    if (overlay) {
-      fireEvent.click(overlay);
-    }
+    const overlay = screen.getByTestId('sidebar-overlay');
+    fireEvent.click(overlay);
 
     // メニューが閉じているかチェック
     const reopenButton = screen.getByLabelText('メニューを開く');

@@ -1,22 +1,34 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { fireEvent,render, screen } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
 import { AppSidebar } from '../AppSidebar';
+
+// NavLink プロパティの型定義
+interface NavLinkProps {
+  to: string;
+  children: React.ReactNode;
+  className?: string | ((props: { isActive: boolean }) => string);
+  onClick?: React.MouseEventHandler;
+}
 
 // react-router-domのNavLinkをモック
 vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
   return {
     ...actual,
-    NavLink: ({ to, children, className, onClick }: any) => (
-      <a
-        href={to}
-        className={typeof className === 'function' ? className({ isActive: false }) : className}
-        onClick={onClick}
-      >
-        {children}
-      </a>
-    ),
+    NavLink: ({ to, children, className, onClick }: NavLinkProps) => {
+      const classValue = typeof className === 'function' ? className({ isActive: false }) : className;
+      return (
+        <a
+          href={to}
+          className={classValue}
+          onClick={onClick}
+        >
+          {children}
+        </a>
+      );
+    },
   };
 });
 
@@ -83,8 +95,8 @@ describe('AppSidebar', () => {
       </AppSidebarWrapper>
     );
 
-    // オーバーレイ要素が存在する（bg-black bg-opacity-50のクラスを持つ要素）
-    const overlay = document.querySelector('.bg-black.bg-opacity-50');
+    // オーバーレイ要素が存在する
+    const overlay = screen.getByTestId('sidebar-overlay');
     expect(overlay).toBeInTheDocument();
   });
 
@@ -98,11 +110,9 @@ describe('AppSidebar', () => {
     );
 
     // オーバーレイをクリック
-    const overlay = document.querySelector('.bg-black.bg-opacity-50');
-    if (overlay) {
-      fireEvent.click(overlay);
-      expect(onCloseMock).toHaveBeenCalledTimes(1);
-    }
+    const overlay = screen.getByTestId('sidebar-overlay');
+    fireEvent.click(overlay);
+    expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 
   it('onCloseコールバックが呼ばれる - 閉じるボタンクリック', () => {
@@ -145,7 +155,7 @@ describe('AppSidebar', () => {
     );
 
     // asideエレメントにカスタムクラスが適用されている
-    const sidebar = document.querySelector('aside');
+    const sidebar = screen.getByTestId('app-sidebar');
     expect(sidebar).toHaveClass(customClass);
   });
 
@@ -161,7 +171,7 @@ describe('AppSidebar', () => {
     expect(closeButton).toBeInTheDocument();
 
     // オーバーレイのaria-hidden
-    const overlay = document.querySelector('[aria-hidden="true"]');
-    expect(overlay).toBeInTheDocument();
+    const overlay = screen.getByTestId('sidebar-overlay');
+    expect(overlay).toHaveAttribute('aria-hidden', 'true');
   });
 });

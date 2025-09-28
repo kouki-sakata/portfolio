@@ -1,10 +1,11 @@
-import { describe, it, expect } from 'vitest';
 import { Home, Settings } from 'lucide-react';
+import { describe, expect,it } from 'vitest';
+
 import type {
-  NavigationItem,
-  NavigationGroup,
-  SidebarState,
   MobileNavigationState,
+  NavigationGroup,
+  NavigationItem,
+  SidebarState,
 } from '../navigation';
 
 describe('Navigation Types', () => {

@@ -1,4 +1,5 @@
 import type { PropsWithChildren } from 'react';
+
 import { cn } from '@/shared/utils/cn';
 
 interface AppShellProps extends PropsWithChildren {
