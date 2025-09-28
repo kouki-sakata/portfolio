@@ -6,9 +6,9 @@ import { StrictMode } from 'react'
 
 import { queryClient } from '@/app/config/queryClient'
 import { AppRoutes } from '@/app/routes/AppRoutes'
-import { AuthProvider } from '@/features/auth/context/AuthProvider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/toaster'
+import { AuthProvider } from '@/features/auth/context/AuthProvider'
 
 export const AppProviders = () => (
   <StrictMode>

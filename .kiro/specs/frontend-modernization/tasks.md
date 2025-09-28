@@ -2,7 +2,7 @@
 
 ## UIフレームワーク基盤構築
 
-- [ ] 
+- [x] 
     1. TailwindCSS v4とVite統合の設定
 
     - npm install -D tailwindcss@next @tailwindcss/vite をインストール
@@ -11,7 +11,7 @@
     - frontend/src/styles/globals.cssにTailwindディレクティブを追加
     - _Requirements: 3.3, 6.1_
 
-- [ ] 
+- [x] 
     2. shadcn/ui初期設定とコンポーネントインストール
 
     - npx shadcn@latest initでコンポーネントライブラリを初期化
@@ -20,7 +20,7 @@
     - ダークモードサポートのためのテーマプロバイダーを設定
     - _Requirements: 3.1, 3.4_
 
-- [ ]
+- [x]
     3. コンポーネントラッパー層の実装
 
     - frontend/src/shared/components/ui-wrapper/にラッパーコンポーネントディレクトリを作成
