@@ -31,6 +31,8 @@
 - **Tailwind CSS 4**: ユーティリティファーストCSS（v4.1.13）
 - **Lucide React**: アイコンライブラリ（v0.544.0）
 - **class-variance-authority**: コンポーネントバリアント管理（v0.7.1）
+- **clsx**: 動的クラス名結合（v2.1.1）
+- **tailwind-merge**: Tailwindクラス競合解決（v3.3.1）
 - **レスポンシブデザイン**: モバイルファースト設計
 
 ### 開発ツール

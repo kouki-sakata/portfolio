@@ -271,6 +271,10 @@ frontend/
 - **機能ベース**: features/配下に機能別モジュール
 - **共通コンポーネント**: shared/に再利用可能なコンポーネント
 - **型定義**: 各機能のtypes/に型定義を集約
+- **SOLID原則の適用**:
+  - 単一責任の原則: 各コンポーネント・サービスの責務を明確化
+  - 開放閉鎖原則: 拡張可能な設計パターンの採用
+  - 依存性逆転の原則: インターフェース・抽象化の活用
 
 ### API設計パターン
 - **RESTful**: リソースベースのAPI設計
@@ -342,8 +346,12 @@ import type { User } from '@/shared/types';
 ### フロントエンド
 - **単一責任の原則**: コンポーネントは一つの責務
 - **状態管理**: React QueryによるサーバーState管理
-- **型安全性**: TypeScript strictモード
+- **型安全性**: TypeScript strictモード（exactOptionalPropertyTypes除く）
 - **再利用性**: 共通コンポーネントの活用
+- **コード品質管理**:
+  - ESLint 9 Flat Config: モダンな設定形式
+  - TypeScript ESLint: 型安全なリンティング
+  - Prettier統合: 一貫したコードフォーマット
 
 ## ビルド成果物
 
