@@ -94,9 +94,7 @@ export const AuthProviderRefactored = ({
       // TODO: CSRF実装時に更新
     },
   }), [
-    sessionQuery.data,
-    sessionQuery.isLoading,
-    sessionQuery.refetch,
+    sessionQuery,
     loginMutation,
     logoutMutation,
   ])

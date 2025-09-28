@@ -114,7 +114,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     return response.employee
   }
 
-  const handleLogout = async () => {
+  const handleLogout = useCallback(async () => {
     try {
       await logoutMutation.mutateAsync()
     } catch (error) {
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
       setSessionTimeoutWarning(false)
       setTimeUntilExpiry(null)
     }
-  }
+  }, [logoutMutation, sessionManager])
 
   const refreshCsrfToken = useCallback(() => {
     setCsrfToken(getCsrfToken())
@@ -163,8 +163,11 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
   // グローバル401エラーハンドラーの設定
   useEffect(() => {
+    // ESLintのno-misused-promisesルールを回避
+    // handleLogoutは非同期関数だが、エラーハンドラー内で適切に処理される
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     configureQueryClientErrorHandler(handleLogout, navigate)
-  }, [navigate])
+  }, [navigate, handleLogout])
 
   // セッション変更の監視
   useEffect(() => {
@@ -236,7 +239,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
         clearInterval(sessionCheckInterval.current)
       }
     }
-  }, [sessionInfo, mergedConfig.sessionConfig.warningBeforeExpiry])
+  }, [sessionInfo, mergedConfig.sessionConfig.warningBeforeExpiry, handleLogout])
 
   const authenticated = sessionQuery.data?.authenticated ?? false
 

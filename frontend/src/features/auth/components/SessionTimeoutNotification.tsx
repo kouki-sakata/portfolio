@@ -42,7 +42,7 @@ export const SessionTimeoutNotification = () => {
         description: 'セッションが延長されました。',
         variant: 'default',
       })
-    }).catch((error) => {
+    }).catch((error: unknown) => {
       toast({
         title: 'セッション延長エラー',
         description: 'セッションの延長に失敗しました。',

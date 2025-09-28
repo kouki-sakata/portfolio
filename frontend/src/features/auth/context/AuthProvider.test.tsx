@@ -130,6 +130,7 @@ describe('AuthProvider', () => {
       })
 
       // SessionManagerが呼ばれることを確認
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockSessionManager.setSession).toHaveBeenCalledWith(mockEmployee)
     })
 
@@ -144,6 +145,7 @@ describe('AuthProvider', () => {
 
       expect(result.current.authenticated).toBe(false)
       expect(result.current.user).toBeNull()
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockSessionManager.setSession).not.toHaveBeenCalled()
     })
   })
@@ -168,6 +170,7 @@ describe('AuthProvider', () => {
         expect(result.current.user).toBeNull()
       })
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockSessionManager.clearSession).toHaveBeenCalled()
     })
 
@@ -190,6 +193,7 @@ describe('AuthProvider', () => {
         expect(result.current.user).toBeNull()
       })
 
+      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(mockSessionManager.clearSession).toHaveBeenCalled()
     })
   })
@@ -335,7 +339,7 @@ describe('AuthProvider', () => {
   describe('セッション変更リスナー', () => {
     it('SessionManagerのセッション変更を検知する', async () => {
       const mockCallback = vi.fn()
-      mockSessionManager.onSessionChange = vi.fn((callback) => {
+      mockSessionManager.onSessionChange = vi.fn((callback: (sessionData: EmployeeSummary | null) => void) => {
         mockCallback.mockImplementation(callback)
         return () => {
           // cleanup
@@ -347,6 +351,7 @@ describe('AuthProvider', () => {
       renderHook(() => useAuth(), { wrapper: createWrapper })
 
       await waitFor(() => {
+        // eslint-disable-next-line @typescript-eslint/unbound-method
         expect(mockSessionManager.onSessionChange).toHaveBeenCalled()
       })
 

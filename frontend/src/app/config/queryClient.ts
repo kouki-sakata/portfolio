@@ -1,4 +1,4 @@
-import { QueryClient, QueryCache } from '@tanstack/react-query'
+import { QueryCache,QueryClient } from '@tanstack/react-query'
 
 import { createGlobalErrorHandler } from '@/app/config/error-interceptor'
 
