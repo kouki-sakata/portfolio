@@ -1,12 +1,10 @@
+import type { VariantProps } from "class-variance-authority";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
-
 import {
+  type buttonVariants,
   Button as ShadcnButton,
-  buttonVariants,
 } from "@/components/ui/button";
-import { type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-
 import { useFeatureFlag } from "../../hooks/use-feature-flag";
 
 export interface ButtonWrapperProps
