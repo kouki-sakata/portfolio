@@ -128,6 +128,10 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - React Hook Form + Zodによるフォームバリデーション
   - shadcn/uiのFormコンポーネント導入
   - アクセシビリティとUX改善
+- ✅ React Query認証フックの実装（完了 - 2025-09-29）
+  - セッション管理用カスタムフック（useSession、useLogin、useLogout、useAuthContext）
+  - QueryClient設定の最適化（staleTime、gcTime、retry戦略）
+  - 認証状態の統一管理
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー

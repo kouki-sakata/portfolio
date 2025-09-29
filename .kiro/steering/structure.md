@@ -212,7 +212,14 @@ frontend/
 │   │   │   │   ├── logout.ts    # ログアウトAPI
 │   │   │   │   └── session.ts   # セッション確認API
 │   │   │   ├── components/
+│   │   │   │   └── SignInPage.tsx # ログインページ（shadcn/ui化）
+│   │   │   ├── contexts/
+│   │   │   │   └── AuthContext.tsx # 認証コンテキスト
 │   │   │   ├── hooks/
+│   │   │   │   ├── useAuthContext.ts # 認証コンテキストフック
+│   │   │   │   ├── useLogin.ts      # ログインフック
+│   │   │   │   ├── useLogout.ts     # ログアウトフック
+│   │   │   │   └── useSession.ts    # セッション管理フック
 │   │   │   └── types/
 │   │   ├── employees/ # 従業員管理
 │   │   │   ├── api/      # APIクライアント実装

@@ -24,6 +24,9 @@
 
 ### UIライブラリ
 - **React Query 5**: サーバー状態管理（v5.90.2）
+  - QueryClient最適化設定（staleTime: 5分、gcTime: 10分）
+  - 認証フック統合（useSession、useLogin、useLogout）
+  - エラーリトライ戦略（exponential backoff、最大3回）
 - **shadcn/ui**: Radix UIベースのコンポーネントライブラリ
   - Radix UI React Label (v2.1.7)
   - Radix UI React Slot (v1.2.3)
@@ -80,7 +83,10 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
   - `employees/api/`: 従業員管理API
   - `home/api/`: ダッシュボード、打刻機能
   - `stampHistory/api/`: 打刻履歴管理
-- **React Query統合**: 各APIクライアントがuseQuery/useMutationと連携
+- **React Query統合**:
+  - 各APIクライアントがuseQuery/useMutationと連携
+  - カスタムフック実装（useSession、useLogin、useLogout、useAuthContext）
+  - 最適化されたキャッシュ戦略（staleTime、gcTime設定）
 - **エラーハンドリング**: 統一されたエラー処理パターン
 - **型安全性**: OpenAPIスキーマによる完全な型保証
 
