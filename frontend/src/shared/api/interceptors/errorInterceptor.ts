@@ -118,7 +118,11 @@ function handleResponseError(
     extractCode?: (data: unknown) => string | undefined;
   }
 ): never {
-  const { status, statusText, data } = error.response!;
+  // Type guard: we know response exists because this is called after checking
+  if (!error.response) {
+    throw new ApiError("No response received", 0, "NO_RESPONSE");
+  }
+  const { status, statusText, data } = error.response;
   const { skipUnauthorizedEvent, extractMessage, extractCode } = options;
 
   const message = extractErrorMessage(data, statusText, extractMessage);
@@ -153,28 +157,32 @@ export function createErrorInterceptor(
       return response;
     },
 
-    responseError: async (error: unknown): Promise<never> => {
-      // If it's not an Axios error, re-throw it
-      if (!isAxiosError(error)) {
-        throw error;
-      }
+    responseError: (error: unknown): Promise<never> => {
+      try {
+        // If it's not an Axios error, re-throw it
+        if (!isAxiosError(error)) {
+          throw error;
+        }
 
-      // Handle timeout errors
-      if (error.code === "ECONNABORTED") {
-        handleTimeoutError(error);
-      }
+        // Handle timeout errors
+        if (error.code === "ECONNABORTED") {
+          handleTimeoutError(error);
+        }
 
-      // Handle response errors
-      if (error.response) {
-        handleResponseError(error, {
-          skipUnauthorizedEvent,
-          extractMessage,
-          extractCode,
-        });
-      }
+        // Handle response errors
+        if (error.response) {
+          handleResponseError(error, {
+            skipUnauthorizedEvent,
+            extractMessage,
+            extractCode,
+          });
+        }
 
-      // Handle network errors (no response)
-      handleNetworkError(error);
+        // Handle network errors (no response)
+        handleNetworkError(error);
+      } catch (e) {
+        return Promise.reject(e);
+      }
     },
   };
 }
