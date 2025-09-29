@@ -14,5 +14,5 @@ export const fetchStampHistory = async (params: {
   }
   const query = url.toString();
   const path = query ? `/stamp-history?${query}` : "/stamp-history";
-  return httpClient<StampHistoryResponse>(path);
+  return await httpClient<StampHistoryResponse>(path);
 };

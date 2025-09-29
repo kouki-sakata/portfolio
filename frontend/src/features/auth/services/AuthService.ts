@@ -22,10 +22,7 @@ export type IAuthService = {
  * 認証エラー
  */
 export class AuthenticationError extends Error {
-  public readonly code:
-    | "INVALID_CREDENTIALS"
-    | "SESSION_EXPIRED"
-    | "NETWORK_ERROR";
+  readonly code: "INVALID_CREDENTIALS" | "SESSION_EXPIRED" | "NETWORK_ERROR";
 
   constructor(
     message: string,

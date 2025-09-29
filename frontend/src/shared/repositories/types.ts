@@ -72,26 +72,26 @@ export type PaginatedResponse<T> = {
  * 基本リポジトリインターフェース
  * Single Responsibility Principle (SRP)に準拠
  */
-export type IRepository<T, ID = string | number> = {
-  findById(id: ID): Promise<T | null>;
+export type Repository<T, Id = string | number> = {
+  findById(id: Id): Promise<T | null>;
   findAll(): Promise<T[]>;
   save(entity: T): Promise<T>;
-  delete(id: ID): Promise<void>;
+  delete(id: Id): Promise<void>;
 };
 
 /**
  * 読み取り専用リポジトリ
  * Interface Segregation Principle (ISP)に準拠
  */
-export type IReadOnlyRepository<T, ID = string | number> = {
-  findById(id: ID): Promise<T | null>;
+export type ReadOnlyRepository<T, Id = string | number> = {
+  findById(id: Id): Promise<T | null>;
   findAll(): Promise<T[]>;
 };
 
 /**
  * ページネーション対応リポジトリ
  */
-export interface IPaginatedRepository<T, ID = string | number>
-  extends IRepository<T, ID> {
+export interface PaginatedRepository<T, Id = string | number>
+  extends Repository<T, Id> {
   findPaginated(params: PaginationParams): Promise<PaginatedResponse<T>>;
 }

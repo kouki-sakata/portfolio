@@ -29,7 +29,11 @@ export const HomePage = () => {
     mutationFn: submitStamp,
     onSuccess: (response) => {
       setResultMessage(response.message);
-      void queryClient.invalidateQueries({ queryKey: HOME_DASHBOARD_KEY });
+      queryClient
+        .invalidateQueries({ queryKey: HOME_DASHBOARD_KEY })
+        .catch(() => {
+          // エラーハンドリングは不要（キャッシュ無効化の失敗は次回フェッチで解決）
+        });
     },
     onError: () => {
       setResultMessage("打刻に失敗しました。再度お試しください。");
@@ -83,7 +87,9 @@ export const HomePage = () => {
               className="button"
               disabled={stampMutation.isPending}
               onClick={() => {
-                void handleStamp("1");
+                handleStamp("1").catch(() => {
+                  // エラーハンドリングはonErrorで処理済み
+                });
               }}
               type="button"
             >
@@ -93,7 +99,9 @@ export const HomePage = () => {
               className="button"
               disabled={stampMutation.isPending}
               onClick={() => {
-                void handleStamp("2");
+                handleStamp("2").catch(() => {
+                  // エラーハンドリングはonErrorで処理済み
+                });
               }}
               type="button"
             >

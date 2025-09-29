@@ -26,7 +26,11 @@ const raiseError = async (response: Response): Promise<never> => {
   try {
     payload = await response.clone().json();
   } catch {
-    payload = await response.text().catch(() => {});
+    // JSONパースに失敗した場合はテキストとして取得
+    payload = await response.text().catch(() => {
+      // テキスト取得も失敗した場合は空を返す
+      return "";
+    });
   }
 
   const httpError = new Error(response.statusText) as HttpClientError;

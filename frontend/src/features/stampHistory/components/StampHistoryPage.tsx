@@ -49,7 +49,9 @@ export const StampHistoryPage = () => {
       <form
         className="history__filters"
         onSubmit={(event) => {
-          void handleSubmit(event);
+          handleSubmit(event).catch(() => {
+            // エラーハンドリングは handleSubmit 内で処理済み
+          });
         }}
       >
         <label className="history__label" htmlFor="year">

@@ -23,7 +23,11 @@ export const useStamp = (
     mutationFn: (request: StampRequest) => repository.submitStamp(request),
     onSuccess: (response: StampResponse) => {
       setMessage(response.message);
-      void queryClient.invalidateQueries({ queryKey: HOME_DASHBOARD_KEY });
+      queryClient
+        .invalidateQueries({ queryKey: HOME_DASHBOARD_KEY })
+        .catch(() => {
+          // エラーハンドリングは不要（キャッシュ無効化の失敗は次回フェッチで解決）
+        });
     },
     onError: () => {
       setMessage("打刻に失敗しました。再度お試しください。");

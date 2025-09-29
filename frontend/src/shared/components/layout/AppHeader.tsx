@@ -24,7 +24,7 @@ export const AppHeader = ({ className }: AppHeaderProps) => {
 
   const handleSignOut = async () => {
     await logout();
-    void navigate("/signin");
+    navigate("/signin");
   };
 
   if (!authenticated) {
@@ -138,7 +138,9 @@ export const AppHeader = ({ className }: AppHeaderProps) => {
                   <button
                     className="block w-full px-4 py-2 text-left text-red-600 text-sm transition-colors hover:bg-gray-50"
                     onClick={() => {
-                      void handleSignOut();
+                      handleSignOut().catch(() => {
+                        // エラーハンドリングはlogout内で処理済み
+                      });
                     }}
                     type="button"
                   >

@@ -1,4 +1,4 @@
-import * as React from "react";
+import { type ReactNode, useEffect, useState } from "react";
 
 import type { ToastActionElement, ToastProps } from "@/components/ui/toast";
 
@@ -7,8 +7,8 @@ const TOAST_REMOVE_DELAY = 1_000_000;
 
 type ToasterToast = ToastProps & {
   id: string;
-  title?: React.ReactNode;
-  description?: React.ReactNode;
+  title?: ReactNode;
+  description?: ReactNode;
   action?: ToastActionElement;
 };
 
@@ -83,9 +83,9 @@ export const reducer = (state: State, action: Action): State => {
       if (toastId) {
         addToRemoveQueue(toastId);
       } else {
-        state.toasts.forEach((toast) => {
-          addToRemoveQueue(toast.id);
-        });
+        for (const toastItem of state.toasts) {
+          addToRemoveQueue(toastItem.id);
+        }
       }
 
       return {
@@ -111,6 +111,8 @@ export const reducer = (state: State, action: Action): State => {
         ...state,
         toasts: state.toasts.filter((t) => t.id !== action.toastId),
       };
+    default:
+      return state;
   }
 };
 
@@ -120,9 +122,9 @@ let memoryState: State = { toasts: [] };
 
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action);
-  listeners.forEach((listener) => {
+  for (const listener of listeners) {
     listener(memoryState);
-  });
+  }
 }
 
 type Toast = Omit<ToasterToast, "id">;
@@ -130,10 +132,10 @@ type Toast = Omit<ToasterToast, "id">;
 function toast({ ...props }: Toast) {
   const id = genId();
 
-  const update = (props: ToasterToast) => {
+  const update = (toastProps: ToasterToast) => {
     dispatch({
       type: "UPDATE_TOAST",
-      toast: { ...props, id },
+      toast: { ...toastProps, id },
     });
   };
   const dismiss = () => {
@@ -162,9 +164,9 @@ function toast({ ...props }: Toast) {
 }
 
 function useToast() {
-  const [state, setState] = React.useState<State>(memoryState);
+  const [state, setState] = useState<State>(memoryState);
 
-  React.useEffect(() => {
+  useEffect(() => {
     listeners.push(setState);
     return () => {
       const index = listeners.indexOf(setState);
