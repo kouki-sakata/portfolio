@@ -7,7 +7,7 @@ import {
   type PaginationState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -58,6 +58,12 @@ export function DataTable<TData, TValue = unknown>({
   // 使用するページネーション状態を決定
   const pagination = controlledPagination || internalPagination;
   const setPagination = onPaginationChange || setInternalPagination;
+
+  // スケルトンローディング用の安定したID生成
+  const skeletonIds = useMemo(
+    () => Array.from({ length: 5 }, () => crypto.randomUUID()),
+    []
+  );
 
   // TanStack Tableインスタンスの作成
   const table = useReactTable({
@@ -133,8 +139,8 @@ export function DataTable<TData, TValue = unknown>({
   if (loading && data.length === 0) {
     return (
       <div className="w-full space-y-4">
-        {Array.from({ length: 5 }).map((_, index) => (
-          <Skeleton className="h-12 w-full" key={`skeleton-${index}`} />
+        {skeletonIds.map((id) => (
+          <Skeleton className="h-12 w-full" key={id} />
         ))}
       </div>
     );
@@ -159,10 +165,9 @@ export function DataTable<TData, TValue = unknown>({
       </div>
 
       {/* テーブル本体 */}
-      <div
+      <section
         aria-label="データテーブル"
         className="relative w-full overflow-auto rounded-md border"
-        role="region"
         style={fixedHeight ? { height: fixedHeight } : undefined}
       >
         <Table>
@@ -241,12 +246,11 @@ export function DataTable<TData, TValue = unknown>({
           <div
             aria-live="polite"
             className="absolute inset-0 flex items-center justify-center bg-background/50"
-            role="status"
           >
             <div className="text-muted-foreground text-sm">読み込み中...</div>
           </div>
         )}
-      </div>
+      </section>
 
       {/* ページネーション */}
       <DataTablePagination
