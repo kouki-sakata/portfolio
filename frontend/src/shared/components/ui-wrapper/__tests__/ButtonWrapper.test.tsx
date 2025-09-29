@@ -75,7 +75,7 @@ describe("ButtonWrapper", () => {
       );
 
       const button = screen.getByRole("button", { name: "Delete" });
-      expect(button.className).toContain("bg-red-500");
+      expect(button.className).toContain("bg-destructive");
     });
 
     it("should support size prop with shadcn/ui", () => {
@@ -87,7 +87,7 @@ describe("ButtonWrapper", () => {
 
       const button = screen.getByRole("button", { name: "Large Button" });
       expect(button.className).toContain("h-10");
-      expect(button.className).toContain("px-8");
+      expect(button.className).toContain("px-6");
     });
   });
 

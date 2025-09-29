@@ -1,18 +1,17 @@
+import type { VariantProps } from "class-variance-authority";
 import { type ButtonHTMLAttributes, forwardRef, type ReactNode } from "react";
-
 import {
+  type buttonVariants,
   Button as ShadcnButton,
-  type ButtonProps as ShadcnButtonProps,
 } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-
 import { useFeatureFlag } from "../../hooks/use-feature-flag";
 
 export interface ButtonWrapperProps
   extends ButtonHTMLAttributes<HTMLButtonElement> {
   children?: ReactNode;
-  variant?: ShadcnButtonProps["variant"];
-  size?: ShadcnButtonProps["size"];
+  variant?: VariantProps<typeof buttonVariants>["variant"];
+  size?: VariantProps<typeof buttonVariants>["size"];
   asChild?: boolean;
   loading?: boolean;
 }

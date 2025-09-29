@@ -60,6 +60,7 @@
             "noVoid": "off" // テストファイルではvoidを許可
           },
           "performance": {
+            "noNamespaceImport": "off", // Vitestのvi.spyOnでモック化するためのnamespace importを許可
             "useTopLevelRegex": "off" // テストファイルでは正規表現の定数化を不要とする
           }
         }

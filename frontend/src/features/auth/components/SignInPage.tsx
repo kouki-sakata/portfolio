@@ -1,20 +1,42 @@
-import { type FormEvent, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import {
+  type LoginFormData,
+  loginSchema,
+} from "@/features/auth/schemas/loginSchema";
 import type { HttpClientError } from "@/shared/api/httpClient";
 
 export const SignInPage = () => {
   const navigate = useNavigate();
   const { login, loading } = useAuth();
-  const [formState, setFormState] = useState({ email: "", password: "" });
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const form = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onBlur",
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
     setError(null);
     try {
-      await login(formState);
+      await login(data);
       void navigate("/");
     } catch (err) {
       // ログイン失敗時の詳細はユーザーに開示しない（セキュリティ/UX）ため、常に同一メッセージを表示
@@ -31,51 +53,60 @@ export const SignInPage = () => {
   return (
     <div aria-live="polite" className="auth-card">
       <h1 className="auth-card__title">TeamDevelop Bravo にサインイン</h1>
-      <form
-        className="auth-card__form"
-        onSubmit={(event) => {
-          void handleSubmit(event);
-        }}
-      >
-        <label className="auth-card__label" htmlFor="email">
-          メールアドレス
-        </label>
-        <input
-          autoComplete="email"
-          className="auth-card__input"
-          id="email"
-          name="email"
-          onChange={(event) => {
-            setFormState((prev) => ({ ...prev, email: event.target.value }));
-          }}
-          required
-          type="email"
-          value={formState.email}
-        />
+      <Form {...form}>
+        <form
+          className="auth-card__form"
+          onSubmit={form.handleSubmit(onSubmit)}
+        >
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>メールアドレス</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    autoComplete="email"
+                    className="auth-card__input"
+                    type="email"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <label className="auth-card__label" htmlFor="password">
-          パスワード
-        </label>
-        <input
-          autoComplete="current-password"
-          className="auth-card__input"
-          id="password"
-          minLength={8}
-          name="password"
-          onChange={(event) => {
-            setFormState((prev) => ({ ...prev, password: event.target.value }));
-          }}
-          required
-          type="password"
-          value={formState.password}
-        />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>パスワード</FormLabel>
+                <FormControl>
+                  <Input
+                    {...field}
+                    autoComplete="current-password"
+                    className="auth-card__input"
+                    type="password"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        {error ? <p className="auth-card__error">{error}</p> : null}
+          {error ? <p className="auth-card__error">{error}</p> : null}
 
-        <button className="auth-card__submit" disabled={loading} type="submit">
-          {loading ? "サインイン中…" : "サインイン"}
-        </button>
-      </form>
+          <Button
+            className="auth-card__submit"
+            disabled={loading}
+            type="submit"
+          >
+            {loading ? "サインイン中…" : "サインイン"}
+          </Button>
+        </form>
+      </Form>
     </div>
   );
 };

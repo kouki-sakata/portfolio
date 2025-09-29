@@ -67,7 +67,7 @@
     - 401エラー時の自動リダイレクト処理を実装
     - _Requirements: 5.3, 5.5_
 
-- [ ] 
+- [x]
     8. SignInPageのshadcn/ui実装
 
     - ログインフォームをshadcn/uiコンポーネントで作成
