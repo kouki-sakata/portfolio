@@ -32,7 +32,9 @@ describe("csrfInterceptor", () => {
   describe("request interceptor", () => {
     it("should add CSRF token to headers when token exists in cookie", () => {
       const mockToken = "test-csrf-token-123";
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(mockToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockToken
+      );
 
       const result = csrfInterceptor.request(mockConfig);
 
@@ -41,7 +43,9 @@ describe("csrfInterceptor", () => {
     });
 
     it("should not add CSRF token header when token does not exist in cookie", () => {
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(undefined);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        undefined
+      );
 
       const result = csrfInterceptor.request(mockConfig);
 
@@ -54,7 +58,9 @@ describe("csrfInterceptor", () => {
       const cookieToken = "cookie-token";
 
       mockConfig.headers["X-XSRF-TOKEN"] = existingToken;
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(cookieToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        cookieToken
+      );
 
       const result = csrfInterceptor.request(mockConfig);
 
@@ -76,7 +82,9 @@ describe("csrfInterceptor", () => {
       });
 
       const mockToken = "custom-token";
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(mockToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockToken
+      );
 
       const result = customInterceptor.request(mockConfig);
 
@@ -91,7 +99,9 @@ describe("csrfInterceptor", () => {
       });
 
       const mockToken = "custom-token";
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(mockToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockToken
+      );
 
       const result = customInterceptor.request(mockConfig);
 
@@ -110,7 +120,9 @@ describe("csrfInterceptor", () => {
       } as InternalAxiosRequestConfig;
 
       const mockToken = "test-token";
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(mockToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockToken
+      );
 
       const result = interceptor.request(getConfig);
 
@@ -129,7 +141,9 @@ describe("csrfInterceptor", () => {
       } as InternalAxiosRequestConfig;
 
       const mockToken = "test-token";
-      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(mockToken);
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        mockToken
+      );
 
       const result = interceptor.request(postConfig);
 

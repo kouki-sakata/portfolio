@@ -1,14 +1,14 @@
 import axios, {
   type AxiosInstance,
-  type CreateAxiosDefaults,
   type AxiosRequestConfig,
+  type CreateAxiosDefaults,
 } from "axios";
 import { getEnv } from "@/shared/lib/env";
 import { createCsrfInterceptor } from "./interceptors/csrfInterceptor";
 import { createErrorInterceptor } from "./interceptors/errorInterceptor";
 
 // Custom configuration options for interceptors
-export interface CustomApiOptions {
+export type CustomApiOptions = {
   skipCsrfToken?: boolean;
   skipErrorInterceptor?: boolean;
   csrfOptions?: {
@@ -21,13 +21,17 @@ export interface CustomApiOptions {
     extractMessage?: (data: unknown) => string | undefined;
     extractCode?: (data: unknown) => string | undefined;
   };
-}
+};
 
 // Options for creating an API client instance
-export interface ApiClientOptions extends CreateAxiosDefaults, CustomApiOptions {}
+export interface ApiClientOptions
+  extends CreateAxiosDefaults,
+    CustomApiOptions {}
 
 // Options for API request methods (convenience methods)
-export interface ApiRequestOptions extends AxiosRequestConfig, CustomApiOptions {}
+export interface ApiRequestOptions
+  extends AxiosRequestConfig,
+    CustomApiOptions {}
 
 export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
   const { apiBaseUrl } = getEnv();

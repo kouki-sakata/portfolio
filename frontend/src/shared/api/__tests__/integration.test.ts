@@ -27,7 +27,9 @@ describe("API Client Integration Tests", () => {
     it("should make successful GET request with CSRF token", async () => {
       // Setup CSRF token
       const csrfToken = "test-csrf-token";
-      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(csrfToken);
+      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(
+        csrfToken
+      );
 
       // Create client and mock
       const client = createApiClient();
@@ -174,7 +176,9 @@ describe("API Client Integration Tests", () => {
 
       // Mock CSRF token
       const csrfToken = "test-csrf-token";
-      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(csrfToken);
+      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(
+        csrfToken
+      );
 
       // Mock response
       mockInstance.onGet("/api/test").reply(200, {});
