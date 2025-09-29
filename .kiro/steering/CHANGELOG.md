@@ -1,5 +1,42 @@
 # Steering Documents Changelog
 
+## 2025-09-29 (Update 5)
+
+### Updated Documents
+- `product.md` - HomePageダッシュボードのshadcn/ui化完了状態を追加
+- `tech.md` - カスタムカードコンポーネントとReact Queryダッシュボード同期を追加
+- `structure.md` - HomePageコンポーネント構造の詳細を更新
+
+### Key Changes
+
+#### HomePageダッシュボードのshadcn/ui化（最新コミット）
+- ダッシュボードコンポーネントの実装
+  - `HomePage.tsx`: メインダッシュボードコンポーネント
+  - `StampCard.tsx`: 打刻機能カード（shadcn/ui統合）
+  - `NewsCard.tsx`: お知らせ表示カード（shadcn/ui統合）
+- Tailwind CSS v4によるレスポンシブデザイン
+  - モバイルファーストのグリッドレイアウト
+  - コンテナクエリ対応
+- React Query統合
+  - ダッシュボードデータのリアルタイム更新
+  - 楽観的更新とキャッシュ無効化
+  - PageLoaderによる読み込み状態管理
+
+#### 技術的改善
+- TypeScriptベストプラクティスの適用
+  - 型ガードとnullチェックの強化
+  - useMemoによるパフォーマンス最適化
+- エラーハンドリングの改善
+  - ユーザーフレンドリーなエラーメッセージ
+  - フォールバック処理の実装
+
+### Impact
+- **UX向上**: スムーズなダッシュボード体験
+- **パフォーマンス**: 効率的なデータフェッチングと更新
+- **保守性**: コンポーネントベースの構造化
+
+---
+
 ## 2025-09-29 (Update 4)
 
 ### Updated Documents

@@ -132,6 +132,11 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - セッション管理用カスタムフック（useSession、useLogin、useLogout、useAuthContext）
   - QueryClient設定の最適化（staleTime、gcTime、retry戦略）
   - 認証状態の統一管理
+- ✅ HomePageダッシュボードのshadcn/ui化（完了 - 2025-09-29）
+  - StampCard/NewsCardコンポーネントの実装
+  - Tailwind CSS v4によるレスポンシブデザイン
+  - React Query統合によるリアルタイムデータ更新
+  - PageLoaderによる読み込み状態の改善
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー

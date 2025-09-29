@@ -27,11 +27,13 @@
   - QueryClient最適化設定（staleTime: 5分、gcTime: 10分）
   - 認証フック統合（useSession、useLogin、useLogout）
   - エラーリトライ戦略（exponential backoff、最大3回）
+  - ダッシュボードデータのリアルタイム同期
 - **shadcn/ui**: Radix UIベースのコンポーネントライブラリ
   - Radix UI React Label (v2.1.7)
   - Radix UI React Slot (v1.2.3)
   - Radix UI React Toast (v1.2.15)
   - Button、Form、Input、Label、Toast等の基本UIコンポーネント実装済み
+  - カスタムカードコンポーネント（StampCard、NewsCard）実装済み
 - **React Hook Form**: フォーム状態管理（v7.53.0）
   - Zod統合によるランタイムバリデーション
   - 高パフォーマンスな非制御コンポーネント

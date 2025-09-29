@@ -231,6 +231,9 @@ frontend/
 │   │   │   │   ├── homeDashboard.ts # ダッシュボード情報取得
 │   │   │   │   └── stamp.ts         # 打刻機能
 │   │   │   ├── components/
+│   │   │   │   ├── HomePage.tsx     # メインダッシュボード
+│   │   │   │   ├── StampCard.tsx    # 打刻カードコンポーネント
+│   │   │   │   └── NewsCard.tsx     # お知らせカードコンポーネント
 │   │   │   └── types/
 │   │   └── stampHistory/    # 打刻履歴
 │   │       ├── api/      # APIクライアント実装
