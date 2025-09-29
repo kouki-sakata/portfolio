@@ -37,8 +37,7 @@ TeamDevelopBravo-main/
 ├── .nvmrc            # Node.jsバージョン指定
 ├── .project          # Eclipseプロジェクト設定
 ├── AGENTS.md         # エージェント設定ドキュメント
-├── biome.jsonc       # Biome設定
-├── biome.jsonc       # Biome設定
+├── biome.jsonc       # Biome統合コード品質設定
 ├── build.gradle      # Gradleビルド設定
 ├── CLAUDE.md         # Claude AI指示書
 ├── docker-compose.yml # Docker Compose設定
@@ -349,9 +348,9 @@ import type { User } from '@/shared/types';
 - **型安全性**: TypeScript strictモード（exactOptionalPropertyTypes除く）
 - **再利用性**: 共通コンポーネントの活用
 - **コード品質管理**:
-  - Biome: 統合リンティング・フォーマット
+  - Biome: ESLint/Prettierからの完全移行による統合管理
   - TypeScript strict mode: 型安全性の強化
-  - 高速な開発フィードバック
+  - 高速な開発フィードバック（Biomeは従来ツールより10倍高速）
 
 ## ビルド成果物
 
@@ -381,7 +380,7 @@ frontend/dist/
 - `settings.gradle`: Gradleプロジェクト設定
 - `package.json`: Node.js依存関係
 - `vite.config.ts`: Viteビルド設定
-- `biome.jsonc`: Biomeコード品質設定
+- `biome.jsonc`: Biome統合コード品質設定（linter + formatter）
 
 ### 開発環境設定
 - `.env.example`: 環境変数テンプレート
@@ -392,6 +391,22 @@ frontend/dist/
 - `.github/workflows/ci.yml`: メインCIパイプライン
 - `.github/workflows/feature.yml`: フィーチャーブランチ検証
 - `Dockerfile`: コンテナイメージ定義
+
+## コード品質管理
+
+### Biome設定構造
+- **継承**: Ultracite設定をベースに拡張
+- **プロジェクト固有ルール**:
+  - `noBarrelFile`: バレルファイル（index.ts）パターンを許可
+  - `useNamingConvention`: APIのsnake_case、定数の大文字を許可
+  - `useFilenamingConvention`: kebab-case、PascalCase、camelCase対応
+  - `noExcessiveCognitiveComplexity`: 最大複雑度15（警告レベル）
+- **オーバーライド設定**:
+  - UIコンポーネント: 名前空間インポート許可
+  - テストファイル: マジックナンバー・複雑度チェック無効化
+  - 認証機能: 非同期処理のvoid許可
+  - 設定ファイル: マジックナンバー許可
+  - 自動生成ファイル: リンティング無効化
 
 ## テスト構造
 

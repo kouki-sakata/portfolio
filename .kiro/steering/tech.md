@@ -40,12 +40,14 @@
   - Linter: ESLint互換の高速リンター
   - Formatter: Prettier互換の高速フォーマッター
   - 単一の設定ファイル（biome.jsonc）で管理
+  - Ultracite設定を継承しプロジェクト固有のルールを追加
 - **Vitest**: 単体テストフレームワーク（v3.2.4）
 - **Playwright**: E2Eテスト（v1.49.1）
 - **Testing Library**: React テストユーティリティ
 - **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
 - **openapi-zod-client**: OpenAPIからZodスキーマを生成（v1.18.3）
 - **Zod**: ランタイムスキーマバリデーション（v3.25.76）
+- **Ultracite**: 統合開発ツール（v5.4.4、グローバルインストール推奨）
 
 ### ビルド設定
 ```bash
