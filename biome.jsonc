@@ -94,9 +94,18 @@
         "**/schemas/api.ts",
         "**/generated/**",
         "**/*.gen.ts",
-        "**/*.generated.ts"
+        "**/*.generated.ts",
+        "frontend/src/types/**",
+        "src/types/**",
+        "**/types/index.ts"
       ],
       "linter": {
+        "enabled": false
+      },
+      "formatter": {
+        "enabled": false
+      },
+      "assist": {
         "enabled": false
       }
     }
