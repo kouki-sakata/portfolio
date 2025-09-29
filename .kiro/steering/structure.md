@@ -38,6 +38,7 @@ TeamDevelopBravo-main/
 ├── .project          # Eclipseプロジェクト設定
 ├── AGENTS.md         # エージェント設定ドキュメント
 ├── biome.jsonc       # Biome設定
+├── biome.jsonc       # Biome設定
 ├── build.gradle      # Gradleビルド設定
 ├── CLAUDE.md         # Claude AI指示書
 ├── docker-compose.yml # Docker Compose設定
@@ -245,7 +246,6 @@ frontend/
 ├── .env.example       # 環境変数テンプレート
 ├── .env.local         # ローカル設定（git-ignored）
 ├── components.json    # shadcn/ui設定
-├── eslint.config.js   # ESLint設定（Flat Config）
 ├── index.html         # HTMLテンプレート
 ├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
 ├── package.json       # 依存関係とスクリプト
@@ -349,9 +349,9 @@ import type { User } from '@/shared/types';
 - **型安全性**: TypeScript strictモード（exactOptionalPropertyTypes除く）
 - **再利用性**: 共通コンポーネントの活用
 - **コード品質管理**:
-  - ESLint 9 Flat Config: モダンな設定形式
-  - TypeScript ESLint: 型安全なリンティング
-  - Prettier統合: 一貫したコードフォーマット
+  - Biome: 統合リンティング・フォーマット
+  - TypeScript strict mode: 型安全性の強化
+  - 高速な開発フィードバック
 
 ## ビルド成果物
 
@@ -381,6 +381,7 @@ frontend/dist/
 - `settings.gradle`: Gradleプロジェクト設定
 - `package.json`: Node.js依存関係
 - `vite.config.ts`: Viteビルド設定
+- `biome.jsonc`: Biomeコード品質設定
 
 ### 開発環境設定
 - `.env.example`: 環境変数テンプレート

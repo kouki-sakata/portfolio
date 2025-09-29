@@ -36,8 +36,10 @@
 - **レスポンシブデザイン**: モバイルファースト設計
 
 ### 開発ツール
-- **ESLint 9**: コード品質管理（v9.36.0）
-- **Prettier**: コードフォーマット（v3.6.2）
+- **Biome**: 統合コード品質管理ツール（v2.2.4）
+  - Linter: ESLint互換の高速リンター
+  - Formatter: Prettier互換の高速フォーマッター
+  - 単一の設定ファイル（biome.jsonc）で管理
 - **Vitest**: 単体テストフレームワーク（v3.2.4）
 - **Playwright**: E2Eテスト（v1.49.1）
 - **Testing Library**: React テストユーティリティ
@@ -50,13 +52,15 @@
 npm run dev          # 開発サーバー起動
 npm run build        # 本番ビルド
 npm run preview      # ビルドプレビュー
-npm run lint         # ESLintチェック
-npm run lint:fix     # ESLint自動修正
+npm run lint         # Biomeリントチェック
+npm run lint:fix     # Biome自動修正
 npm run typecheck    # TypeScript型チェック
 npm run test         # Vitestテスト実行
 npm run test:watch   # テストウォッチモード
 npm run test:e2e     # Playwright E2Eテスト
-npm run format       # Prettierフォーマット
+npm run format       # Biomeフォーマット
+npm run format:check # フォーマットチェック
+npm run biome:ci     # CI用Biomeチェック
 npm run generate:api # OpenAPI仕様からTypeScript型とZodスキーマを生成
 npm run generate:api-types    # TypeScript型のみ生成
 npm run generate:zod-schemas   # Zodスキーマのみ生成
@@ -111,8 +115,7 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
 - **拡張機能**:
   - Java Extension Pack
   - Spring Boot Extension Pack
-  - ESLint
-  - Prettier
+  - Biome (VS Code)
   - GitLens
 
 ## 共通コマンド

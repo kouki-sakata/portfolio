@@ -51,9 +51,11 @@ jobs:
         working-directory: frontend
         run: npm ci
 
-      - name: Run frontend lint
-        working-directory: frontend
-        run: npm run lint
+      - name: Install root dependencies (Biome)
+        run: npm ci
+
+      - name: Run frontend lint (Biome)
+        run: npm run biome:ci
 
       - name: Run frontend tests
         working-directory: frontend

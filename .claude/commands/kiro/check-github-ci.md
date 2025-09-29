@@ -10,8 +10,10 @@ GitHub Actions CI 状況を監視して、完了まで追跡します。
 - **Coding Standards (TypeScript)**:
     - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
       must be fully type-safe.
-    - **ESLint Rules**: Adhere to the TypeScript-ESLint rulesets:
-      `strictTypeChecked` and `stylisticTypeChecked`.
+    - **Biome + ultracite Rules**: Adhere to the ultracite preset for Biome, which provides:
+      - **Strict Type Safety**: Enforces TypeScript's strictest type checking (no `any`, strict null checks, exhaustive type handling)
+      - **AI-Ready Code Quality**: Optimized for AI-generated code with comprehensive linting and formatting rules
+      - **Performance**: Rust-powered Biome engine for instant feedback during development
 
 ### 使い方
 

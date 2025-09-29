@@ -1,6 +1,24 @@
 ## Analyze Performance
 
-アプリケーションのパフォーマンスをユーザー体験の観点から分析し、改善による体感速度向上を定量化します。Core Web Vitals に基づく UX スコアを算出し、優先順位付けされた最適化戦略を提案します。
+## Implementation Notes
+
+- **Development Approach**:
+    - Utilize **context7** for all development activities.
+    - Consistently apply software development **best practices**.
+- **Coding Standards (TypeScript)**:
+    - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
+      must be fully type-safe.
+    - **Biome + ultracite Rules**: Adhere to the ultracite preset for Biome,
+      which provides:
+        - **Strict Type Safety**: Enforces TypeScript's strictest type
+          checking (no `any`, strict null checks, exhaustive type handling)
+        - **AI-Ready Code Quality**: Optimized for AI-generated code with
+          comprehensive linting and formatting rules
+        - **Performance**: Rust-powered Biome engine for instant feedback during
+          development
+
+アプリケーションのパフォーマンスをユーザー体験の観点から分析し、改善による体感速度向上を定量化します。Core
+Web Vitals に基づく UX スコアを算出し、優先順位付けされた最適化戦略を提案します。
 
 ### UX パフォーマンススコア
 
@@ -103,12 +121,12 @@ npm outdated && npm audit
 改善 ROI = (時間削減効果 + 品質向上) ÷ 実装工数
 ```
 
-| 優先度                | ユーザー体験向上 | 実装難易度 | 時間削減効果 | 具体例       | 工数 | 効果        |
-| --------------------- | ---------------- | ---------- | ------------ | ------------ | ---- | ----------- |
-| **[P0] 即実装すべき** | 高               | 低         | > 50%        | CDN 導入     | 8h   | 応答 -60%   |
-| **[P1] 早期実装推奨** | 高               | 中         | 20-50%       | 画像最適化   | 16h  | ロード -30% |
-| **[P2] 計画的実装**   | 低               | 高         | 10-20%       | コード分割   | 40h  | 初回 -15%   |
-| **[P3] 保留/様子見**  | 低               | 低         | < 10%        | 微細な最適化 | 20h  | 部分 -5%    |
+| 優先度             | ユーザー体験向上 | 実装難易度 | 時間削減効果 | 具体例    | 工数  | 効果       |
+|-----------------|----------|-------|--------|--------|-----|----------|
+| **[P0] 即実装すべき** | 高        | 低     | > 50%  | CDN 導入 | 8h  | 応答 -60%  |
+| **[P1] 早期実装推奨** | 高        | 中     | 20-50% | 画像最適化  | 16h | ロード -30% |
+| **[P2] 計画的実装**  | 低        | 高     | 10-20% | コード分割  | 40h | 初回 -15%  |
+| **[P3] 保留/様子見** | 低        | 低     | < 10%  | 微細な最適化 | 20h | 部分 -5%   |
 
 #### 優先度判定基準
 
@@ -119,14 +137,14 @@ npm outdated && npm audit
 
 ### パフォーマンス指標と UX 改善相関
 
-| 指標                | 改善幅  | 体感速度向上 | ユーザー満足度 | 実装工数 |
-| ------------------- | ------- | ------------ | -------------- | -------- |
-| **LCP (読み込み)**  | -0.5 秒 | +30%         | 離脱率 -7%     | 16h      |
-| **FID (操作反応)**  | -50ms   | +15%         | ストレス -20%  | 8h       |
-| **CLS (視覚安定)**  | -0.05   | +10%         | 誤操作 -50%    | 4h       |
-| **TTFB (サーバー)** | -200ms  | +25%         | 体感速度 +40%  | 24h      |
-| **TTI (操作可能)**  | -1.0 秒 | +35%         | 完了率 +15%    | 32h      |
-| **バンドルサイズ**  | -30%    | +20%         | 初回訪問 +25%  | 16h      |
+| 指標              | 改善幅    | 体感速度向上 | ユーザー満足度   | 実装工数 |
+|-----------------|--------|--------|-----------|------|
+| **LCP (読み込み)**  | -0.5 秒 | +30%   | 離脱率 -7%   | 16h  |
+| **FID (操作反応)**  | -50ms  | +15%   | ストレス -20% | 8h   |
+| **CLS (視覚安定)**  | -0.05  | +10%   | 誤操作 -50%  | 4h   |
+| **TTFB (サーバー)** | -200ms | +25%   | 体感速度 +40% | 24h  |
+| **TTI (操作可能)**  | -1.0 秒 | +35%   | 完了率 +15%  | 32h  |
+| **バンドルサイズ**     | -30%   | +20%   | 初回訪問 +25% | 16h  |
 
 ### 測定とツール
 

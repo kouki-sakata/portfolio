@@ -2,6 +2,23 @@
 
 エラーメッセージから根本原因を特定し、解決時間を予測して実証済みの解決策を提案します。類似エラーのパターンを学習し、即座に適切な対処法を提示します。
 
+## Implementation Notes
+
+- **Development Approach**:
+    - Utilize **context7** for all development activities.
+    - Consistently apply software development **best practices**.
+- **Coding Standards (TypeScript)**:
+    - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
+      must be fully type-safe.
+    - **Biome + ultracite Rules**: Adhere to the ultracite preset for Biome,
+      which provides:
+        - **Strict Type Safety**: Enforces TypeScript's strictest type
+          checking (no `any`, strict null checks, exhaustive type handling)
+        - **AI-Ready Code Quality**: Optimized for AI-generated code with
+          comprehensive linting and formatting rules
+        - **Performance**: Rust-powered Biome engine for instant feedback during
+          development
+
 ### 使い方
 
 ```bash
@@ -130,12 +147,12 @@ grep -E "ERROR|WARN" app.log | tail -20
 
 ### エラー分析の優先度マトリクス
 
-| 優先度            | アイコン    | 影響範囲 | 解決難易度 | 対応期限       | 説明                               |
-| ----------------- | ----------- | -------- | ---------- | -------------- | ---------------------------------- |
-| **Critical**      | 🔴 緊急対応 | 広       | 低         | 15 分以内着手  | システム全体停止、データ損失リスク |
-| **High Priority** | 🟠 早期対応 | 広       | 高         | 1 時間以内着手 | 主要機能停止、多数ユーザー影響     |
-| **Medium**        | 🟡 計画対応 | 狭       | 高         | 当日中対応     | 一部機能制限、回避策あり           |
-| **Low**           | 🟢 経過観察 | 狭       | 低         | 次回改修時     | 軽微な不具合、UX への影響小        |
+| 優先度               | アイコン    | 影響範囲 | 解決難易度 | 対応期限     | 説明                |
+|-------------------|---------|------|-------|----------|-------------------|
+| **Critical**      | 🔴 緊急対応 | 広    | 低     | 15 分以内着手 | システム全体停止、データ損失リスク |
+| **High Priority** | 🟠 早期対応 | 広    | 高     | 1 時間以内着手 | 主要機能停止、多数ユーザー影響   |
+| **Medium**        | 🟡 計画対応 | 狭    | 高     | 当日中対応    | 一部機能制限、回避策あり      |
+| **Low**           | 🟢 経過観察 | 狭    | 低     | 次回改修時    | 軽微な不具合、UX への影響小   |
 
 ### 分析プロセス
 
@@ -161,19 +178,19 @@ grep -E "ERROR|WARN" app.log | tail -20
 #### Phase 2: 根本原因分析
 
 1. **表面的症状の整理**
-   - エラーメッセージの正確な内容
-   - 発生タイミングとパターン
-   - 影響範囲の特定
+    - エラーメッセージの正確な内容
+    - 発生タイミングとパターン
+    - 影響範囲の特定
 
 2. **深層原因の特定**
-   - 5 Whys 分析の適用
-   - 依存関係の追跡
-   - 環境差異の確認
+    - 5 Whys 分析の適用
+    - 依存関係の追跡
+    - 環境差異の確認
 
 3. **仮説の検証**
-   - 最小再現コードの作成
-   - 分離テストの実行
-   - 原因の絞り込み
+    - 最小再現コードの作成
+    - 分離テストの実行
+    - 原因の絞り込み
 
 #### Phase 3: 解決策の実装
 
@@ -283,11 +300,12 @@ grep -E "ERROR|WARN" app.log | tail -20
 
 ### 注意事項
 
-- **絶対禁止**: エラーメッセージの一部のみでの判断、検証なしでの Stack Overflow 解決策の適用
+- **絶対禁止**: エラーメッセージの一部のみでの判断、検証なしでの Stack Overflow
+  解決策の適用
 - **例外条件**: 一時的な回避策は以下の 3 つの条件のみ許可
-  1. 本番環境の緊急対応 (24 時間以内に根本解決必須)
-  2. 外部サービス障害 (復旧待ちの間の代替手段)
-  3. 既知のフレームワークバグ (修正版リリース待ち)
+    1. 本番環境の緊急対応 (24 時間以内に根本解決必須)
+    2. 外部サービス障害 (復旧待ちの間の代替手段)
+    3. 既知のフレームワークバグ (修正版リリース待ち)
 - **推奨事項**: 根本原因の特定を最優先し、表面的な修正を避ける
 
 ### ベストプラクティス
