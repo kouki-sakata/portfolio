@@ -44,7 +44,12 @@
       }
     },
     {
-      "includes": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/e2e/**/*"],
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/e2e/**/*"
+      ],
       "linter": {
         "rules": {
           "style": {
@@ -61,7 +66,11 @@
       }
     },
     {
-      "includes": ["**/features/auth/**/*", "**/app/config/error-interceptor.ts", "**/app/config/queryClient.ts"],
+      "includes": [
+        "**/features/auth/**/*",
+        "**/app/config/error-interceptor.ts",
+        "**/app/config/queryClient.ts"
+      ],
       "linter": {
         "rules": {
           "complexity": {

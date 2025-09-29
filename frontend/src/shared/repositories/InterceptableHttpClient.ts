@@ -144,12 +144,8 @@ export class InterceptableHttpClient implements IHttpClient {
  */
 export const createLoggingInterceptor = (): RequestInterceptor &
   ResponseInterceptor => ({
-  onRequest: (_path, options) => {
-    return options;
-  },
-  onResponse: (response) => {
-    return response;
-  },
+  onRequest: (_path, options) => options,
+  onResponse: (response) => response,
   onError: (error) => {
     throw error;
   },

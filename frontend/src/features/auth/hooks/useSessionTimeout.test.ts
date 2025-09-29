@@ -28,7 +28,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       expect(result.current.isExpiring).toBe(false);
@@ -50,7 +50,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       expect(result.current.isExpiring).toBe(true);
@@ -71,7 +71,9 @@ describe("useSessionTimeout", () => {
       const onWarning = vi.fn();
       const onExpired = vi.fn();
 
-      renderHook(() => useSessionTimeout(sessionInfo, onWarning, onExpired));
+      renderHook(() =>
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
+      );
 
       expect(onExpired).toHaveBeenCalledTimes(1);
       expect(onWarning).not.toHaveBeenCalled();
@@ -92,7 +94,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       const initialTime = result.current.timeRemaining;
@@ -116,7 +118,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(null, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo: null, onWarning, onExpired })
       );
 
       expect(result.current.isExpiring).toBe(false);
@@ -145,7 +147,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { unmount } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       const clearIntervalSpy = vi.spyOn(global, "clearInterval");
@@ -171,7 +173,7 @@ describe("useSessionTimeout", () => {
       const onExtend = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired, onExtend)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired, onExtend })
       );
 
       expect(result.current.isExpiring).toBe(true);
@@ -198,7 +200,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       expect(result.current.showWarning).toBe(true);
@@ -232,7 +234,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       expect(result.current.formattedTimeRemaining).toBe("2分5秒");
@@ -251,7 +253,7 @@ describe("useSessionTimeout", () => {
       const onExpired = vi.fn();
 
       const { result } = renderHook(() =>
-        useSessionTimeout(sessionInfo, onWarning, onExpired)
+        useSessionTimeout({ sessionInfo, onWarning, onExpired })
       );
 
       expect(result.current.formattedTimeRemaining).toBe("1時間30分30秒");

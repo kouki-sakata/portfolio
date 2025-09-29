@@ -56,12 +56,12 @@ export const SessionTimeoutNotification = () => {
   }, [refreshSession, toast]);
 
   // セッションタイムアウトフックを使用
-  const { timeRemaining, showWarning, snoozeWarning } = useSessionTimeout(
+  const { timeRemaining, showWarning, snoozeWarning } = useSessionTimeout({
     sessionInfo,
-    handleWarning,
-    handleExpired,
-    handleExtend
-  );
+    onWarning: handleWarning,
+    onExpired: handleExpired,
+    onExtend: handleExtend,
+  });
 
   // ログアウト処理
   const handleLogout = useCallback(() => {

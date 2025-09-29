@@ -44,7 +44,7 @@ export const StampCard = memo(
           <button
             className="button"
             disabled={isLoading}
-            onClick={() => void handleStamp("1")}
+            onClick={() => handleStamp("1")}
             type="button"
           >
             出勤打刻
@@ -52,7 +52,7 @@ export const StampCard = memo(
           <button
             className="button"
             disabled={isLoading}
-            onClick={() => void handleStamp("2")}
+            onClick={() => handleStamp("2")}
             type="button"
           >
             退勤打刻

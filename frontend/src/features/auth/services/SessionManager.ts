@@ -73,9 +73,9 @@ export class SessionManager implements ISessionManager {
   }
 
   private notifyListeners(): void {
-    this.listeners.forEach((callback) => {
+    for (const callback of this.listeners) {
       callback(this.session);
-    });
+    }
   }
 }
 

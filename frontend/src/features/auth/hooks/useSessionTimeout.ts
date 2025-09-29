@@ -54,13 +54,19 @@ const formatTime = (milliseconds: number): string => {
  * セッションタイムアウト管理フック
  * セッションの有効期限を監視し、警告表示とタイムアウト処理を管理
  */
-export const useSessionTimeout = (
-  sessionInfo: SessionInfo | null,
-  onWarning: () => void,
-  onExpired: () => void,
-  onExtend?: () => void,
-  options?: UseSessionTimeoutOptions
-): UseSessionTimeoutReturn => {
+export const useSessionTimeout = ({
+  sessionInfo,
+  onWarning,
+  onExpired,
+  onExtend,
+  options,
+}: {
+  sessionInfo: SessionInfo | null;
+  onWarning: () => void;
+  onExpired: () => void;
+  onExtend?: () => void;
+  options?: UseSessionTimeoutOptions;
+}): UseSessionTimeoutReturn => {
   const { checkInterval = 1000 } = options ?? {};
 
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
@@ -121,49 +127,58 @@ export const useSessionTimeout = (
       return;
     }
 
+    // セッション期限切れのチェック
+    const checkExpiration = (remaining: number): boolean => {
+      if (remaining <= 0 && !hasExpired.current) {
+        hasExpired.current = true;
+        onExpired();
+        setIsExpiring(false);
+        setShowWarning(false);
+        return true;
+      }
+      return false;
+    };
+
+    // 警告状態の更新
+    const updateWarningState = (shouldWarn: boolean) => {
+      setIsExpiring(shouldWarn);
+
+      if (!shouldWarn) {
+        setShowWarning(false);
+        hasWarned.current = false;
+        return;
+      }
+
+      const now = new Date();
+      const isSnoozed = snoozeUntil && now < snoozeUntil;
+
+      if (isSnoozed) {
+        setShowWarning(false);
+      } else {
+        setShowWarning(true);
+        if (!hasWarned.current) {
+          hasWarned.current = true;
+          onWarning();
+        }
+      }
+    };
+
+    // タイマーの更新
     const updateTimer = () => {
       const remaining = calculateTimeRemaining();
-
       if (remaining === null) {
         return;
       }
 
       setTimeRemaining(remaining);
 
-      const warningThreshold = getWarningThreshold();
-
-      // セッション期限切れチェック
-      if (remaining <= 0 && !hasExpired.current) {
-        hasExpired.current = true;
-        onExpired();
-        setIsExpiring(false);
-        setShowWarning(false);
+      if (checkExpiration(remaining)) {
         return;
       }
 
-      // 警告表示チェック
+      const warningThreshold = getWarningThreshold();
       const shouldWarn = remaining <= warningThreshold && remaining > 0;
-
-      setIsExpiring(shouldWarn);
-
-      // 警告表示の判定（スヌーズ考慮）
-      if (shouldWarn) {
-        const now = new Date();
-        const snoozed = snoozeUntil && now < snoozeUntil;
-
-        if (snoozed) {
-          setShowWarning(false);
-        } else {
-          setShowWarning(true);
-          if (!hasWarned.current) {
-            hasWarned.current = true;
-            onWarning();
-          }
-        }
-      } else {
-        setShowWarning(false);
-        hasWarned.current = false;
-      }
+      updateWarningState(shouldWarn);
     };
 
     // 初回実行

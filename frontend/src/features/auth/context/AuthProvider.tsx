@@ -135,6 +135,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     try {
       await logoutMutation.mutateAsync();
     } catch (_error) {
+      // エラーは無視して必ずログアウト処理を完了させる
     } finally {
       // SessionManagerをクリア
       sessionManager.clearSession();

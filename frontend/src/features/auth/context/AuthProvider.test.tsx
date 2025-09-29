@@ -11,9 +11,9 @@ import {
   vi,
 } from "vitest";
 
-import * as loginApi from "@/features/auth/api/login";
-import * as logoutApi from "@/features/auth/api/logout";
-import * as sessionApi from "@/features/auth/api/session";
+import { login } from "@/features/auth/api/login";
+import { logout } from "@/features/auth/api/logout";
+import { fetchSession } from "@/features/auth/api/session";
 import { AuthProvider } from "@/features/auth/context/AuthProvider";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
@@ -105,7 +105,7 @@ describe("AuthProvider", () => {
   describe("初期化", () => {
     it("初回レンダリング時にセッション情報を取得する", async () => {
       const fetchSessionSpy = vi
-        .spyOn(sessionApi, "fetchSession")
+        .mocked(fetchSession)
         .mockResolvedValue(mockSessionResponse);
 
       // Setup SessionManager mock to return session data when getSession is called
@@ -137,7 +137,7 @@ describe("AuthProvider", () => {
     });
 
     it("セッション取得失敗時は未認証状態になる", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockRejectedValue(
+      vi.mocked(fetchSession).mockRejectedValue(
         new Error("Session fetch failed")
       );
 
@@ -156,11 +156,11 @@ describe("AuthProvider", () => {
 
   describe("ログイン機能", () => {
     it("ログイン成功時にユーザー情報とセッションを設定する", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue({
+      vi.mocked(fetchSession).mockResolvedValue({
         authenticated: false,
         employee: null,
       });
-      vi.spyOn(loginApi, "login").mockResolvedValue(mockLoginResponse);
+      vi.mocked(login).mockResolvedValue(mockLoginResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -183,11 +183,11 @@ describe("AuthProvider", () => {
 
     it("ログイン失敗時にエラーをスローする", async () => {
       const error = new Error("Invalid credentials");
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue({
+      vi.mocked(fetchSession).mockResolvedValue({
         authenticated: false,
         employee: null,
       });
-      vi.spyOn(loginApi, "login").mockRejectedValue(error);
+      vi.mocked(login).mockRejectedValue(error);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -206,10 +206,8 @@ describe("AuthProvider", () => {
 
   describe("ログアウト機能", () => {
     it("ログアウト時にセッションをクリアする", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
-      vi.spyOn(logoutApi, "logout").mockResolvedValue();
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
+      vi.mocked(logout).mockResolvedValue();
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -233,11 +231,9 @@ describe("AuthProvider", () => {
     });
 
     it("ログアウトAPIエラー時でもローカルセッションをクリアする", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
       const logoutSpy = vi
-        .spyOn(logoutApi, "logout")
+        .mocked(logout)
         .mockRejectedValue(new Error("Network error"));
 
       // Setup SessionManager mock for initial session
@@ -281,9 +277,7 @@ describe("AuthProvider", () => {
 
   describe("CSRFトークン管理", () => {
     it("CSRFトークンを取得できる", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -302,9 +296,7 @@ describe("AuthProvider", () => {
         value: "",
       });
 
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -318,9 +310,7 @@ describe("AuthProvider", () => {
     });
 
     it("CSRFトークンを更新できる", async () => {
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -353,9 +343,7 @@ describe("AuthProvider", () => {
       };
 
       mockSessionManager.getSession = vi.fn().mockReturnValue(mockSessionData);
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -382,9 +370,7 @@ describe("AuthProvider", () => {
       };
 
       mockSessionManager.getSession = vi.fn().mockReturnValue(mockSessionData);
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -450,9 +436,7 @@ describe("AuthProvider", () => {
       };
 
       mockSessionManager.getSession = vi.fn().mockReturnValue(mockSessionData);
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       const { result } = renderHook(() => useAuth(), {
         wrapper: createWrapper,
@@ -481,9 +465,7 @@ describe("AuthProvider", () => {
         }
       );
 
-      vi.spyOn(sessionApi, "fetchSession").mockResolvedValue(
-        mockSessionResponse
-      );
+      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
 
       renderHook(() => useAuth(), { wrapper: createWrapper });
 

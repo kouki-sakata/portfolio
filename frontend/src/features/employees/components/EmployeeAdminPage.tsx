@@ -52,8 +52,8 @@ export const EmployeeAdminPage = () => {
 
   const createMutation = useMutation({
     mutationFn: createEmployee,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
       setFeedback("従業員を登録しました。");
       setFormState(emptyForm);
     },
@@ -70,8 +70,8 @@ export const EmployeeAdminPage = () => {
       id: number;
       payload: Partial<Omit<EmployeeSummary, "id">> & { password?: string };
     }) => updateEmployee(id, payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
       setFeedback("従業員情報を更新しました。");
       setFormState(emptyForm);
     },
@@ -82,8 +82,8 @@ export const EmployeeAdminPage = () => {
 
   const deleteMutation = useMutation({
     mutationFn: deleteEmployee,
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: EMPLOYEE_LIST_KEY });
       setFeedback("従業員を削除しました。");
     },
     onError: () => {
@@ -141,6 +141,8 @@ export const EmployeeAdminPage = () => {
   };
 
   const handleDelete = async (employeeId: number) => {
+    // TODO: カスタムダイアログに置き換える
+    // biome-ignore lint/suspicious/noAlert: 将来的にカスタムダイアログに置き換え予定
     if (!window.confirm("従業員を削除しますか？")) {
       return;
     }
@@ -161,12 +163,7 @@ export const EmployeeAdminPage = () => {
       </header>
 
       <div className="admin__layout">
-        <form
-          className="admin__form"
-          onSubmit={(event) => {
-            void handleSubmit(event);
-          }}
-        >
+        <form className="admin__form" onSubmit={handleSubmit}>
           <h2 className="admin__form-title">
             {formState.id === null ? "新規登録" : "従業員情報の編集"}
           </h2>
@@ -311,9 +308,7 @@ export const EmployeeAdminPage = () => {
                     </button>
                     <button
                       className="button"
-                      onClick={() => {
-                        void handleDelete(employee.id);
-                      }}
+                      onClick={() => handleDelete(employee.id)}
                       style={{ backgroundColor: "#dc2626" }}
                       type="button"
                     >

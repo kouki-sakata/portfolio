@@ -49,7 +49,11 @@ export type IHomeRepository = {
  * ホーム画面用リポジトリ実装
  */
 export class HomeRepository implements IHomeRepository {
-  constructor(private readonly httpClient: IHttpClient = defaultHttpClient) {}
+  private readonly httpClient: IHttpClient;
+
+  constructor(httpClient: IHttpClient = defaultHttpClient) {
+    this.httpClient = httpClient;
+  }
 
   async getDashboard(): Promise<HomeDashboardResponse> {
     const response = await this.httpClient.get<unknown>("/home/dashboard");

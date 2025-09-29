@@ -22,15 +22,18 @@ export type IAuthService = {
  * 認証エラー
  */
 export class AuthenticationError extends Error {
+  public readonly code:
+    | "INVALID_CREDENTIALS"
+    | "SESSION_EXPIRED"
+    | "NETWORK_ERROR";
+
   constructor(
     message: string,
-    public readonly code:
-      | "INVALID_CREDENTIALS"
-      | "SESSION_EXPIRED"
-      | "NETWORK_ERROR"
+    code: "INVALID_CREDENTIALS" | "SESSION_EXPIRED" | "NETWORK_ERROR"
   ) {
     super(message);
     this.name = "AuthenticationError";
+    this.code = code;
   }
 }
 
@@ -48,7 +51,11 @@ const isRepositoryError = (error: unknown): error is RepositoryError =>
  * Open/Closed Principle: 拡張可能な設計
  */
 export class AuthService implements IAuthService {
-  constructor(private readonly repository: IAuthRepository = authRepository) {}
+  private readonly repository: IAuthRepository;
+
+  constructor(repository: IAuthRepository = authRepository) {
+    this.repository = repository;
+  }
 
   async login(credentials: LoginRequest): Promise<EmployeeSummary> {
     try {
@@ -71,7 +78,9 @@ export class AuthService implements IAuthService {
   async logout(): Promise<void> {
     try {
       await this.repository.logout();
-    } catch (_error) {}
+    } catch (_error) {
+      // ログアウトエラーは無視
+    }
   }
 
   async validateSession(): Promise<SessionResponse> {

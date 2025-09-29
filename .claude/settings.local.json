@@ -99,7 +99,8 @@
       "Bash(npx biome:*)",
       "Bash(npm prune:*)",
       "Bash(export E2E_SKIP_WEB_SERVER=true)",
-      "Bash(npx playwright test:*)"
+      "Bash(npx playwright test:*)",
+      "Bash(python3:*)"
     ],
     "deny": [
       "Bash(touch:*)",

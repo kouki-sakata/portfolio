@@ -45,7 +45,11 @@ export type IAuthRepository = {
  * Dependency Inversion: IHttpClientインターフェースに依存
  */
 export class AuthRepository implements IAuthRepository {
-  constructor(private readonly httpClient: IHttpClient = defaultHttpClient) {}
+  private readonly httpClient: IHttpClient;
+
+  constructor(httpClient: IHttpClient = defaultHttpClient) {
+    this.httpClient = httpClient;
+  }
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     const response = await this.httpClient.post<unknown>(
