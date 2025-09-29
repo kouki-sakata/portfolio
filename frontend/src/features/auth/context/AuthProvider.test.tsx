@@ -385,7 +385,9 @@ describe("AuthProvider", () => {
     });
 
     it("セッションをリフレッシュできる", async () => {
-      vi.mocked(fetchSession).mockResolvedValue(mockSessionResponse);
+      const fetchSpy = vi
+        .mocked(fetchSession)
+        .mockResolvedValue(mockSessionResponse);
 
       // Setup SessionManager mock
       const mockSessionData = {

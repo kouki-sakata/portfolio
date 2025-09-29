@@ -20,6 +20,7 @@ vi.mock("react-router-dom", async () => {
     );
   return {
     ...actual,
+    // biome-ignore lint/style/useNamingConvention: Component name must match React Router's NavLink
     NavLink: ({ to, children, className, onClick }: NavLinkProps) => {
       const classValue =
         typeof className === "function"

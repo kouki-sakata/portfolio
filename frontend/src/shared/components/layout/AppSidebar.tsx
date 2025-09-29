@@ -200,6 +200,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               aria-label="サイドバーを閉じる"
               className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600 lg:hidden"
               onClick={onClose}
+              type="button"
             >
               <svg
                 className="h-6 w-6"
@@ -208,6 +209,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                 strokeWidth="1.5"
                 viewBox="0 0 24 24"
               >
+                <title>閉じる</title>
                 <path
                   d="M6 18L18 6M6 6l12 12"
                   strokeLinecap="round"

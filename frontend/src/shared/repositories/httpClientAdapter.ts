@@ -26,7 +26,7 @@ const isHttpError = (error: unknown): error is HttpError =>
  */
 export const createHttpClientAdapter = (): IHttpClient => {
   const handleError = (error: unknown): never => {
-    const repoError = new Error() as RepositoryError;
+    const repoError = new Error("HTTP request failed") as RepositoryError;
 
     if (isHttpError(error)) {
       repoError.message = error.message;

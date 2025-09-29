@@ -13,9 +13,13 @@ export type FeatureFlags = {
 
 // Default feature flags - these could be moved to a separate constants file
 const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
+  // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   NEW_UI_DESIGN: false,
+  // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   DARK_MODE: true,
+  // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   ANALYTICS: true,
+  // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   BETA_FEATURES: false,
 };
 

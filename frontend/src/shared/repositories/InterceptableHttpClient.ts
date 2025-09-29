@@ -22,8 +22,11 @@ export type ResponseInterceptor = {
 export class InterceptableHttpClient implements IHttpClient {
   private readonly requestInterceptors: RequestInterceptor[] = [];
   private readonly responseInterceptors: ResponseInterceptor[] = [];
+  private readonly baseClient: IHttpClient;
 
-  constructor(private readonly baseClient: IHttpClient) {}
+  constructor(baseClient: IHttpClient) {
+    this.baseClient = baseClient;
+  }
 
   /**
    * リクエストインターセプターを追加

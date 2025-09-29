@@ -48,6 +48,7 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
           className
         )}
         onClick={toggleSidebar}
+        type="button"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>

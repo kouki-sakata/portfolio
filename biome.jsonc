@@ -90,7 +90,12 @@
       }
     },
     {
-      "includes": ["**/schemas/api.ts", "**/generated/**", "**/*.gen.ts", "**/*.generated.ts"],
+      "includes": [
+        "**/schemas/api.ts",
+        "**/generated/**",
+        "**/*.gen.ts",
+        "**/*.generated.ts"
+      ],
       "linter": {
         "enabled": false
       }

@@ -5,6 +5,7 @@ type Env = {
 };
 
 const envSchema = z.object({
+  // biome-ignore lint/style/useNamingConvention: Environment variable naming convention
   VITE_API_BASE_URL: z.string().optional(),
 });
 
