@@ -123,7 +123,7 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/auth/login",
     alias: "login",
-    description: "メールとパスワードでログインし、セッションを開始します",
+    description: `メールとパスワードでログインし、セッションを開始します`,
     requestFormat: "json",
     parameters: [
       {
@@ -136,7 +136,7 @@ const endpoints = makeApi([
     errors: [
       {
         status: 401,
-        description: "認証失敗",
+        description: `認証失敗`,
         schema: ErrorResponse,
       },
     ],
@@ -145,7 +145,7 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/auth/logout",
     alias: "logout",
-    description: "セッションを終了します",
+    description: `セッションを終了します`,
     requestFormat: "json",
     response: z.void(),
   },
@@ -153,7 +153,7 @@ const endpoints = makeApi([
     method: "get",
     path: "/api/auth/session",
     alias: "getSession",
-    description: "現在の認証状態と従業員概要を返します",
+    description: `現在の認証状態と従業員概要を返します`,
     requestFormat: "json",
     response: SessionResponse,
   },
@@ -161,7 +161,7 @@ const endpoints = makeApi([
     method: "get",
     path: "/api/employees",
     alias: "listEmployees",
-    description: "管理者のみ絞り込み可能（adminOnly&#x3D;true）",
+    description: `管理者のみ絞り込み可能（adminOnly&#x3D;true）`,
     requestFormat: "json",
     parameters: [
       {
@@ -176,7 +176,7 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/employees",
     alias: "createEmployee",
-    description: "新規ユーザーを作成（ADMIN権限が必要）",
+    description: `新規ユーザーを作成（ADMIN権限が必要）`,
     requestFormat: "json",
     parameters: [
       {
@@ -189,12 +189,12 @@ const endpoints = makeApi([
     errors: [
       {
         status: 400,
-        description: "リクエストエラー",
+        description: `リクエストエラー`,
         schema: ErrorResponse,
       },
       {
         status: 409,
-        description: "メールアドレス重複",
+        description: `メールアドレス重複`,
         schema: ErrorResponse,
       },
     ],
@@ -203,7 +203,7 @@ const endpoints = makeApi([
     method: "delete",
     path: "/api/employees",
     alias: "deleteEmployees",
-    description: "複数IDに対応（ADMIN権限が必要）",
+    description: `複数IDに対応（ADMIN権限が必要）`,
     requestFormat: "json",
     parameters: [
       {
@@ -218,7 +218,7 @@ const endpoints = makeApi([
     method: "put",
     path: "/api/employees/:employeeId",
     alias: "updateEmployee",
-    description: "既存ユーザーを更新（ADMIN権限が必要）",
+    description: `既存ユーザーを更新（ADMIN権限が必要）`,
     requestFormat: "json",
     parameters: [
       {
@@ -236,12 +236,12 @@ const endpoints = makeApi([
     errors: [
       {
         status: 404,
-        description: "従業員が見つかりません",
+        description: `従業員が見つかりません`,
         schema: ErrorResponse,
       },
       {
         status: 409,
-        description: "メールアドレス重複",
+        description: `メールアドレス重複`,
         schema: ErrorResponse,
       },
     ],
@@ -250,13 +250,13 @@ const endpoints = makeApi([
     method: "get",
     path: "/api/home/overview",
     alias: "getHomeOverview",
-    description: "ログイン中の従業員情報とお知らせ一覧を返却",
+    description: `ログイン中の従業員情報とお知らせ一覧を返却`,
     requestFormat: "json",
     response: HomeDashboardResponse,
     errors: [
       {
         status: 401,
-        description: "認証が必要です",
+        description: `認証が必要です`,
         schema: ErrorResponse,
       },
     ],
@@ -265,7 +265,7 @@ const endpoints = makeApi([
     method: "post",
     path: "/api/home/stamps",
     alias: "stamp",
-    description: "出勤/退勤の打刻を記録",
+    description: `出勤/退勤の打刻を記録`,
     requestFormat: "json",
     parameters: [
       {
@@ -278,7 +278,7 @@ const endpoints = makeApi([
     errors: [
       {
         status: 401,
-        description: "認証が必要です",
+        description: `認証が必要です`,
         schema: ErrorResponse,
       },
     ],
@@ -287,7 +287,7 @@ const endpoints = makeApi([
     method: "get",
     path: "/api/stamp-history",
     alias: "getStampHistory",
-    description: "年・月の指定がなければ当月を返却",
+    description: `年・月の指定がなければ当月を返却`,
     requestFormat: "json",
     parameters: [
       {
@@ -305,7 +305,7 @@ const endpoints = makeApi([
     errors: [
       {
         status: 401,
-        description: "認証が必要です",
+        description: `認証が必要です`,
         schema: ErrorResponse,
       },
     ],
