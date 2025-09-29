@@ -1,7 +1,7 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { userEvent } from "@testing-library/user-event";
 import { BrowserRouter } from "react-router-dom";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SignInPage } from "@/features/auth/components/SignInPage";
 import * as useAuthModule from "@/features/auth/hooks/useAuth";
@@ -78,7 +78,9 @@ describe("SignInPage", () => {
         </BrowserRouter>
       );
 
-      expect(screen.getByText(/TeamDevelop Bravo にサインイン/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/TeamDevelop Bravo にサインイン/i)
+      ).toBeInTheDocument();
     });
   });
 
@@ -99,7 +101,9 @@ describe("SignInPage", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/有効なメールアドレスを入力してください/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/有効なメールアドレスを入力してください/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -119,7 +123,9 @@ describe("SignInPage", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/メールアドレスを入力してください/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/メールアドレスを入力してください/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -140,7 +146,9 @@ describe("SignInPage", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/パスワードは8文字以上で入力してください/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/パスワードは8文字以上で入力してください/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -160,7 +168,9 @@ describe("SignInPage", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/パスワードは8文字以上で入力してください/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/パスワードは8文字以上で入力してください/i)
+        ).toBeInTheDocument();
       });
     });
 
@@ -180,7 +190,9 @@ describe("SignInPage", () => {
       await user.click(passwordInput); // 別のフィールドにフォーカス
 
       await waitFor(() => {
-        expect(screen.getByText(/有効なメールアドレスを入力してください/i)).toBeInTheDocument();
+        expect(
+          screen.getByText(/有効なメールアドレスを入力してください/i)
+        ).toBeInTheDocument();
       });
     });
   });
@@ -235,7 +247,7 @@ describe("SignInPage", () => {
       });
     });
 
-    it("ローディング中は「サインイン中...」を表示する", async () => {
+    it("ローディング中は「サインイン中...」を表示する", () => {
       mockUseAuth.mockReturnValue({
         login: mockLogin,
         loading: true,
@@ -250,7 +262,9 @@ describe("SignInPage", () => {
         </BrowserRouter>
       );
 
-      const submitButton = screen.getByRole("button", { name: /サインイン中/i });
+      const submitButton = screen.getByRole("button", {
+        name: /サインイン中/i,
+      });
       expect(submitButton).toBeDisabled();
     });
 
@@ -313,9 +327,13 @@ describe("SignInPage", () => {
       await user.tab();
 
       await waitFor(() => {
-        const errorMessage = screen.getByText(/有効なメールアドレスを入力してください/i);
+        const errorMessage =
+          screen.getByText(/有効なメールアドレスを入力してください/i);
         const errorId = errorMessage.getAttribute("id");
-        expect(emailInput).toHaveAttribute("aria-describedby", expect.stringContaining(errorId || ""));
+        expect(emailInput).toHaveAttribute(
+          "aria-describedby",
+          expect.stringContaining(errorId || "")
+        );
       });
     });
   });

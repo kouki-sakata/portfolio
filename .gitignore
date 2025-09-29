@@ -118,3 +118,6 @@ frontend/.tmp/
 frontend/test-results/
 frontend/playwright-report/
 frontend/.playwright/
+
+# Claude Code settings
+.claude/settings.local.json
