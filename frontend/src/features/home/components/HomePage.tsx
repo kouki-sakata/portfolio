@@ -29,7 +29,13 @@ export const HomePage = () => {
   const stampMutation = useMutation({
     mutationFn: submitStamp,
     onSuccess: (response) => {
-      setResultMessage(response.message);
+      // TypeScriptベストプラクティス: 型ガードとnullチェック
+      if (response && typeof response === "object" && "message" in response) {
+        setResultMessage(response.message);
+      } else {
+        setResultMessage("打刻が完了しました");
+      }
+
       queryClient
         .invalidateQueries({ queryKey: HOME_DASHBOARD_KEY })
         .catch(() => {

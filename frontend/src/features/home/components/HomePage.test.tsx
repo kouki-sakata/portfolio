@@ -227,8 +227,15 @@ describe("HomePage", () => {
     });
 
     it("打刻処理中はボタンが無効化される", async () => {
+      const mockResponse: StampResponse = {
+        message: "打刻が完了しました",
+        success: true,
+      };
       vi.mocked(submitStamp).mockImplementation(
-        () => new Promise((resolve) => setTimeout(resolve, 100))
+        () =>
+          new Promise((resolve) =>
+            setTimeout(() => resolve(mockResponse), 100)
+          )
       );
 
       const user = userEvent.setup();
