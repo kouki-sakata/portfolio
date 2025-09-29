@@ -44,7 +44,7 @@ describe("DataTable Accessibility", () => {
         columns={columns}
         data={mockData}
         enableGlobalFilter
-        enableViewOptions
+        enableColumnVisibility
       />
     );
 
@@ -130,7 +130,7 @@ describe("DataTable Accessibility", () => {
   it("should have focus indicators", async () => {
     const user = userEvent.setup();
 
-    render(<DataTable columns={columns} data={mockData} enableViewOptions />);
+    render(<DataTable columns={columns} data={mockData} enableColumnVisibility />);
 
     // Tab でフォーカス可能な要素に移動
     await user.tab();
@@ -158,7 +158,6 @@ describe("DataTable Accessibility", () => {
   it("should provide skip links for keyboard users", () => {
     render(
       <DataTable
-        className="data-table-with-skip-link"
         columns={columns}
         data={mockData}
         enableGlobalFilter
@@ -202,6 +201,8 @@ describe("DataTable Accessibility", () => {
     const rows = screen.getAllByRole("row");
     // ヘッダー行を除いた最初のデータ行
     const firstDataRow = rows[1];
+    expect(firstDataRow).toBeDefined();
+    if (!firstDataRow) return;
 
     // 行にtabIndexが設定されていることを確認
     expect(firstDataRow).toHaveAttribute("tabIndex", "0");

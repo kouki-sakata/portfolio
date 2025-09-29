@@ -29,7 +29,7 @@ export function EmployeeTable({
         const selectedIds = Object.keys(selection)
           .filter((key) => selection[key])
           .map((key) => data[Number.parseInt(key, 10)]?.id)
-          .filter(Boolean);
+          .filter((id): id is number => id !== undefined);
         onSelectionChange(selectedIds);
       }
     },

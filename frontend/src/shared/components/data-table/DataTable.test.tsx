@@ -137,7 +137,11 @@ describe("DataTable", () => {
     );
 
     const checkboxes = screen.getAllByRole("checkbox");
-    await user.click(checkboxes[1]); // 最初のデータ行を選択
+    const firstRowCheckbox = checkboxes[1];
+    expect(firstRowCheckbox).toBeDefined();
+    if (!firstRowCheckbox) return;
+
+    await user.click(firstRowCheckbox); // 最初のデータ行を選択
 
     expect(onRowSelectionChange).toHaveBeenCalledWith({
       "0": true,

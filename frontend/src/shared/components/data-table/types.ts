@@ -2,6 +2,7 @@ import type {
   Column,
   ColumnDef,
   ColumnFiltersState,
+  OnChangeFn,
   PaginationState,
   RowSelectionState,
   SortingState,
@@ -28,7 +29,7 @@ export type DataTableProps<TData, TValue = unknown> = {
   /**
    * ページネーション変更時のコールバック
    */
-  onPaginationChange?: (pagination: PaginationState) => void;
+  onPaginationChange?: OnChangeFn<PaginationState>;
 
   /**
    * 総レコード数（サーバーサイドページネーション用）
