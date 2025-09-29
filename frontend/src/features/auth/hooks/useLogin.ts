@@ -29,7 +29,12 @@ type LoginMutationContext = {
  */
 export const useLogin = (
   options?: Omit<
-    UseMutationOptions<LoginResponse, Error, LoginRequest, LoginMutationContext>,
+    UseMutationOptions<
+      LoginResponse,
+      Error,
+      LoginRequest,
+      LoginMutationContext
+    >,
     "mutationFn" | "onMutate" | "onSuccess" | "onError" | "onSettled"
   > & {
     onSuccess?: (data: LoginResponse) => void;
