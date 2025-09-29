@@ -76,7 +76,7 @@
     - エラーメッセージ表示とローディング状態を実装
     - _Requirements: 2.1, 3.4_
 
-- [ ] 
+- [x]
     9. React Queryセットアップと認証統合
 
     - QueryClientの設定と最適化
