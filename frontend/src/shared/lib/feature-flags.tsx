@@ -5,9 +5,13 @@ import { FeatureFlagsContext } from "./feature-flags-context";
 
 // Fixed: Separate constants into a different file to resolve React refresh warning
 export type FeatureFlags = {
+  // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   NEW_UI_DESIGN: boolean;
+  // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   DARK_MODE: boolean;
+  // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   ANALYTICS: boolean;
+  // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   BETA_FEATURES: boolean;
 };
 
@@ -39,10 +43,10 @@ export const FeatureFlagsProvider = ({
 
   const isEnabled = (flag: keyof FeatureFlags): boolean => flags[flag];
 
-  const updateFlag = (flag: keyof FeatureFlags, value: boolean): void => {
+  const updateFlag = (flag: keyof FeatureFlags, enabled: boolean): void => {
     setFlags((prev) => ({
       ...prev,
-      [flag]: value,
+      [flag]: enabled,
     }));
   };
 

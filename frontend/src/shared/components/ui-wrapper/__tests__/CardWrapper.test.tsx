@@ -18,14 +18,14 @@ const MockCard = ({
 
 // Mock card components
 vi.mock("../card-components", () => ({
-  Card: MockCard,
-  CardHeader: ({ children }: { children: React.ReactNode }) => (
+  card: MockCard,
+  cardHeader: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="card-header">{children}</div>
   ),
-  CardContent: ({ children }: { children: React.ReactNode }) => (
+  cardContent: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="card-content">{children}</div>
   ),
-  CardFooter: ({ children }: { children: React.ReactNode }) => (
+  cardFooter: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="card-footer">{children}</div>
   ),
 }));
@@ -99,8 +99,8 @@ describe("CardWrapper", () => {
     );
 
     // Fixed: Use proper Testing Library queries
-    expect(screen.getByRole("status")).toBeInTheDocument();
     expect(screen.getByLabelText("Loading")).toBeInTheDocument();
+    expect(screen.getByText("Loading...")).toBeInTheDocument();
   });
 
   it("should render with error state", () => {

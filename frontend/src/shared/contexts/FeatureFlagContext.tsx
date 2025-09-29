@@ -29,7 +29,9 @@ export const FeatureFlagProvider = ({
         try {
           const parsed = JSON.parse(stored) as Partial<FeatureFlags>;
           return { ...DEFAULT_FLAGS, ...parsed, ...initialFlags };
-        } catch (_error) {}
+        } catch (_error) {
+          // Silently fall back to defaults if localStorage data is invalid
+        }
       }
     }
     return { ...DEFAULT_FLAGS, ...initialFlags };
@@ -49,10 +51,10 @@ export const FeatureFlagProvider = ({
     }));
   };
 
-  const setFlag = (flag: keyof FeatureFlags, value: boolean) => {
+  const setFlag = (flag: keyof FeatureFlags, enabled: boolean) => {
     setFlags((prev) => ({
       ...prev,
-      [flag]: value,
+      [flag]: enabled,
     }));
   };
 

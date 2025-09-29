@@ -53,11 +53,7 @@ export const InputWrapper = ({
       <div className="space-y-2">
         <ShadcnLabel className="font-medium text-sm" htmlFor={inputId}>
           {label}
-          {required && (
-            <span aria-label="required" className="ml-1 text-red-500">
-              *
-            </span>
-          )}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </ShadcnLabel>
 
         <ShadcnInput
@@ -97,7 +93,7 @@ export const InputWrapper = ({
     <div>
       <label htmlFor={inputId}>
         {label}
-        {required && <span aria-label="required">*</span>}
+        {required && <span>*</span>}
       </label>
 
       <input
