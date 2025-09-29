@@ -60,7 +60,9 @@ describe("useLogin", () => {
 
     expect(result.current.data).toEqual(mockResponse);
     expect(login).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(login).mock.calls[0][0]).toEqual(loginData);
+    const mockCalls = vi.mocked(login).mock.calls;
+    expect(mockCalls.length).toBeGreaterThan(0);
+    expect(mockCalls[0]?.[0]).toEqual(loginData);
 
     // セッションキャッシュが更新されているか確認
     const sessionData = queryClient.getQueryData(queryKeys.auth.session());
@@ -213,7 +215,9 @@ describe("useLogin", () => {
 
     expect(response).toEqual(mockResponse);
     expect(login).toHaveBeenCalledTimes(1);
-    expect(vi.mocked(login).mock.calls[0][0]).toEqual(loginData);
+    const mockCalls = vi.mocked(login).mock.calls;
+    expect(mockCalls.length).toBeGreaterThan(0);
+    expect(mockCalls[0]?.[0]).toEqual(loginData);
   });
 
   it("onSuccessコールバックが実行される", async () => {
@@ -245,7 +249,9 @@ describe("useLogin", () => {
     });
 
     // onSuccessSpyの最初の引数がレスポンスオブジェクトであることを確認
-    expect(onSuccessSpy.mock.calls[0][0]).toEqual(mockResponse);
+    const successCalls = onSuccessSpy.mock.calls;
+    expect(successCalls.length).toBeGreaterThan(0);
+    expect(successCalls[0]?.[0]).toEqual(mockResponse);
   });
 
   it("onErrorコールバックが実行される", async () => {
@@ -268,6 +274,8 @@ describe("useLogin", () => {
     });
 
     // onErrorSpyの最初の引数がエラーオブジェクトであることを確認
-    expect(onErrorSpy.mock.calls[0][0]).toEqual(error);
+    const errorCalls = onErrorSpy.mock.calls;
+    expect(errorCalls.length).toBeGreaterThan(0);
+    expect(errorCalls[0]?.[0]).toEqual(error);
   });
 });

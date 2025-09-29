@@ -17,12 +17,19 @@ import {
 } from "@/shared/utils/queryUtils";
 
 /**
+ * ログインミューテーションのコンテキスト型
+ */
+type LoginMutationContext = {
+  previousSession?: SessionResponse;
+};
+
+/**
  * ログイン用のカスタムフック
  * 楽観的更新とキャッシュ管理を含む
  */
 export const useLogin = (
   options?: Omit<
-    UseMutationOptions<LoginResponse, Error, LoginRequest>,
+    UseMutationOptions<LoginResponse, Error, LoginRequest, LoginMutationContext>,
     "mutationFn" | "onMutate" | "onSuccess" | "onError" | "onSettled"
   > & {
     onSuccess?: (data: LoginResponse) => void;
@@ -33,7 +40,7 @@ export const useLogin = (
 
   const { onSuccess, onError, ...restOptions } = options || {};
 
-  return useMutation<LoginResponse, Error, LoginRequest>({
+  return useMutation<LoginResponse, Error, LoginRequest, LoginMutationContext>({
     ...restOptions,
     mutationFn: login,
 

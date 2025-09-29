@@ -198,7 +198,9 @@ describe("useLogout", () => {
     });
 
     // onErrorSpyの最初の引数がエラーオブジェクトであることを確認
-    expect(onErrorSpy.mock.calls[0][0]).toEqual(error);
+    const errorCalls = onErrorSpy.mock.calls;
+    expect(errorCalls.length).toBeGreaterThan(0);
+    expect(errorCalls[0]?.[0]).toEqual(error);
   });
 
   it("onSettledでキャッシュが常にクリアされる", async () => {
