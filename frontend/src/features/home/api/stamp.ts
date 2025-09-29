@@ -1,14 +1,5 @@
+import type { StampRequest, StampResponse } from "@/features/home/types";
 import { httpClient } from "@/shared/api/httpClient";
-
-type StampRequest = {
-  stampType: string;
-  stampTime: string;
-  nightWorkFlag: string;
-};
-
-type StampResponse = {
-  message: string;
-};
 
 export const submitStamp = async (payload: StampRequest) =>
   httpClient<StampResponse>("/home/stamps", {

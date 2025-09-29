@@ -1,5 +1,16 @@
 import { memo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+
 /**
  * StampCardのProps
  * Interface Segregation: 必要最小限のプロパティ
@@ -8,6 +19,7 @@ export type StampCardProps = {
   onStamp: (type: "1" | "2", nightWork: boolean) => Promise<void>;
   isLoading?: boolean;
   message?: string | null;
+  className?: string;
 };
 
 /**
@@ -16,7 +28,12 @@ export type StampCardProps = {
  * Dependency Inversion: onStampコールバックに依存
  */
 export const StampCard = memo(
-  ({ onStamp, isLoading = false, message = null }: StampCardProps) => {
+  ({
+    onStamp,
+    isLoading = false,
+    message = null,
+    className,
+  }: StampCardProps) => {
     const [nightWork, setNightWork] = useState(false);
 
     const handleStamp = async (type: "1" | "2") => {
@@ -24,43 +41,60 @@ export const StampCard = memo(
     };
 
     return (
-      <article className="home-card">
-        <header className="home-card__header">
-          <h2 className="home-card__title">ワンクリック打刻</h2>
-          <label className="home-card__nightwork">
-            <input
-              checked={nightWork}
+      <Card className={cn("w-full", className)}>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">ワンクリック打刻</CardTitle>
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                aria-label="夜勤扱い"
+                checked={nightWork}
+                disabled={isLoading}
+                id="nightwork"
+                onCheckedChange={(checked) => setNightWork(checked === true)}
+              />
+              <label
+                className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                htmlFor="nightwork"
+              >
+                夜勤扱い
+              </label>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <Button
+              className="w-full"
               disabled={isLoading}
-              onChange={(event) => {
-                setNightWork(event.target.checked);
-              }}
-              type="checkbox"
-            />
-            夜勤扱い
-          </label>
-        </header>
-
-        <div className="home-card__actions">
-          <button
-            className="button"
-            disabled={isLoading}
-            onClick={() => handleStamp("1")}
-            type="button"
-          >
-            出勤打刻
-          </button>
-          <button
-            className="button"
-            disabled={isLoading}
-            onClick={() => handleStamp("2")}
-            type="button"
-          >
-            退勤打刻
-          </button>
-        </div>
-
-        {message && <p className="home-card__result">{message}</p>}
-      </article>
+              onClick={() => handleStamp("1")}
+              size="lg"
+              variant="default"
+            >
+              出勤打刻
+            </Button>
+            <Button
+              className="w-full"
+              disabled={isLoading}
+              onClick={() => handleStamp("2")}
+              size="lg"
+              variant="outline"
+            >
+              退勤打刻
+            </Button>
+          </div>
+          {message ? (
+            <CardDescription
+              className={cn(
+                "text-center font-medium",
+                message.includes("失敗") ? "text-destructive" : "text-primary"
+              )}
+            >
+              {message}
+            </CardDescription>
+          ) : null}
+        </CardContent>
+      </Card>
     );
   }
 );
