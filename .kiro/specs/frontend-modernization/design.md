@@ -2,9 +2,12 @@
 
 ## 概要
 
-TeamDevelop Bravo勤怠管理システムのフロントエンドモダナイゼーションを、**アプローチC（機能優先戦略）**で実装します。このアプローチは段階的な価値提供を重視し、4つのフェーズで順次実装を進めることで、リスクを分散しながら早期にビジネス価値を提供します。
+TeamDevelop Bravo勤怠管理システムのフロントエンドモダナイゼーションを、**
+アプローチC（機能優先戦略）**
+で実装します。このアプローチは段階的な価値提供を重視し、4つのフェーズで順次実装を進めることで、リスクを分散しながら早期にビジネス価値を提供します。
 
-本設計では、React SPAへの完全移行、shadcn/uiとTailwindCSSによるUIモダナイゼーション、REST API完全性の確保を実現し、既存のSpring Bootバックエンドとの統合を維持しながら、モダンで保守性の高いシステムを構築します。
+本設計では、React SPAへの完全移行、shadcn/uiとTailwindCSSによるUIモダナイゼーション、REST
+API完全性の確保を実現し、既存のSpring Bootバックエンドとの統合を維持しながら、モダンで保守性の高いシステムを構築します。
 
 ## 要件マッピング
 
@@ -13,6 +16,7 @@ TeamDevelop Bravo勤怠管理システムのフロントエンドモダナイゼ
 各設計コンポーネントは特定の要件に対応します：
 
 - **UIフレームワーク基盤** → 要件3: shadcn/ui + TailwindCSSによるUIモダナイゼーション
+- shadcn/uiはcanaryバージョン（npx shadcn-ui@canary）を使用
 - **React SPA ルーター** → 要件1: Thymeleafからの完全移行
 - **認証コンテキスト** → 要件5: 認証・セッション管理の統合
 - **API クライアント層** → 要件4: REST API完全性の確保
@@ -39,7 +43,6 @@ graph TB
     D --> E[Service Layer]
     E --> F[MyBatis Mapper]
     F --> G[PostgreSQL Database]
-
     H[shadcn/ui Components] --> A
     I[TailwindCSS] --> A
     J[React Query Cache] --> A
@@ -65,7 +68,8 @@ graph TB
 
 研究に基づく技術選定理由：
 
-- **shadcn/ui選定理由**: Radix UIプリミティブによるアクセシビリティ保証、コンポーネントのコピー&カスタマイズ可能性、TypeScript完全サポート
+- **shadcn/ui選定理由**: Radix
+  UIプリミティブによるアクセシビリティ保証、コンポーネントのコピー&カスタマイズ可能性、TypeScript完全サポート
 - **TailwindCSS v4選定理由**: Viteネイティブ統合による高速ビルド、PurgeCSSによる最小バンドル、デザイントークンシステム
 - **React Query選定理由**: 楽観的更新のネイティブサポート、キャッシュ無効化戦略、セッション管理との統合実績
 - **Zod選定理由**: TypeScript型推論との完全統合、ランタイム検証、API レスポンス検証の実装容易性
@@ -77,11 +81,10 @@ graph LR
     P1["Phase 1: 基盤構築"] --> P2["Phase 2: 認証・ホーム"]
     P2 --> P3["Phase 3: 従業員・打刻"]
     P3 --> P4["Phase 4: 完全移行"]
-
-    P1 --> |2-3日| P2
-    P2 --> |3-4日| P3
-    P3 --> |3-4日| P4
-    P4 --> |2-3日| 完了
+    P1 -->|2 - 3日| P2
+    P2 -->|3 - 4日| P3
+    P3 -->|3 - 4日| P4
+    P4 -->|2 - 3日| 完了
 ```
 
 ### データフロー
@@ -95,33 +98,32 @@ sequenceDiagram
     participant React Query
     participant Spring API
     participant PostgreSQL
-
-    User->>React SPA: ログイン
-    React SPA->>Spring API: POST /api/auth/login
-    Spring API->>PostgreSQL: 認証情報検証
-    PostgreSQL-->>Spring API: ユーザー情報
-    Spring API-->>React SPA: セッション + CSRFトークン
-    React SPA->>React Query: セッション情報キャッシュ
-    React Query-->>React SPA: 認証状態更新
-    React SPA-->>User: ホーム画面表示
+    User ->> React SPA: ログイン
+    React SPA ->> Spring API: POST /api/auth/login
+    Spring API ->> PostgreSQL: 認証情報検証
+    PostgreSQL -->> Spring API: ユーザー情報
+    Spring API -->> React SPA: セッション + CSRFトークン
+    React SPA ->> React Query: セッション情報キャッシュ
+    React Query -->> React SPA: 認証状態更新
+    React SPA -->> User: ホーム画面表示
 ```
 
 ## コンポーネントとインターフェース
 
 ### フロントエンドコンポーネント
 
-| コンポーネント名 | 責務 | Props/State概要 |
-|----------------|------|-----------------|
-| AuthProvider | 認証コンテキスト管理 | session, csrfToken, login/logout関数 |
-| AppLayout | レイアウト管理 | navigation, header, main content |
-| SignInForm | ログインフォーム | email, password, validation, onSubmit |
-| HomePage | ダッシュボード表示 | news, stampStatus, onStamp |
-| EmployeeTable | 従業員テーブル | employees, onEdit, onDelete, filters |
-| StampHistoryView | 打刻履歴表示 | history, yearMonth, employeeId |
-| DataTablePagination | ページネーション | page, pageSize, total, onChange |
-| Toast | 通知表示 | message, type, duration, onClose |
-| ErrorBoundary | エラーキャッチ | fallback, onError, reset |
-| LoadingSpinner | ローディング表示 | size, variant, className |
+| コンポーネント名            | 責務         | Props/State概要                         |
+|---------------------|------------|---------------------------------------|
+| AuthProvider        | 認証コンテキスト管理 | session, csrfToken, login/logout関数    |
+| AppLayout           | レイアウト管理    | navigation, header, main content      |
+| SignInForm          | ログインフォーム   | email, password, validation, onSubmit |
+| HomePage            | ダッシュボード表示  | news, stampStatus, onStamp            |
+| EmployeeTable       | 従業員テーブル    | employees, onEdit, onDelete, filters  |
+| StampHistoryView    | 打刻履歴表示     | history, yearMonth, employeeId        |
+| DataTablePagination | ページネーション   | page, pageSize, total, onChange       |
+| Toast               | 通知表示       | message, type, duration, onClose      |
+| ErrorBoundary       | エラーキャッチ    | fallback, onError, reset              |
+| LoadingSpinner      | ローディング表示   | size, variant, className              |
 
 ### バックエンドサービス（既存・拡張）
 
@@ -164,24 +166,24 @@ interface LogService {
 
 ### APIエンドポイント
 
-| メソッド | ルート | 目的 | 認証 | ステータスコード |
-|---------|--------|------|------|-----------------|
-| POST | /api/auth/login | ログイン | 不要 | 200, 400, 401 |
-| GET | /api/auth/session | セッション確認 | 必須 | 200, 401 |
-| POST | /api/auth/logout | ログアウト | 必須 | 204, 401 |
-| GET | /api/employees | 従業員一覧 | 必須 | 200, 401, 500 |
-| POST | /api/employees | 従業員作成 | 管理者 | 201, 400, 401, 403 |
-| PUT | /api/employees/:id | 従業員更新 | 管理者 | 200, 400, 401, 403, 404 |
-| DELETE | /api/employees | 従業員削除 | 管理者 | 204, 401, 403, 404 |
-| GET | /api/home/overview | ホーム概要 | 必須 | 200, 401 |
-| POST | /api/home/stamps | 打刻 | 必須 | 201, 400, 401 |
-| GET | /api/stamp-history | 打刻履歴 | 必須 | 200, 401 |
-| PUT | /api/stamp/:id | 打刻編集 | 管理者 | 200, 400, 401, 403, 404 |
-| DELETE | /api/stamp/:id | 打刻削除 | 管理者 | 204, 401, 403, 404 |
-| GET | /api/news | お知らせ一覧 | 必須 | 200, 401 |
-| POST | /api/news | お知らせ作成 | 管理者 | 201, 400, 401, 403 |
-| GET | /api/logs | ログ検索 | 管理者 | 200, 401, 403 |
-| POST | /api/export/csv | CSV出力 | 必須 | 200, 400, 401 |
+| メソッド   | ルート                | 目的      | 認証  | ステータスコード                |
+|--------|--------------------|---------|-----|-------------------------|
+| POST   | /api/auth/login    | ログイン    | 不要  | 200, 400, 401           |
+| GET    | /api/auth/session  | セッション確認 | 必須  | 200, 401                |
+| POST   | /api/auth/logout   | ログアウト   | 必須  | 204, 401                |
+| GET    | /api/employees     | 従業員一覧   | 必須  | 200, 401, 500           |
+| POST   | /api/employees     | 従業員作成   | 管理者 | 201, 400, 401, 403      |
+| PUT    | /api/employees/:id | 従業員更新   | 管理者 | 200, 400, 401, 403, 404 |
+| DELETE | /api/employees     | 従業員削除   | 管理者 | 204, 401, 403, 404      |
+| GET    | /api/home/overview | ホーム概要   | 必須  | 200, 401                |
+| POST   | /api/home/stamps   | 打刻      | 必須  | 201, 400, 401           |
+| GET    | /api/stamp-history | 打刻履歴    | 必須  | 200, 401                |
+| PUT    | /api/stamp/:id     | 打刻編集    | 管理者 | 200, 400, 401, 403, 404 |
+| DELETE | /api/stamp/:id     | 打刻削除    | 管理者 | 204, 401, 403, 404      |
+| GET    | /api/news          | お知らせ一覧  | 必須  | 200, 401                |
+| POST   | /api/news          | お知らせ作成  | 管理者 | 201, 400, 401, 403      |
+| GET    | /api/logs          | ログ検索    | 管理者 | 200, 401, 403           |
+| POST   | /api/export/csv    | CSV出力   | 必須  | 200, 400, 401           |
 
 ## データモデル
 
@@ -197,11 +199,11 @@ interface LogService {
 
 ```mermaid
 erDiagram
-    EMPLOYEE ||--o{ STAMP_HISTORY : "has"
-    EMPLOYEE ||--o{ SESSION : "owns"
-    EMPLOYEE ||--o{ LOG_HISTORY : "creates"
-    NEWS ||--|| EMPLOYEE : "created_by"
-    STAMP_HISTORY ||--|| EMPLOYEE : "stamped_by"
+    EMPLOYEE ||--o{ STAMP_HISTORY: "has"
+    EMPLOYEE ||--o{ SESSION: "owns"
+    EMPLOYEE ||--o{ LOG_HISTORY: "creates"
+    NEWS ||--|| EMPLOYEE: "created_by"
+    STAMP_HISTORY ||--|| EMPLOYEE: "stamped_by"
 ```
 
 ### データモデル定義
@@ -411,22 +413,22 @@ apiClient.interceptors.request.use((config) => {
 
 ### パフォーマンス目標
 
-| メトリック | 目標値 | 測定方法 |
-|-----------|--------|----------|
-| 初回表示時間（LCP） | < 1.5秒 | Lighthouse |
-| 対話可能時間（TTI） | < 2.0秒 | Lighthouse |
-| APIレスポンス（p95） | < 200ms | APMツール |
-| APIレスポンス（p99） | < 500ms | APMツール |
-| バンドルサイズ | < 300KB（gzip） | webpack-bundle-analyzer |
-| 同時接続ユーザー | > 1,000 | 負荷テスト |
+| メトリック         | 目標値           | 測定方法                    |
+|---------------|---------------|-------------------------|
+| 初回表示時間（LCP）   | < 1.5秒        | Lighthouse              |
+| 対話可能時間（TTI）   | < 2.0秒        | Lighthouse              |
+| APIレスポンス（p95） | < 200ms       | APMツール                  |
+| APIレスポンス（p99） | < 500ms       | APMツール                  |
+| バンドルサイズ       | < 300KB（gzip） | webpack-bundle-analyzer |
+| 同時接続ユーザー      | > 1,000       | 負荷テスト                   |
 
 ### キャッシング戦略
 
 - **ブラウザキャッシュ**: 静的アセット（max-age=31536000）
 - **React Query キャッシュ**:
-  - ユーザー情報: 5分
-  - 従業員一覧: 30秒
-  - 打刻履歴: 1分
+    - ユーザー情報: 5分
+    - 従業員一覧: 30秒
+    - 打刻履歴: 1分
 - **CDN**: 画像・静的コンテンツ
 - **サービスワーカー**: オフライン対応（将来実装）
 
@@ -462,13 +464,13 @@ const stampMutation = useMutation({
 
 ### リスクマトリックス
 
-| エリア | リスク | 必須 | オプション | 参照 |
-|--------|--------|------|------------|------|
-| 認証/認可 | 高 | Unit, Integration, E2E | Security | 要件5 |
-| 外部API | 中 | Contract, Integration | Resilience | 要件4 |
-| データ整合性 | 高 | Unit, Property | Integration | 要件2 |
-| 重要UXフロー | 高 | E2E (3つ以下) | A11y | 要件3 |
-| パフォーマンス | 中 | Perf smoke | Load/Stress | 要件7 |
+| エリア     | リスク | 必須                     | オプション       | 参照  |
+|---------|-----|------------------------|-------------|-----|
+| 認証/認可   | 高   | Unit, Integration, E2E | Security    | 要件5 |
+| 外部API   | 中   | Contract, Integration  | Resilience  | 要件4 |
+| データ整合性  | 高   | Unit, Property         | Integration | 要件2 |
+| 重要UXフロー | 高   | E2E (3つ以下)             | A11y        | 要件3 |
+| パフォーマンス | 中   | Perf smoke             | Load/Stress | 要件7 |
 
 ### 階層別最小テスト
 
@@ -479,11 +481,11 @@ const stampMutation = useMutation({
 
 ### CIゲート
 
-| ステージ | 実行 | ゲート | SLA |
-|---------|------|--------|-----|
-| PR | Unit + TypeScript | 失敗=ブロック | ≤3分 |
-| Staging | Integration + E2E | 失敗=ブロック | ≤10分 |
-| Nightly | Performance | 回帰→issue | - |
+| ステージ    | 実行                | ゲート      | SLA  |
+|---------|-------------------|----------|------|
+| PR      | Unit + TypeScript | 失敗=ブロック  | ≤3分  |
+| Staging | Integration + E2E | 失敗=ブロック  | ≤10分 |
+| Nightly | Performance       | 回帰→issue | -    |
 
 ### 終了基準
 
@@ -500,6 +502,7 @@ const stampMutation = useMutation({
 **課題**: 既存UIとshadcn/uiコンポーネントの混在期間における一貫性維持
 
 **解決策**:
+
 ```typescript
 // 共通コンポーネントラッパー層の実装
 // Phase 1で作成し、既存UIをラップしながら段階的に内部実装を置換
@@ -525,6 +528,7 @@ const mapToLegacyStyles = (variant: string): string => {
 ```
 
 **実装方針**:
+
 1. Phase 1で共通インターフェースを定義
 2. 既存コンポーネントをラッパーで包む
 3. 内部実装を段階的にshadcn/uiに置換
@@ -535,6 +539,7 @@ const mapToLegacyStyles = (variant: string): string => {
 **課題**: `@Profile("legacy-ui")`コントローラーと新REST APIの競合回避
 
 **解決策**:
+
 ```java
 // Spring Profilesによる明確な切り替え
 @Configuration
@@ -560,15 +565,16 @@ public class FeatureFlagController {
     @GetMapping("/features")
     public Map<String, Boolean> getFeatureFlags() {
         return Map.of(
-            "useLegacyAuth", !profileActive("spa-auth"),
-            "useReactUI", profileActive("react-ui"),
-            "enableShadcnComponents", profileActive("shadcn-ui")
+                "useLegacyAuth", !profileActive("spa-auth"),
+                "useReactUI", profileActive("react-ui"),
+                "enableShadcnComponents", profileActive("shadcn-ui")
         );
     }
 }
 ```
 
 **移行計画**:
+
 1. 開発環境: `spring.profiles.active=dev,react-ui`
 2. ステージング: `spring.profiles.active=staging,react-ui,legacy-ui`（並行稼働）
 3. 本番環境: 段階的にlegacy-uiプロファイルを削除
@@ -578,6 +584,7 @@ public class FeatureFlagController {
 **課題**: フロントエンド型定義とバックエンドDTOの同期維持
 
 **解決策**:
+
 ```typescript
 // OpenAPIからの型自動生成パイプライン
 // package.json
@@ -617,10 +624,11 @@ export const useEmployees = () => {
 ```
 
 **CI/CDパイプライン統合**:
+
 ```yaml
 # .github/workflows/api-contract.yml
 name: API Contract Test
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 jobs:
   contract-test:
@@ -641,6 +649,7 @@ jobs:
 ### Phase 1: UIフレームワーク基盤構築（2-3日）
 
 **実装内容**:
+
 - TailwindCSS v4 + @tailwindcss/vite設定
 - shadcn/ui初期設定とコンポーネント追加
 - **共通コンポーネントラッパー層の作成**（新規追加）
@@ -649,6 +658,7 @@ jobs:
 - **OpenAPI型生成パイプラインの設定**（新規追加）
 
 **成果物**:
+
 - `tailwind.config.ts`設定完了
 - `components.json`設定
 - Button, Card, Toast等の基本コンポーネント
@@ -659,12 +669,14 @@ jobs:
 ### Phase 2: 認証・ホーム画面（3-4日）
 
 **実装内容**:
+
 - SignInPageのshadcn/ui移行
 - AuthProviderとセッション管理
 - HomePageダッシュボード実装
 - CSRFトークン統合
 
 **成果物**:
+
 - 完全なログイン/ログアウトフロー
 - ホーム画面のお知らせ表示
 - 打刻ボタン機能
@@ -672,12 +684,14 @@ jobs:
 ### Phase 3: 従業員管理・打刻機能（3-4日）
 
 **実装内容**:
+
 - DataTable実装（TanStack Table）
 - 従業員CRUD画面
 - 打刻履歴表示
 - CSV出力機能
 
 **成果物**:
+
 - 従業員管理画面完成
 - 打刻履歴機能完成
 - データエクスポート機能
@@ -685,12 +699,14 @@ jobs:
 ### Phase 4: 完全移行・レガシー削除（2-3日）
 
 **実装内容**:
+
 - レガシーコントローラー削除
 - 残りのAPI実装
 - パフォーマンス最適化
 - 最終テスト
 
 **成果物**:
+
 - Thymeleaf完全削除
 - 全画面React化完了
 - プロダクションビルド最適化

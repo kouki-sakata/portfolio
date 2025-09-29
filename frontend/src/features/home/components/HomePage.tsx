@@ -5,6 +5,8 @@ import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { submitStamp } from "@/features/home/api/stamp";
 import type { HomeDashboardResponse } from "@/features/home/types";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
+import { NewsCard } from "./NewsCard";
+import { StampCard } from "./StampCard";
 
 const HOME_DASHBOARD_KEY = ["home", "overview"] as const;
 
@@ -17,7 +19,6 @@ const formatTimestamp = () => {
 export const HomePage = () => {
   const queryClient = useQueryClient();
   const [resultMessage, setResultMessage] = useState<string | null>(null);
-  const [nightWork, setNightWork] = useState(false);
 
   const { data, isLoading } = useQuery<HomeDashboardResponse>({
     queryKey: HOME_DASHBOARD_KEY,
@@ -42,7 +43,7 @@ export const HomePage = () => {
 
   const newsItems = useMemo(() => data?.news ?? [], [data]);
 
-  const handleStamp = async (type: "1" | "2") => {
+  const handleStamp = async (type: "1" | "2", nightWork: boolean) => {
     setResultMessage(null);
     await stampMutation.mutateAsync({
       stampType: type,
@@ -56,82 +57,30 @@ export const HomePage = () => {
   }
 
   return (
-    <section className="home">
-      <header className="home-hero">
-        <h1 className="home-hero__title">
+    <section className="home container mx-auto px-4 py-6">
+      <header className="home-hero mb-8">
+        <h1 className="home-hero__title mb-2 font-bold text-2xl text-gray-900 md:text-3xl">
           おはようございます、{data.employee.lastName} {data.employee.firstName}{" "}
           さん
         </h1>
-        <p className="home-hero__subtitle">
+        <p className="home-hero__subtitle text-gray-600">
           今日も素敵な一日を過ごしましょう。
         </p>
       </header>
 
-      <div className="home-grid">
-        <article className="home-card">
-          <header className="home-card__header">
-            <h2 className="home-card__title">ワンクリック打刻</h2>
-            <label className="home-card__nightwork">
-              <input
-                checked={nightWork}
-                onChange={(event) => {
-                  setNightWork(event.target.checked);
-                }}
-                type="checkbox"
-              />
-              夜勤扱い
-            </label>
-          </header>
-          <div className="home-card__actions">
-            <button
-              className="button"
-              disabled={stampMutation.isPending}
-              onClick={() => {
-                handleStamp("1").catch(() => {
-                  // エラーハンドリングはonErrorで処理済み
-                });
-              }}
-              type="button"
-            >
-              出勤打刻
-            </button>
-            <button
-              className="button"
-              disabled={stampMutation.isPending}
-              onClick={() => {
-                handleStamp("2").catch(() => {
-                  // エラーハンドリングはonErrorで処理済み
-                });
-              }}
-              type="button"
-            >
-              退勤打刻
-            </button>
-          </div>
-          {resultMessage ? (
-            <p className="home-card__result">{resultMessage}</p>
-          ) : null}
-        </article>
+      <div className="home-grid grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <StampCard
+          className="home-card"
+          isLoading={stampMutation.isPending}
+          message={resultMessage}
+          onStamp={handleStamp}
+        />
 
-        <article className="home-card">
-          <header className="home-card__header">
-            <h2 className="home-card__title">最新のお知らせ</h2>
-          </header>
-          <ul className="home-news-list">
-            {newsItems.length === 0 ? (
-              <li className="home-news-list__empty">
-                現在表示できるお知らせはありません。
-              </li>
-            ) : (
-              newsItems.map((news) => (
-                <li className="home-news-list__item" key={news.id}>
-                  <time className="home-news-list__date">{news.newsDate}</time>
-                  <p className="home-news-list__content">{news.content}</p>
-                </li>
-              ))
-            )}
-          </ul>
-        </article>
+        <NewsCard
+          className="home-card"
+          isLoading={false}
+          newsItems={newsItems}
+        />
       </div>
     </section>
   );
