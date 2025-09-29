@@ -12,7 +12,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import type { EmployeeSummary } from "@/features/auth/types";
 import {
   createEmployee,
@@ -22,6 +21,7 @@ import {
 } from "@/features/employees/api";
 import { EmployeeTable } from "@/features/employees/components/EmployeeTable";
 import type { EmployeeListResponse } from "@/features/employees/types";
+import { useToast } from "@/hooks/use-toast";
 import type { HttpClientError } from "@/shared/api/httpClient";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 
