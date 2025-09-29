@@ -52,12 +52,5 @@ export default defineConfig({
       reporter: ["text", "html", "lcov"],
       reportsDirectory: "./coverage",
     },
-    // unhandled rejectionsの処理を追加
-    onUnhandledError: (error) => {
-      // テスト中のunhandled errorをログに記録
-      // biome-ignore lint/suspicious/noConsole: Test error logging required
-      console.error("Unhandled error in test:", error);
-      return false; // エラーを無視しない
-    },
   },
 });

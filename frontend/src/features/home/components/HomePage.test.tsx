@@ -38,7 +38,7 @@ describe("HomePage", () => {
       email: "test@example.com",
       firstName: "太郎",
       lastName: "山田",
-      role: "GENERAL",
+      admin: false,
     },
     news: [
       {
@@ -150,7 +150,7 @@ describe("HomePage", () => {
       await waitFor(() => {
         expect(submitStamp).toHaveBeenCalled();
         const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall[0]).toMatchObject({
+        expect(firstCall?.[0]).toMatchObject({
           stampType: "1",
           nightWorkFlag: "0",
         });
@@ -170,7 +170,7 @@ describe("HomePage", () => {
       await waitFor(() => {
         expect(submitStamp).toHaveBeenCalled();
         const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall[0]).toMatchObject({
+        expect(firstCall?.[0]).toMatchObject({
           stampType: "2",
           nightWorkFlag: "0",
         });
@@ -191,7 +191,7 @@ describe("HomePage", () => {
       await waitFor(() => {
         expect(submitStamp).toHaveBeenCalled();
         const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall[0]).toMatchObject({
+        expect(firstCall?.[0]).toMatchObject({
           stampType: "1",
           nightWorkFlag: "1",
         });
