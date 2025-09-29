@@ -96,7 +96,7 @@
 
 ## 従業員管理と打刻機能
 
-- [ ] 
+- [x]
     11. TanStack Tableを使用したDataTable実装
 
     - @tanstack/react-tableをインストールして設定
