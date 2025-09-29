@@ -1,14 +1,14 @@
-import { Navigate } from 'react-router-dom'
+import { Navigate } from "react-router-dom";
 
-import { SignInPage } from '@/features/auth/components/SignInPage'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+import { SignInPage } from "@/features/auth/components/SignInPage";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 
 export const SignInRoute = () => {
-  const { authenticated } = useAuth()
+  const { authenticated } = useAuth();
 
   if (authenticated) {
-    return <Navigate to="/" replace />
+    return <Navigate replace to="/" />;
   }
 
-  return <SignInPage />
-}
+  return <SignInPage />;
+};

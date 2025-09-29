@@ -1,29 +1,26 @@
-import { QueryCache } from '@tanstack/react-query'
+import { QueryCache } from "@tanstack/react-query";
 
-import type { HttpClientError } from '@/shared/api/httpClient'
+import type { HttpClientError } from "@/shared/api/httpClient";
 
 /**
  * エラーインターセプター設定
  */
-export interface ErrorInterceptorConfig {
+export type ErrorInterceptorConfig = {
   /** ログアウト処理 */
-  onLogout: () => Promise<void>
+  onLogout: () => Promise<void>;
   /** リダイレクト処理 */
-  onRedirect: (path: string) => void
+  onRedirect: (path: string) => void;
   /** ログインページのパス */
-  loginPath?: string
-}
+  loginPath?: string;
+};
 
 /**
  * HTTPエラーかどうか判定
  */
-const isHttpError = (error: unknown): error is HttpClientError => {
-  return (
-    error instanceof Error &&
-    'status' in error &&
-    typeof (error as HttpClientError).status === 'number'
-  )
-}
+const isHttpError = (error: unknown): error is HttpClientError =>
+  error instanceof Error &&
+  "status" in error &&
+  typeof (error as HttpClientError).status === "number";
 
 /**
  * 401エラーハンドリング
@@ -33,24 +30,23 @@ export const handle401Error = async (
   error: unknown,
   config: ErrorInterceptorConfig
 ): Promise<void> => {
-  if (!isHttpError(error)) return
+  if (!isHttpError(error)) {
+    return;
+  }
 
   if (error.status === 401) {
-    // 401エラーの場合、自動ログアウト
-    console.warn('Unauthorized access detected. Logging out...')
-
     try {
       // ログアウト処理を実行
-      await config.onLogout()
-    } catch (logoutError) {
-      console.error('Logout failed during 401 handling:', logoutError)
+      await config.onLogout();
+    } catch (_logoutError) {
+      // ログアウトエラーは無視して処理を継続
     }
 
     // ログインページへリダイレクト
-    const loginPath = config.loginPath ?? '/auth/signin'
-    config.onRedirect(loginPath)
+    const loginPath = config.loginPath ?? "/auth/signin";
+    config.onRedirect(loginPath);
   }
-}
+};
 
 /**
  * グローバルエラーハンドラー作成
@@ -61,31 +57,27 @@ export const createGlobalErrorHandler = (
 ): ((error: unknown) => void) => {
   return (error: unknown) => {
     // 401エラーの処理
-    void handle401Error(error, config)
+    void handle401Error(error, config);
 
     // その他のエラー処理
     if (isHttpError(error)) {
       switch (error.status) {
         case 403:
-          console.error('Access forbidden:', error.message)
-          break
+          break;
         case 404:
-          console.error('Resource not found:', error.message)
-          break
+          break;
         case 500:
         case 502:
         case 503:
         case 504:
-          console.error('Server error:', error.message)
-          break
+          break;
         default:
-          console.error(`HTTP Error ${error.status.toString()}:`, error.message)
       }
     } else {
-      console.error('Unexpected error:', error)
+      // HTTPエラー以外は個別のエラー処理なし
     }
-  }
-}
+  };
+};
 
 /**
  * QueryCacheエラーハンドラー設定
@@ -93,10 +85,9 @@ export const createGlobalErrorHandler = (
  */
 export const createQueryCacheErrorHandler = (
   config: ErrorInterceptorConfig
-): QueryCache => {
-  return new QueryCache({
+): QueryCache =>
+  new QueryCache({
     onError: (error: unknown) => {
-      void handle401Error(error, config)
+      void handle401Error(error, config);
     },
-  })
-}
+  });

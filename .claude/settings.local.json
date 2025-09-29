@@ -97,7 +97,9 @@
       "SlashCommand(/kiro:check-github-ci)",
       "Bash(gh run view:*)",
       "Bash(npx biome:*)",
-      "Bash(npm prune:*)"
+      "Bash(npm prune:*)",
+      "Bash(export E2E_SKIP_WEB_SERVER=true)",
+      "Bash(npx playwright test:*)"
     ],
     "deny": [
       "Bash(touch:*)",

@@ -1,6 +1,6 @@
-import { type FocusEvent, type KeyboardEvent,type MouseEvent, type ReactNode } from 'react';
+import type { FocusEvent, KeyboardEvent, MouseEvent, ReactNode } from "react";
 
-interface CardWrapperProps {
+type CardWrapperProps = {
   children: ReactNode;
   className?: string;
   header?: ReactNode;
@@ -11,7 +11,7 @@ interface CardWrapperProps {
   onFocus?: (event: FocusEvent<HTMLDivElement>) => void;
   onBlur?: (event: FocusEvent<HTMLDivElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLDivElement>) => void;
-}
+};
 
 export const CardWrapper = ({
   children,
@@ -27,7 +27,7 @@ export const CardWrapper = ({
 }: CardWrapperProps) => {
   if (loading) {
     return (
-      <div className={className} role="status" aria-label="Loading">
+      <div aria-label="Loading" className={className} role="status">
         <div>Loading...</div>
       </div>
     );
@@ -45,27 +45,17 @@ export const CardWrapper = ({
     <div
       className={className}
       data-testid="card"
+      onBlur={onBlur}
       onClick={onClick}
       onFocus={onFocus}
-      onBlur={onBlur}
       onKeyDown={onKeyDown}
       tabIndex={onClick ? 0 : undefined}
     >
-      {header && (
-        <div data-testid="card-header">
-          {header}
-        </div>
-      )}
-      
-      <div data-testid="card-content">
-        {children}
-      </div>
-      
-      {footer && (
-        <div data-testid="card-footer">
-          {footer}
-        </div>
-      )}
+      {header && <div data-testid="card-header">{header}</div>}
+
+      <div data-testid="card-content">{children}</div>
+
+      {footer && <div data-testid="card-footer">{footer}</div>}
     </div>
   );
 };

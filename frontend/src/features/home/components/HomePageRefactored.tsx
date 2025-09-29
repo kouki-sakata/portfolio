@@ -1,9 +1,9 @@
-import { PageLoader } from '@/shared/components/layout/PageLoader'
+import { PageLoader } from "@/shared/components/layout/PageLoader";
 
-import { useDashboard } from '../hooks/useDashboard'
-import { useStamp } from '../hooks/useStamp'
-import { NewsSection } from './NewsSection'
-import { StampCard } from './StampCard'
+import { useDashboard } from "../hooks/useDashboard";
+import { useStamp } from "../hooks/useStamp";
+import { NewsSection } from "./NewsSection";
+import { StampCard } from "./StampCard";
 
 /**
  * リファクタリング後のHomePageコンポーネント
@@ -11,11 +11,11 @@ import { StampCard } from './StampCard'
  * Dependency Inversion: カスタムフックのインターフェースに依存
  */
 export const HomePageRefactored = () => {
-  const { data, isLoading } = useDashboard()
-  const { handleStamp, isLoading: isStamping, message } = useStamp()
+  const { data, isLoading } = useDashboard();
+  const { handleStamp, isLoading: isStamping, message } = useStamp();
 
   if (isLoading || !data) {
-    return <PageLoader label="ダッシュボードを読み込み中" />
+    return <PageLoader label="ダッシュボードを読み込み中" />;
   }
 
   return (
@@ -27,35 +27,30 @@ export const HomePageRefactored = () => {
 
       <div className="home-grid">
         <StampCard
-          onStamp={handleStamp}
           isLoading={isStamping}
           message={message}
+          onStamp={handleStamp}
         />
-        <NewsSection
-          news={data.news}
-          isLoading={false}
-        />
+        <NewsSection isLoading={false} news={data.news} />
       </div>
     </section>
-  )
-}
+  );
+};
 
 /**
  * ヒーローセクション コンポーネント
  * Single Responsibility: ヒーローセクションの表示のみ
  */
-interface HomeHeroProps {
-  firstName: string
-  lastName: string
-}
+type HomeHeroProps = {
+  firstName: string;
+  lastName: string;
+};
 
 const HomeHero = ({ firstName, lastName }: HomeHeroProps) => (
   <header className="home-hero">
     <h1 className="home-hero__title">
       おはようございます、{lastName} {firstName} さん
     </h1>
-    <p className="home-hero__subtitle">
-      今日も素敵な一日を過ごしましょう。
-    </p>
+    <p className="home-hero__subtitle">今日も素敵な一日を過ごしましょう。</p>
   </header>
-)
+);

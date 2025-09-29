@@ -1,33 +1,41 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, screen } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { HomeRoute } from '@/features/home/routes/HomeRoute'
+import { HomeRoute } from "@/features/home/routes/HomeRoute";
 
-describe('HomeRoute', () => {
+describe("HomeRoute", () => {
   afterEach(() => {
-    vi.restoreAllMocks()
-  })
+    vi.restoreAllMocks();
+  });
 
-  it('renders call to action', () => {
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  it("renders call to action", () => {
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
 
-    queryClient.setQueryData(['home', 'overview'], {
-      employee: { id: 1, firstName: '太郎', lastName: '山田', email: 'taro@example.com', admin: false },
+    queryClient.setQueryData(["home", "overview"], {
+      employee: {
+        id: 1,
+        firstName: "太郎",
+        lastName: "山田",
+        email: "taro@example.com",
+        admin: false,
+      },
       news: [],
-    })
+    });
 
     render(
       <QueryClientProvider client={queryClient}>
         <HomeRoute />
-      </QueryClientProvider>,
-    )
+      </QueryClientProvider>
+    );
 
     expect(
-      screen.getByRole('heading', {
+      screen.getByRole("heading", {
         level: 1,
-        name: 'おはようございます、山田 太郎 さん',
-      }),
-    ).toBeInTheDocument()
-  })
-})
+        name: "おはようございます、山田 太郎 さん",
+      })
+    ).toBeInTheDocument();
+  });
+});

@@ -1,18 +1,22 @@
-import type { IAuthRepository } from '@/features/auth/repositories/AuthRepository'
-import { authRepository } from '@/features/auth/repositories/AuthRepository'
-import type { EmployeeSummary, LoginRequest, SessionResponse } from '@/features/auth/types'
-import type { RepositoryError } from '@/shared/repositories/types'
+import type { IAuthRepository } from "@/features/auth/repositories/AuthRepository";
+import { authRepository } from "@/features/auth/repositories/AuthRepository";
+import type {
+  EmployeeSummary,
+  LoginRequest,
+  SessionResponse,
+} from "@/features/auth/types";
+import type { RepositoryError } from "@/shared/repositories/types";
 
 /**
  * 認証サービスインターフェース
  * Single Responsibility: 認証ビジネスロジックのみを担当
  */
-export interface IAuthService {
-  login(credentials: LoginRequest): Promise<EmployeeSummary>
-  logout(): Promise<void>
-  validateSession(): Promise<SessionResponse>
-  isAuthenticated(): Promise<boolean>
-}
+export type IAuthService = {
+  login(credentials: LoginRequest): Promise<EmployeeSummary>;
+  logout(): Promise<void>;
+  validateSession(): Promise<SessionResponse>;
+  isAuthenticated(): Promise<boolean>;
+};
 
 /**
  * 認証エラー
@@ -20,24 +24,24 @@ export interface IAuthService {
 export class AuthenticationError extends Error {
   constructor(
     message: string,
-    public readonly code: 'INVALID_CREDENTIALS' | 'SESSION_EXPIRED' | 'NETWORK_ERROR'
+    public readonly code:
+      | "INVALID_CREDENTIALS"
+      | "SESSION_EXPIRED"
+      | "NETWORK_ERROR"
   ) {
-    super(message)
-    this.name = 'AuthenticationError'
+    super(message);
+    this.name = "AuthenticationError";
   }
 }
 
 /**
  * Type guard for RepositoryError
  */
-const isRepositoryError = (error: unknown): error is RepositoryError => {
-  return (
-    error instanceof Error &&
-    'code' in error &&
-    'status' in error &&
-    typeof (error as RepositoryError).status === 'number'
-  )
-}
+const isRepositoryError = (error: unknown): error is RepositoryError =>
+  error instanceof Error &&
+  "code" in error &&
+  "status" in error &&
+  typeof (error as RepositoryError).status === "number";
 
 /**
  * 認証サービス実装
@@ -48,66 +52,58 @@ export class AuthService implements IAuthService {
 
   async login(credentials: LoginRequest): Promise<EmployeeSummary> {
     try {
-      const response = await this.repository.login(credentials)
-      return response.employee
+      const response = await this.repository.login(credentials);
+      return response.employee;
     } catch (error) {
-      if (isRepositoryError(error)) {
-        if (error.status === 401) {
-          throw new AuthenticationError(
-            'Invalid email or password',
-            'INVALID_CREDENTIALS'
-          )
-        }
+      if (isRepositoryError(error) && error.status === 401) {
+        throw new AuthenticationError(
+          "Invalid email or password",
+          "INVALID_CREDENTIALS"
+        );
       }
       throw new AuthenticationError(
-        'Failed to connect to authentication service',
-        'NETWORK_ERROR'
-      )
+        "Failed to connect to authentication service",
+        "NETWORK_ERROR"
+      );
     }
   }
 
   async logout(): Promise<void> {
     try {
-      await this.repository.logout()
-    } catch (error) {
-      // ログアウトエラーは無視（ユーザーセッションはクリアされる）
-      console.warn('Logout error:', error)
-    }
+      await this.repository.logout();
+    } catch (_error) {}
   }
 
   async validateSession(): Promise<SessionResponse> {
     try {
-      return await this.repository.getSession()
+      return await this.repository.getSession();
     } catch (error) {
-      if (isRepositoryError(error)) {
-        if (error.status === 401) {
-          return {
-            authenticated: false,
-            employee: null,
-          }
-        }
+      if (isRepositoryError(error) && error.status === 401) {
+        return {
+          authenticated: false,
+          employee: null,
+        };
       }
       throw new AuthenticationError(
-        'Failed to validate session',
-        'NETWORK_ERROR'
-      )
+        "Failed to validate session",
+        "NETWORK_ERROR"
+      );
     }
   }
 
   async isAuthenticated(): Promise<boolean> {
-    const session = await this.validateSession()
-    return session.authenticated
+    const session = await this.validateSession();
+    return session.authenticated;
   }
 }
 
 /**
  * Factory関数
  */
-export const createAuthService = (repository?: IAuthRepository): IAuthService => {
-  return new AuthService(repository)
-}
+export const createAuthService = (repository?: IAuthRepository): IAuthService =>
+  new AuthService(repository);
 
 /**
  * デフォルトインスタンス
  */
-export const authService = createAuthService()
+export const authService = createAuthService();

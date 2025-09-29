@@ -1,6 +1,6 @@
-import type { PropsWithChildren } from 'react';
+import type { PropsWithChildren } from "react";
 
-import { cn } from '@/shared/utils/cn';
+import { cn } from "@/shared/utils/cn";
 
 interface AppShellProps extends PropsWithChildren {
   /** 追加のCSSクラス */
@@ -18,11 +18,11 @@ export const AppShell = ({ children, className }: AppShellProps) => (
   <div
     className={cn(
       // ベースレイアウト
-      'min-h-screen bg-gray-50',
+      "min-h-screen bg-gray-50",
       // グリッドシステム
-      'grid grid-cols-1',
+      "grid grid-cols-1",
       // レスポンシブレイアウト（デスクトップ: サイドバー幅250px + 残りの空間）
-      'lg:grid-cols-[250px_1fr]',
+      "lg:grid-cols-[250px_1fr]",
       className
     )}
   >

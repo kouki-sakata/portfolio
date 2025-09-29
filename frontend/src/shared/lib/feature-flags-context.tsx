@@ -1,11 +1,13 @@
-import { createContext } from 'react';
+import { createContext } from "react";
 
-import type { FeatureFlags } from './feature-flags';
+import type { FeatureFlags } from "./feature-flags";
 
-export interface FeatureFlagsContextType {
+export type FeatureFlagsContextType = {
   flags: FeatureFlags;
   isEnabled: (flag: keyof FeatureFlags) => boolean;
   updateFlag: (flag: keyof FeatureFlags, value: boolean) => void;
-}
+};
 
-export const FeatureFlagsContext = createContext<FeatureFlagsContextType | undefined>(undefined);
+export const FeatureFlagsContext = createContext<
+  FeatureFlagsContextType | undefined
+>(undefined);

@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink } from "react-router-dom";
 
 export const NotFoundRoute = () => (
   <section className="not-found">
@@ -6,8 +6,8 @@ export const NotFoundRoute = () => (
     <p className="not-found__description">
       指定されたページは存在しないか、移動した可能性があります。
     </p>
-    <NavLink to="/" className="button">
+    <NavLink className="button" to="/">
       ホームに戻る
     </NavLink>
   </section>
-)
+);

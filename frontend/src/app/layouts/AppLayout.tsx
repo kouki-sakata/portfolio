@@ -1,10 +1,10 @@
-import { Navigate, Outlet, useLocation } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 
-import { useAuth } from '@/features/auth/hooks/useAuth';
-import { AppHeader } from '@/shared/components/layout/AppHeader';
-import { AppShell } from '@/shared/components/layout/AppShell';
-import { AppSidebar } from '@/shared/components/layout/AppSidebar';
-import { PageLoader } from '@/shared/components/layout/PageLoader';
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { AppHeader } from "@/shared/components/layout/AppHeader";
+import { AppShell } from "@/shared/components/layout/AppShell";
+import { AppSidebar } from "@/shared/components/layout/AppSidebar";
+import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 export const AppLayout = () => {
   const location = useLocation();
@@ -13,7 +13,7 @@ export const AppLayout = () => {
   if (loading) {
     return (
       <AppShell>
-        <main className="col-span-full flex items-center justify-center" role="main">
+        <main className="col-span-full flex items-center justify-center">
           <PageLoader label="読み込み中" />
         </main>
       </AppShell>
@@ -21,7 +21,13 @@ export const AppLayout = () => {
   }
 
   if (!authenticated) {
-    return <Navigate to="/signin" replace state={{ redirectTo: location.pathname }} />;
+    return (
+      <Navigate
+        replace
+        state={{ redirectTo: location.pathname }}
+        to="/signin"
+      />
+    );
   }
 
   return (
@@ -30,9 +36,9 @@ export const AppLayout = () => {
       <AppSidebar className="hidden lg:block" />
 
       {/* メインコンテンツエリア */}
-      <div className="flex flex-col min-h-screen lg:min-h-0">
+      <div className="flex min-h-screen flex-col lg:min-h-0">
         <AppHeader />
-        <main className="flex-1 p-4 lg:p-6 overflow-y-auto" role="main">
+        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </main>
       </div>

@@ -1,44 +1,43 @@
-import { useQuery } from '@tanstack/react-query'
-import { type FormEvent, useState } from 'react'
+import { useQuery } from "@tanstack/react-query";
+import { type FormEvent, useState } from "react";
 
-import { fetchStampHistory } from '@/features/stampHistory/api'
-import type { StampHistoryResponse } from '@/features/stampHistory/types'
-import { PageLoader } from '@/shared/components/layout/PageLoader'
+import { fetchStampHistory } from "@/features/stampHistory/api";
+import type { StampHistoryResponse } from "@/features/stampHistory/types";
+import { PageLoader } from "@/shared/components/layout/PageLoader";
 
-const STAMP_HISTORY_KEY = ['stamp-history'] as const
+const STAMP_HISTORY_KEY = ["stamp-history"] as const;
 
 export const StampHistoryPage = () => {
-  const [filters, setFilters] = useState<{ year?: string; month?: string }>({})
+  const [filters, setFilters] = useState<{ year?: string; month?: string }>({});
 
   const query = useQuery<StampHistoryResponse>({
     queryKey: [...STAMP_HISTORY_KEY, filters],
     queryFn: () => fetchStampHistory(filters),
-  })
+  });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    await query.refetch()
-  }
+    event.preventDefault();
+    await query.refetch();
+  };
 
   if (query.isLoading) {
-    return <PageLoader label="打刻履歴を読み込み中" />
+    return <PageLoader label="打刻履歴を読み込み中" />;
   }
 
   if (query.isError) {
-    return <p>履歴を取得できませんでした。</p>
+    return <p>履歴を取得できませんでした。</p>;
   }
 
-  const data: StampHistoryResponse =
-    query.data ?? {
-      selectedYear: filters.year ?? '',
-      selectedMonth: filters.month ?? '',
-      years: [],
-      months: [],
-      entries: [],
-    }
+  const data: StampHistoryResponse = query.data ?? {
+    selectedYear: filters.year ?? "",
+    selectedMonth: filters.month ?? "",
+    years: [],
+    months: [],
+    entries: [],
+  };
 
-  const selectedYear: string = filters.year ?? data.selectedYear
-  const selectedMonth: string = filters.month ?? data.selectedMonth
+  const selectedYear: string = filters.year ?? data.selectedYear;
+  const selectedMonth: string = filters.month ?? data.selectedMonth;
 
   return (
     <section className="history">
@@ -50,19 +49,19 @@ export const StampHistoryPage = () => {
       <form
         className="history__filters"
         onSubmit={(event) => {
-          void handleSubmit(event)
+          void handleSubmit(event);
         }}
       >
         <label className="history__label" htmlFor="year">
           年
         </label>
         <select
-          id="year"
           className="history__select"
-          value={selectedYear}
+          id="year"
           onChange={(event) => {
-            setFilters((prev) => ({ ...prev, year: event.target.value }))
+            setFilters((prev) => ({ ...prev, year: event.target.value }));
           }}
+          value={selectedYear}
         >
           {data.years.map((yearOption) => (
             <option key={yearOption} value={yearOption}>
@@ -75,12 +74,12 @@ export const StampHistoryPage = () => {
           月
         </label>
         <select
-          id="month"
           className="history__select"
-          value={selectedMonth}
+          id="month"
           onChange={(event) => {
-            setFilters((prev) => ({ ...prev, month: event.target.value }))
+            setFilters((prev) => ({ ...prev, month: event.target.value }));
           }}
+          value={selectedMonth}
         >
           {data.months.map((monthOption) => (
             <option key={monthOption} value={monthOption}>
@@ -89,8 +88,8 @@ export const StampHistoryPage = () => {
           ))}
         </select>
 
-        <button type="submit" className="button" disabled={query.isRefetching}>
-          {query.isRefetching ? '更新中…' : '検索'}
+        <button className="button" disabled={query.isRefetching} type="submit">
+          {query.isRefetching ? "更新中…" : "検索"}
         </button>
       </form>
 
@@ -108,20 +107,22 @@ export const StampHistoryPage = () => {
           <tbody>
             {data.entries.length === 0 ? (
               <tr>
-                <td colSpan={5} className="history-table__empty">
+                <td className="history-table__empty" colSpan={5}>
                   対象期間の打刻はありません。
                 </td>
               </tr>
             ) : (
               data.entries.map((entry) => (
-                <tr key={`${entry.year ?? '----'}-${entry.month ?? '--'}-${entry.day ?? '--'}`}>
+                <tr
+                  key={`${entry.year ?? "----"}-${entry.month ?? "--"}-${entry.day ?? "--"}`}
+                >
                   <td>
                     {entry.year}/{entry.month}/{entry.day}
                   </td>
                   <td>{entry.dayOfWeek}</td>
-                  <td>{entry.inTime ?? '-'}</td>
-                  <td>{entry.outTime ?? '-'}</td>
-                  <td>{entry.updateDate ?? '-'}</td>
+                  <td>{entry.inTime ?? "-"}</td>
+                  <td>{entry.outTime ?? "-"}</td>
+                  <td>{entry.updateDate ?? "-"}</td>
                 </tr>
               ))
             )}
@@ -129,5 +130,5 @@ export const StampHistoryPage = () => {
         </table>
       </div>
     </section>
-  )
-}
+  );
+};
