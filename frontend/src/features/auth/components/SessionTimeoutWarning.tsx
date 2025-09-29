@@ -1,39 +1,41 @@
-import { AlertTriangle, Clock, LogOut, RefreshCw, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { AlertTriangle, Clock, LogOut, RefreshCw, X } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-interface SessionTimeoutWarningProps {
+type SessionTimeoutWarningProps = {
   /** 残り時間（秒） */
-  timeRemaining: number
+  timeRemaining: number;
   /** セッション延長処理 */
-  onExtend: () => void
+  onExtend: () => void;
   /** ログアウト処理 */
-  onLogout: () => void
+  onLogout: () => void;
   /** 閉じる処理 */
-  onDismiss?: () => void
+  onDismiss?: () => void;
   /** 表示フラグ */
-  show?: boolean
+  show?: boolean;
   /** 緊急フラグ（残り時間が少ない場合） */
-  urgent?: boolean
-}
+  urgent?: boolean;
+};
 
 /**
  * 時間をフォーマット（秒 → 分:秒）
  */
 const formatTime = (seconds: number): string => {
-  if (seconds <= 0) return '0秒'
+  if (seconds <= 0) {
+    return "0秒";
+  }
 
-  const minutes = Math.floor(seconds / 60)
-  const remainingSeconds = seconds % 60
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
 
   if (minutes > 0) {
-    return `${minutes.toString()}分${remainingSeconds.toString()}秒`
+    return `${minutes.toString()}分${remainingSeconds.toString()}秒`;
   }
-  return `${seconds.toString()}秒`
-}
+  return `${seconds.toString()}秒`;
+};
 
 /**
  * セッションタイムアウト警告コンポーネント
@@ -47,34 +49,40 @@ export const SessionTimeoutWarning = ({
   show = true,
   urgent = false,
 }: SessionTimeoutWarningProps) => {
-  const [displayTime, setDisplayTime] = useState(timeRemaining)
+  const [displayTime, setDisplayTime] = useState(timeRemaining);
 
   // タイマーの更新
   useEffect(() => {
-    setDisplayTime(timeRemaining)
-  }, [timeRemaining])
+    setDisplayTime(timeRemaining);
+  }, [timeRemaining]);
 
   // 緊急度の判定（1分以下で緊急）
-  const isUrgent = urgent || displayTime <= 60
+  const isUrgent = urgent || displayTime <= 60;
 
   // 表示しない場合
-  if (!show) return null
+  if (!show) {
+    return null;
+  }
 
   return (
     <Alert
-      role="alert"
-      aria-live={isUrgent ? 'assertive' : 'polite'}
       aria-atomic="true"
+      aria-live={isUrgent ? "assertive" : "polite"}
       className={cn(
-        'fixed bottom-4 right-4 z-50 max-w-md shadow-lg',
-        isUrgent ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-yellow-500 bg-yellow-50 dark:bg-yellow-950'
+        "fixed right-4 bottom-4 z-50 max-w-md shadow-lg",
+        isUrgent
+          ? "border-red-500 bg-red-50 dark:bg-red-950"
+          : "border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
       )}
+      role="alert"
     >
       <div className="flex items-start gap-3">
         <AlertTriangle
           className={cn(
-            'h-5 w-5 flex-shrink-0',
-            isUrgent ? 'text-red-600 dark:text-red-400' : 'text-yellow-600 dark:text-yellow-400'
+            "h-5 w-5 flex-shrink-0",
+            isUrgent
+              ? "text-red-600 dark:text-red-400"
+              : "text-yellow-600 dark:text-yellow-400"
           )}
         />
 
@@ -98,20 +106,20 @@ export const SessionTimeoutWarning = ({
 
             <div className="flex flex-wrap gap-2">
               <Button
-                size="sm"
-                variant={isUrgent ? 'destructive' : 'default'}
-                onClick={onExtend}
                 className="flex items-center gap-1"
+                onClick={onExtend}
+                size="sm"
+                variant={isUrgent ? "destructive" : "default"}
               >
                 <RefreshCw className="h-3 w-3" />
                 セッションを延長
               </Button>
 
               <Button
+                className="flex items-center gap-1"
+                onClick={onLogout}
                 size="sm"
                 variant="outline"
-                onClick={onLogout}
-                className="flex items-center gap-1"
               >
                 <LogOut className="h-3 w-3" />
                 ログアウト
@@ -119,11 +127,11 @@ export const SessionTimeoutWarning = ({
 
               {onDismiss && (
                 <Button
+                  aria-label="閉じる"
+                  className="flex items-center gap-1"
+                  onClick={onDismiss}
                   size="sm"
                   variant="ghost"
-                  onClick={onDismiss}
-                  className="flex items-center gap-1"
-                  aria-label="閉じる"
                 >
                   <X className="h-3 w-3" />
                   閉じる
@@ -134,5 +142,5 @@ export const SessionTimeoutWarning = ({
         </div>
       </div>
     </Alert>
-  )
-}
+  );
+};

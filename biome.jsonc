@@ -1,4 +1,104 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
-  "extends": ["ultracite"]
+  "extends": ["ultracite"],
+  "linter": {
+    "rules": {
+      "performance": {
+        "noBarrelFile": "off" // プロジェクトではindex.tsパターンを使用
+      },
+      "style": {
+        "noMagicNumbers": "off",
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "strictCase": false // APIレスポンスのsnake_case、大文字定数を許可
+          }
+        },
+        "useFilenamingConvention": {
+          "level": "error",
+          "options": {
+            "requireAscii": true,
+            "filenameCases": ["kebab-case", "PascalCase", "camelCase"]
+          }
+        }
+      },
+      "complexity": {
+        "noExcessiveCognitiveComplexity": {
+          "level": "warn",
+          "options": {
+            "maxAllowedComplexity": 15
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "includes": ["**/components/ui/**/*"],
+      "linter": {
+        "rules": {
+          "performance": {
+            "noNamespaceImport": "off" // UIコンポーネントではReactやRadixUIの名前空間インポートを許可
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/*.test.ts",
+        "**/*.test.tsx",
+        "**/*.spec.ts",
+        "**/e2e/**/*"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "noMagicNumbers": "off" // テストファイルではマジックナンバーを許可
+          },
+          "complexity": {
+            "noExcessiveCognitiveComplexity": "off", // テストファイルでは複雑度チェックを無効化
+            "noVoid": "off" // テストファイルではvoidを許可
+          },
+          "performance": {
+            "useTopLevelRegex": "off" // テストファイルでは正規表現の定数化を不要とする
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/features/auth/**/*",
+        "**/app/config/error-interceptor.ts",
+        "**/app/config/queryClient.ts"
+      ],
+      "linter": {
+        "rules": {
+          "complexity": {
+            "noVoid": "off" // 認証関連では非同期処理のvoidを許可
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.config.ts", "**/*.config.js"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noMagicNumbers": "off" // 設定ファイルではマジックナンバーを許可
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/schemas/api.ts",
+        "**/generated/**",
+        "**/*.gen.ts",
+        "**/*.generated.ts"
+      ],
+      "linter": {
+        "enabled": false
+      }
+    }
+  ]
 }

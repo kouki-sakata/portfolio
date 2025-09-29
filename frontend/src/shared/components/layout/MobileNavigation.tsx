@@ -1,14 +1,15 @@
-import { Menu, X } from 'lucide-react';
-import React, { useState } from 'react';
+import { Menu, X } from "lucide-react";
+import type React from "react";
+import { useState } from "react";
 
-import { cn } from '@/shared/utils/cn';
+import { cn } from "@/shared/utils/cn";
 
-import { AppSidebar } from './AppSidebar';
+import { AppSidebar } from "./AppSidebar";
 
-interface MobileNavigationProps {
+type MobileNavigationProps = {
   /** 追加のCSSクラス */
   className?: string;
-}
+};
 
 /**
  * モバイルナビゲーションコンポーネント
@@ -33,33 +34,30 @@ export const MobileNavigation: React.FC<MobileNavigationProps> = ({
     <>
       {/* ハンバーガーメニューボタン */}
       <button
-        onClick={toggleSidebar}
+        aria-expanded={isOpen}
+        aria-label={isOpen ? "メニューを閉じる" : "メニューを開く"}
         className={cn(
           // ベーススタイル
-          'p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100',
+          "rounded-md p-2 text-gray-600 hover:bg-gray-100 hover:text-gray-900",
           // フォーカス状態
-          'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2',
+          "focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
           // トランジション
-          'transition-colors duration-200',
+          "transition-colors duration-200",
           // デスクトップでは非表示
-          'lg:hidden',
+          "lg:hidden",
           className
         )}
-        aria-label={isOpen ? 'メニューを閉じる' : 'メニューを開く'}
-        aria-expanded={isOpen}
+        onClick={toggleSidebar}
+        type="button"
       >
-        {isOpen ? (
-          <X className="h-6 w-6" />
-        ) : (
-          <Menu className="h-6 w-6" />
-        )}
+        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </button>
 
       {/* モバイルサイドバー */}
       <AppSidebar
+        className="lg:hidden"
         isOpen={isOpen}
         onClose={closeSidebar}
-        className="lg:hidden"
       />
     </>
   );

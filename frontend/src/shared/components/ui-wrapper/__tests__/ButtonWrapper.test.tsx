@@ -1,30 +1,30 @@
-import { render, screen } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { beforeEach,describe, expect, it, vi } from 'vitest';
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { FeatureFlagProvider } from '../../../contexts/FeatureFlagContext';
-import { ButtonWrapper } from '../ButtonWrapper';
+import { FeatureFlagProvider } from "../../../contexts/FeatureFlagContext";
+import { ButtonWrapper } from "../ButtonWrapper";
 
-describe('ButtonWrapper', () => {
+describe("ButtonWrapper", () => {
   beforeEach(() => {
     localStorage.clear();
   });
 
-  describe('with feature flag disabled', () => {
-    it('should render custom button implementation', () => {
+  describe("with feature flag disabled", () => {
+    it("should render custom button implementation", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: false }}>
           <ButtonWrapper>Click me</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Click me' });
+      const button = screen.getByRole("button", { name: "Click me" });
       expect(button).toBeDefined();
       // Custom implementation should have specific class
-      expect(button.className).not.toContain('inline-flex'); // shadcn/ui specific class
+      expect(button.className).not.toContain("inline-flex"); // shadcn/ui specific class
     });
 
-    it('should handle onClick events', async () => {
+    it("should handle onClick events", async () => {
       const handleClick = vi.fn();
       const user = userEvent.setup();
 
@@ -34,65 +34,65 @@ describe('ButtonWrapper', () => {
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Click me' });
+      const button = screen.getByRole("button", { name: "Click me" });
       await user.click(button);
 
       expect(handleClick).toHaveBeenCalledTimes(1);
     });
 
-    it('should handle disabled state', () => {
+    it("should handle disabled state", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: false }}>
           <ButtonWrapper disabled>Disabled Button</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Disabled Button' });
-      expect(button).toHaveProperty('disabled', true);
+      const button = screen.getByRole("button", { name: "Disabled Button" });
+      expect(button).toHaveProperty("disabled", true);
     });
   });
 
-  describe('with feature flag enabled', () => {
-    it('should render shadcn/ui button', () => {
+  describe("with feature flag enabled", () => {
+    it("should render shadcn/ui button", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: true }}>
           <ButtonWrapper>Click me</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Click me' });
+      const button = screen.getByRole("button", { name: "Click me" });
       expect(button).toBeDefined();
       // shadcn/ui button should have specific classes
-      expect(button.className).toContain('inline-flex');
-      expect(button.className).toContain('items-center');
+      expect(button.className).toContain("inline-flex");
+      expect(button.className).toContain("items-center");
     });
 
-    it('should support variant prop with shadcn/ui', () => {
+    it("should support variant prop with shadcn/ui", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: true }}>
           <ButtonWrapper variant="destructive">Delete</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Delete' });
-      expect(button.className).toContain('bg-red-500');
+      const button = screen.getByRole("button", { name: "Delete" });
+      expect(button.className).toContain("bg-red-500");
     });
 
-    it('should support size prop with shadcn/ui', () => {
+    it("should support size prop with shadcn/ui", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: true }}>
           <ButtonWrapper size="lg">Large Button</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Large Button' });
-      expect(button.className).toContain('h-10');
-      expect(button.className).toContain('px-8');
+      const button = screen.getByRole("button", { name: "Large Button" });
+      expect(button.className).toContain("h-10");
+      expect(button.className).toContain("px-8");
     });
   });
 
-  describe('type safety', () => {
-    it('should accept all button HTML attributes', () => {
+  describe("type safety", () => {
+    it("should accept all button HTML attributes", () => {
       const handleClick = vi.fn();
       const handleFocus = vi.fn();
       const handleBlur = vi.fn();
@@ -100,28 +100,28 @@ describe('ButtonWrapper', () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: false }}>
           <ButtonWrapper
-            id="test-button"
+            aria-label="Test Button"
             className="custom-class"
+            data-testid="button-test"
+            disabled
+            id="test-button"
+            onBlur={handleBlur}
             onClick={handleClick}
             onFocus={handleFocus}
-            onBlur={handleBlur}
             type="submit"
-            disabled
-            aria-label="Test Button"
-            data-testid="button-test"
           >
             Test Button
           </ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button', { name: 'Test Button' });
-      expect(button).toHaveProperty('id', 'test-button');
-      expect(button).toHaveProperty('type', 'submit');
-      expect(button).toHaveAttribute('data-testid', 'button-test');
+      const button = screen.getByRole("button", { name: "Test Button" });
+      expect(button).toHaveProperty("id", "test-button");
+      expect(button).toHaveProperty("type", "submit");
+      expect(button).toHaveAttribute("data-testid", "button-test");
     });
 
-    it('should forward ref correctly', () => {
+    it("should forward ref correctly", () => {
       const ref = vi.fn();
 
       render(
@@ -135,18 +135,18 @@ describe('ButtonWrapper', () => {
     });
   });
 
-  describe('loading state', () => {
-    it('should show loading indicator when loading prop is true', () => {
+  describe("loading state", () => {
+    it("should show loading indicator when loading prop is true", () => {
       render(
         <FeatureFlagProvider initialFlags={{ useShadcnUI: false }}>
           <ButtonWrapper loading>Loading...</ButtonWrapper>
         </FeatureFlagProvider>
       );
 
-      const button = screen.getByRole('button');
-      expect(button).toHaveProperty('disabled', true);
+      const button = screen.getByRole("button");
+      expect(button).toHaveProperty("disabled", true);
       // Should contain loading text or spinner
-      expect(button.textContent).toContain('Loading...');
+      expect(button.textContent).toContain("Loading...");
     });
   });
 });

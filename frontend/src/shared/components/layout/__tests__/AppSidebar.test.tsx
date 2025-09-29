@@ -1,30 +1,33 @@
-import { fireEvent,render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { fireEvent, render, screen } from "@testing-library/react";
+import { BrowserRouter } from "react-router-dom";
+import { describe, expect, it, vi } from "vitest";
 
-import { AppSidebar } from '../AppSidebar';
+import { AppSidebar } from "../AppSidebar";
 
 // NavLink プロパティの型定義
-interface NavLinkProps {
+type NavLinkProps = {
   to: string;
   children: React.ReactNode;
   className?: string | ((props: { isActive: boolean }) => string);
   onClick?: React.MouseEventHandler;
-}
+};
 
 // react-router-domのNavLinkをモック
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
+vi.mock("react-router-dom", async () => {
+  const actual =
+    await vi.importActual<typeof import("react-router-dom")>(
+      "react-router-dom"
+    );
   return {
     ...actual,
+    // biome-ignore lint/style/useNamingConvention: Component name must match React Router's NavLink
     NavLink: ({ to, children, className, onClick }: NavLinkProps) => {
-      const classValue = typeof className === 'function' ? className({ isActive: false }) : className;
+      const classValue =
+        typeof className === "function"
+          ? className({ isActive: false })
+          : className;
       return (
-        <a
-          href={to}
-          className={classValue}
-          onClick={onClick}
-        >
+        <a className={classValue} href={to} onClick={onClick}>
           {children}
         </a>
       );
@@ -36,8 +39,8 @@ const AppSidebarWrapper = ({ children }: { children: React.ReactNode }) => (
   <BrowserRouter>{children}</BrowserRouter>
 );
 
-describe('AppSidebar', () => {
-  it('デフォルト状態でサイドバーが正しくレンダリングされる', () => {
+describe("AppSidebar", () => {
+  it("デフォルト状態でサイドバーが正しくレンダリングされる", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar />
@@ -45,29 +48,29 @@ describe('AppSidebar', () => {
     );
 
     // ブランド名が表示されている
-    expect(screen.getByText('TeamDevelop')).toBeInTheDocument();
+    expect(screen.getByText("TeamDevelop")).toBeInTheDocument();
 
     // 主要なナビゲーションアイテムが表示されている
-    expect(screen.getByText('ホーム')).toBeInTheDocument();
-    expect(screen.getByText('出退勤')).toBeInTheDocument();
-    expect(screen.getByText('勤怠履歴')).toBeInTheDocument();
-    expect(screen.getByText('社員管理')).toBeInTheDocument();
-    expect(screen.getByText('通知')).toBeInTheDocument();
-    expect(screen.getByText('レポート')).toBeInTheDocument();
-    expect(screen.getByText('設定')).toBeInTheDocument();
+    expect(screen.getByText("ホーム")).toBeInTheDocument();
+    expect(screen.getByText("出退勤")).toBeInTheDocument();
+    expect(screen.getByText("勤怠履歴")).toBeInTheDocument();
+    expect(screen.getByText("社員管理")).toBeInTheDocument();
+    expect(screen.getByText("通知")).toBeInTheDocument();
+    expect(screen.getByText("レポート")).toBeInTheDocument();
+    expect(screen.getByText("設定")).toBeInTheDocument();
   });
 
-  it('管理グループのタイトルが表示される', () => {
+  it("管理グループのタイトルが表示される", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar />
       </AppSidebarWrapper>
     );
 
-    expect(screen.getByText('管理')).toBeInTheDocument();
+    expect(screen.getByText("管理")).toBeInTheDocument();
   });
 
-  it('通知アイテムにバッジが表示される', () => {
+  it("通知アイテムにバッジが表示される", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar />
@@ -75,20 +78,20 @@ describe('AppSidebar', () => {
     );
 
     // 通知バッジ（数字の3）が表示されている
-    expect(screen.getByText('3')).toBeInTheDocument();
+    expect(screen.getByText("3")).toBeInTheDocument();
   });
 
-  it('バージョン情報が表示される', () => {
+  it("バージョン情報が表示される", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar />
       </AppSidebarWrapper>
     );
 
-    expect(screen.getByText('v1.0.0')).toBeInTheDocument();
+    expect(screen.getByText("v1.0.0")).toBeInTheDocument();
   });
 
-  it('isOpenがtrueの時、モバイル用オーバーレイが表示される', () => {
+  it("isOpenがtrueの時、モバイル用オーバーレイが表示される", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar isOpen={true} />
@@ -96,11 +99,11 @@ describe('AppSidebar', () => {
     );
 
     // オーバーレイ要素が存在する
-    const overlay = screen.getByTestId('sidebar-overlay');
+    const overlay = screen.getByTestId("sidebar-overlay");
     expect(overlay).toBeInTheDocument();
   });
 
-  it('onCloseコールバックが呼ばれる - オーバーレイクリック', () => {
+  it("onCloseコールバックが呼ばれる - オーバーレイクリック", () => {
     const onCloseMock = vi.fn();
 
     render(
@@ -110,12 +113,12 @@ describe('AppSidebar', () => {
     );
 
     // オーバーレイをクリック
-    const overlay = screen.getByTestId('sidebar-overlay');
+    const overlay = screen.getByTestId("sidebar-overlay");
     fireEvent.click(overlay);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 
-  it('onCloseコールバックが呼ばれる - 閉じるボタンクリック', () => {
+  it("onCloseコールバックが呼ばれる - 閉じるボタンクリック", () => {
     const onCloseMock = vi.fn();
 
     render(
@@ -125,12 +128,12 @@ describe('AppSidebar', () => {
     );
 
     // 閉じるボタンをクリック
-    const closeButton = screen.getByLabelText('サイドバーを閉じる');
+    const closeButton = screen.getByLabelText("サイドバーを閉じる");
     fireEvent.click(closeButton);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 
-  it('onCloseコールバックが呼ばれる - ナビゲーションアイテムクリック', () => {
+  it("onCloseコールバックが呼ばれる - ナビゲーションアイテムクリック", () => {
     const onCloseMock = vi.fn();
 
     render(
@@ -140,13 +143,13 @@ describe('AppSidebar', () => {
     );
 
     // ナビゲーションアイテムをクリック
-    const homeLink = screen.getByText('ホーム');
+    const homeLink = screen.getByText("ホーム");
     fireEvent.click(homeLink);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
 
-  it('カスタムクラス名が適用される', () => {
-    const customClass = 'custom-sidebar-class';
+  it("カスタムクラス名が適用される", () => {
+    const customClass = "custom-sidebar-class";
 
     render(
       <AppSidebarWrapper>
@@ -155,11 +158,11 @@ describe('AppSidebar', () => {
     );
 
     // asideエレメントにカスタムクラスが適用されている
-    const sidebar = screen.getByTestId('app-sidebar');
+    const sidebar = screen.getByTestId("app-sidebar");
     expect(sidebar).toHaveClass(customClass);
   });
 
-  it('適切なアクセシビリティ属性が設定されている', () => {
+  it("適切なアクセシビリティ属性が設定されている", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar isOpen={true} />
@@ -167,11 +170,11 @@ describe('AppSidebar', () => {
     );
 
     // 閉じるボタンのaria-label
-    const closeButton = screen.getByLabelText('サイドバーを閉じる');
+    const closeButton = screen.getByLabelText("サイドバーを閉じる");
     expect(closeButton).toBeInTheDocument();
 
     // オーバーレイのaria-hidden
-    const overlay = screen.getByTestId('sidebar-overlay');
-    expect(overlay).toHaveAttribute('aria-hidden', 'true');
+    const overlay = screen.getByTestId("sidebar-overlay");
+    expect(overlay).toHaveAttribute("aria-hidden", "true");
   });
 });

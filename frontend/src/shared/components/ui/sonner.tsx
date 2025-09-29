@@ -1,19 +1,19 @@
-import { useTheme } from '../../../app/providers/use-theme';
+import { useTheme } from "../../../app/providers/use-theme";
 
-interface SonnerProps {
-  theme?: 'light' | 'dark' | 'system';
+type SonnerProps = {
+  theme?: "light" | "dark" | "system";
   className?: string;
-}
+};
 
 export const Sonner = ({ theme, className }: SonnerProps) => {
   const { theme: currentTheme } = useTheme();
   const resolvedTheme = theme ?? currentTheme;
 
   return (
-    <div 
+    <div
       className={className}
-      data-theme={resolvedTheme}
       data-testid="sonner-container"
+      data-theme={resolvedTheme}
     >
       {/* Toast container would go here */}
     </div>

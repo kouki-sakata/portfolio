@@ -1,13 +1,13 @@
-import type { EmployeeSummary } from '@/features/auth/types'
+import type { EmployeeSummary } from "@/features/auth/types";
 
-export interface EmployeeListResponse {
-  employees: EmployeeSummary[]
-}
+export type EmployeeListResponse = {
+  employees: EmployeeSummary[];
+};
 
-export interface EmployeeUpsertInput {
-  firstName: string
-  lastName: string
-  email: string
-  password?: string
-  admin: boolean
-}
+export type EmployeeUpsertInput = {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password?: string;
+  admin: boolean;
+};

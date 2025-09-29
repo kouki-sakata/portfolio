@@ -15,7 +15,6 @@ export const SignInPage = () => {
     setError(null);
     try {
       await login(formState);
-      // biome-ignore lint/complexity/noVoid: navigate returns void; no async handling required
       void navigate("/");
     } catch (err) {
       // ログイン失敗時の詳細はユーザーに開示しない（セキュリティ/UX）ため、常に同一メッセージを表示
@@ -35,7 +34,6 @@ export const SignInPage = () => {
       <form
         className="auth-card__form"
         onSubmit={(event) => {
-          // biome-ignore lint/complexity/noVoid: submission handler intentionally returns a promise
           void handleSubmit(event);
         }}
       >

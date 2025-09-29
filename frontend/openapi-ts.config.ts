@@ -1,12 +1,12 @@
-import { defineConfig } from '@hey-api/openapi-ts';
+import { defineConfig } from "@hey-api/openapi-ts";
 
 export default defineConfig({
-  input: '../openapi/openapi.yaml',
-  output: 'src/types',
+  input: "../openapi/openapi.yaml",
+  output: "src/types",
   plugins: [
     {
-      name: '@hey-api/typescript',
-      enums: 'typescript',
-    }
+      name: "@hey-api/typescript",
+      enums: "typescript",
+    },
   ],
 });

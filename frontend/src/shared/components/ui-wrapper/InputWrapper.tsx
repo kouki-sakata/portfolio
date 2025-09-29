@@ -1,12 +1,12 @@
-import { type ChangeEvent, type FocusEvent, type HTMLInputTypeAttribute } from 'react';
+import type { ChangeEvent, FocusEvent, HTMLInputTypeAttribute } from "react";
 
-import { Input as ShadcnInput } from '@/components/ui/input';
-import { Label as ShadcnLabel } from '@/components/ui/label';
-import { cn } from '@/lib/utils';
+import { Input as ShadcnInput } from "@/components/ui/input";
+import { Label as ShadcnLabel } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
-import { useFeatureFlag } from '../../hooks/use-feature-flag';
+import { useFeatureFlag } from "../../hooks/use-feature-flag";
 
-interface InputWrapperProps {
+type InputWrapperProps = {
   label: string;
   placeholder?: string;
   value?: string;
@@ -19,14 +19,14 @@ interface InputWrapperProps {
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
   onBlur?: (event: FocusEvent<HTMLInputElement>) => void;
-  'data-testid'?: string;
-}
+  "data-testid"?: string;
+};
 
 export const InputWrapper = ({
   label,
   placeholder,
   value,
-  type = 'text',
+  type = "text",
   error,
   helpText,
   required,
@@ -35,53 +35,52 @@ export const InputWrapper = ({
   onChange,
   onFocus,
   onBlur,
-  'data-testid': dataTestId,
+  "data-testid": dataTestId,
 }: InputWrapperProps) => {
   const { isEnabled } = useFeatureFlag();
-  const useShadcn = isEnabled('useShadcnUI');
+  const useShadcn = isEnabled("useShadcnUI");
 
-  const inputId = `input-${label.toLowerCase().replace(/\s+/g, '-')}`;
+  const inputId = `input-${label.toLowerCase().replace(/\s+/g, "-")}`;
   const helpTextId = helpText ? `${inputId}-help` : undefined;
   const errorId = error ? `${inputId}-error` : undefined;
 
-  const describedBy = [helpTextId, errorId].filter(Boolean).join(' ') || undefined;
+  const describedBy =
+    [helpTextId, errorId].filter(Boolean).join(" ") || undefined;
 
   if (useShadcn) {
     // shadcn/ui implementation
     return (
       <div className="space-y-2">
-        <ShadcnLabel htmlFor={inputId} className="text-sm font-medium">
+        <ShadcnLabel className="font-medium text-sm" htmlFor={inputId}>
           {label}
-          {required && <span className="text-red-500 ml-1" aria-label="required">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </ShadcnLabel>
 
         <ShadcnInput
-          id={inputId}
-          type={type}
-          placeholder={placeholder}
-          value={value}
-          required={required}
-          disabled={disabled}
-          aria-required={required}
-          aria-invalid={isValid === false || !!error}
           aria-describedby={describedBy}
+          aria-invalid={isValid === false || !!error}
+          aria-required={required}
+          className={cn(error && "border-red-500 focus-visible:ring-red-500")}
+          data-testid={dataTestId}
+          disabled={disabled}
+          id={inputId}
+          onBlur={onBlur}
           onChange={onChange}
           onFocus={onFocus}
-          onBlur={onBlur}
-          data-testid={dataTestId}
-          className={cn(
-            error && 'border-red-500 focus-visible:ring-red-500'
-          )}
+          placeholder={placeholder}
+          required={required}
+          type={type}
+          value={value}
         />
 
         {helpText && (
-          <div id={helpTextId} className="text-sm text-neutral-500">
+          <div className="text-neutral-500 text-sm" id={helpTextId}>
             {helpText}
           </div>
         )}
 
         {error && (
-          <div id={errorId} role="alert" className="text-sm text-red-500">
+          <div className="text-red-500 text-sm" id={errorId} role="alert">
             {error}
           </div>
         )}
@@ -94,30 +93,26 @@ export const InputWrapper = ({
     <div>
       <label htmlFor={inputId}>
         {label}
-        {required && <span aria-label="required">*</span>}
+        {required && <span>*</span>}
       </label>
 
       <input
-        id={inputId}
-        type={type}
-        placeholder={placeholder}
-        value={value}
-        required={required}
-        disabled={disabled}
-        aria-required={required}
-        aria-invalid={isValid === false || !!error}
         aria-describedby={describedBy}
+        aria-invalid={isValid === false || !!error}
+        aria-required={required}
+        data-testid={dataTestId}
+        disabled={disabled}
+        id={inputId}
+        onBlur={onBlur}
         onChange={onChange}
         onFocus={onFocus}
-        onBlur={onBlur}
-        data-testid={dataTestId}
+        placeholder={placeholder}
+        required={required}
+        type={type}
+        value={value}
       />
 
-      {helpText && (
-        <div id={helpTextId}>
-          {helpText}
-        </div>
-      )}
+      {helpText && <div id={helpTextId}>{helpText}</div>}
 
       {error && (
         <div id={errorId} role="alert">
