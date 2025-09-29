@@ -23,6 +23,7 @@
     "generate:zod-schemas": "openapi-zod-client ../openapi/openapi.yaml -o src/schemas/api.ts --export-schemas --with-docs --strict-objects"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.2.2",
     "@radix-ui/react-label": "^2.1.7",
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-toast": "^1.2.15",
@@ -36,6 +37,7 @@
     "lucide-react": "^0.544.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-hook-form": "^7.63.0",
     "react-router-dom": "^7.9.2",
     "tailwind-merge": "^3.3.1"
   },
