@@ -1,6 +1,32 @@
 # Steering Documents Changelog
 
-## 2025-09-29
+## 2025-09-29 (Update 2)
+
+### Updated Documents
+- `product.md` - APIクライアント層の完了状態を追加
+- `tech.md` - APIクライアント層の技術詳細とアーキテクチャパターンを追加
+- `structure.md` - APIクライアント実装の詳細構造を文書化
+
+### Key Changes
+
+#### APIクライアント層の構築（タスク7完了）
+- 各機能モジュール（auth、employees、home、stampHistory）に専用APIクライアント実装
+- React Queryとの完全統合による効率的なデータフェッチング
+- 型安全なAPI呼び出しパターンの確立
+
+#### 技術的改善
+- OpenAPIスキーマからの自動型生成パイプライン
+- エラーハンドリングの一元化
+- キャッシュ戦略の統一
+
+### Impact
+- **開発効率**: 型安全なAPIクライアントによるバグ削減
+- **保守性**: 機能モジュール毎の独立したAPI管理
+- **パフォーマンス**: React Queryによる効率的なキャッシュ管理
+
+---
+
+## 2025-09-29 (Update 1)
 
 ### Updated Documents
 - `product.md` - Biome移行の完了状態を追加

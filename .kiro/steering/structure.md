@@ -207,20 +207,27 @@ frontend/
 │   ├── assets/       # アセットファイル
 │   ├── features/     # 機能別モジュール
 │   │   ├── auth/     # 認証機能
-│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
+│   │   │   ├── api/      # APIクライアント実装
+│   │   │   │   ├── login.ts     # ログインAPI
+│   │   │   │   ├── logout.ts    # ログアウトAPI
+│   │   │   │   └── session.ts   # セッション確認API
 │   │   │   ├── components/
 │   │   │   ├── hooks/
 │   │   │   └── types/
-│   │   ├── employee/ # 従業員管理
-│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
+│   │   ├── employees/ # 従業員管理
+│   │   │   ├── api/      # APIクライアント実装
+│   │   │   │   └── index.ts     # 従業員CRUD操作
 │   │   │   ├── components/
 │   │   │   └── types/
 │   │   ├── home/     # ホーム画面
-│   │   │   ├── api/      # OpenAPIから生成されたAPIクライアント
+│   │   │   ├── api/      # APIクライアント実装
+│   │   │   │   ├── homeDashboard.ts # ダッシュボード情報取得
+│   │   │   │   └── stamp.ts         # 打刻機能
 │   │   │   ├── components/
 │   │   │   └── types/
-│   │   └── stamp/    # 打刻機能
-│   │       ├── api/      # OpenAPIから生成されたAPIクライアント
+│   │   └── stampHistory/    # 打刻履歴
+│   │       ├── api/      # APIクライアント実装
+│   │       │   └── index.ts     # 履歴取得・管理
 │   │       ├── components/
 │   │       └── types/
 │   ├── shared/       # 共通コンポーネント
@@ -281,6 +288,10 @@ frontend/
 - **統一レスポンス**: 一貫性のあるレスポンス形式
 - **OpenAPI駆動開発**: バックエンドのAPI仕様から自動的にTypeScript型を生成
 - **型安全な通信**: フロント/バック間の型の一貫性を自動保証
+- **APIクライアント層**: 各機能モジュールに専用のAPIクライアント実装
+  - React Queryとの統合による効率的なキャッシュ管理
+  - エラーハンドリングの一元化
+  - 型安全なリクエスト/レスポンス処理
 
 ## ファイル命名規則
 

@@ -68,6 +68,18 @@ npm run generate:api-types    # TypeScript型のみ生成
 npm run generate:zod-schemas   # Zodスキーマのみ生成
 ```
 
+### APIクライアント層
+- **アーキテクチャパターン**: 機能別モジュール化されたAPIクライアント
+- **型生成**: OpenAPI仕様からの自動生成（@hey-api/openapi-ts v0.84.3）
+- **API実装構造**:
+  - `auth/api/`: ログイン、ログアウト、セッション管理
+  - `employees/api/`: 従業員管理API
+  - `home/api/`: ダッシュボード、打刻機能
+  - `stampHistory/api/`: 打刻履歴管理
+- **React Query統合**: 各APIクライアントがuseQuery/useMutationと連携
+- **エラーハンドリング**: 統一されたエラー処理パターン
+- **型安全性**: OpenAPIスキーマによる完全な型保証
+
 ## バックエンド
 
 ### 主要技術スタック
