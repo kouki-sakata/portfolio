@@ -24,11 +24,25 @@ describe("SignInPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockUseAuth.mockReturnValue({
-      login: mockLogin,
+      // 基本認証状態
+      user: null,
+      authenticated: false,
       loading: false,
+
+      // 認証アクション
+      login: mockLogin,
       logout: vi.fn(),
-      session: null,
-      updateSession: vi.fn(),
+
+      // セッション管理
+      sessionInfo: null,
+      refreshSession: vi.fn(),
+      isSessionExpiring: false,
+      timeUntilExpiry: null,
+      sessionTimeoutWarning: false,
+
+      // CSRF保護
+      csrfToken: null,
+      refreshCsrfToken: vi.fn(),
     });
   });
 
@@ -249,11 +263,25 @@ describe("SignInPage", () => {
 
     it("ローディング中は「サインイン中...」を表示する", () => {
       mockUseAuth.mockReturnValue({
-        login: mockLogin,
+        // 基本認証状態
+        user: null,
+        authenticated: false,
         loading: true,
+
+        // 認証アクション
+        login: mockLogin,
         logout: vi.fn(),
-        session: null,
-        updateSession: vi.fn(),
+
+        // セッション管理
+        sessionInfo: null,
+        refreshSession: vi.fn(),
+        isSessionExpiring: false,
+        timeUntilExpiry: null,
+        sessionTimeoutWarning: false,
+
+        // CSRF保護
+        csrfToken: null,
+        refreshCsrfToken: vi.fn(),
       });
 
       render(
