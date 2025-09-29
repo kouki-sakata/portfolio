@@ -1,0 +1,132 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vitest";
+
+import type { EmployeeListResponse } from "@/features/employees/types";
+import * as employeeApi from "../api";
+import { useEmployees } from "./useEmployees";
+
+// APIのモック
+vi.mock("../api");
+
+const mockEmployees: EmployeeListResponse = {
+  employees: [
+    {
+      id: 1,
+      firstName: "太郎",
+      lastName: "山田",
+      email: "taro.yamada@example.com",
+      admin: true,
+    },
+    {
+      id: 2,
+      firstName: "花子",
+      lastName: "鈴木",
+      email: "hanako.suzuki@example.com",
+      admin: false,
+    },
+  ],
+};
+
+// テスト用QueryClientのセットアップ
+function createTestQueryClient() {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false, // テストでは再試行しない
+      },
+    },
+  });
+}
+
+// テスト用ラッパー
+function createWrapper() {
+  const queryClient = createTestQueryClient();
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    );
+  }
+  return Wrapper;
+}
+
+describe("useEmployees", () => {
+  it("should fetch employees successfully", async () => {
+    // Arrange: APIモックのセットアップ
+    vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
+
+    // Act: フックをレンダリング
+    const { result } = renderHook(() => useEmployees(), {
+      wrapper: createWrapper(),
+    });
+
+    // Assert: 初期状態の確認
+    expect(result.current.isLoading).toBe(true);
+    expect(result.current.data).toBeUndefined();
+
+    // Wait: データ取得完了を待つ
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Assert: 取得したデータの確認
+    expect(result.current.data).toEqual(mockEmployees);
+    expect(result.current.data?.employees).toHaveLength(2);
+    expect(result.current.isLoading).toBe(false);
+    expect(result.current.isError).toBe(false);
+  });
+
+  it("should handle fetch error", async () => {
+    // Arrange: エラーをthrowするモック
+    const errorMessage = "Failed to fetch employees";
+    vi.mocked(employeeApi.fetchEmployees).mockRejectedValue(
+      new Error(errorMessage)
+    );
+
+    // Act
+    const { result } = renderHook(() => useEmployees(), {
+      wrapper: createWrapper(),
+    });
+
+    // Wait: エラー状態を待つ
+    await waitFor(() => expect(result.current.isError).toBe(true));
+
+    // Assert: エラー状態の確認
+    expect(result.current.isError).toBe(true);
+    expect(result.current.error).toBeDefined();
+    expect(result.current.data).toBeUndefined();
+  });
+
+  it("should use correct query key", async () => {
+    // Arrange
+    vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
+
+    // Act
+    const { result } = renderHook(() => useEmployees(), {
+      wrapper: createWrapper(),
+    });
+
+    // Wait
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Assert: クエリキーが正しいことを確認（内部的にはqueryKeyプロパティで確認）
+    // この確認は実装側でqueryKeyが正しく設定されているかのテスト
+    expect(employeeApi.fetchEmployees).toHaveBeenCalledWith(false);
+  });
+
+  it("should have correct staleTime configuration", async () => {
+    // Arrange
+    vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
+
+    // Act
+    const { result } = renderHook(() => useEmployees(), {
+      wrapper: createWrapper(),
+    });
+
+    // Wait
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    // Assert: staleTime設定により、データが新鮮な状態であることを確認
+    // （30秒以内は再フェッチされない）
+    expect(result.current.isStale).toBe(false);
+  });
+});

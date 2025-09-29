@@ -81,6 +81,16 @@
       }
     },
     {
+      "includes": ["**/features/employees/components/EmployeeListPage.tsx"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noAlert": "off" // TODO: カスタムダイアログ実装後に有効化
+          }
+        }
+      }
+    },
+    {
       "includes": ["**/*.config.ts", "**/*.config.js"],
       "linter": {
         "rules": {
