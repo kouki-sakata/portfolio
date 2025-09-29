@@ -1,7 +1,7 @@
 import {
+  type UseMutationOptions,
   useMutation,
   useQueryClient,
-  type UseMutationOptions,
 } from "@tanstack/react-query";
 
 import { login } from "@/features/auth/api/login";
@@ -11,8 +11,8 @@ import type {
   SessionResponse,
 } from "@/features/auth/types";
 import {
-  queryKeys,
   optimisticUpdate,
+  queryKeys,
   rollbackOptimisticUpdate,
 } from "@/shared/utils/queryUtils";
 

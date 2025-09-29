@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query";
+import { type UseQueryOptions, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
@@ -34,7 +34,7 @@ export const useSession = (
 
     // リトライ戦略
     retry: 2,
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30_000),
 
     ...options,
   });

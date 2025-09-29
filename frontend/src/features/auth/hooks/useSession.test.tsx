@@ -1,12 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { fetchSession } from "@/features/auth/api/session";
 import { useSession } from "@/features/auth/hooks/useSession";
 import type { SessionResponse } from "@/features/auth/types";
-import { QUERY_CONFIG } from "@/app/config/queryClient";
 
 // APIモジュールをモック
 vi.mock("@/features/auth/api/session");
@@ -147,14 +145,12 @@ describe("useSession", () => {
 
   it("エラー時のリトライ戦略が動作する", async () => {
     const error = new Error("ネットワークエラー");
-    vi.mocked(fetchSession)
-      .mockRejectedValueOnce(error)
-      .mockResolvedValueOnce({
-        authenticated: false,
-        employee: null,
-      });
+    vi.mocked(fetchSession).mockRejectedValueOnce(error).mockResolvedValueOnce({
+      authenticated: false,
+      employee: null,
+    });
 
-    const { result } = renderHook(() => useSession(), { wrapper });
+    renderHook(() => useSession(), { wrapper });
 
     // エラー後にリトライされることを確認
     await waitFor(() => {
@@ -175,7 +171,8 @@ describe("useSession", () => {
     };
 
     vi.mocked(fetchSession).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve(mockSession), 100))
+      () =>
+        new Promise((resolve) => setTimeout(() => resolve(mockSession), 100))
     );
 
     const { result } = renderHook(() => useSession(), { wrapper });

@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { logout } from "@/features/auth/api/logout";
 import { useLogout } from "@/features/auth/hooks/useLogout";
@@ -144,9 +144,12 @@ describe("useLogout", () => {
       expect(result.current.isPending).toBe(true);
     });
 
-    await waitFor(() => {
-      expect(result.current.isPending).toBe(false);
-    }, { timeout: 200 });
+    await waitFor(
+      () => {
+        expect(result.current.isPending).toBe(false);
+      },
+      { timeout: 200 }
+    );
   });
 
   it("mutateAsyncで非同期処理できる", async () => {
@@ -164,9 +167,12 @@ describe("useLogout", () => {
 
     const onSuccessSpy = vi.fn();
 
-    const { result } = renderHook(() => useLogout({ onSuccess: onSuccessSpy }), {
-      wrapper,
-    });
+    const { result } = renderHook(
+      () => useLogout({ onSuccess: onSuccessSpy }),
+      {
+        wrapper,
+      }
+    );
 
     result.current.mutate();
 

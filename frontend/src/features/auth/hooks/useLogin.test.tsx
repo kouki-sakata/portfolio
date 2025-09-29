@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { login } from "@/features/auth/api/login";
 import { useLogin } from "@/features/auth/hooks/useLogin";
@@ -150,15 +150,22 @@ describe("useLogin", () => {
 
   it("ログイン中の状態が正しく管理される", async () => {
     vi.mocked(login).mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({
-        employee: {
-          id: 1,
-          firstName: "太郎",
-          lastName: "山田",
-          email: "test@example.com",
-          admin: false,
-        },
-      }), 100))
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                employee: {
+                  id: 1,
+                  firstName: "太郎",
+                  lastName: "山田",
+                  email: "test@example.com",
+                  admin: false,
+                },
+              }),
+            100
+          )
+        )
     );
 
     const { result } = renderHook(() => useLogin(), { wrapper });
@@ -174,9 +181,12 @@ describe("useLogin", () => {
       expect(result.current.isPending).toBe(true);
     });
 
-    await waitFor(() => {
-      expect(result.current.isPending).toBe(false);
-    }, { timeout: 200 });
+    await waitFor(
+      () => {
+        expect(result.current.isPending).toBe(false);
+      },
+      { timeout: 200 }
+    );
   });
 
   it("mutateAsyncで非同期処理できる", async () => {
