@@ -233,9 +233,7 @@ describe("HomePage", () => {
       };
       vi.mocked(submitStamp).mockImplementation(
         () =>
-          new Promise((resolve) =>
-            setTimeout(() => resolve(mockResponse), 100)
-          )
+          new Promise((resolve) => setTimeout(() => resolve(mockResponse), 100))
       );
 
       const user = userEvent.setup();
