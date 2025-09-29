@@ -1,9 +1,14 @@
-import axios, { type AxiosInstance, type CreateAxiosDefaults } from "axios";
+import axios, {
+  type AxiosInstance,
+  type CreateAxiosDefaults,
+  type AxiosRequestConfig,
+} from "axios";
 import { getEnv } from "@/shared/lib/env";
 import { createCsrfInterceptor } from "./interceptors/csrfInterceptor";
 import { createErrorInterceptor } from "./interceptors/errorInterceptor";
 
-export interface ApiClientOptions extends CreateAxiosDefaults {
+// Custom configuration options for interceptors
+export interface CustomApiOptions {
   skipCsrfToken?: boolean;
   skipErrorInterceptor?: boolean;
   csrfOptions?: {
@@ -17,6 +22,12 @@ export interface ApiClientOptions extends CreateAxiosDefaults {
     extractCode?: (data: unknown) => string | undefined;
   };
 }
+
+// Options for creating an API client instance
+export interface ApiClientOptions extends CreateAxiosDefaults, CustomApiOptions {}
+
+// Options for API request methods (convenience methods)
+export interface ApiRequestOptions extends AxiosRequestConfig, CustomApiOptions {}
 
 export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
   const { apiBaseUrl } = getEnv();
@@ -72,45 +83,78 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
   return instance;
 }
 
+// Helper function to extract custom options from request config
+function extractCustomOptions(config?: ApiRequestOptions): {
+  customOptions: CustomApiOptions;
+  axiosConfig?: AxiosRequestConfig;
+} {
+  if (!config) {
+    return { customOptions: {} };
+  }
+
+  const {
+    skipCsrfToken,
+    skipErrorInterceptor,
+    csrfOptions,
+    errorOptions,
+    ...axiosConfig
+  } = config;
+
+  return {
+    customOptions: {
+      skipCsrfToken,
+      skipErrorInterceptor,
+      csrfOptions,
+      errorOptions,
+    },
+    axiosConfig,
+  };
+}
+
 // Create and export a default instance
 export const apiClient = createApiClient();
 
 // Export convenience methods that return data directly
 export const api = {
-  get: async <T = unknown>(url: string, config?: ApiClientOptions) => {
-    const response = await apiClient.get<T>(url, config);
+  get: async <T = unknown>(url: string, config?: ApiRequestOptions) => {
+    const { axiosConfig } = extractCustomOptions(config);
+    const response = await apiClient.get<T>(url, axiosConfig);
     return response.data;
   },
 
   post: async <T = unknown>(
     url: string,
     data?: unknown,
-    config?: ApiClientOptions
+    config?: ApiRequestOptions
   ) => {
-    const response = await apiClient.post<T>(url, data, config);
+    const { axiosConfig } = extractCustomOptions(config);
+    const response = await apiClient.post<T>(url, data, axiosConfig);
     return response.data;
   },
 
   put: async <T = unknown>(
     url: string,
     data?: unknown,
-    config?: ApiClientOptions
+    config?: ApiRequestOptions
   ) => {
-    const response = await apiClient.put<T>(url, data, config);
+    const { axiosConfig } = extractCustomOptions(config);
+    const response = await apiClient.put<T>(url, data, axiosConfig);
     return response.data;
   },
 
   patch: async <T = unknown>(
     url: string,
     data?: unknown,
-    config?: ApiClientOptions
+    config?: ApiRequestOptions
   ) => {
-    const response = await apiClient.patch<T>(url, data, config);
+    const { axiosConfig } = extractCustomOptions(config);
+    const response = await apiClient.patch<T>(url, data, axiosConfig);
     return response.data;
   },
 
-  delete: async <T = unknown>(url: string, config?: ApiClientOptions) => {
-    const response = await apiClient.delete<T>(url, config);
+  delete: async <T = unknown>(url: string, config?: ApiRequestOptions) => {
+    const { axiosConfig } = extractCustomOptions(config);
+    const response = await apiClient.delete<T>(url, axiosConfig);
     return response.data;
   },
 };

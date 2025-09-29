@@ -35,7 +35,7 @@ describe("axiosClient", () => {
         string | Record<string, string>
       >;
       expect(headers["Content-Type"]).toBe("application/json");
-      expect(headers.Accept).toBe("application/json");
+      expect(headers["Accept"]).toBe("application/json");
     });
 
     it("should allow custom configuration to override defaults", () => {

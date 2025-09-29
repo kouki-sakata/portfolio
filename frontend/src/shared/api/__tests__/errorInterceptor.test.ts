@@ -210,7 +210,12 @@ describe("errorInterceptor", () => {
 
     it("should allow custom error message extractor", async () => {
       const customInterceptor = createErrorInterceptor({
-        extractMessage: (data) => data?.error || "Unknown error",
+        extractMessage: (data) => {
+          if (data && typeof data === "object" && "error" in data) {
+            return String(data.error) || "Unknown error";
+          }
+          return "Unknown error";
+        },
       });
 
       const mockError: AxiosError = {

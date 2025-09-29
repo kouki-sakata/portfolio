@@ -27,7 +27,7 @@ describe("API Client Integration Tests", () => {
     it("should make successful GET request with CSRF token", async () => {
       // Setup CSRF token
       const csrfToken = "test-csrf-token";
-      vi.spyOn(Cookies, "get").mockReturnValue(csrfToken);
+      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(csrfToken);
 
       // Create client and mock
       const client = createApiClient();
@@ -45,7 +45,9 @@ describe("API Client Integration Tests", () => {
       expect(response.status).toBe(200);
 
       // Verify CSRF token was added
-      const requestHeaders = mockInstance.history.get[0].headers;
+      const request = mockInstance.history.get[0];
+      expect(request).toBeDefined();
+      const requestHeaders = request?.headers;
       expect(requestHeaders?.["X-XSRF-TOKEN"]).toBe(csrfToken);
 
       mockInstance.restore();
@@ -172,7 +174,7 @@ describe("API Client Integration Tests", () => {
 
       // Mock CSRF token
       const csrfToken = "test-csrf-token";
-      vi.spyOn(Cookies, "get").mockReturnValue(csrfToken);
+      (vi.spyOn(Cookies, "get") as ReturnType<typeof vi.fn>).mockReturnValue(csrfToken);
 
       // Mock response
       mockInstance.onGet("/api/test").reply(200, {});
@@ -181,7 +183,9 @@ describe("API Client Integration Tests", () => {
       await client.get("/api/test");
 
       // Verify CSRF token was NOT added
-      const requestHeaders = mockInstance.history.get[0].headers;
+      const request = mockInstance.history.get[0];
+      expect(request).toBeDefined();
+      const requestHeaders = request?.headers;
       expect(requestHeaders?.["X-XSRF-TOKEN"]).toBeUndefined();
 
       mockInstance.restore();
