@@ -124,6 +124,10 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - 各機能モジュールに専用APIクライアント実装
   - React Queryとの統合による効率的なデータフェッチング
   - 型安全なAPI呼び出しパターンの確立
+- ✅ SignInPageのshadcn/ui化（完了 - 2025-09-29）
+  - React Hook Form + Zodによるフォームバリデーション
+  - shadcn/uiのFormコンポーネント導入
+  - アクセシビリティとUX改善
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー

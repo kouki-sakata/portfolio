@@ -238,6 +238,13 @@ frontend/
 │   │   └── utils/
 │   ├── components/   # shadcn/uiコンポーネント
 │   │   └── ui/       # UIプリミティブ
+│   │       ├── button.tsx      # ボタンコンポーネント
+│   │       ├── form.tsx        # フォームコンポーネント
+│   │       ├── input.tsx       # 入力フィールド
+│   │       ├── label.tsx       # ラベルコンポーネント
+│   │       ├── toast.tsx       # トースト通知
+│   │       ├── toaster.tsx     # トースターコンテナ
+│   │       └── use-toast.ts    # トーストフック
 │   ├── hooks/        # グローバルフック
 │   ├── lib/          # ユーティリティライブラリ
 │   ├── schemas/      # Zodスキーマ定義

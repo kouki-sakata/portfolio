@@ -28,6 +28,10 @@
   - Radix UI React Label (v2.1.7)
   - Radix UI React Slot (v1.2.3)
   - Radix UI React Toast (v1.2.15)
+  - Button、Form、Input、Label、Toast等の基本UIコンポーネント実装済み
+- **React Hook Form**: フォーム状態管理（v7.53.0）
+  - Zod統合によるランタイムバリデーション
+  - 高パフォーマンスな非制御コンポーネント
 - **Tailwind CSS 4**: ユーティリティファーストCSS（v4.1.13）
 - **Lucide React**: アイコンライブラリ（v0.544.0）
 - **class-variance-authority**: コンポーネントバリアント管理（v0.7.1）
