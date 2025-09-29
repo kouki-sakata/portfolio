@@ -249,6 +249,7 @@ frontend/
 │   ├── components/   # shadcn/uiコンポーネント
 │   │   └── ui/       # UIプリミティブ
 │   │       ├── button.tsx      # ボタンコンポーネント
+│   │       ├── data-table.tsx  # DataTableコンポーネント（TanStack Table）
 │   │       ├── form.tsx        # フォームコンポーネント
 │   │       ├── input.tsx       # 入力フィールド
 │   │       ├── label.tsx       # ラベルコンポーネント
