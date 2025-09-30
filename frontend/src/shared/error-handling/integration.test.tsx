@@ -44,7 +44,7 @@ describe("Error Handling System Integration", () => {
       toast: mockToast,
       onLogout: mockOnLogout,
       onRedirect: mockOnRedirect,
-      environment: "test",
+      environment: "development",
     });
   });
 

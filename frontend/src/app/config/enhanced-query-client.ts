@@ -117,7 +117,7 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
     // ログアウト処理を非同期で実行
     const handleAuthLogout = async (): Promise<void> => {
       try {
-        await config.onLogout();
+        await config.onLogout?.();
       } catch (logoutError) {
         // ログアウトエラーは無視（認証トークンが既に無効な可能性があるため）
         if (config.environment === "development") {
@@ -126,7 +126,7 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
         }
       }
       const loginPath = config.loginPath || "/auth/signin";
-      config.onRedirect(loginPath);
+      config.onRedirect?.(loginPath);
     };
 
     // fire-and-forgetパターン: Promiseのcatchで明示的にエラーを無視

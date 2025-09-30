@@ -24,7 +24,7 @@ export class NetworkError extends ApiError {
   /**
    * ユーザーフレンドリーなエラーメッセージを取得
    */
-  getUserMessage(): string {
+  override getUserMessage(): string {
     return "ネットワークエラーが発生しました。接続を確認してください。";
   }
 

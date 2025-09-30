@@ -304,7 +304,6 @@ describe("ErrorBoundary", () => {
     });
 
     it("should allow nested error boundaries", () => {
-      const _outerError = new Error("Outer error");
       const innerError = new Error("Inner error");
 
       render(

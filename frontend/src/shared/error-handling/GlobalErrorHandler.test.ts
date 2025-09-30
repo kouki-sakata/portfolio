@@ -86,16 +86,17 @@ describe("GlobalErrorHandler", () => {
       );
       handlerWithRetry.handle(error);
 
-      const toastCall = mockToast.mock.calls[0][0];
-      expect(toastCall.title).toBe("ネットワークエラー");
-      expect(toastCall.description).toBe(
+      const toastCall = mockToast.mock.calls[0]?.[0];
+      expect(toastCall).toBeDefined();
+      expect(toastCall?.title).toBe("ネットワークエラー");
+      expect(toastCall?.description).toBe(
         "ネットワークエラーが発生しました。接続を確認してください。"
       );
-      expect(toastCall.variant).toBe("destructive");
-      expect(toastCall.duration).toBe(5000);
-      expect(toastCall.action).toBeDefined();
-      expect(toastCall.action.label).toBe("再試行");
-      expect(toastCall.action.onClick).toBe(mockOnRetry);
+      expect(toastCall?.variant).toBe("destructive");
+      expect(toastCall?.duration).toBe(5000);
+      expect(toastCall?.action).toBeDefined();
+      expect(toastCall?.action?.label).toBe("再試行");
+      expect(toastCall?.action?.onClick).toBe(mockOnRetry);
       expect(mockLogger.log).toHaveBeenCalledWith(error, "error");
     });
 

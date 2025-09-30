@@ -84,7 +84,7 @@ export class ErrorBoundary extends Component<
   /**
    * エラーの詳細情報を記録
    */
-  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
+  override componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // GlobalErrorHandlerでエラー処理
     try {
       const errorHandler = GlobalErrorHandler.getInstance();
@@ -92,7 +92,7 @@ export class ErrorBoundary extends Component<
       const unexpectedError =
         error instanceof UnexpectedError
           ? error
-          : new UnexpectedError(error.message, error);
+          : new UnexpectedError(error.message, { originalError: error });
 
       errorHandler.handle(unexpectedError);
     } catch (_e) {
@@ -155,7 +155,7 @@ export class ErrorBoundary extends Component<
     return fallback;
   }
 
-  render(): ReactNode {
+  override render(): ReactNode {
     if (this.state.hasError) {
       return this.renderFallback();
     }

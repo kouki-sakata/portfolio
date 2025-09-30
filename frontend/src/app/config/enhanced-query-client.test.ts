@@ -17,7 +17,6 @@ describe("Enhanced Query Client", () => {
   const mockToast = vi.fn();
   const mockOnLogout = vi.fn().mockResolvedValue(undefined);
   const mockOnRedirect = vi.fn();
-  const _mockOnRetry = vi.fn();
 
   beforeEach(() => {
     GlobalErrorHandler.reset();
@@ -136,7 +135,7 @@ describe("Enhanced Query Client", () => {
       const error = new ApiError("Bad request", 400);
       const mutationCache = queryClient.getMutationCache();
 
-      mutationCache.config.onError?.(error, {}, {}, {} as any);
+      mutationCache.config.onError?.(error, {}, {}, {} as any, {} as any);
 
       expect(mockToast).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -206,11 +205,12 @@ describe("Enhanced Query Client", () => {
       const retryDelay = queryClient.getDefaultOptions().queries?.retryDelay;
 
       if (typeof retryDelay === "function") {
-        expect(retryDelay(0)).toBe(1000); // 1 second
-        expect(retryDelay(1)).toBe(2000); // 2 seconds
-        expect(retryDelay(2)).toBe(4000); // 4 seconds
-        expect(retryDelay(3)).toBe(8000); // 8 seconds
-        expect(retryDelay(10)).toBe(30_000); // Max 30 seconds
+        const error = new Error("Test error");
+        expect(retryDelay(0, error)).toBe(1000); // 1 second
+        expect(retryDelay(1, error)).toBe(2000); // 2 seconds
+        expect(retryDelay(2, error)).toBe(4000); // 4 seconds
+        expect(retryDelay(3, error)).toBe(8000); // 8 seconds
+        expect(retryDelay(10, error)).toBe(30_000); // Max 30 seconds
       }
     });
   });

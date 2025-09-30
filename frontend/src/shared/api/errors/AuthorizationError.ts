@@ -29,7 +29,7 @@ export class AuthorizationError extends ApiError {
   /**
    * ユーザーフレンドリーなエラーメッセージを取得
    */
-  getUserMessage(): string {
+  override getUserMessage(): string {
     if (this.requiredRole) {
       return `この操作には${this.requiredRole}権限が必要です。`;
     }
@@ -53,6 +53,6 @@ export class AuthorizationError extends ApiError {
    * 管理者権限が必要かどうかを判定
    */
   requiresAdmin(): boolean {
-    return this.requiredRole?.toLowerCase().includes("admin");
+    return this.requiredRole?.toLowerCase().includes("admin") ?? false;
   }
 }

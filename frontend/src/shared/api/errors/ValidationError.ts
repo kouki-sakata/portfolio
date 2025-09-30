@@ -27,7 +27,7 @@ export class ValidationError extends ApiError {
   /**
    * ユーザーフレンドリーなエラーメッセージを取得
    */
-  getUserMessage(): string {
+  override getUserMessage(): string {
     const errorMessages = this.getAllErrorMessages();
 
     if (errorMessages.length === 0) {
@@ -45,7 +45,10 @@ export class ValidationError extends ApiError {
 
     for (const field in this.fieldErrors) {
       if (Object.hasOwn(this.fieldErrors, field)) {
-        messages.push(...this.fieldErrors[field]);
+        const errors = this.fieldErrors[field];
+        if (errors) {
+          messages.push(...errors);
+        }
       }
     }
 
@@ -56,7 +59,8 @@ export class ValidationError extends ApiError {
    * 特定のフィールドにエラーがあるかチェック
    */
   hasFieldError(field: string): boolean {
-    return field in this.fieldErrors && this.fieldErrors[field].length > 0;
+    const errors = this.fieldErrors[field];
+    return errors !== undefined && errors.length > 0;
   }
 
   /**

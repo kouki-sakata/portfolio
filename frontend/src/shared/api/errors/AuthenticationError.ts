@@ -23,7 +23,7 @@ export class AuthenticationError extends ApiError {
   /**
    * ユーザーフレンドリーなエラーメッセージを取得
    */
-  getUserMessage(): string {
+  override getUserMessage(): string {
     return "認証が必要です。ログインしてください。";
   }
 

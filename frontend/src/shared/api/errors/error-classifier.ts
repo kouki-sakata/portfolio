@@ -75,8 +75,8 @@ export function classifyHttpError(
 
   // 403: 認可エラー
   if (status === 403) {
-    const requiredRole = details?.requiredRole as string | undefined;
-    const currentRole = details?.currentRole as string | undefined;
+    const requiredRole = details?.["requiredRole"] as string | undefined;
+    const currentRole = details?.["currentRole"] as string | undefined;
     return new AuthorizationError(
       message || "Forbidden",
       requiredRole,
@@ -158,13 +158,13 @@ function extractFieldErrors(
   }
 
   // errorsプロパティがある場合（一般的なAPIレスポンス）
-  if (details.errors && typeof details.errors === "object") {
-    return extractFromErrorsProperty(details.errors as Record<string, unknown>);
+  if (details["errors"] && typeof details["errors"] === "object") {
+    return extractFromErrorsProperty(details["errors"] as Record<string, unknown>);
   }
 
   // fieldErrorsプロパティがある場合
-  if (details.fieldErrors && typeof details.fieldErrors === "object") {
-    return details.fieldErrors as Record<string, string[]>;
+  if (details["fieldErrors"] && typeof details["fieldErrors"] === "object") {
+    return details["fieldErrors"] as Record<string, string[]>;
   }
 
   // detailsそのものがフィールドエラー形式の場合
