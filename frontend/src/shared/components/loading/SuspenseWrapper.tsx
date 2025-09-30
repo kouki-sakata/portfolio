@@ -6,7 +6,6 @@ import {
   useTransition,
 } from "react";
 import { ErrorBoundary } from "@/shared/error-handling/ErrorBoundary";
-import { ErrorFallback } from "@/shared/error-handling/ErrorFallback";
 import { LoadingSpinner } from "./LoadingSpinner";
 import {
   SkeletonCard,
@@ -22,7 +21,7 @@ export type FallbackType =
   | "skeleton-form"
   | "skeleton-text";
 
-export interface SuspenseWrapperProps {
+export type SuspenseWrapperProps = {
   /** 子要素 */
   children: ReactNode;
   /** カスタムフォールバックコンポーネント */
@@ -37,7 +36,7 @@ export interface SuspenseWrapperProps {
   showDelay?: number;
   /** Suspense境界に適用するkey（リセット用） */
   suspenseKey?: string;
-}
+};
 
 /**
  * 遅延表示付きフォールバックコンポーネント
@@ -52,7 +51,9 @@ const DelayedFallback = ({
   const [showFallback, setShowFallback] = useState(delay === 0);
 
   useEffect(() => {
-    if (delay === 0) return;
+    if (delay === 0) {
+      return;
+    }
 
     const timer = setTimeout(() => {
       setShowFallback(true);
@@ -81,7 +82,6 @@ const getDefaultFallback = (type: FallbackType): ReactNode => {
       return <SkeletonForm />;
     case "skeleton-text":
       return <SkeletonText />;
-    case "spinner":
     default:
       return <LoadingSpinner center />;
   }
@@ -194,7 +194,7 @@ export function TransitionSuspenseWrapper({
   onTransitionStart?: () => void;
   onTransitionEnd?: () => void;
 }) {
-  const [isPending, startTransition] = useTransition();
+  const [isPending, _startTransition] = useTransition();
 
   useEffect(() => {
     if (isPending) {

@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { Suspense } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { SuspenseWrapper } from "./SuspenseWrapper";
 
@@ -107,7 +106,7 @@ describe("SuspenseWrapper", () => {
 
     it("onErrorコールバックが呼ばれること", () => {
       const onError = vi.fn();
-      const testError = new Error("Test error");
+      const _testError = new Error("Test error");
 
       render(
         <SuspenseWrapper onError={onError}>
@@ -189,7 +188,7 @@ describe("SuspenseWrapper", () => {
   });
 
   describe("遅延表示", () => {
-    it.skip("showDelayが設定されている場合、指定時間後にフォールバックが表示されること", () => {
+    it("showDelayが設定されている場合、指定時間後にフォールバックが表示されること", () => {
       // 注: タイミング依存のテストはE2Eテストで検証
       // ユニットテストではスキップ
     });

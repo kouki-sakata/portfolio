@@ -200,9 +200,13 @@ export function SkeletonText({
   ...props
 }: SkeletonTextProps) {
   const getWidth = (index: number) => {
-    if (!randomWidth) return "w-full";
+    if (!randomWidth) {
+      return "w-full";
+    }
     // 最後の行は短めにすることが多い
-    if (index === lines - 1) return randomWidths[3] ?? "w-1/2";
+    if (index === lines - 1) {
+      return randomWidths[3] ?? "w-1/2";
+    }
     return randomWidths[index % randomWidths.length] ?? "w-full";
   };
 
