@@ -106,7 +106,6 @@ describe("SuspenseWrapper", () => {
 
     it("onErrorコールバックが呼ばれること", () => {
       const onError = vi.fn();
-      const _testError = new Error("Test error");
 
       render(
         <SuspenseWrapper onError={onError}>

@@ -65,7 +65,7 @@ describe("SkeletonTable", () => {
     render(<SkeletonTable />);
     const rows = screen.getAllByTestId(/skeleton-table-row-/);
     expect(rows).toHaveLength(3);
-    const cells = rows[0].querySelectorAll(
+    const cells = rows[0]?.querySelectorAll(
       '[data-testid^="skeleton-table-cell"]'
     );
     expect(cells).toHaveLength(5);
