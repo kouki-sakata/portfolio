@@ -74,7 +74,7 @@ describe("SuspenseWrapper", () => {
   });
 
   describe("エラーハンドリング", () => {
-    // エラーをキャッチしてコンソールに出力しないように
+    // biome-ignore lint/suspicious/noEmptyBlockStatements: テストのためにconsole.errorを意図的に無効化
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     it("エラーが発生した場合にエラーフォールバックが表示されること", () => {
