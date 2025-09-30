@@ -114,7 +114,9 @@ describe("ErrorBoundary", () => {
             <div>
               <h1>Error occurred</h1>
               <p>{props.error.message}</p>
-              <button onClick={props.reset}>Reset</button>
+              <button onClick={props.reset} type="button">
+                Reset
+              </button>
             </div>
           )}
         >
@@ -150,6 +152,7 @@ describe("ErrorBoundary", () => {
                   shouldThrow = false;
                   props.reset();
                 }}
+                type="button"
               >
                 Reset
               </button>
@@ -173,7 +176,9 @@ describe("ErrorBoundary", () => {
           fallback={(props) => (
             <div>
               <span>Error Fallback</span>
-              <button onClick={props.reset}>Reset</button>
+              <button onClick={props.reset} type="button">
+                Reset
+              </button>
             </div>
           )}
         >
@@ -196,7 +201,9 @@ describe("ErrorBoundary", () => {
           fallback={(props) => (
             <div>
               <span>Error Fallback</span>
-              <button onClick={props.reset}>Reset</button>
+              <button onClick={props.reset} type="button">
+                Reset
+              </button>
             </div>
           )}
           resetQueries={mockResetQueries}
@@ -255,7 +262,9 @@ describe("ErrorBoundary", () => {
         <div>
           <h1>Component Fallback</h1>
           <p>{error.message}</p>
-          <button onClick={reset}>Try Again</button>
+          <button onClick={reset} type="button">
+            Try Again
+          </button>
         </div>
       );
 

@@ -114,6 +114,16 @@
       }
     },
     {
+      "includes": ["frontend/src/shared/error-handling/error-logger.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noConsole": "off" // ロギングユーティリティのためconsole使用を許可
+          }
+        }
+      }
+    },
+    {
       "includes": [
         "**/schemas/api.ts",
         "**/generated/**",

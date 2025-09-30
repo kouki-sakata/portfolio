@@ -163,7 +163,7 @@ describe("Error Handling System Integration", () => {
 
     const TestMutationComponent: React.FC = () => {
       const mutation = useMutation({
-        mutationFn: async () => {
+        mutationFn: () => {
           throw new ValidationError("Form validation failed", 422, {
             email: ["メールアドレスが無効です"],
             password: ["パスワードが短すぎます"],
