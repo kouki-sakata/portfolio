@@ -152,7 +152,7 @@
     - エラーログ送信機能を追加
     - _Requirements: 8.1, 8.5_
 
-- [ ] 
+- [x]
     17. ローディング状態とスケルトンUIの実装
 
     - LoadingSpinnerとSkeletonコンポーネントを作成

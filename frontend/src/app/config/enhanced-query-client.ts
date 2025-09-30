@@ -156,6 +156,24 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
 
 /**
  * 強化されたQueryClientを作成
+ *
+ * @description
+ * React 19 Suspense統合について:
+ * - デフォルトではsuspense: falseで通常のuseQuery動作を維持
+ * - Suspenseを使いたい場合は明示的にuseSuspenseQueryを使用
+ * - useSuspenseQueryは自動的にSuspenseモードで動作
+ * - SuspenseWrapperコンポーネントと組み合わせて使用を推奨
+ *
+ * @example
+ * ```tsx
+ * // Suspenseを使用する場合
+ * import { useSuspenseQuery } from "@tanstack/react-query";
+ * import { SuspenseWrapper } from "@/shared/components/loading";
+ *
+ * <SuspenseWrapper fallbackType="skeleton-card">
+ *   <ComponentUsingSuspenseQuery />
+ * </SuspenseWrapper>
+ * ```
  */
 export const createEnhancedQueryClient = (
   config: QueryClientConfig
@@ -188,6 +206,8 @@ export const createEnhancedQueryClient = (
         refetchOnWindowFocus: false,
         // ネットワークエラー時は自動的に再接続時に再試行
         refetchOnReconnect: true,
+        // React 19 Suspenseモードを有効化（useSuspenseQuery使用時のみ有効）
+        suspense: false, // デフォルトはfalse、useSuspenseQueryを使用する場合は自動的にsuspenseモードになる
       },
       mutations: {
         retry: (failureCount, error) => {

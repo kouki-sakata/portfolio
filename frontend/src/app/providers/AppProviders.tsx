@@ -2,7 +2,7 @@ import "@/styles/global.css";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { StrictMode, useEffect } from "react";
+import { lazy, StrictMode, useEffect } from "react";
 import {
   createBrowserRouter,
   Outlet,
@@ -16,10 +16,32 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionTimeoutNotification } from "@/features/auth/components/SessionTimeoutNotification";
 import { AuthProvider } from "@/features/auth/context/AuthProvider";
-import { SignInRoute } from "@/features/auth/routes/SignInRoute";
-import { EmployeeAdminRoute } from "@/features/employees/routes/EmployeeAdminRoute";
-import { HomeRoute } from "@/features/home/routes/HomeRoute";
-import { StampHistoryRoute } from "@/features/stampHistory/routes/StampHistoryRoute";
+
+// Lazy load route components for code splitting
+const SignInRoute = lazy(() =>
+  import("@/features/auth/routes/SignInRoute").then((module) => ({
+    default: module.SignInRoute,
+  }))
+);
+
+const EmployeeAdminRoute = lazy(() =>
+  import("@/features/employees/routes/EmployeeAdminRoute").then((module) => ({
+    default: module.EmployeeAdminRoute,
+  }))
+);
+
+const HomeRoute = lazy(() =>
+  import("@/features/home/routes/HomeRoute").then((module) => ({
+    default: module.HomeRoute,
+  }))
+);
+
+const StampHistoryRoute = lazy(() =>
+  import("@/features/stampHistory/routes/StampHistoryRoute").then((module) => ({
+    default: module.StampHistoryRoute,
+  }))
+);
+
 import { useToast } from "@/hooks/use-toast";
 import {
   type AuthEventPayload,

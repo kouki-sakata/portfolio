@@ -2,6 +2,7 @@ import { Navigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { EmployeeListPage } from "@/features/employees/components/EmployeeListPage";
+import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 
 export const EmployeeAdminRoute = () => {
   const { user } = useAuth();
@@ -10,5 +11,9 @@ export const EmployeeAdminRoute = () => {
     return <Navigate replace to="/" />;
   }
 
-  return <EmployeeListPage />;
+  return (
+    <PageSuspenseWrapper>
+      <EmployeeListPage />
+    </PageSuspenseWrapper>
+  );
 };
