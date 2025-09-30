@@ -11,12 +11,9 @@ if (!URL.createObjectURL) {
 
 describe("blob-downloader", () => {
   describe("downloadBlob", () => {
-    let createElementSpy: MockInstance<
-      [tagName: string, options?: ElementCreationOptions],
-      HTMLElement
-    >;
-    let createObjectURLSpy: MockInstance<[blob: Blob | MediaSource], string>;
-    let revokeObjectURLSpy: MockInstance<[url: string], void>;
+    let createElementSpy: MockInstance;
+    let createObjectURLSpy: MockInstance;
+    let revokeObjectURLSpy: MockInstance;
     let mockLink: HTMLAnchorElement;
 
     beforeEach(() => {
