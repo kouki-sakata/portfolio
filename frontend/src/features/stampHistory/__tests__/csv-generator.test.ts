@@ -78,7 +78,7 @@ describe("csv-generator", () => {
         {
           ...mockEntries[0],
           dayOfWeek: "水,曜日",
-        },
+        } as StampHistoryEntry,
       ];
 
       const config: ExportConfig = {
@@ -97,7 +97,7 @@ describe("csv-generator", () => {
         {
           ...mockEntries[0],
           dayOfWeek: '水"曜日',
-        },
+        } as StampHistoryEntry,
       ];
 
       const config: ExportConfig = {

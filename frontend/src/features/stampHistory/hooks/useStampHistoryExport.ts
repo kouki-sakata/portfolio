@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { generateCsvInBatches } from "../lib/batch-processor";
 import { downloadBlob, generateFilename } from "../lib/blob-downloader";
 import { generateCsvBlob, generateCsvContent } from "../lib/csv-generator";

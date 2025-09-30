@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { MockInstance } from "vitest";
 import { downloadBlob, generateFilename } from "../lib/blob-downloader";
 import type { ExportResult } from "../types";
 
@@ -10,9 +11,9 @@ if (!URL.createObjectURL) {
 
 describe("blob-downloader", () => {
   describe("downloadBlob", () => {
-    let createElementSpy: ReturnType<typeof vi.spyOn>;
-    let createObjectURLSpy: ReturnType<typeof vi.spyOn>;
-    let revokeObjectURLSpy: ReturnType<typeof vi.spyOn>;
+    let createElementSpy: MockInstance<[tagName: string, options?: ElementCreationOptions], HTMLElement>;
+    let createObjectURLSpy: MockInstance<[blob: Blob | MediaSource], string>;
+    let revokeObjectURLSpy: MockInstance<[url: string], void>;
     let mockLink: HTMLAnchorElement;
 
     beforeEach(() => {

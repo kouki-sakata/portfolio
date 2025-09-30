@@ -1,6 +1,6 @@
 ---
 description: Execute spec tasks using TDD methodology
-allowed-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, WebSearch
+allowed-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, WebSearch, context7, serena
 argument-hint: <feature-name> [task-numbers]
 ---
 
@@ -67,10 +67,10 @@ For each selected task:
 - **Feature**: Use `$1` for the feature name.
 - **Tasks**: Use `$2` for specific task numbers (optional).
 - **Development Approach**:
-  - Create a branch and begin implementation.
-  Name the branch according to the task
-  - Utilize **context7** for all development activities.
-  - Consistently apply software development **best practices**.
+    - Create a branch and begin implementation.
+      Name the branch according to the task
+    - Utilize **context7** for all development activities.
+    - Consistently apply software development **best practices**.
 - **Coding Standards (TypeScript)**:
     - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
       must be fully type-safe.
