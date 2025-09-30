@@ -139,6 +139,12 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - Tailwind CSS v4によるレスポンシブデザイン
   - React Query統合によるリアルタイムデータ更新
   - PageLoaderによる読み込み状態の改善
+- ✅ グローバルエラーハンドリングシステム（完了 - 2025-09-30）
+  - カスタムエラークラス階層の実装（NetworkError、ValidationError、AuthenticationError等）
+  - ErrorBoundaryコンポーネントによるReactエラー捕捉
+  - GlobalErrorHandlerによる一元的エラー処理
+  - エラー分類と自動リトライ戦略の実装
+  - 包括的なテストカバレッジ（単体テスト・統合テスト）
 - ✅ TanStack Table統合（完了 - 2025-09-30）
   - DataTableコンポーネント実装（v8.21.3）
   - ソート、フィルタリング、ページネーション機能

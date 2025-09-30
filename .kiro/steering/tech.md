@@ -100,7 +100,13 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
   - 各APIクライアントがuseQuery/useMutationと連携
   - カスタムフック実装（useSession、useLogin、useLogout、useAuthContext）
   - 最適化されたキャッシュ戦略（staleTime、gcTime設定）
-- **エラーハンドリング**: 統一されたエラー処理パターン
+  - EnhancedQueryClientによるグローバルエラーハンドリング
+- **エラーハンドリング**:
+  - カスタムエラークラス階層（NetworkError、ValidationError、AuthenticationError、AuthorizationError、UnexpectedError）
+  - エラー分類システムによる適切なエラータイプの自動判定
+  - エラー重要度とリトライ可能性の評価
+  - GlobalErrorHandlerによる一元的エラー処理とロギング
+  - ErrorBoundaryによるReactコンポーネントレベルのエラー捕捉
 - **型安全性**: OpenAPIスキーマによる完全な型保証
 
 ## バックエンド

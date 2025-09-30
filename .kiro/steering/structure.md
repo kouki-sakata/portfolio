@@ -199,6 +199,9 @@ frontend/
 │   └── vite.svg      # Viteロゴ
 ├── src/
 │   ├── app/          # メインアプリケーション
+│   │   ├── config/       # アプリケーション設定
+│   │   │   ├── enhanced-query-client.ts  # 拡張QueryClient設定
+│   │   │   └── enhanced-query-client.test.ts
 │   │   ├── App.css
 │   │   ├── App.test.tsx
 │   │   ├── App.tsx
@@ -255,7 +258,21 @@ frontend/
 │   │       └── types/
 │   ├── shared/       # 共通コンポーネント
 │   │   ├── api/      # API共通設定
+│   │   │   └── errors/    # カスタムエラークラス
+│   │   │       ├── AuthenticationError.ts
+│   │   │       ├── AuthorizationError.ts
+│   │   │       ├── NetworkError.ts
+│   │   │       ├── ValidationError.ts
+│   │   │       ├── UnexpectedError.ts
+│   │   │       ├── error-classifier.ts
+│   │   │       └── index.ts
 │   │   ├── components/
+│   │   ├── error-handling/ # グローバルエラーハンドリング
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   ├── ErrorFallback.tsx
+│   │   │   ├── GlobalErrorHandler.ts
+│   │   │   ├── error-logger.ts
+│   │   │   └── index.ts
 │   │   ├── hooks/
 │   │   ├── types/
 │   │   └── utils/

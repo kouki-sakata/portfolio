@@ -1,5 +1,51 @@
 # Steering Documents Changelog
 
+## 2025-09-30 (Update 8)
+
+### Updated Documents
+- `product.md` - グローバルエラーハンドリングシステムの実装完了状態を追加
+- `tech.md` - エラーハンドリングアーキテクチャの詳細を追加
+- `structure.md` - エラーハンドリング関連ディレクトリ構造を更新
+
+### Key Changes
+
+#### グローバルエラーハンドリングシステムの実装（feat-error-handling完了）
+- カスタムエラークラス階層の構築
+  - NetworkError: ネットワーク関連エラー
+  - ValidationError: バリデーションエラー（フィールド別エラー管理）
+  - AuthenticationError: 認証エラー（401）
+  - AuthorizationError: 認可エラー（403）
+  - UnexpectedError: 予期しないエラー
+- エラー分類システム
+  - HTTPステータスコードに基づく自動分類
+  - エラー重要度（低・中・高・critical）の評価
+  - リトライ可能性の判定
+- ErrorBoundary実装
+  - Reactコンポーネントレベルのエラー捕捉
+  - ユーザーフレンドリーなエラー表示（ErrorFallback）
+  - エラー復旧メカニズム
+- GlobalErrorHandler
+  - 一元的なエラー処理とロギング
+  - エラーパターンの分析と通知
+- 包括的なテストカバレッジ
+  - 各エラークラスの単体テスト
+  - ErrorBoundaryの統合テスト
+  - GlobalErrorHandlerのテスト
+
+#### 技術的改善
+- Vite環境でのimport.meta.env使用への修正
+- BiomeのuseLiteralKeysルールに準拠した修正
+- TypeScript 5.8.3 strict modeの38件のコンパイルエラー修正
+- Biome lintingエラーの包括的修正
+
+### Impact
+- **信頼性向上**: エラーの適切な捕捉と処理により、アプリケーションのクラッシュを防止
+- **UX向上**: ユーザーフレンドリーなエラーメッセージと復旧オプション
+- **デバッグ効率**: 詳細なエラーロギングとパターン分析
+- **保守性**: 一貫性のあるエラー処理パターン
+
+---
+
 ## 2025-09-30 (Update 7)
 
 ### Updated Documents
