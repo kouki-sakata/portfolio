@@ -28,6 +28,7 @@
   - 認証フック統合（useSession、useLogin、useLogout）
   - エラーリトライ戦略（exponential backoff、最大3回）
   - ダッシュボードデータのリアルタイム同期
+  - Suspenseモードサポート（React 19統合）
 - **TanStack Table**: 高性能テーブル/データグリッドライブラリ（v8.21.3）
   - Headless UIパターンによる完全なカスタマイズ性
   - ソート、フィルタリング、ページネーション機能
@@ -50,6 +51,23 @@
 - **clsx**: 動的クラス名結合（v2.1.1）
 - **tailwind-merge**: Tailwindクラス競合解決（v3.3.1）
 - **レスポンシブデザイン**: モバイルファースト設計
+
+### ローディング状態管理
+- **LoadingSpinner**: カスタマイズ可能なローディングインジケーター
+  - サイズバリアント（sm/md/lg/xl）
+  - スタイルバリアント（primary/secondary/destructive）
+  - フルスクリーン表示オプション
+  - アクセシビリティ対応（ARIA属性）
+- **SkeletonVariants**: コンテンツ別スケルトンUI
+  - SkeletonCard: カードコンテンツのプレースホルダー
+  - SkeletonTable: テーブルコンテンツのプレースホルダー
+  - SkeletonForm: フォームコンテンツのプレースホルダー
+  - SkeletonText: テキストコンテンツのプレースホルダー
+- **SuspenseWrapper**: React 19 Suspense統合
+  - 非同期コンポーネントの統合管理
+  - 遅延表示機能（showDelay）
+  - ErrorBoundary統合
+  - PageSuspenseWrapper/TransitionSuspenseWrapperバリアント
 
 ### 開発ツール
 - **Biome**: 統合コード品質管理ツール（v2.2.4）

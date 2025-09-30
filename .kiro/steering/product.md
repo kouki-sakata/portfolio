@@ -166,6 +166,12 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - 日本語エンコーディング対応（Shift-JIS with BOM）
   - データ項目: 日付、曜日、出勤時刻、退勤時刻、休憩時間、労働時間、備考
   - React Hook実装によるファイル生成とダウンロード処理
+- ✅ ローディング状態とスケルトンUIの実装（完了 - 2025-09-30）
+  - LoadingSpinnerコンポーネント（TailwindCSS v4対応）
+  - SkeletonVariantsコンポーネント（Card/Table/Form/Text）実装
+  - React 19 SuspenseWrapperで統合管理を実現
+  - React Queryにsuspenseモード設定を追加
+  - React.lazyによるコード分割でバンドルサイズ最適化
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー

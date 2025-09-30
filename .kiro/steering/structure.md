@@ -267,6 +267,11 @@ frontend/
 │   │   │       ├── error-classifier.ts
 │   │   │       └── index.ts
 │   │   ├── components/
+│   │   │   └── loading/    # ローディング状態管理
+│   │   │       ├── LoadingSpinner.tsx
+│   │   │       ├── SuspenseWrapper.tsx
+│   │   │       └── skeletons/
+│   │   │           └── SkeletonVariants.tsx
 │   │   ├── error-handling/ # グローバルエラーハンドリング
 │   │   │   ├── ErrorBoundary.tsx
 │   │   │   ├── ErrorFallback.tsx
@@ -283,6 +288,7 @@ frontend/
 │   │       ├── form.tsx        # フォームコンポーネント
 │   │       ├── input.tsx       # 入力フィールド
 │   │       ├── label.tsx       # ラベルコンポーネント
+│   │       ├── skeleton.tsx    # スケルトンコンポーネント
 │   │       ├── toast.tsx       # トースト通知
 │   │       ├── toaster.tsx     # トースターコンテナ
 │   │       └── use-toast.ts    # トーストフック
