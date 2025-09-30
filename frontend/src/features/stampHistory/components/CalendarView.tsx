@@ -1,6 +1,6 @@
 import { useState } from "react";
 import type { DayButton } from "react-day-picker";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar, CalendarDayButton } from "@/components/ui/calendar";
 import { Card } from "@/components/ui/card";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 
@@ -9,36 +9,6 @@ type CalendarViewProps = {
   selectedYear: string;
   selectedMonth: string;
   onDateSelect?: (date: Date) => void;
-};
-
-type CalendarDayProps = React.ComponentProps<typeof DayButton> & {
-  stampMap: Map<string, StampHistoryEntry>;
-};
-
-const CalendarDay = ({
-  day,
-  modifiers,
-  stampMap,
-  ...props
-}: CalendarDayProps) => {
-  const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
-  const entry = stampMap.get(dateKey);
-  const hasStamp = entry?.inTime || entry?.outTime;
-
-  return (
-    <button
-      type="button"
-      {...props}
-      className={`
-        ${props.className}
-        ${hasStamp ? "bg-primary/10 font-semibold" : ""}relative`}
-    >
-      {day.date.getDate()}
-      {hasStamp && (
-        <span className="-translate-x-1/2 absolute bottom-0 left-1/2 h-1 w-1 rounded-full bg-primary" />
-      )}
-    </button>
-  );
 };
 
 export const CalendarView = ({
@@ -77,6 +47,29 @@ export const CalendarView = ({
       )
     : null;
 
+  // カレンダーの日付セルコンポーネント
+  const CustomDayButton = (props: React.ComponentProps<typeof DayButton>) => {
+    const { day } = props;
+    const dateKey = `${day.date.getFullYear()}-${String(day.date.getMonth() + 1).padStart(2, "0")}-${String(day.date.getDate()).padStart(2, "0")}`;
+    const entry = stampMap.get(dateKey);
+    const hasStamp = entry?.inTime || entry?.outTime;
+
+    // CalendarDayButtonをベースにカスタマイズ
+    return (
+      <CalendarDayButton
+        {...props}
+        className={`
+          ${props.className ?? ""}
+          ${hasStamp ? "bg-primary/10 font-semibold" : ""} relative`}
+      >
+        {day.date.getDate()}
+        {hasStamp && (
+          <span className="-translate-x-1/2 absolute bottom-0 left-1/2 h-1 w-1 rounded-full bg-primary" />
+        )}
+      </CalendarDayButton>
+    );
+  };
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       <Card className="p-6">
@@ -84,7 +77,7 @@ export const CalendarView = ({
         <Calendar
           className="rounded-md border"
           components={{
-            Day: (props) => <CalendarDay {...props} stampMap={stampMap} />,
+            DayButton: CustomDayButton,
           }}
           mode="single"
           month={currentMonth}
