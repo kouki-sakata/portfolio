@@ -76,3 +76,40 @@ export const EditStampSchema = z.object({
 );
 
 export type EditStampFormData = z.infer<typeof EditStampSchema>;
+
+// CSV エクスポート関連の型定義
+
+// エクスポート形式
+export type ExportFormat = 'csv' | 'tsv' | 'excel-csv';
+
+// エクスポート設定
+export type ExportConfig = {
+  format: ExportFormat;
+  filename: string;
+  batchSize: number;
+  includeHeaders: boolean;
+  onProgress?: (progress: ExportProgress) => void;
+};
+
+// エクスポート進捗
+export type ExportProgress = {
+  current: number;
+  total: number;
+  percentage: number;
+  phase: 'preparing' | 'processing' | 'generating' | 'complete';
+};
+
+// CSVカラム定義
+export type CsvColumn<T> = {
+  header: string;
+  accessor: (row: T) => string;
+  escape?: boolean;
+};
+
+// エクスポート結果
+export type ExportResult = {
+  blob: Blob;
+  filename: string;
+  rowCount: number;
+  timestamp: Date;
+};
