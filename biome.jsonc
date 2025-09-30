@@ -34,11 +34,21 @@
   },
   "overrides": [
     {
-      "includes": ["**/components/ui/**/*"],
+      "includes": [
+        "**/components/ui/**/*",
+        "**/features/stampHistory/components/CalendarView.tsx"
+      ],
       "linter": {
         "rules": {
           "performance": {
             "noNamespaceImport": "off" // UIコンポーネントではReactやRadixUIの名前空間インポートを許可
+          },
+          "style": {
+            "useNamingConvention": "off", // react-day-pickerなど外部ライブラリのAPIがsnake_caseを使用する場合があるため
+            "noNestedTernary": "off" // UIコンポーネントでは条件レンダリングのための三項演算子のネストを許可
+          },
+          "correctness": {
+            "noNestedComponentDefinitions": "off" // react-day-pickerのcomponentsプロップで動的なコンポーネントを渡すために必要
           }
         }
       }

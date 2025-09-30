@@ -10,6 +10,32 @@ type CalendarViewProps = {
   onDateSelect?: (date: Date) => void;
 };
 
+type CalendarDayProps = {
+  date: Date;
+  stampMap: Map<string, StampHistoryEntry>;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+const CalendarDay = ({ date, stampMap, ...props }: CalendarDayProps) => {
+  const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+  const entry = stampMap.get(dateKey);
+  const hasStamp = entry?.inTime || entry?.outTime;
+
+  return (
+    <button
+      type="button"
+      {...props}
+      className={`
+        ${props.className}
+        ${hasStamp ? "bg-primary/10 font-semibold" : ""}relative`}
+    >
+      {date.getDate()}
+      {hasStamp && (
+        <span className="-translate-x-1/2 absolute bottom-0 left-1/2 h-1 w-1 rounded-full bg-primary" />
+      )}
+    </button>
+  );
+};
+
 export const CalendarView = ({
   entries,
   selectedYear,
@@ -53,26 +79,7 @@ export const CalendarView = ({
         <Calendar
           className="rounded-md border"
           components={{
-            Day: ({ date, ...props }) => {
-              const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
-              const entry = stampMap.get(dateKey);
-              const hasStamp = entry?.inTime || entry?.outTime;
-
-              return (
-                <button
-                  type="button"
-                  {...props}
-                  className={`
-                    ${props.className}
-                    ${hasStamp ? "bg-primary/10 font-semibold" : ""}relative`}
-                >
-                  {date.getDate()}
-                  {hasStamp && (
-                    <span className="-translate-x-1/2 absolute bottom-0 left-1/2 h-1 w-1 rounded-full bg-primary" />
-                  )}
-                </button>
-              );
-            },
+            Day: (props) => <CalendarDay {...props} stampMap={stampMap} />,
           }}
           mode="single"
           month={currentMonth}

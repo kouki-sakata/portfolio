@@ -73,7 +73,9 @@ export const EditStampDialog = ({
 
       // 楽観的更新
       queryClient.setQueriesData({ queryKey: ["stamp-history"] }, (old) => {
-        if (!old) return old;
+        if (!old) {
+          return old;
+        }
         return {
           ...old,
           entries: old.entries?.map((e: StampHistoryEntry) =>
@@ -86,7 +88,7 @@ export const EditStampDialog = ({
 
       return { previousData };
     },
-    onError: (error, _variables, context) => {
+    onError: (_error, _variables, context) => {
       // エラー時はロールバック
       if (context?.previousData) {
         for (const [queryKey, data] of context.previousData) {
@@ -98,7 +100,6 @@ export const EditStampDialog = ({
         description: "打刻の更新に失敗しました",
         variant: "destructive",
       });
-      console.error("Update stamp error:", error);
     },
     onSuccess: () => {
       toast({
@@ -121,7 +122,9 @@ export const EditStampDialog = ({
     });
   };
 
-  if (!entry) return null;
+  if (!entry) {
+    return null;
+  }
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>

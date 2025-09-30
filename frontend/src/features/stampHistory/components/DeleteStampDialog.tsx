@@ -40,7 +40,9 @@ export const DeleteStampDialog = ({
 
       // 楽観的更新（削除対象エントリを除外）
       queryClient.setQueriesData({ queryKey: ["stamp-history"] }, (old) => {
-        if (!old) return old;
+        if (!old) {
+          return old;
+        }
         return {
           ...old,
           entries: old.entries?.filter(
@@ -51,7 +53,7 @@ export const DeleteStampDialog = ({
 
       return { previousData };
     },
-    onError: (error, _variables, context) => {
+    onError: (_error, _variables, context) => {
       // エラー時はロールバック
       if (context?.previousData) {
         for (const [queryKey, data] of context.previousData) {
@@ -63,7 +65,6 @@ export const DeleteStampDialog = ({
         description: "打刻の削除に失敗しました",
         variant: "destructive",
       });
-      console.error("Delete stamp error:", error);
     },
     onSuccess: () => {
       toast({
@@ -84,7 +85,9 @@ export const DeleteStampDialog = ({
     }
   };
 
-  if (!entry) return null;
+  if (!entry) {
+    return null;
+  }
 
   return (
     <AlertDialog onOpenChange={onOpenChange} open={open}>
