@@ -99,8 +99,8 @@ describe("ErrorFallback", () => {
 
   describe("Development Mode", () => {
     it("should display error details in development mode", () => {
-      const originalEnv = process.env["NODE_ENV"];
-      process.env["NODE_ENV"] = "development";
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "development";
 
       const error = new Error("Test error");
       error.stack = "Error: Test error\n    at TestFunction (test.js:10:15)";
@@ -113,12 +113,12 @@ describe("ErrorFallback", () => {
       expect(screen.getByText(/エラー詳細/i)).toBeInTheDocument();
       expect(screen.getByText(/Error: Test error/)).toBeInTheDocument();
 
-      process.env["NODE_ENV"] = originalEnv;
+      process.env.NODE_ENV = originalEnv;
     });
 
     it("should not display error details in production mode", () => {
-      const originalEnv = process.env["NODE_ENV"];
-      process.env["NODE_ENV"] = "production";
+      const originalEnv = process.env.NODE_ENV;
+      process.env.NODE_ENV = "production";
 
       const error = new Error("Test error");
       error.stack = "Error: Test error\n    at TestFunction (test.js:10:15)";
@@ -131,7 +131,7 @@ describe("ErrorFallback", () => {
       expect(screen.queryByText(/エラー詳細/i)).not.toBeInTheDocument();
       expect(screen.queryByText(/at TestFunction/)).not.toBeInTheDocument();
 
-      process.env["NODE_ENV"] = originalEnv;
+      process.env.NODE_ENV = originalEnv;
     });
   });
 

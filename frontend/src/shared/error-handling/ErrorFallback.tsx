@@ -55,7 +55,7 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
   reset,
   title,
   description,
-  showDetails = process.env["NODE_ENV"] === "development",
+  showDetails = process.env.NODE_ENV === "development",
 }) => {
   // エラータイプに応じたタイトルとメッセージを取得
   const getErrorInfo = () => {
