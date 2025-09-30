@@ -82,7 +82,11 @@ export const EditStampDialog = ({
             ...old,
             entries: old.entries.map((e) =>
               e.id === variables.id
-                ? { ...e, inTime: variables.inTime, outTime: variables.outTime }
+                ? {
+                    ...e,
+                    inTime: variables.inTime ?? null,
+                    outTime: variables.outTime ?? null,
+                  }
                 : e
             ),
           };
