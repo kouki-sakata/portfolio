@@ -1,14 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
+import { Edit, Trash2 } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchStampHistory } from "@/features/stampHistory/api";
-import type { StampHistoryResponse } from "@/features/stampHistory/types";
+import { CalendarView } from "@/features/stampHistory/components/CalendarView";
+import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
+import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
+import { MonthlyStatsCard } from "@/features/stampHistory/components/MonthlyStatsCard";
+import type {
+  StampHistoryEntry,
+  StampHistoryResponse,
+} from "@/features/stampHistory/types";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 const STAMP_HISTORY_KEY = ["stamp-history"] as const;
 
 export const StampHistoryPage = () => {
   const [filters, setFilters] = useState<{ year?: string; month?: string }>({});
+  const [selectedEntry, setSelectedEntry] = useState<StampHistoryEntry | null>(
+    null
+  );
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const query = useQuery<StampHistoryResponse>({
     queryKey: [...STAMP_HISTORY_KEY, filters],
@@ -20,12 +44,26 @@ export const StampHistoryPage = () => {
     await query.refetch();
   };
 
+  const handleEdit = (entry: StampHistoryEntry) => {
+    setSelectedEntry(entry);
+    setEditDialogOpen(true);
+  };
+
+  const handleDelete = (entry: StampHistoryEntry) => {
+    setSelectedEntry(entry);
+    setDeleteDialogOpen(true);
+  };
+
   if (query.isLoading) {
     return <PageLoader label="打刻履歴を読み込み中" />;
   }
 
   if (query.isError) {
-    return <p>履歴を取得できませんでした。</p>;
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <p className="text-destructive">履歴を取得できませんでした。</p>
+      </div>
+    );
   }
 
   const data: StampHistoryResponse = query.data ?? {
@@ -40,97 +78,182 @@ export const StampHistoryPage = () => {
   const selectedMonth: string = filters.month ?? data.selectedMonth;
 
   return (
-    <section className="history">
-      <header className="history__header">
-        <h1>打刻履歴</h1>
-        <p>対象年月を指定して打刻履歴を確認できます。</p>
+    <div className="container mx-auto space-y-6 py-8">
+      <header className="space-y-2">
+        <h1 className="font-bold text-3xl">打刻履歴</h1>
+        <p className="text-muted-foreground">
+          対象年月を指定して打刻履歴を確認できます。
+        </p>
       </header>
 
       <form
-        className="history__filters"
+        className="flex flex-wrap items-end gap-4"
         onSubmit={(event) => {
           handleSubmit(event).catch(() => {
             // エラーハンドリングは handleSubmit 内で処理済み
           });
         }}
       >
-        <label className="history__label" htmlFor="year">
-          年
-        </label>
-        <select
-          className="history__select"
-          id="year"
-          onChange={(event) => {
-            setFilters((prev) => ({ ...prev, year: event.target.value }));
-          }}
-          value={selectedYear}
-        >
-          {data.years.map((yearOption) => (
-            <option key={yearOption} value={yearOption}>
-              {yearOption}
-            </option>
-          ))}
-        </select>
+        <div className="space-y-2">
+          <Label htmlFor="year">年</Label>
+          <Select
+            onValueChange={(value) => {
+              setFilters((prev) => ({ ...prev, year: value }));
+            }}
+            value={selectedYear}
+          >
+            <SelectTrigger className="w-[120px]" id="year">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {data.years.map((yearOption) => (
+                <SelectItem key={yearOption} value={yearOption}>
+                  {yearOption}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <label className="history__label" htmlFor="month">
-          月
-        </label>
-        <select
-          className="history__select"
-          id="month"
-          onChange={(event) => {
-            setFilters((prev) => ({ ...prev, month: event.target.value }));
-          }}
-          value={selectedMonth}
-        >
-          {data.months.map((monthOption) => (
-            <option key={monthOption} value={monthOption}>
-              {monthOption}
-            </option>
-          ))}
-        </select>
+        <div className="space-y-2">
+          <Label htmlFor="month">月</Label>
+          <Select
+            onValueChange={(value) => {
+              setFilters((prev) => ({ ...prev, month: value }));
+            }}
+            value={selectedMonth}
+          >
+            <SelectTrigger className="w-[120px]" id="month">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {data.months.map((monthOption) => (
+                <SelectItem key={monthOption} value={monthOption}>
+                  {monthOption}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <button className="button" disabled={query.isRefetching} type="submit">
+        <Button disabled={query.isRefetching} type="submit">
           {query.isRefetching ? "更新中…" : "検索"}
-        </button>
+        </Button>
       </form>
 
-      <div className="history__table-wrapper">
-        <table className="history-table">
-          <thead>
-            <tr>
-              <th>日付</th>
-              <th>曜日</th>
-              <th>出勤時刻</th>
-              <th>退勤時刻</th>
-              <th>更新日時</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.entries.length === 0 ? (
-              <tr>
-                <td className="history-table__empty" colSpan={5}>
-                  対象期間の打刻はありません。
-                </td>
-              </tr>
-            ) : (
-              data.entries.map((entry) => (
-                <tr
-                  key={`${entry.year ?? "----"}-${entry.month ?? "--"}-${entry.day ?? "--"}`}
-                >
-                  <td>
-                    {entry.year}/{entry.month}/{entry.day}
-                  </td>
-                  <td>{entry.dayOfWeek}</td>
-                  <td>{entry.inTime ?? "-"}</td>
-                  <td>{entry.outTime ?? "-"}</td>
-                  <td>{entry.updateDate ?? "-"}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </section>
+      <MonthlyStatsCard entries={data.entries} />
+
+      <Tabs
+        onValueChange={(value) => setViewMode(value as "list" | "calendar")}
+        value={viewMode}
+      >
+        <TabsList>
+          <TabsTrigger value="list">リスト表示</TabsTrigger>
+          <TabsTrigger value="calendar">カレンダー表示</TabsTrigger>
+        </TabsList>
+
+        <TabsContent className="mt-6" value="list">
+          <div className="rounded-md border">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-muted">
+                  <tr>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      日付
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      曜日
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      出勤時刻
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      退勤時刻
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      更新日時
+                    </th>
+                    <th className="px-4 py-3 text-left font-medium text-sm">
+                      操作
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y">
+                  {data.entries.length === 0 ? (
+                    <tr>
+                      <td
+                        className="px-4 py-8 text-center text-muted-foreground"
+                        colSpan={6}
+                      >
+                        対象期間の打刻はありません。
+                      </td>
+                    </tr>
+                  ) : (
+                    data.entries.map((entry) => (
+                      <tr
+                        className="hover:bg-muted/50"
+                        key={`${entry.year}-${entry.month}-${entry.day}`}
+                      >
+                        <td className="px-4 py-3">
+                          {entry.year}/{entry.month}/{entry.day}
+                        </td>
+                        <td className="px-4 py-3">{entry.dayOfWeek}</td>
+                        <td className="px-4 py-3">{entry.inTime ?? "-"}</td>
+                        <td className="px-4 py-3">{entry.outTime ?? "-"}</td>
+                        <td className="px-4 py-3 text-muted-foreground text-sm">
+                          {entry.updateDate ?? "-"}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex gap-2">
+                            <Button
+                              disabled={!entry.id}
+                              onClick={() => handleEdit(entry)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Edit className="h-4 w-4" />
+                              <span className="sr-only">編集</span>
+                            </Button>
+                            <Button
+                              disabled={!entry.id}
+                              onClick={() => handleDelete(entry)}
+                              size="sm"
+                              variant="ghost"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              <span className="sr-only">削除</span>
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent className="mt-6" value="calendar">
+          <CalendarView
+            entries={data.entries}
+            selectedMonth={selectedMonth}
+            selectedYear={selectedYear}
+          />
+        </TabsContent>
+      </Tabs>
+
+      <EditStampDialog
+        entry={selectedEntry}
+        onOpenChange={setEditDialogOpen}
+        open={editDialogOpen}
+      />
+
+      <DeleteStampDialog
+        entry={selectedEntry}
+        onOpenChange={setDeleteDialogOpen}
+        open={deleteDialogOpen}
+      />
+    </div>
   );
 };

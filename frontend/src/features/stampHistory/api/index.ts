@@ -1,4 +1,8 @@
-import type { StampHistoryResponse } from "@/features/stampHistory/types";
+import type {
+  DeleteStampRequest,
+  StampHistoryResponse,
+  UpdateStampRequest,
+} from "@/features/stampHistory/types";
 import { httpClient } from "@/shared/api/httpClient";
 
 export const fetchStampHistory = async (params: {
@@ -16,3 +20,14 @@ export const fetchStampHistory = async (params: {
   const path = query ? `/stamp-history?${query}` : "/stamp-history";
   return await httpClient<StampHistoryResponse>(path);
 };
+
+export const updateStamp = async (payload: UpdateStampRequest) =>
+  httpClient<void>(`/stamp/${payload.id}`, {
+    method: "PUT",
+    body: JSON.stringify(payload),
+  });
+
+export const deleteStamp = async (payload: DeleteStampRequest) =>
+  httpClient<void>(`/stamp/${payload.id}`, {
+    method: "DELETE",
+  });
