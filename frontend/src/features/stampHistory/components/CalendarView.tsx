@@ -79,7 +79,9 @@ export const CalendarView = ({
         <Calendar
           className="rounded-md border"
           components={{
-            Day: (props) => <CalendarDay {...props} stampMap={stampMap} />,
+            Day: (props) => (
+              <CalendarDay {...props} date={props.day.date} stampMap={stampMap} />
+            ),
           }}
           mode="single"
           month={currentMonth}

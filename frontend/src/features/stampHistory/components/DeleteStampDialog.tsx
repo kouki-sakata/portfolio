@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@/hooks/use-toast";
 import { deleteStamp } from "@/features/stampHistory/api";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 
@@ -39,17 +39,18 @@ export const DeleteStampDialog = ({
       });
 
       // 楽観的更新（削除対象エントリを除外）
-      queryClient.setQueriesData({ queryKey: ["stamp-history"] }, (old) => {
-        if (!old) {
-          return old;
+      queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
+        { queryKey: ["stamp-history"] },
+        (old) => {
+          if (!old?.entries) {
+            return old;
+          }
+          return {
+            ...old,
+            entries: old.entries.filter((e) => e.id !== variables.id),
+          };
         }
-        return {
-          ...old,
-          entries: old.entries?.filter(
-            (e: StampHistoryEntry) => e.id !== variables.id
-          ),
-        };
-      });
+      );
 
       return { previousData };
     },

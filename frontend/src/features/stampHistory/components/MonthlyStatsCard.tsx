@@ -15,8 +15,17 @@ const calculateStats = (entries: StampHistoryEntry[]) => {
       presentDays++;
 
       // HH:MM形式の時刻を分に変換
-      const [inHour, inMin] = entry.inTime.split(":").map(Number);
-      const [outHour, outMin] = entry.outTime.split(":").map(Number);
+      const inTimeParts = entry.inTime.split(":");
+      const [inHour = 0, inMin = 0] = [
+        Number(inTimeParts[0] ?? 0),
+        Number(inTimeParts[1] ?? 0),
+      ];
+
+      const outTimeParts = entry.outTime.split(":");
+      const [outHour = 0, outMin = 0] = [
+        Number(outTimeParts[0] ?? 0),
+        Number(outTimeParts[1] ?? 0),
+      ];
 
       const inMinutes = inHour * 60 + inMin;
       const outMinutes = outHour * 60 + outMin;

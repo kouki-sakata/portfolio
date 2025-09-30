@@ -21,7 +21,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/toast";
+import { toast } from "@/hooks/use-toast";
 import { updateStamp } from "@/features/stampHistory/api";
 import {
   type EditStampFormData,
@@ -72,19 +72,22 @@ export const EditStampDialog = ({
       });
 
       // 楽観的更新
-      queryClient.setQueriesData({ queryKey: ["stamp-history"] }, (old) => {
-        if (!old) {
-          return old;
+      queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
+        { queryKey: ["stamp-history"] },
+        (old) => {
+          if (!old?.entries) {
+            return old;
+          }
+          return {
+            ...old,
+            entries: old.entries.map((e) =>
+              e.id === variables.id
+                ? { ...e, inTime: variables.inTime, outTime: variables.outTime }
+                : e
+            ),
+          };
         }
-        return {
-          ...old,
-          entries: old.entries?.map((e: StampHistoryEntry) =>
-            e.id === variables.id
-              ? { ...e, inTime: variables.inTime, outTime: variables.outTime }
-              : e
-          ),
-        };
-      });
+      );
 
       return { previousData };
     },
