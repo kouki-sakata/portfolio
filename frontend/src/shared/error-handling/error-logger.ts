@@ -46,7 +46,9 @@ export class ConsoleErrorLogger implements ErrorLogger {
     // 本番環境でエラーレベルの場合はリモート送信も試みる
     if (this.environment === "production" && level === "error") {
       // Fire and forget でリモート送信
-      void this.sendToRemote(error);
+      this.sendToRemote(error).catch(() => {
+        // リモート送信エラーは意図的に無視
+      });
     }
   }
 
@@ -66,9 +68,11 @@ export class ConsoleErrorLogger implements ErrorLogger {
         },
         body: JSON.stringify(logEntry),
       });
-    } catch (_sendError) {
+    } catch (sendError) {
       // リモート送信エラーは握りつぶす（ログの送信失敗でアプリを止めない）
       if (this.environment === "development") {
+        // biome-ignore lint/suspicious/noConsole: Development-only debugging output
+        console.warn("Failed to send error log to remote:", sendError);
       }
     }
   }

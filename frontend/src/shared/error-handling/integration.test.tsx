@@ -122,7 +122,7 @@ describe("Error Handling System Integration", () => {
     const TestQueryComponent: React.FC = () => {
       const { data, error, isLoading } = useQuery({
         queryKey: ["test-query"],
-        queryFn: async () => {
+        queryFn: () => {
           throw new NetworkError(
             "API request failed",
             new Error("Network error")
@@ -173,7 +173,9 @@ describe("Error Handling System Integration", () => {
 
       return (
         <div>
-          <button onClick={() => mutation.mutate()}>Submit</button>
+          <button type="button" onClick={() => mutation.mutate()}>
+            Submit
+          </button>
           {mutation.isError && <div>Mutation error occurred</div>}
         </div>
       );
@@ -205,9 +207,9 @@ describe("Error Handling System Integration", () => {
 
   describe("Authentication Error Handling", () => {
     const TestAuthComponent: React.FC = () => {
-      const { data, error, isLoading } = useQuery({
+      const { error, isLoading } = useQuery({
         queryKey: ["auth-test"],
-        queryFn: async () => {
+        queryFn: () => {
           throw new AuthenticationError("Session expired");
         },
         retry: false,
@@ -250,7 +252,7 @@ describe("Error Handling System Integration", () => {
 
       const query = useQuery({
         queryKey: ["complete-test", throwError],
-        queryFn: async () => {
+        queryFn: () => {
           if (throwError) {
             throw new ApiError("Server error", 500);
           }
@@ -269,13 +271,15 @@ describe("Error Handling System Integration", () => {
       return (
         <div>
           <div>Data: {query.data?.data}</div>
-          <button onClick={() => setThrowError(true)}>Trigger Error</button>
+          <button type="button" onClick={() => setThrowError(true)}>
+            Trigger Error
+          </button>
         </div>
       );
     };
 
     it("should handle complete error flow with recovery", async () => {
-      const { rerender } = render(
+      render(
         <QueryClientProvider client={queryClient}>
           <ErrorBoundary
             fallback={ErrorFallback}
@@ -319,7 +323,7 @@ describe("Error Handling System Integration", () => {
       const TestRetryComponent: React.FC = () => {
         const { data, error, isLoading } = useQuery({
           queryKey: ["retry-test"],
-          queryFn: async () => {
+          queryFn: () => {
             attemptCount++;
             if (attemptCount < 3) {
               throw new NetworkError(
@@ -366,7 +370,7 @@ describe("Error Handling System Integration", () => {
       const TestNoRetryComponent: React.FC = () => {
         const { data, error, isLoading } = useQuery({
           queryKey: ["no-retry-test"],
-          queryFn: async () => {
+          queryFn: () => {
             attemptCount++;
             throw new AuthenticationError("Invalid token");
           },
@@ -412,9 +416,9 @@ describe("Error Handling System Integration", () => {
       });
 
       const TestLoggingComponent: React.FC = () => {
-        const { data, error } = useQuery({
+        const { error } = useQuery({
           queryKey: ["logging-test"],
-          queryFn: async () => {
+          queryFn: () => {
             throw new ApiError("Server error", 500);
           },
           retry: false,

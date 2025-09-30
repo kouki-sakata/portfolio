@@ -115,15 +115,24 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
     config.onRedirect
   ) {
     // ログアウト処理を非同期で実行
-    void (async () => {
+    const handleAuthLogout = async (): Promise<void> => {
       try {
         await config.onLogout();
-      } catch (_logoutError) {
-        // ログアウトエラーは無視
+      } catch (logoutError) {
+        // ログアウトエラーは無視（認証トークンが既に無効な可能性があるため）
+        if (config.environment === "development") {
+          // biome-ignore lint/suspicious/noConsole: Development-only debugging output
+          console.warn("Logout error during auth error handling:", logoutError);
+        }
       }
       const loginPath = config.loginPath || "/auth/signin";
       config.onRedirect(loginPath);
-    })();
+    };
+
+    // fire-and-forgetパターン: Promiseのcatchで明示的にエラーを無視
+    handleAuthLogout().catch(() => {
+      // すでにエラー状態のため、ログアウト失敗は意図的に無視
+    });
 
     // 認証エラーはGlobalErrorHandlerでは処理しない（Toast表示しないため）
     return;
@@ -133,7 +142,16 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
   try {
     const errorHandler = GlobalErrorHandler.getInstance();
     errorHandler.handle(classifiedError);
-  } catch (_e) {}
+  } catch (handlerError) {
+    // GlobalErrorHandler自体が失敗してもアプリケーションをクラッシュさせない
+    // 開発環境ではデバッグのためログ出力
+    if (config.environment === "development") {
+      // biome-ignore lint/suspicious/noConsole: Development-only debugging output
+      console.error("GlobalErrorHandler failed to handle error:", handlerError);
+      // biome-ignore lint/suspicious/noConsole: Development-only debugging output
+      console.error("Original error:", classifiedError);
+    }
+  }
 };
 
 /**
@@ -220,7 +238,9 @@ export const useQueryErrorReset = (queryClient: QueryClient) => {
   return () => {
     // エラー状態のクエリをリセット
     queryClient.resetQueries();
-    // 再フェッチ
-    void retryFailedQueries(queryClient);
+    // 再フェッチ（エラーは無視）
+    retryFailedQueries(queryClient).catch(() => {
+      // リトライ失敗は無視（すでにエラー状態）
+    });
   };
 };
