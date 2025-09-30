@@ -173,7 +173,7 @@ describe("Error Handling System Integration", () => {
 
       return (
         <div>
-          <button type="button" onClick={() => mutation.mutate()}>
+          <button onClick={() => mutation.mutate()} type="button">
             Submit
           </button>
           {mutation.isError && <div>Mutation error occurred</div>}
@@ -271,7 +271,7 @@ describe("Error Handling System Integration", () => {
       return (
         <div>
           <div>Data: {query.data?.data}</div>
-          <button type="button" onClick={() => setThrowError(true)}>
+          <button onClick={() => setThrowError(true)} type="button">
             Trigger Error
           </button>
         </div>

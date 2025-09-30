@@ -226,7 +226,7 @@ describe("ErrorBoundary", () => {
     });
 
     it("should support function as fallback", () => {
-      const error = new Error("Test error");
+      const testError = new Error("Test error");
 
       render(
         <ErrorBoundary
@@ -237,7 +237,7 @@ describe("ErrorBoundary", () => {
             </div>
           )}
         >
-          <ThrowError error={error} />
+          <ThrowError error={testError} />
         </ErrorBoundary>
       );
 
@@ -246,7 +246,7 @@ describe("ErrorBoundary", () => {
     });
 
     it("should support component as fallback", () => {
-      const error = new Error("Test error");
+      const testError = new Error("Test error");
 
       const FallbackComponent: React.FC<{
         error: Error;
@@ -261,7 +261,7 @@ describe("ErrorBoundary", () => {
 
       render(
         <ErrorBoundary fallback={FallbackComponent}>
-          <ThrowError error={error} />
+          <ThrowError error={testError} />
         </ErrorBoundary>
       );
 
