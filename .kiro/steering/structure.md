@@ -248,6 +248,8 @@ frontend/
 │   │       │   ├── MonthlyStatsCard.tsx  # 月次統計カード
 │   │       │   ├── EditStampDialog.tsx   # 打刻編集ダイアログ
 │   │       │   └── DeleteStampDialog.tsx # 打刻削除ダイアログ
+│   │       ├── hooks/
+│   │       │   └── useStampHistoryExport.ts # CSV出力フック
 │   │       ├── routes/
 │   │       │   └── StampHistoryRoute.tsx # ルート定義
 │   │       └── types/

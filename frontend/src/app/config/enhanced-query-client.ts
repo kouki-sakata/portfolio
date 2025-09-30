@@ -1,0 +1,218 @@
+import { QueryCache, QueryClient, MutationCache } from '@tanstack/react-query';
+import {
+  GlobalErrorHandler,
+  ConsoleErrorLogger,
+  type ErrorHandlerConfig
+} from '@/shared/error-handling';
+import {
+  classifyError,
+  isAuthenticationError,
+  isNetworkError,
+  type ApiError,
+} from '@/shared/api/errors';
+import type { ToastOptions } from '@/shared/error-handling';
+
+/**
+ * 機能別のデフォルト設定
+ * 各機能のデータ特性に応じて最適なキャッシュ戦略を定義
+ */
+export const QUERY_CONFIG = {
+  // 認証関連: セッション情報など、比較的短いキャッシュ
+  auth: {
+    staleTime: 5 * 60 * 1000, // 5分
+    gcTime: 10 * 60 * 1000, // 10分（旧cacheTime）
+  },
+  // マスターデータ: 従業員マスタなど、変更頻度が低いデータ
+  master: {
+    staleTime: 30 * 60 * 1000, // 30分
+    gcTime: 60 * 60 * 1000, // 60分
+  },
+  // 動的データ: 打刻履歴など、リアルタイム性が求められるデータ
+  dynamic: {
+    staleTime: 30 * 1000, // 30秒
+    gcTime: 5 * 60 * 1000, // 5分
+  },
+} as const;
+
+/**
+ * React Query統合設定
+ */
+export interface QueryClientConfig {
+  /**
+   * Toast表示関数
+   */
+  toast: (options: ToastOptions) => void;
+
+  /**
+   * ログアウト処理
+   */
+  onLogout?: () => Promise<void>;
+
+  /**
+   * リダイレクト処理
+   */
+  onRedirect?: (path: string) => void;
+
+  /**
+   * 再試行処理
+   */
+  onRetry?: () => void;
+
+  /**
+   * ログインページのパス
+   */
+  loginPath?: string;
+
+  /**
+   * 環境
+   */
+  environment?: 'development' | 'production';
+}
+
+/**
+ * エラー再試行判定
+ * ネットワークエラーや一時的なエラーの場合のみ再試行
+ */
+const shouldRetryQuery = (failureCount: number, error: unknown): boolean => {
+  // 最大3回まで再試行
+  if (failureCount >= 3) {
+    return false;
+  }
+
+  const classifiedError = classifyError(error instanceof Error ? error : new Error(String(error)));
+
+  // ネットワークエラーは再試行可能
+  if (isNetworkError(classifiedError)) {
+    return true;
+  }
+
+  // 500番台のサーバーエラーは再試行
+  if ('status' in classifiedError && classifiedError.status >= 500) {
+    return true;
+  }
+
+  // 認証エラーは再試行しない
+  if (isAuthenticationError(classifiedError)) {
+    return false;
+  }
+
+  return false;
+};
+
+/**
+ * エラーハンドリング関数
+ * QueryCacheとMutationCacheで共通使用
+ */
+const handleQueryError = (
+  error: unknown,
+  config: QueryClientConfig
+): void => {
+  const classifiedError = classifyError(error instanceof Error ? error : new Error(String(error)));
+
+  // 認証エラーの場合は自動ログアウト＆リダイレクト
+  if (isAuthenticationError(classifiedError) && config.onLogout && config.onRedirect) {
+    // ログアウト処理を非同期で実行
+    void (async () => {
+      try {
+        await config.onLogout();
+      } catch (_logoutError) {
+        // ログアウトエラーは無視
+      }
+      const loginPath = config.loginPath || '/auth/signin';
+      config.onRedirect(loginPath);
+    })();
+
+    // 認証エラーはGlobalErrorHandlerでは処理しない（Toast表示しないため）
+    return;
+  }
+
+  // その他のエラーはGlobalErrorHandlerで処理
+  try {
+    const errorHandler = GlobalErrorHandler.getInstance();
+    errorHandler.handle(classifiedError);
+  } catch (e) {
+    // GlobalErrorHandlerが初期化されていない場合はコンソール出力
+    console.error('Query error:', classifiedError);
+  }
+};
+
+/**
+ * 強化されたQueryClientを作成
+ */
+export const createEnhancedQueryClient = (config: QueryClientConfig): QueryClient => {
+  // GlobalErrorHandlerを初期化
+  GlobalErrorHandler.initialize({
+    toast: config.toast,
+    logger: new ConsoleErrorLogger(config.environment || 'production'),
+    environment: config.environment || 'production',
+    enableToast: true,
+    enableLogging: true,
+    onRetry: config.onRetry,
+  });
+
+  return new QueryClient({
+    queryCache: new QueryCache({
+      onError: (error) => handleQueryError(error, config),
+    }),
+    mutationCache: new MutationCache({
+      onError: (error) => handleQueryError(error, config),
+    }),
+    defaultOptions: {
+      queries: {
+        // デフォルトは動的データの設定を使用
+        staleTime: QUERY_CONFIG.dynamic.staleTime,
+        gcTime: QUERY_CONFIG.dynamic.gcTime,
+        retry: shouldRetryQuery,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // 指数バックオフ
+        refetchOnWindowFocus: false,
+        // ネットワークエラー時は自動的に再接続時に再試行
+        refetchOnReconnect: true,
+      },
+      mutations: {
+        retry: (failureCount, error) => {
+          // ミューテーションは基本的に再試行しない
+          // ただしネットワークエラーの場合は1回だけ再試行
+          if (failureCount >= 1) {
+            return false;
+          }
+          const classifiedError = classifyError(error instanceof Error ? error : new Error(String(error)));
+          return isNetworkError(classifiedError);
+        },
+        retryDelay: 1000,
+      },
+    },
+  });
+};
+
+/**
+ * 特定のクエリキーのキャッシュをクリア
+ */
+export const clearQueryCache = (queryClient: QueryClient, queryKey?: string[]): void => {
+  if (queryKey) {
+    queryClient.invalidateQueries({ queryKey });
+  } else {
+    queryClient.clear();
+  }
+};
+
+/**
+ * エラー時にクエリを再試行
+ */
+export const retryFailedQueries = (queryClient: QueryClient): Promise<void> => {
+  return queryClient.refetchQueries({
+    predicate: (query) => query.state.fetchStatus === 'idle' && query.state.status === 'error',
+  });
+};
+
+/**
+ * React Queryのエラーリセット用Hook
+ * ErrorBoundaryのreset時に使用
+ */
+export const useQueryErrorReset = (queryClient: QueryClient) => {
+  return () => {
+    // エラー状態のクエリをリセット
+    queryClient.resetQueries();
+    // 再フェッチ
+    void retryFailedQueries(queryClient);
+  };
+};
