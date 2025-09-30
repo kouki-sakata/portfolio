@@ -33,6 +33,7 @@
   - ソート、フィルタリング、ページネーション機能
   - 大規模データセットの仮想化対応
   - TypeScript完全サポート
+  - 従業員管理画面での実装完了（2025-09-30）
 - **shadcn/ui**: Radix UIベースのコンポーネントライブラリ
   - Radix UI React Label (v2.1.7)
   - Radix UI React Slot (v1.2.3)
@@ -62,6 +63,10 @@
 - **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
 - **openapi-zod-client**: OpenAPIからZodスキーマを生成（v1.18.3）
 - **Zod**: ランタイムスキーマバリデーション（v3.25.76）
+  - OpenAPI仕様からの自動生成（openapi-zod-client）
+  - React Hook Formとの統合によるフォームバリデーション
+  - ZodEffects型の適切な処理（z.infer、z.input、z.output）
+  - API型安全性の強化とランタイムバリデーション
 - **Ultracite**: 統合開発ツール（v5.4.4、グローバルインストール推奨）
 
 ### ビルド設定

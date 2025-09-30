@@ -225,6 +225,10 @@ frontend/
 │   │   │   ├── api/      # APIクライアント実装
 │   │   │   │   └── index.ts     # 従業員CRUD操作
 │   │   │   ├── components/
+│   │   │   │   ├── EmployeesPage.tsx  # 従業員一覧ページ（TanStack Table）
+│   │   │   │   └── columns.tsx         # DataTable列定義
+│   │   │   ├── hooks/
+│   │   │   │   └── useEmployees.ts     # 従業員データフック
 │   │   │   └── types/
 │   │   ├── home/     # ホーム画面
 │   │   │   ├── api/      # APIクライアント実装
@@ -310,6 +314,10 @@ frontend/
   - React Queryとの統合による効率的なキャッシュ管理
   - エラーハンドリングの一元化
   - 型安全なリクエスト/レスポンス処理
+- **Zodスキーマ統合**: OpenAPIからのスキーマ自動生成
+  - ランタイムバリデーションによる型安全性の二重保証
+  - ZodEffects型の適切な処理（z.input/z.output分離）
+  - React Hook Formとのシームレスな統合
 
 ## ファイル命名規則
 
