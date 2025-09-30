@@ -1,50 +1,42 @@
 import { z } from "zod";
 
 /**
- * 従業員フォーム用Zodバリデーションスキーマ
+ * 従業員スキーマのベース定義（リファインメントなし）
  *
  * @remarks
- * - 新規作成時: passwordは必須（最小8文字）
- * - 更新時: passwordは任意（変更する場合のみ入力）
+ * このベーススキーマは、createEmployeeSchemaとupdateEmployeeSchemaの基礎として使用されます。
+ * リファインメントを適用する前にスキーマを拡張するため、ZodEffects型の問題を回避できます。
  */
-export const employeeFormSchema = z
-  .object({
-    firstName: z
-      .string()
-      .min(1, { message: "姓は必須です" })
-      .max(50, { message: "姓は50文字以内で入力してください" }),
-    lastName: z
-      .string()
-      .min(1, { message: "名は必須です" })
-      .max(50, { message: "名は50文字以内で入力してください" }),
-    email: z
-      .string()
-      .min(1, { message: "メールアドレスは必須です" })
-      .email({ message: "有効なメールアドレスを入力してください" })
-      .max(255, { message: "メールアドレスは255文字以内で入力してください" }),
-    password: z
-      .string()
-      .min(8, { message: "パスワードは8文字以上で入力してください" })
-      .max(100, { message: "パスワードは100文字以内で入力してください" })
-      .optional()
-      .or(z.literal("")),
-    admin: z.boolean().default(false),
-  })
-  .refine(
-    (_data) => {
-      // 新規作成時（passwordが未設定または空）の場合、passwordは必須ではない
-      // この制約はフォームレベルで処理
-      return true;
-    },
-    {
-      message: "バリデーションエラー",
-    }
-  );
+const baseEmployeeSchema = z.object({
+  firstName: z
+    .string()
+    .min(1, { message: "姓は必須です" })
+    .max(50, { message: "姓は50文字以内で入力してください" }),
+  lastName: z
+    .string()
+    .min(1, { message: "名は必須です" })
+    .max(50, { message: "名は50文字以内で入力してください" }),
+  email: z
+    .string()
+    .min(1, { message: "メールアドレスは必須です" })
+    .email({ message: "有効なメールアドレスを入力してください" })
+    .max(255, { message: "メールアドレスは255文字以内で入力してください" }),
+  password: z
+    .string()
+    .min(8, { message: "パスワードは8文字以上で入力してください" })
+    .max(100, { message: "パスワードは100文字以内で入力してください" })
+    .optional()
+    .or(z.literal("")),
+  admin: z.boolean(),
+});
 
 /**
  * 新規作成用Zodスキーマ（passwordは必須）
+ *
+ * @remarks
+ * baseEmployeeSchemaを拡張してpasswordフィールドを必須に上書きします。
  */
-export const createEmployeeSchema = employeeFormSchema.extend({
+export const createEmployeeSchema = baseEmployeeSchema.extend({
   password: z
     .string()
     .min(8, { message: "パスワードは8文字以上で入力してください" })
@@ -53,8 +45,20 @@ export const createEmployeeSchema = employeeFormSchema.extend({
 
 /**
  * 更新用Zodスキーマ（passwordは任意）
+ *
+ * @remarks
+ * 更新時はpasswordを変更する場合のみ入力すればよいため、baseEmployeeSchemaをそのまま使用します。
  */
-export const updateEmployeeSchema = employeeFormSchema;
+export const updateEmployeeSchema = baseEmployeeSchema;
+
+/**
+ * 従業員フォーム用Zodバリデーションスキーマ
+ *
+ * @remarks
+ * 汎用フォーム用のスキーマ。必要に応じてリファインメントを追加できます。
+ * 現在は updateEmployeeSchema と同じ定義です。
+ */
+export const employeeFormSchema = baseEmployeeSchema;
 
 /**
  * TypeScript型の自動推論
