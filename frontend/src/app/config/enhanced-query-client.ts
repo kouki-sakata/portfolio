@@ -206,8 +206,6 @@ export const createEnhancedQueryClient = (
         refetchOnWindowFocus: false,
         // ネットワークエラー時は自動的に再接続時に再試行
         refetchOnReconnect: true,
-        // React 19 Suspenseモードを有効化（useSuspenseQuery使用時のみ有効）
-        suspense: false, // デフォルトはfalse、useSuspenseQueryを使用する場合は自動的にsuspenseモードになる
       },
       mutations: {
         retry: (failureCount, error) => {

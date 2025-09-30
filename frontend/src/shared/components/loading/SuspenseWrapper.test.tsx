@@ -1,6 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { Suspense } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { SuspenseWrapper } from "./SuspenseWrapper";
 
@@ -13,7 +12,7 @@ const TestComponent = ({ shouldThrow = false }: { shouldThrow?: boolean }) => {
 };
 
 // Suspendするコンポーネント（シンプルな実装）
-const SuspendingComponent = ({ delay = 100 }: { delay?: number }) => {
+const SuspendingComponent = () => {
   // この実装はテスト環境では常にコンテンツを表示するだけにする
   // 実際のSuspense動作は統合テストで確認する
   return <div data-testid="suspended-content">Content loaded</div>;
@@ -47,7 +46,7 @@ describe("SuspenseWrapper", () => {
       // ユニットテストでは基本的な構造のみ確認
       render(
         <SuspenseWrapper>
-          <SuspendingComponent delay={100} />
+          <SuspendingComponent />
         </SuspenseWrapper>,
         { wrapper }
       );
@@ -75,7 +74,7 @@ describe("SuspenseWrapper", () => {
   });
 
   describe("エラーハンドリング", () => {
-    // エラーをキャッチしてコンソールに出力しないように
+    // biome-ignore lint/suspicious/noEmptyBlockStatements: テストのためにconsole.errorを意図的に無効化
     const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
     it("エラーが発生した場合にエラーフォールバックが表示されること", () => {
@@ -107,7 +106,6 @@ describe("SuspenseWrapper", () => {
 
     it("onErrorコールバックが呼ばれること", () => {
       const onError = vi.fn();
-      const testError = new Error("Test error");
 
       render(
         <SuspenseWrapper onError={onError}>
@@ -189,7 +187,7 @@ describe("SuspenseWrapper", () => {
   });
 
   describe("遅延表示", () => {
-    it.skip("showDelayが設定されている場合、指定時間後にフォールバックが表示されること", () => {
+    it("showDelayが設定されている場合、指定時間後にフォールバックが表示されること", () => {
       // 注: タイミング依存のテストはE2Eテストで検証
       // ユニットテストではスキップ
     });
@@ -203,7 +201,7 @@ describe("SuspenseWrapper", () => {
         <SuspenseWrapper fallbackType="spinner">
           <div>
             <SuspenseWrapper fallbackType="skeleton-card">
-              <SuspendingComponent delay={100} />
+              <SuspendingComponent />
             </SuspenseWrapper>
           </div>
         </SuspenseWrapper>,

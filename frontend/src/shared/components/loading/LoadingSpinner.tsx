@@ -79,12 +79,11 @@ export function LoadingSpinner({
       data-testid="loading-spinner-container"
       {...props}
     >
-      <span
+      <output
         aria-busy="true"
         aria-label={label}
         aria-live="polite"
         className="inline-flex items-center gap-2"
-        role="status"
       >
         <Loader2
           className={spinnerVariants({ size, variant })}
@@ -93,7 +92,7 @@ export function LoadingSpinner({
         {showText && (
           <span className="text-muted-foreground text-sm">{label}</span>
         )}
-      </span>
+      </output>
     </div>
   );
 }
