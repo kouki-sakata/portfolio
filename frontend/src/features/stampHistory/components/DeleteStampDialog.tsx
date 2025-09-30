@@ -10,9 +10,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { toast } from "@/hooks/use-toast";
 import { deleteStamp } from "@/features/stampHistory/api";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
+import { toast } from "@/hooks/use-toast";
 
 type DeleteStampDialogProps = {
   entry: StampHistoryEntry | null;

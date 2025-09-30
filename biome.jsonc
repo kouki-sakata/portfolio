@@ -47,6 +47,9 @@
             "useNamingConvention": "off", // react-day-pickerなど外部ライブラリのAPIがsnake_caseを使用する場合があるため
             "noNestedTernary": "off" // UIコンポーネントでは条件レンダリングのための三項演算子のネストを許可
           },
+          "complexity": {
+            "useLiteralKeys": "off" // react-day-pickerのModifiers型などインデックスシグネチャ型ではブラケット記法が型安全性のために必要
+          },
           "correctness": {
             "noNestedComponentDefinitions": "off" // react-day-pickerのcomponentsプロップで動的なコンポーネントを渡すために必要
           }

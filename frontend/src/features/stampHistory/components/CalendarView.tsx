@@ -80,7 +80,11 @@ export const CalendarView = ({
           className="rounded-md border"
           components={{
             Day: (props) => (
-              <CalendarDay {...props} date={props.day.date} stampMap={stampMap} />
+              <CalendarDay
+                {...props}
+                date={props.day.date}
+                stampMap={stampMap}
+              />
             ),
           }}
           mode="single"
