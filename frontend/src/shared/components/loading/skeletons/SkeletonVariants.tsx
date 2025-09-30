@@ -102,7 +102,7 @@ export function SkeletonTable({
                     rowIndex
                   }`}
                 >
-                  {Array.from({ length: columns }).map((_, colIndex) => (
+                  {Array.from({ length: columns }).map((_col, colIndex) => (
                     <td
                       className="p-4 align-middle"
                       data-testid={`skeleton-table-cell-${rowIndex}-${colIndex}`}
