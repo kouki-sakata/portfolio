@@ -16,6 +16,7 @@ import { fetchStampHistory } from "@/features/stampHistory/api";
 import { CalendarView } from "@/features/stampHistory/components/CalendarView";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
+import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
 import { MonthlyStatsCard } from "@/features/stampHistory/components/MonthlyStatsCard";
 import type {
   StampHistoryEntry,
@@ -79,11 +80,14 @@ export const StampHistoryPage = () => {
 
   return (
     <div className="container mx-auto space-y-6 py-8">
-      <header className="space-y-2">
-        <h1 className="font-bold text-3xl">打刻履歴</h1>
-        <p className="text-muted-foreground">
-          対象年月を指定して打刻履歴を確認できます。
-        </p>
+      <header className="flex items-center justify-between">
+        <div className="space-y-2">
+          <h1 className="font-bold text-3xl">打刻履歴</h1>
+          <p className="text-muted-foreground">
+            対象年月を指定して打刻履歴を確認できます。
+          </p>
+        </div>
+        <ExportDialog disabled={query.isLoading} entries={data.entries} />
       </header>
 
       <form
