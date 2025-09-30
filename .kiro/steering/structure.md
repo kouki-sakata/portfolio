@@ -243,6 +243,13 @@ frontend/
 │   │       ├── api/      # APIクライアント実装
 │   │       │   └── index.ts     # 履歴取得・管理
 │   │       ├── components/
+│   │       │   ├── StampHistoryPage.tsx  # 打刻履歴メインページ
+│   │       │   ├── CalendarView.tsx      # カレンダービュー表示
+│   │       │   ├── MonthlyStatsCard.tsx  # 月次統計カード
+│   │       │   ├── EditStampDialog.tsx   # 打刻編集ダイアログ
+│   │       │   └── DeleteStampDialog.tsx # 打刻削除ダイアログ
+│   │       ├── routes/
+│   │       │   └── StampHistoryRoute.tsx # ルート定義
 │   │       └── types/
 │   ├── shared/       # 共通コンポーネント
 │   │   ├── api/      # API共通設定

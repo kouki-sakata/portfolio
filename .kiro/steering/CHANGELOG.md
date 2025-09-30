@@ -1,5 +1,38 @@
 # Steering Documents Changelog
 
+## 2025-09-30 (Update 7)
+
+### Updated Documents
+- `product.md` - 打刻履歴表示機能の拡張完了状態を追加
+- `structure.md` - stampHistoryコンポーネント構造の詳細を更新
+
+### Key Changes
+
+#### 打刻履歴表示機能の拡張（完了）
+- カレンダービューの実装
+  - 月間打刻状況の視覚的表示
+  - カレンダー形式での勤怠データ表示
+  - TypeScript型安全性の完全対応
+- 統計カードコンポーネント
+  - 月次勤務時間の集計表示
+  - 出勤日数・残業時間等の統計情報
+- 編集・削除機能
+  - EditStampDialog: 打刻時刻の修正機能
+  - DeleteStampDialog: 打刻記録の削除機能
+  - 適切なバリデーションとエラーハンドリング
+
+#### TypeScript型エラーの修正
+- CalendarView.tsxの型エラー完全解決
+- TS2322、TS2345エラーの対応
+- Biomeと TypeScript strictモードの競合解決
+
+### Impact
+- **UX向上**: 視覚的で直感的な打刻履歴表示
+- **データ可視化**: カレンダーと統計による情報の把握しやすさ
+- **型安全性**: 完全な TypeScript 型チェックによる品質向上
+
+---
+
 ## 2025-09-30 (Update 6)
 
 ### Updated Documents
