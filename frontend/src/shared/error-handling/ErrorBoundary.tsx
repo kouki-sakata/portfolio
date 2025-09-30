@@ -95,7 +95,9 @@ export class ErrorBoundary extends Component<
           : new UnexpectedError(error.message, error);
 
       errorHandler.handle(unexpectedError);
-    } catch (_e) {}
+    } catch (_e) {
+      // エラーハンドラー自体のエラーは握りつぶす（エラー処理の無限ループを防ぐ）
+    }
 
     // onErrorコールバックを実行
     if (this.props.onError) {
@@ -166,17 +168,17 @@ export class ErrorBoundary extends Component<
  * ErrorBoundaryを使いやすくするためのHOC
  */
 export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
+  WrappedComponent: React.ComponentType<P>,
   errorBoundaryProps: Omit<ErrorBoundaryProps, "children">
 ): React.ComponentType<P> {
-  const WrappedComponent = (props: P) => (
+  const EnhancedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
-      <Component {...props} />
+      <WrappedComponent {...props} />
     </ErrorBoundary>
   );
 
   // Display name for debugging
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || "Component"})`;
+  EnhancedComponent.displayName = `withErrorBoundary(${WrappedComponent.displayName || WrappedComponent.name || "Component"})`;
 
-  return WrappedComponent;
+  return EnhancedComponent;
 }

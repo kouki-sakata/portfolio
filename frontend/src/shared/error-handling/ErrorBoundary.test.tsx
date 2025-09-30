@@ -237,7 +237,7 @@ describe("ErrorBoundary", () => {
 
       render(
         <ErrorBoundary
-          fallback={({ error, reset }) => (
+          fallback={({ error }) => (
             <div>
               <span>Function Fallback</span>
               <span>{error.message}</span>

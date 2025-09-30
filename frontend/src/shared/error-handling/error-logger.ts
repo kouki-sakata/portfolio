@@ -71,7 +71,6 @@ export class ConsoleErrorLogger implements ErrorLogger {
     } catch (sendError) {
       // リモート送信エラーは握りつぶす（ログの送信失敗でアプリを止めない）
       if (this.environment === "development") {
-        // biome-ignore lint/suspicious/noConsole: Development-only debugging output
         console.warn("Failed to send error log to remote:", sendError);
       }
     }
@@ -128,12 +127,14 @@ export class ConsoleErrorLogger implements ErrorLogger {
   }
 
   private logToConsole(logEntry: ErrorLogEntry): void {
-    const logMethod =
-      logEntry.level === "error"
-        ? console.error
-        : logEntry.level === "warn"
-          ? console.warn
-          : console.log;
+    let logMethod: typeof console.log;
+    if (logEntry.level === "error") {
+      logMethod = console.error;
+    } else if (logEntry.level === "warn") {
+      logMethod = console.warn;
+    } else {
+      logMethod = console.log;
+    }
 
     logMethod("🔴 Error Log:", {
       timestamp: logEntry.timestamp.toISOString(),
@@ -145,6 +146,7 @@ export class ConsoleErrorLogger implements ErrorLogger {
     });
 
     if (logEntry.stackTrace) {
+      // スタックトレースのログ出力は実装予定
     }
   }
 }
