@@ -1,9 +1,9 @@
-import { ApiError } from './ApiError';
-import { NetworkError } from './NetworkError';
-import { ValidationError } from './ValidationError';
-import { AuthenticationError } from './AuthenticationError';
-import { AuthorizationError } from './AuthorizationError';
-import { UnexpectedError } from './UnexpectedError';
+import { ApiError } from "./ApiError";
+import { AuthenticationError } from "./AuthenticationError";
+import { AuthorizationError } from "./AuthorizationError";
+import { NetworkError } from "./NetworkError";
+import { UnexpectedError } from "./UnexpectedError";
+import { ValidationError } from "./ValidationError";
 
 /**
  * エラーがApiErrorかどうか判定
@@ -29,14 +29,18 @@ export function isValidationError(error: Error): error is ValidationError {
 /**
  * エラーがAuthenticationErrorかどうか判定
  */
-export function isAuthenticationError(error: Error): error is AuthenticationError {
+export function isAuthenticationError(
+  error: Error
+): error is AuthenticationError {
   return error instanceof AuthenticationError;
 }
 
 /**
  * エラーがAuthorizationErrorかどうか判定
  */
-export function isAuthorizationError(error: Error): error is AuthorizationError {
+export function isAuthorizationError(
+  error: Error
+): error is AuthorizationError {
   return error instanceof AuthorizationError;
 }
 
@@ -59,14 +63,14 @@ export function classifyHttpError(
   // ネットワークエラー（ステータスコード0）
   if (status === 0) {
     return new NetworkError(
-      message || 'ネットワークエラーが発生しました',
-      new Error('Network failure')
+      message || "ネットワークエラーが発生しました",
+      new Error("Network failure")
     );
   }
 
   // 401: 認証エラー
   if (status === 401) {
-    return new AuthenticationError(message || 'Unauthorized');
+    return new AuthenticationError(message || "Unauthorized");
   }
 
   // 403: 認可エラー
@@ -74,7 +78,7 @@ export function classifyHttpError(
     const requiredRole = details?.requiredRole as string | undefined;
     const currentRole = details?.currentRole as string | undefined;
     return new AuthorizationError(
-      message || 'Forbidden',
+      message || "Forbidden",
       requiredRole,
       currentRole
     );
@@ -84,7 +88,7 @@ export function classifyHttpError(
   if (status === 422) {
     const fieldErrors = extractFieldErrors(details);
     return new ValidationError(
-      message || 'Validation failed',
+      message || "Validation failed",
       status,
       fieldErrors
     );
@@ -92,6 +96,55 @@ export function classifyHttpError(
 
   // その他のAPIエラー
   return new ApiError(message, status, code, details);
+}
+
+/**
+ * 値がstring配列かどうか判定するType Guard
+ */
+function isFieldErrorArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === "string");
+}
+
+/**
+ * エラー値を文字列配列に正規化
+ */
+function normalizeErrorValue(error: unknown): string[] {
+  if (Array.isArray(error)) {
+    return error.map((e) => String(e));
+  }
+  return [String(error)];
+}
+
+/**
+ * errorsプロパティからフィールドエラーを抽出
+ */
+function extractFromErrorsProperty(
+  errors: Record<string, unknown>
+): Record<string, string[]> {
+  const fieldErrors: Record<string, string[]> = {};
+
+  for (const [field, error] of Object.entries(errors)) {
+    fieldErrors[field] = normalizeErrorValue(error);
+  }
+
+  return fieldErrors;
+}
+
+/**
+ * detailsオブジェクト自体からフィールドエラーを抽出
+ */
+function extractFromDetailsObject(
+  details: Record<string, unknown>
+): Record<string, string[]> {
+  const fieldErrors: Record<string, string[]> = {};
+
+  for (const [field, value] of Object.entries(details)) {
+    if (isFieldErrorArray(value)) {
+      fieldErrors[field] = value;
+    }
+  }
+
+  return fieldErrors;
 }
 
 /**
@@ -105,43 +158,17 @@ function extractFieldErrors(
   }
 
   // errorsプロパティがある場合（一般的なAPIレスポンス）
-  if (details.errors && typeof details.errors === 'object') {
-    const errors = details.errors as Record<string, unknown>;
-    const fieldErrors: Record<string, string[]> = {};
-
-    for (const field in errors) {
-      if (Object.prototype.hasOwnProperty.call(errors, field)) {
-        const error = errors[field];
-        if (Array.isArray(error)) {
-          fieldErrors[field] = error.map(e => String(e));
-        } else if (typeof error === 'string') {
-          fieldErrors[field] = [error];
-        } else {
-          fieldErrors[field] = [String(error)];
-        }
-      }
-    }
-
-    return fieldErrors;
+  if (details.errors && typeof details.errors === "object") {
+    return extractFromErrorsProperty(details.errors as Record<string, unknown>);
   }
 
   // fieldErrorsプロパティがある場合
-  if (details.fieldErrors && typeof details.fieldErrors === 'object') {
+  if (details.fieldErrors && typeof details.fieldErrors === "object") {
     return details.fieldErrors as Record<string, string[]>;
   }
 
   // detailsそのものがフィールドエラー形式の場合
-  const fieldErrors: Record<string, string[]> = {};
-  for (const field in details) {
-    if (Object.prototype.hasOwnProperty.call(details, field)) {
-      const value = details[field];
-      if (Array.isArray(value) && value.every(v => typeof v === 'string')) {
-        fieldErrors[field] = value as string[];
-      }
-    }
-  }
-
-  return fieldErrors;
+  return extractFromDetailsObject(details);
 }
 
 /**
@@ -155,9 +182,9 @@ export function classifyError(error: Error): ApiError | UnexpectedError {
 
   // ネットワークエラーのパターン
   if (
-    error.name === 'NetworkError' ||
-    error.message.toLowerCase().includes('network') ||
-    error.message.toLowerCase().includes('fetch')
+    error.name === "NetworkError" ||
+    error.message.toLowerCase().includes("network") ||
+    error.message.toLowerCase().includes("fetch")
   ) {
     return new NetworkError(error.message, error);
   }
@@ -167,7 +194,7 @@ export function classifyError(error: Error): ApiError | UnexpectedError {
     originalError: {
       name: error.name,
       message: error.message,
-      stack: error.stack
-    }
+      stack: error.stack,
+    },
   });
 }

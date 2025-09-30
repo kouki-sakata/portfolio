@@ -7,11 +7,11 @@ export class UnexpectedError extends Error {
   readonly context?: Record<string, unknown>;
 
   constructor(
-    message: string = '予期しないエラーが発生しました',
+    message = "予期しないエラーが発生しました",
     context?: Record<string, unknown>
   ) {
     super(message);
-    this.name = 'UnexpectedError';
+    this.name = "UnexpectedError";
     this.timestamp = new Date();
     this.context = context;
 
@@ -28,7 +28,7 @@ export class UnexpectedError extends Error {
    * ユーザーフレンドリーなエラーメッセージを取得
    */
   getUserMessage(): string {
-    return '予期しないエラーが発生しました。しばらくしてから再度お試しください。';
+    return "予期しないエラーが発生しました。しばらくしてから再度お試しください。";
   }
 
   /**
@@ -44,7 +44,7 @@ export class UnexpectedError extends Error {
       message: this.message,
       timestamp: this.timestamp,
       context: this.context,
-      stack: this.stack
+      stack: this.stack,
     };
   }
 
@@ -58,7 +58,7 @@ export class UnexpectedError extends Error {
       message: details.message,
       timestamp: details.timestamp.toISOString(),
       context: details.context,
-      stack: details.stack?.split('\n').slice(0, 5).join('\n') // 最初の5行のみ
+      stack: details.stack?.split("\n").slice(0, 5).join("\n"), // 最初の5行のみ
     });
   }
 }

@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import { ApiError } from "./ApiError";
 
 /**
  * 認証エラーを表すクラス（401 Unauthorized）
@@ -7,11 +7,8 @@ import { ApiError } from './ApiError';
 export class AuthenticationError extends ApiError {
   readonly redirectTo?: string;
 
-  constructor(
-    message: string = 'Unauthorized',
-    redirectTo: string = '/auth/signin'
-  ) {
-    super(message, 401, 'AUTHENTICATION_ERROR');
+  constructor(message = "Unauthorized", redirectTo = "/auth/signin") {
+    super(message, 401, "AUTHENTICATION_ERROR");
     this.redirectTo = redirectTo;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -27,21 +24,23 @@ export class AuthenticationError extends ApiError {
    * ユーザーフレンドリーなエラーメッセージを取得
    */
   getUserMessage(): string {
-    return '認証が必要です。ログインしてください。';
+    return "認証が必要です。ログインしてください。";
   }
 
   /**
    * リダイレクト先のパスを取得
    */
   getRedirectPath(): string {
-    return this.redirectTo || '/auth/signin';
+    return this.redirectTo || "/auth/signin";
   }
 
   /**
    * セッションが期限切れかどうかを判定
    */
   isSessionExpired(): boolean {
-    return this.message.toLowerCase().includes('session') ||
-           this.message.toLowerCase().includes('expired');
+    return (
+      this.message.toLowerCase().includes("session") ||
+      this.message.toLowerCase().includes("expired")
+    );
   }
 }

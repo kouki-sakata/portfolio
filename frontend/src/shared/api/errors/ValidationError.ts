@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import { ApiError } from "./ApiError";
 
 /**
  * バリデーションエラーを表すクラス
@@ -12,7 +12,7 @@ export class ValidationError extends ApiError {
     status: number,
     fieldErrors: Record<string, string[]>
   ) {
-    super(message, status, 'VALIDATION_ERROR');
+    super(message, status, "VALIDATION_ERROR");
     this.fieldErrors = fieldErrors;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -31,10 +31,10 @@ export class ValidationError extends ApiError {
     const errorMessages = this.getAllErrorMessages();
 
     if (errorMessages.length === 0) {
-      return '入力内容を確認してください。';
+      return "入力内容を確認してください。";
     }
 
-    return `入力内容にエラーがあります:\n${errorMessages.join('\n')}`;
+    return `入力内容にエラーがあります:\n${errorMessages.join("\n")}`;
   }
 
   /**
@@ -44,7 +44,7 @@ export class ValidationError extends ApiError {
     const messages: string[] = [];
 
     for (const field in this.fieldErrors) {
-      if (Object.prototype.hasOwnProperty.call(this.fieldErrors, field)) {
+      if (Object.hasOwn(this.fieldErrors, field)) {
         messages.push(...this.fieldErrors[field]);
       }
     }

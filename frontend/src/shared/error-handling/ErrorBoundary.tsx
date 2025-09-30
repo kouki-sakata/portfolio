@@ -1,11 +1,11 @@
-import React, { Component, type ReactNode, type ErrorInfo } from 'react';
-import { GlobalErrorHandler } from './GlobalErrorHandler';
-import { UnexpectedError } from '../api/errors';
+import React, { Component, type ErrorInfo, type ReactNode } from "react";
+import { UnexpectedError } from "../api/errors";
+import { GlobalErrorHandler } from "./GlobalErrorHandler";
 
 /**
  * ErrorBoundaryのプロパティ
  */
-export interface ErrorBoundaryProps {
+export type ErrorBoundaryProps = {
   /**
    * 子コンポーネント
    */
@@ -29,12 +29,12 @@ export interface ErrorBoundaryProps {
    * リセット時にクエリをリセットする関数（React Query用）
    */
   resetQueries?: () => void;
-}
+};
 
 /**
  * フォールバックコンポーネントに渡されるプロパティ
  */
-export interface ErrorBoundaryFallbackProps {
+export type ErrorBoundaryFallbackProps = {
   /**
    * キャッチされたエラー
    */
@@ -44,21 +44,24 @@ export interface ErrorBoundaryFallbackProps {
    * エラー境界をリセットする関数
    */
   reset: () => void;
-}
+};
 
 /**
  * ErrorBoundaryの状態
  */
-interface ErrorBoundaryState {
+type ErrorBoundaryState = {
   hasError: boolean;
   error: Error | null;
-}
+};
 
 /**
  * React Error Boundaryコンポーネント
  * コンポーネントツリー内で発生したエラーをキャッチして処理します
  */
-export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+export class ErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = {
@@ -86,15 +89,13 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     try {
       const errorHandler = GlobalErrorHandler.getInstance();
       // エラーをUnexpectedErrorとしてラップ
-      const unexpectedError = error instanceof UnexpectedError
-        ? error
-        : new UnexpectedError(error.message, error);
+      const unexpectedError =
+        error instanceof UnexpectedError
+          ? error
+          : new UnexpectedError(error.message, error);
 
       errorHandler.handle(unexpectedError);
-    } catch (e) {
-      // GlobalErrorHandlerが初期化されていない場合はコンソールに出力
-      console.error('Error boundary caught an error:', error, errorInfo);
-    }
+    } catch (_e) {}
 
     // onErrorコールバックを実行
     if (this.props.onError) {
@@ -135,14 +136,17 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
     };
 
     // 関数の場合
-    if (typeof fallback === 'function') {
+    if (typeof fallback === "function") {
       // コンポーネントの場合
-      if (fallback.prototype && fallback.prototype.isReactComponent) {
-        const FallbackComponent = fallback as React.ComponentType<ErrorBoundaryFallbackProps>;
+      if (fallback.prototype?.isReactComponent) {
+        const FallbackComponent =
+          fallback as React.ComponentType<ErrorBoundaryFallbackProps>;
         return <FallbackComponent {...fallbackProps} />;
       }
       // 通常の関数の場合
-      return (fallback as (props: ErrorBoundaryFallbackProps) => ReactNode)(fallbackProps);
+      return (fallback as (props: ErrorBoundaryFallbackProps) => ReactNode)(
+        fallbackProps
+      );
     }
 
     // ReactElementの場合
@@ -163,7 +167,7 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
  */
 export function withErrorBoundary<P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryProps: Omit<ErrorBoundaryProps, 'children'>
+  errorBoundaryProps: Omit<ErrorBoundaryProps, "children">
 ): React.ComponentType<P> {
   const WrappedComponent = (props: P) => (
     <ErrorBoundary {...errorBoundaryProps}>
@@ -172,7 +176,7 @@ export function withErrorBoundary<P extends object>(
   );
 
   // Display name for debugging
-  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || 'Component'})`;
+  WrappedComponent.displayName = `withErrorBoundary(${Component.displayName || Component.name || "Component"})`;
 
   return WrappedComponent;
 }

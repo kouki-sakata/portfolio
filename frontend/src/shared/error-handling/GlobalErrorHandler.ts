@@ -1,46 +1,41 @@
-import type { ReactNode } from 'react';
 import {
-  ApiError,
-  NetworkError,
-  ValidationError,
-  AuthenticationError,
-  AuthorizationError,
-  UnexpectedError,
+  type ApiError,
+  classifyError,
   isApiError,
-  isNetworkError,
-  isValidationError,
   isAuthenticationError,
   isAuthorizationError,
+  isNetworkError,
   isUnexpectedError,
-  classifyError,
-} from '../api/errors';
-import type { ErrorLogger } from './error-logger';
+  isValidationError,
+  type UnexpectedError,
+} from "../api/errors";
+import type { ErrorLogger } from "./error-logger";
 
 /**
  * Toast表示のオプション
  */
-export interface ToastOptions {
+export type ToastOptions = {
   title?: string;
   description?: string;
-  variant?: 'default' | 'destructive';
+  variant?: "default" | "destructive";
   duration?: number;
   action?: {
     label: string;
     onClick: () => void;
   };
-}
+};
 
 /**
  * GlobalErrorHandlerの設定
  */
-export interface ErrorHandlerConfig {
+export type ErrorHandlerConfig = {
   toast: (options: ToastOptions) => void;
   logger: ErrorLogger;
-  environment: 'development' | 'production';
+  environment: "development" | "production";
   enableToast?: boolean;
   enableLogging?: boolean;
   onRetry?: () => void;
-}
+};
 
 /**
  * アプリケーション全体のエラーハンドリングを管理するクラス
@@ -48,7 +43,7 @@ export interface ErrorHandlerConfig {
  */
 export class GlobalErrorHandler {
   private static instance: GlobalErrorHandler | null = null;
-  private config: ErrorHandlerConfig;
+  private readonly config: ErrorHandlerConfig;
 
   private constructor(config: ErrorHandlerConfig) {
     this.config = {
@@ -62,27 +57,27 @@ export class GlobalErrorHandler {
    * GlobalErrorHandlerを初期化
    */
   static initialize(config: ErrorHandlerConfig): GlobalErrorHandler {
-    if (!this.instance) {
-      this.instance = new GlobalErrorHandler(config);
+    if (!GlobalErrorHandler.instance) {
+      GlobalErrorHandler.instance = new GlobalErrorHandler(config);
     }
-    return this.instance;
+    return GlobalErrorHandler.instance;
   }
 
   /**
    * GlobalErrorHandlerのインスタンスを取得
    */
   static getInstance(): GlobalErrorHandler {
-    if (!this.instance) {
-      throw new Error('GlobalErrorHandler not initialized');
+    if (!GlobalErrorHandler.instance) {
+      throw new Error("GlobalErrorHandler not initialized");
     }
-    return this.instance;
+    return GlobalErrorHandler.instance;
   }
 
   /**
    * インスタンスをリセット（テスト用）
    */
   static reset(): void {
-    this.instance = null;
+    GlobalErrorHandler.instance = null;
   }
 
   /**
@@ -125,19 +120,21 @@ export class GlobalErrorHandler {
   /**
    * エラーのログレベルを判定
    */
-  private getLogLevel(error: ApiError | UnexpectedError): 'error' | 'warn' | 'info' {
+  private getLogLevel(
+    error: ApiError | UnexpectedError
+  ): "error" | "warn" | "info" {
     // 認証エラーは警告レベル
     if (isAuthenticationError(error) || isAuthorizationError(error)) {
-      return 'warn';
+      return "warn";
     }
 
     // バリデーションエラーは警告レベル
     if (isValidationError(error)) {
-      return 'warn';
+      return "warn";
     }
 
     // それ以外はエラーレベル
-    return 'error';
+    return "error";
   }
 
   /**
@@ -164,7 +161,7 @@ export class GlobalErrorHandler {
     return {
       title,
       description,
-      variant: 'destructive',
+      variant: "destructive",
       duration: 5000,
       ...(action && { action }),
     };
@@ -175,27 +172,27 @@ export class GlobalErrorHandler {
    */
   private getToastTitle(error: ApiError | UnexpectedError): string {
     if (isNetworkError(error)) {
-      return 'ネットワークエラー';
+      return "ネットワークエラー";
     }
 
     if (isValidationError(error)) {
-      return '入力エラー';
+      return "入力エラー";
     }
 
     if (isAuthorizationError(error)) {
-      return '権限エラー';
+      return "権限エラー";
     }
 
     if (isApiError(error)) {
       if (error.status >= 500) {
-        return 'サーバーエラー';
+        return "サーバーエラー";
       }
       if (error.status >= 400) {
-        return 'エラー';
+        return "エラー";
       }
     }
 
-    return 'システムエラー';
+    return "システムエラー";
   }
 
   /**
@@ -210,22 +207,24 @@ export class GlobalErrorHandler {
       return error.getUserMessage();
     }
 
-    return '予期しないエラーが発生しました。';
+    return "予期しないエラーが発生しました。";
   }
 
   /**
    * Toast のアクション（再試行ボタンなど）を取得
    */
-  private getToastAction(error: ApiError | UnexpectedError): ToastOptions['action'] | undefined {
+  private getToastAction(
+    error: ApiError | UnexpectedError
+  ): ToastOptions["action"] | undefined {
     // ネットワークエラーの場合は再試行ボタンを表示
     if (isNetworkError(error) && error.isRetryable && this.config.onRetry) {
       return {
-        label: '再試行',
+        label: "再試行",
         onClick: this.config.onRetry,
       };
     }
 
-    return undefined;
+    return;
   }
 
   /**
@@ -250,7 +249,7 @@ export class GlobalErrorHandler {
     }
 
     return {
-      type: 'UnknownError',
+      type: "UnknownError",
       message: error.message,
       name: error.name,
     };

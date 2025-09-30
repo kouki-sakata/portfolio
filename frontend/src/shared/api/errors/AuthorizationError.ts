@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import { ApiError } from "./ApiError";
 
 /**
  * 認可エラーを表すクラス（403 Forbidden）
@@ -9,11 +9,11 @@ export class AuthorizationError extends ApiError {
   readonly currentRole?: string;
 
   constructor(
-    message: string = 'Forbidden',
+    message = "Forbidden",
     requiredRole?: string,
     currentRole?: string
   ) {
-    super(message, 403, 'AUTHORIZATION_ERROR');
+    super(message, 403, "AUTHORIZATION_ERROR");
     this.requiredRole = requiredRole;
     this.currentRole = currentRole;
 
@@ -33,7 +33,7 @@ export class AuthorizationError extends ApiError {
     if (this.requiredRole) {
       return `この操作には${this.requiredRole}権限が必要です。`;
     }
-    return 'この操作を行う権限がありません。';
+    return "この操作を行う権限がありません。";
   }
 
   /**
@@ -46,13 +46,13 @@ export class AuthorizationError extends ApiError {
     if (this.requiredRole) {
       return `必要な権限: ${this.requiredRole}`;
     }
-    return '権限が不足しています';
+    return "権限が不足しています";
   }
 
   /**
    * 管理者権限が必要かどうかを判定
    */
   requiresAdmin(): boolean {
-    return this.requiredRole?.toLowerCase().includes('admin') || false;
+    return this.requiredRole?.toLowerCase().includes("admin");
   }
 }

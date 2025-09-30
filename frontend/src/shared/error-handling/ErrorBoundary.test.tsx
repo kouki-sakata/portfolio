@@ -1,9 +1,9 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import React from 'react';
-import { ErrorBoundary } from './ErrorBoundary';
-import { GlobalErrorHandler } from './GlobalErrorHandler';
-import { UnexpectedError } from '../api/errors';
+import { render, screen, waitFor } from "@testing-library/react";
+import type React from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { UnexpectedError } from "../api/errors";
+import { ErrorBoundary } from "./ErrorBoundary";
+import { GlobalErrorHandler } from "./GlobalErrorHandler";
 
 // モックコンソール
 const originalError = console.error;
@@ -24,11 +24,9 @@ const ThrowError: React.FC<{ error: Error }> = ({ error }) => {
 };
 
 // 正常にレンダリングされるテスト用コンポーネント
-const NormalComponent: React.FC = () => {
-  return <div>Normal Component</div>;
-};
+const NormalComponent: React.FC = () => <div>Normal Component</div>;
 
-describe('ErrorBoundary', () => {
+describe("ErrorBoundary", () => {
   const mockToast = vi.fn();
   const mockLogger = {
     log: vi.fn(),
@@ -43,7 +41,7 @@ describe('ErrorBoundary', () => {
     GlobalErrorHandler.initialize({
       toast: mockToast,
       logger: mockLogger,
-      environment: 'development',
+      environment: "development",
     });
     vi.clearAllMocks();
   });
@@ -52,22 +50,22 @@ describe('ErrorBoundary', () => {
     GlobalErrorHandler.reset();
   });
 
-  describe('Normal Rendering', () => {
-    it('should render children when there is no error', () => {
+  describe("Normal Rendering", () => {
+    it("should render children when there is no error", () => {
       render(
         <ErrorBoundary fallback={<div>Error Fallback</div>}>
           <NormalComponent />
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Normal Component')).toBeInTheDocument();
-      expect(screen.queryByText('Error Fallback')).not.toBeInTheDocument();
+      expect(screen.getByText("Normal Component")).toBeInTheDocument();
+      expect(screen.queryByText("Error Fallback")).not.toBeInTheDocument();
     });
   });
 
-  describe('Error Handling', () => {
-    it('should catch errors and display fallback UI', () => {
-      const error = new Error('Test error');
+  describe("Error Handling", () => {
+    it("should catch errors and display fallback UI", () => {
+      const error = new Error("Test error");
 
       render(
         <ErrorBoundary fallback={<div>Error Fallback</div>}>
@@ -75,13 +73,13 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Error Fallback')).toBeInTheDocument();
-      expect(screen.queryByText('Normal Component')).not.toBeInTheDocument();
+      expect(screen.getByText("Error Fallback")).toBeInTheDocument();
+      expect(screen.queryByText("Normal Component")).not.toBeInTheDocument();
     });
 
-    it('should call GlobalErrorHandler when error occurs', () => {
-      const error = new UnexpectedError('Test error');
-      const handleSpy = vi.spyOn(GlobalErrorHandler.getInstance(), 'handle');
+    it("should call GlobalErrorHandler when error occurs", () => {
+      const error = new UnexpectedError("Test error");
+      const handleSpy = vi.spyOn(GlobalErrorHandler.getInstance(), "handle");
 
       render(
         <ErrorBoundary fallback={<div>Error Fallback</div>}>
@@ -92,8 +90,8 @@ describe('ErrorBoundary', () => {
       expect(handleSpy).toHaveBeenCalledWith(error);
     });
 
-    it('should call onError callback when provided', () => {
-      const error = new Error('Test error');
+    it("should call onError callback when provided", () => {
+      const error = new Error("Test error");
 
       render(
         <ErrorBoundary
@@ -107,8 +105,8 @@ describe('ErrorBoundary', () => {
       expect(mockOnError).toHaveBeenCalledWith(error, expect.any(Object));
     });
 
-    it('should pass error to fallback component when using render prop', () => {
-      const error = new Error('Test error message');
+    it("should pass error to fallback component when using render prop", () => {
+      const error = new Error("Test error message");
 
       render(
         <ErrorBoundary
@@ -124,15 +122,15 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Error occurred')).toBeInTheDocument();
-      expect(screen.getByText('Test error message')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Reset' })).toBeInTheDocument();
+      expect(screen.getByText("Error occurred")).toBeInTheDocument();
+      expect(screen.getByText("Test error message")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Reset" })).toBeInTheDocument();
     });
   });
 
-  describe('Reset Functionality', () => {
-    it('should reset error state when reset is called', async () => {
-      const error = new Error('Test error');
+  describe("Reset Functionality", () => {
+    it("should reset error state when reset is called", async () => {
+      const error = new Error("Test error");
       let shouldThrow = true;
 
       const ConditionalError: React.FC = () => {
@@ -147,10 +145,12 @@ describe('ErrorBoundary', () => {
           fallback={(props) => (
             <div>
               <span>Error Fallback</span>
-              <button onClick={() => {
-                shouldThrow = false;
-                props.reset();
-              }}>
+              <button
+                onClick={() => {
+                  shouldThrow = false;
+                  props.reset();
+                }}
+              >
                 Reset
               </button>
             </div>
@@ -161,10 +161,10 @@ describe('ErrorBoundary', () => {
       );
 
       // エラー状態を確認
-      expect(screen.getByText('Error Fallback')).toBeInTheDocument();
+      expect(screen.getByText("Error Fallback")).toBeInTheDocument();
 
       // リセットボタンをクリック
-      const resetButton = screen.getByRole('button', { name: 'Reset' });
+      const resetButton = screen.getByRole("button", { name: "Reset" });
       resetButton.click();
 
       // コンポーネントを再レンダリング
@@ -183,13 +183,13 @@ describe('ErrorBoundary', () => {
 
       // 復旧したことを確認
       await waitFor(() => {
-        expect(screen.getByText('Recovered Component')).toBeInTheDocument();
+        expect(screen.getByText("Recovered Component")).toBeInTheDocument();
       });
-      expect(screen.queryByText('Error Fallback')).not.toBeInTheDocument();
+      expect(screen.queryByText("Error Fallback")).not.toBeInTheDocument();
     });
 
-    it('should call resetQueries when provided on reset', () => {
-      const error = new Error('Test error');
+    it("should call resetQueries when provided on reset", () => {
+      const error = new Error("Test error");
 
       render(
         <ErrorBoundary
@@ -205,16 +205,16 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      const resetButton = screen.getByRole('button', { name: 'Reset' });
+      const resetButton = screen.getByRole("button", { name: "Reset" });
       resetButton.click();
 
       expect(mockResetQueries).toHaveBeenCalled();
     });
   });
 
-  describe('Fallback Types', () => {
-    it('should support React element as fallback', () => {
-      const error = new Error('Test error');
+  describe("Fallback Types", () => {
+    it("should support React element as fallback", () => {
+      const error = new Error("Test error");
 
       render(
         <ErrorBoundary fallback={<div>Static Fallback</div>}>
@@ -222,11 +222,11 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Static Fallback')).toBeInTheDocument();
+      expect(screen.getByText("Static Fallback")).toBeInTheDocument();
     });
 
-    it('should support function as fallback', () => {
-      const error = new Error('Test error');
+    it("should support function as fallback", () => {
+      const error = new Error("Test error");
 
       render(
         <ErrorBoundary
@@ -241,14 +241,17 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Function Fallback')).toBeInTheDocument();
-      expect(screen.getByText('Test error')).toBeInTheDocument();
+      expect(screen.getByText("Function Fallback")).toBeInTheDocument();
+      expect(screen.getByText("Test error")).toBeInTheDocument();
     });
 
-    it('should support component as fallback', () => {
-      const error = new Error('Test error');
+    it("should support component as fallback", () => {
+      const error = new Error("Test error");
 
-      const FallbackComponent: React.FC<{ error: Error; reset: () => void }> = ({ error, reset }) => (
+      const FallbackComponent: React.FC<{
+        error: Error;
+        reset: () => void;
+      }> = ({ error, reset }) => (
         <div>
           <h1>Component Fallback</h1>
           <p>{error.message}</p>
@@ -262,15 +265,17 @@ describe('ErrorBoundary', () => {
         </ErrorBoundary>
       );
 
-      expect(screen.getByText('Component Fallback')).toBeInTheDocument();
-      expect(screen.getByText('Test error')).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument();
+      expect(screen.getByText("Component Fallback")).toBeInTheDocument();
+      expect(screen.getByText("Test error")).toBeInTheDocument();
+      expect(
+        screen.getByRole("button", { name: "Try Again" })
+      ).toBeInTheDocument();
     });
   });
 
-  describe('Isolation', () => {
-    it('should isolate errors to the boundary', () => {
-      const error = new Error('Test error');
+  describe("Isolation", () => {
+    it("should isolate errors to the boundary", () => {
+      const error = new Error("Test error");
 
       render(
         <div>
@@ -283,15 +288,15 @@ describe('ErrorBoundary', () => {
       );
 
       // エラー境界外のコンポーネントは正常に表示される
-      expect(screen.getByText('Outside Component')).toBeInTheDocument();
-      expect(screen.getByText('Another Outside Component')).toBeInTheDocument();
+      expect(screen.getByText("Outside Component")).toBeInTheDocument();
+      expect(screen.getByText("Another Outside Component")).toBeInTheDocument();
       // エラー境界内はフォールバックが表示される
-      expect(screen.getByText('Error Fallback')).toBeInTheDocument();
+      expect(screen.getByText("Error Fallback")).toBeInTheDocument();
     });
 
-    it('should allow nested error boundaries', () => {
-      const outerError = new Error('Outer error');
-      const innerError = new Error('Inner error');
+    it("should allow nested error boundaries", () => {
+      const _outerError = new Error("Outer error");
+      const innerError = new Error("Inner error");
 
       render(
         <ErrorBoundary fallback={<div>Outer Fallback</div>}>
@@ -303,9 +308,9 @@ describe('ErrorBoundary', () => {
       );
 
       // 内側のエラー境界でエラーが処理される
-      expect(screen.getByText('Normal Content')).toBeInTheDocument();
-      expect(screen.getByText('Inner Fallback')).toBeInTheDocument();
-      expect(screen.queryByText('Outer Fallback')).not.toBeInTheDocument();
+      expect(screen.getByText("Normal Content")).toBeInTheDocument();
+      expect(screen.getByText("Inner Fallback")).toBeInTheDocument();
+      expect(screen.queryByText("Outer Fallback")).not.toBeInTheDocument();
     });
   });
 });

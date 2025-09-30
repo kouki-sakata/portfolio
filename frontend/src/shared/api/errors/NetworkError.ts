@@ -1,4 +1,4 @@
-import { ApiError } from './ApiError';
+import { ApiError } from "./ApiError";
 
 /**
  * ネットワーク関連のエラーを表すクラス
@@ -9,7 +9,7 @@ export class NetworkError extends ApiError {
   readonly originalError: Error;
 
   constructor(message: string, originalError: Error) {
-    super(message, 0, 'NETWORK_ERROR');
+    super(message, 0, "NETWORK_ERROR");
     this.originalError = originalError;
 
     // Maintains proper stack trace for where our error was thrown (only available on V8)
@@ -25,7 +25,7 @@ export class NetworkError extends ApiError {
    * ユーザーフレンドリーなエラーメッセージを取得
    */
   getUserMessage(): string {
-    return 'ネットワークエラーが発生しました。接続を確認してください。';
+    return "ネットワークエラーが発生しました。接続を確認してください。";
   }
 
   /**
@@ -39,6 +39,6 @@ export class NetworkError extends ApiError {
    * 再試行に関する提案メッセージを取得
    */
   getRetrySuggestion(): string {
-    return 'ネットワーク接続を確認して、再試行してください。';
+    return "ネットワーク接続を確認して、再試行してください。";
   }
 }
