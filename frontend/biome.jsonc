@@ -114,7 +114,7 @@
       }
     },
     {
-      "includes": ["frontend/src/shared/error-handling/error-logger.ts"],
+      "includes": ["src/shared/error-handling/error-logger.ts"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -129,7 +129,6 @@
         "**/generated/**",
         "**/*.gen.ts",
         "**/*.generated.ts",
-        "frontend/src/types/**",
         "src/types/**",
         "**/types/index.ts"
       ],

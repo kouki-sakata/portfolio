@@ -7,8 +7,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "npx biome check ../frontend",
-    "lint:fix": "npx biome check --write ../frontend",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:watch": "vitest",
@@ -16,8 +16,9 @@
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "playwright": "playwright",
-    "format": "npx biome format --write ../frontend",
-    "format:check": "npx biome check --formatter-enabled=true --linter-enabled=false ../frontend",
+    "format": "biome format --write .",
+    "format:check": "biome check --formatter-enabled=true --linter-enabled=false .",
+    "biome:ci": "biome ci .",
     "generate:api": "npm run generate:api-types && npm run generate:zod-schemas",
     "generate:api-types": "openapi-ts -i ../openapi/openapi.yaml -o src/types -c @hey-api/typescript",
     "generate:zod-schemas": "openapi-zod-client ../openapi/openapi.yaml -o src/schemas/api.ts --export-schemas --with-docs --strict-objects"
@@ -53,6 +54,7 @@
     "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.2.4",
     "@hey-api/openapi-ts": "^0.84.3",
     "@playwright/test": "^1.49.1",
     "@tailwindcss/vite": "^4.1.13",
@@ -74,6 +76,7 @@
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.13",
     "typescript": "~5.8.3",
+    "ultracite": "^5.4.4",
     "vite": "^7.1.7",
     "vitest": "^3.2.4",
     "zod": "^3.25.76"
