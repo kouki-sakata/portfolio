@@ -8,7 +8,7 @@ import java.util.Set;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * EmployeeServiceのセキュリティ機能をテストするクラス
+ * EmployeeDataTableServiceのセキュリティ機能をテストするクラス
  * SQLインジェクション対策の動作確認
  */
 @DisplayName("EmployeeService セキュリティテスト")
@@ -19,7 +19,7 @@ class EmployeeServiceSecurityTest {
     void testWhitelistConstants() {
         // リフレクションを使ってprivate static finalフィールドにアクセス
         try {
-            Class<?> clazz = EmployeeService.class;
+            Class<?> clazz = EmployeeDataTableService.class;
             java.lang.reflect.Field allowedColumnsField = clazz.getDeclaredField("ALLOWED_COLUMNS");
             allowedColumnsField.setAccessible(true);
             @SuppressWarnings("unchecked")

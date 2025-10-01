@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 
 /**
  * 日時文字列からTimestampへの変換に特化したコンポーネント。
@@ -15,7 +16,8 @@ import java.time.format.DateTimeParseException;
 public class TimestampConverter {
 
     private static final DateTimeFormatter DATE_TIME_FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+            DateTimeFormatter.ofPattern("uuuu-MM-dd HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
 
     /**
      * 年月日と時刻文字列をTimestampに変換します。
@@ -84,11 +86,21 @@ public class TimestampConverter {
         // 入力値の検証
         validateDateComponents(year, month, day, time);
 
-        // 年月日時刻の文字列を結合
-        String dateTimeString = String.format("%s-%s-%s %s", year, month, day, time);
+        try {
+            // 年月日時刻の文字列を結合（月日はゼロパディング必須）
+            String dateTimeString = String.format("%s-%02d-%02d %s",
+                    Integer.parseInt(year),
+                    Integer.parseInt(month),
+                    Integer.parseInt(day),
+                    time);
 
-        // 日時文字列をLocalDateTimeに変換
-        return LocalDateTime.parse(dateTimeString, DATE_TIME_FORMATTER);
+            // 日時文字列をLocalDateTimeに変換
+            return LocalDateTime.parse(dateTimeString, DATE_TIME_FORMATTER);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid date/time format: %s-%s-%s %s",
+                            year, month, day, time), e);
+        }
     }
 
     /**
