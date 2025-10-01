@@ -3,14 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
@@ -18,6 +11,7 @@ import {
   loginSchema,
 } from "@/features/auth/schemas/loginSchema";
 import type { HttpClientError } from "@/shared/api/httpClient";
+import { EnhancedFormField } from "@/shared/components/enhanced-form-field";
 
 export const SignInPage = () => {
   const navigate = useNavigate();
@@ -30,7 +24,7 @@ export const SignInPage = () => {
       email: "",
       password: "",
     },
-    mode: "onBlur",
+    mode: "onTouched",
   });
 
   const onSubmit = async (data: LoginFormData) => {
@@ -58,43 +52,35 @@ export const SignInPage = () => {
           className="auth-card__form"
           onSubmit={form.handleSubmit(onSubmit)}
         >
-          <FormField
+          <EnhancedFormField
             control={form.control}
+            label="メールアドレス"
             name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>メールアドレス</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    autoComplete="email"
-                    className="auth-card__input"
-                    type="email"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          >
+            {(field) => (
+              <Input
+                {...field}
+                autoComplete="email"
+                className="auth-card__input"
+                type="email"
+              />
             )}
-          />
+          </EnhancedFormField>
 
-          <FormField
+          <EnhancedFormField
             control={form.control}
+            label="パスワード"
             name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>パスワード</FormLabel>
-                <FormControl>
-                  <Input
-                    {...field}
-                    autoComplete="current-password"
-                    className="auth-card__input"
-                    type="password"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          >
+            {(field) => (
+              <Input
+                {...field}
+                autoComplete="current-password"
+                className="auth-card__input"
+                type="password"
+              />
             )}
-          />
+          </EnhancedFormField>
 
           {error ? <p className="auth-card__error">{error}</p> : null}
 
