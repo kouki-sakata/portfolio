@@ -1,4 +1,4 @@
-src/schemas/api.ts
+**/schemas/api.ts
 **/generated/**
 **/*.gen.ts
 **/*.generated.ts
