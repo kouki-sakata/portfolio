@@ -138,23 +138,33 @@ src/
 │   │   │   ├── NewsMapper.java
 │   │   │   ├── StampDeleteMapper.java
 │   │   │   └── StampHistoryMapper.java
-│   │   ├── service/           # ビジネスロジック
-│   │   │   ├── AuthenticationService.java
-│   │   │   ├── CustomUserDetailsService.java
-│   │   │   ├── EmployeeService.java
-│   │   │   ├── HomeNewsService.java
-│   │   │   ├── LogHistoryQueryService.java
-│   │   │   ├── LogHistoryRegistrationService.java
-│   │   │   ├── NewsManageDeletionService.java
-│   │   │   ├── NewsManageRegistrationService.java
-│   │   │   ├── NewsManageReleaseService.java
-│   │   │   ├── NewsManageService.java
-│   │   │   ├── PasswordMigrationService.java
-│   │   │   ├── StampDeleteService.java
-│   │   │   ├── StampEditService.java
-│   │   │   ├── StampHistoryService.java
-│   │   │   ├── StampOutputService.java
-│   │   │   └── StampService.java
+│   │   ├── service/           # ビジネスロジック（SOLID原則準拠 - Phase 2）
+│   │   │   ├── 【認証系】
+│   │   │   ├── AuthenticationService.java          # 認証処理
+│   │   │   ├── AuthSessionService.java             # セッション管理（Phase 2で分離）
+│   │   │   ├── CustomUserDetailsService.java       # ユーザー詳細取得
+│   │   │   ├── PasswordMigrationService.java       # パスワード移行
+│   │   │   ├── 【従業員管理系 - ファサードパターン】
+│   │   │   ├── EmployeeService.java                # ファサード（各専門サービスに委譲）
+│   │   │   ├── EmployeeQueryService.java           # 照会専用（単一責任）
+│   │   │   ├── EmployeeCommandService.java         # 更新専用（単一責任）
+│   │   │   ├── EmployeeDataTableService.java       # DataTables統合専用
+│   │   │   ├── EmployeeCacheService.java           # キャッシュ管理専用
+│   │   │   ├── 【打刻管理系】
+│   │   │   ├── StampService.java                   # 打刻登録
+│   │   │   ├── StampEditService.java               # 打刻編集（サブコンポーネント分離）
+│   │   │   ├── StampHistoryService.java            # 履歴管理
+│   │   │   ├── StampDeleteService.java             # 削除処理
+│   │   │   ├── StampOutputService.java             # CSV出力
+│   │   │   ├── 【お知らせ管理系 - ファサードパターン】
+│   │   │   ├── NewsManageService.java              # ファサード
+│   │   │   ├── NewsManageRegistrationService.java  # 登録専用
+│   │   │   ├── NewsManageReleaseService.java       # 公開管理専用
+│   │   │   ├── NewsManageDeletionService.java      # 削除専用
+│   │   │   ├── HomeNewsService.java                # ホーム画面向け取得
+│   │   │   ├── 【ログ履歴系】
+│   │   │   ├── LogHistoryQueryService.java         # 照会専用
+│   │   │   └── LogHistoryRegistrationService.java  # 登録専用
 │   │   ├── util/              # ユーティリティクラス
 │   │   │   ├── DateFormatUtil.java
 │   │   │   ├── LogUtil.java
@@ -321,9 +331,12 @@ frontend/
 
 ## コード編成パターン
 
-### レイヤードアーキテクチャ
+### レイヤードアーキテクチャ（SOLID原則準拠 - Phase 2）
 - **プレゼンテーション層**: Controller（Spring MVC/REST）
 - **ビジネスロジック層**: Service
+  - **ファサードパターン**: 複雑性の隠蔽（EmployeeService、NewsManageService等）
+  - **単一責任の原則**: Query/Command/Cache等の責務分離
+  - **依存性逆転の原則**: インターフェースベースの設計
 - **データアクセス層**: Mapper（MyBatis）
 - **エンティティ層**: Entity/DTO
 
@@ -405,11 +418,16 @@ import type { User } from '@/shared/types';
 
 ## 主要アーキテクチャ原則
 
-### バックエンド
-- **依存性注入**: Spring DIコンテナ活用
+### バックエンド（SOLID原則準拠 - Phase 2適用）
+- **単一責任の原則（SRP）**: 各サービスが1つの責務のみを持つ
+  - 例: EmployeeQueryService（照会のみ）、EmployeeCommandService（更新のみ）
+- **開放閉鎖の原則（OCP）**: ファサードパターンによる拡張性確保
+  - 例: EmployeeServiceが各専門サービスに委譲
+- **依存性逆転の原則（DIP）**: Spring DIコンテナによるインターフェース駆動設計
 - **トランザクション管理**: @Transactionalによる宣言的管理
 - **例外処理**: GlobalExceptionHandlerによる統一処理
 - **セキュリティ**: Spring Securityによる認証・認可
+- **テスト容易性**: 専門サービス分離により85%以上のカバレッジ達成
 
 ### フロントエンド
 - **単一責任の原則**: コンポーネントは一つの責務

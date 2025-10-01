@@ -135,6 +135,32 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
 - **Spring Security**: 認証・認可フレームワーク
 - **MyBatis 3.0.4**: SQLマッパーフレームワーク
 
+### サービス層アーキテクチャ（SOLID原則準拠 - Phase 2）
+- **ファサードパターン**: 複雑性の隠蔽と統一インターフェース提供
+- **単一責任の原則**: 各サービスが明確な責務を持つ
+- **専門サービス分離**:
+  - **従業員管理系**:
+    - `EmployeeService`: ファサードとして機能、各専門サービスに委譲
+    - `EmployeeQueryService`: 従業員情報の照会専用
+    - `EmployeeCommandService`: 従業員情報の作成・更新・削除専用
+    - `EmployeeDataTableService`: DataTables統合処理専用
+    - `EmployeeCacheService`: キャッシュ管理専用
+  - **認証系**:
+    - `AuthenticationService`: 認証処理
+    - `AuthSessionService`: セッション管理（Phase 2で分離）
+  - **打刻系**:
+    - `StampService`: 打刻登録
+    - `StampEditService`: 打刻編集（サブコンポーネント分離）
+    - `StampHistoryService`: 履歴管理
+    - `StampDeleteService`: 削除処理
+    - `StampOutputService`: CSV出力
+  - **お知らせ管理系**:
+    - `NewsManageService`: ファサード
+    - `NewsManageRegistrationService`: 登録専用
+    - `NewsManageReleaseService`: 公開管理専用
+    - `NewsManageDeletionService`: 削除専用
+    - `HomeNewsService`: ホーム画面向け取得
+
 ### データベース
 - **PostgreSQL 16**: プライマリデータベース
 - **HikariCP**: コネクションプーリング
@@ -144,6 +170,7 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
 - **セッションベース認証**: Spring Session
 - **CSRF保護**: Spring Security CSRF トークン
 - **ロールベースアクセス制御**: 管理者/一般ユーザー
+- **セッション管理**: AuthSessionServiceによる集中管理
 
 ### APIドキュメント
 - **Swagger/OpenAPI**: Springdoc OpenAPI（v2.6.0）
@@ -277,6 +304,14 @@ VITE_DEBUG_MODE=true
 3. **APIテスト**: @Tag("api") による分離実行
 4. **E2Eテスト**: Playwright
 5. **契約テスト**: OpenAPI仕様準拠（オプション）
+
+### テストカバレッジ目標（Phase 2で大幅向上）
+- **全体**: 314+テスト、309+成功（98.4%成功率）
+- **サービス層**: 85%以上のカバレッジ達成
+  - EmployeeServiceTest: 35/100 → 85/100 (+143%)
+  - TimestampConverter: 54/100 → 90/100 (+67%)
+- **認証系**: AuthSessionServiceTest（14ケース、100%カバレッジ）
+- **打刻編集系**: StampEditService関連（80+ケース）
 
 ## セキュリティ考慮事項
 
