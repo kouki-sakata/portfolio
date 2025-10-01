@@ -93,7 +93,9 @@ const ERROR_MESSAGE_GENERATORS: Record<
 
   invalid_string: (ctx) => {
     if (ctx.validation && ctx.validation in STRING_VALIDATION_MESSAGES) {
-      return STRING_VALIDATION_MESSAGES[ctx.validation];
+      return (
+        STRING_VALIDATION_MESSAGES[ctx.validation] ?? "文字列の形式が不正です"
+      );
     }
     return "文字列の形式が不正です";
   },

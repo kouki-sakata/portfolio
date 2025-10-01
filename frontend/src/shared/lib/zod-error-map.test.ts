@@ -20,7 +20,7 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse({});
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("必須");
+        expect(result.error.issues.at(0)?.message).toContain("必須");
       }
     });
 
@@ -32,7 +32,7 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse({ name: null });
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("必須");
+        expect(result.error.issues.at(0)?.message).toContain("必須");
       }
     });
   });
@@ -44,8 +44,8 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse("invalid-email");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("メールアドレス");
-        expect(result.error.issues[0].message).toContain("形式");
+        expect(result.error.issues.at(0)?.message).toContain("メールアドレス");
+        expect(result.error.issues.at(0)?.message).toContain("形式");
       }
     });
 
@@ -55,7 +55,7 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse("not-a-url");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("URL");
+        expect(result.error.issues.at(0)?.message).toContain("URL");
       }
     });
 
@@ -65,7 +65,7 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse("not-a-uuid");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("UUID");
+        expect(result.error.issues.at(0)?.message).toContain("UUID");
       }
     });
   });
@@ -77,8 +77,8 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse("short");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("8");
-        expect(result.error.issues[0].message).toContain("以上");
+        expect(result.error.issues.at(0)?.message).toContain("8");
+        expect(result.error.issues.at(0)?.message).toContain("以上");
       }
     });
 
@@ -88,8 +88,8 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse("toolongstring");
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("5");
-        expect(result.error.issues[0].message).toContain("以下");
+        expect(result.error.issues.at(0)?.message).toContain("5");
+        expect(result.error.issues.at(0)?.message).toContain("以下");
       }
     });
 
@@ -99,8 +99,8 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse(-1);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("0");
-        expect(result.error.issues[0].message).toContain("以上");
+        expect(result.error.issues.at(0)?.message).toContain("0");
+        expect(result.error.issues.at(0)?.message).toContain("以上");
       }
     });
 
@@ -110,8 +110,8 @@ describe("setupZodErrorMap", () => {
       const result = schema.safeParse(101);
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.error.issues[0].message).toContain("100");
-        expect(result.error.issues[0].message).toContain("以下");
+        expect(result.error.issues.at(0)?.message).toContain("100");
+        expect(result.error.issues.at(0)?.message).toContain("以下");
       }
     });
   });
@@ -125,7 +125,7 @@ describe("setupZodErrorMap", () => {
       if (!result.success) {
         // スキーマレベルのカスタムメッセージが優先されるため、
         // グローバルエラーマップのメッセージではなくカスタムメッセージが返される
-        expect(result.error.issues[0].message).toBe("カスタムエラー");
+        expect(result.error.issues.at(0)?.message).toBe("カスタムエラー");
       }
     });
 
@@ -136,7 +136,7 @@ describe("setupZodErrorMap", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         // グローバルエラーマップのメッセージが適用される
-        expect(result.error.issues[0].message).toContain("メールアドレス");
+        expect(result.error.issues.at(0)?.message).toContain("メールアドレス");
       }
     });
   });
@@ -158,9 +158,9 @@ describe("setupZodErrorMap", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.error.issues).toHaveLength(3);
-        expect(result.error.issues[0].message).toContain("メールアドレス");
-        expect(result.error.issues[1].message).toContain("8");
-        expect(result.error.issues[2].message).toContain("120");
+        expect(result.error.issues.at(0)?.message).toContain("メールアドレス");
+        expect(result.error.issues.at(1)?.message).toContain("8");
+        expect(result.error.issues.at(2)?.message).toContain("120");
       }
     });
   });
@@ -175,8 +175,10 @@ describe("setupZodErrorMap", () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         // リセット後は英語のデフォルトメッセージ
-        expect(result.error.issues[0].message).not.toContain("メールアドレス");
-        expect(result.error.issues[0].message).toContain("email");
+        expect(result.error.issues.at(0)?.message).not.toContain(
+          "メールアドレス"
+        );
+        expect(result.error.issues.at(0)?.message).toContain("email");
       }
     });
   });

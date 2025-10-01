@@ -12,6 +12,20 @@ import {
 } from "./validation-messages";
 
 /**
+ * unknown 型を string に narrowing するヘルパー関数
+ */
+function isString(value: unknown): value is string {
+  return typeof value === "string";
+}
+
+/**
+ * unknown 型を number に narrowing するヘルパー関数（bigint を除外）
+ */
+function isNumber(value: unknown): value is number {
+  return typeof value === "number";
+}
+
+/**
  * カスタムZodエラーマップ
  * Zodのバリデーションエラーを日本語メッセージに変換します
  */
@@ -22,18 +36,32 @@ const customErrorMap: ZodErrorMap = (issue: ZodIssueOptionalMessage, _ctx) => {
     return { message: issue.message };
   }
 
-  // ZodIssueからErrorContextを構築
+  // ZodIssueからErrorContextを構築（型安全に）
   const context: ErrorContext = {
-    expected: "expected" in issue ? issue.expected : undefined,
-    received: "received" in issue ? issue.received : undefined,
-    validation: "validation" in issue ? issue.validation : undefined,
-    minimum: "minimum" in issue ? issue.minimum : undefined,
-    maximum: "maximum" in issue ? issue.maximum : undefined,
+    expected:
+      "expected" in issue && isString(issue.expected)
+        ? issue.expected
+        : undefined,
+    received:
+      "received" in issue && isString(issue.received)
+        ? issue.received
+        : undefined,
+    validation:
+      "validation" in issue && isString(issue.validation)
+        ? issue.validation
+        : undefined,
+    minimum:
+      "minimum" in issue && isNumber(issue.minimum) ? issue.minimum : undefined,
+    maximum:
+      "maximum" in issue && isNumber(issue.maximum) ? issue.maximum : undefined,
     type:
-      "type" in issue
+      "type" in issue && isString(issue.type)
         ? (issue.type as "string" | "number" | "array" | "date")
         : undefined,
-    inclusive: "inclusive" in issue ? issue.inclusive : undefined,
+    inclusive:
+      "inclusive" in issue && typeof issue.inclusive === "boolean"
+        ? issue.inclusive
+        : undefined,
   };
 
   // validation-messagesからメッセージを取得
