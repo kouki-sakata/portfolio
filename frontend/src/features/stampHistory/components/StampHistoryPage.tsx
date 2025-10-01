@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, lazy, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,16 +13,30 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchStampHistory } from "@/features/stampHistory/api";
-import { CalendarView } from "@/features/stampHistory/components/CalendarView";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
-import { MonthlyStatsCard } from "@/features/stampHistory/components/MonthlyStatsCard";
 import type {
   StampHistoryEntry,
   StampHistoryResponse,
 } from "@/features/stampHistory/types";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
+import { SuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
+
+// Lazy load heavy components for code splitting
+const CalendarView = lazy(() =>
+  import("@/features/stampHistory/components/CalendarView").then((module) => ({
+    default: module.CalendarView,
+  }))
+);
+
+const MonthlyStatsCard = lazy(() =>
+  import("@/features/stampHistory/components/MonthlyStatsCard").then(
+    (module) => ({
+      default: module.MonthlyStatsCard,
+    })
+  )
+);
 
 const STAMP_HISTORY_KEY = ["stamp-history"] as const;
 
@@ -145,7 +159,9 @@ export const StampHistoryPage = () => {
         </Button>
       </form>
 
-      <MonthlyStatsCard entries={data.entries} />
+      <SuspenseWrapper fallbackType="skeleton-card">
+        <MonthlyStatsCard entries={data.entries} />
+      </SuspenseWrapper>
 
       <Tabs
         onValueChange={(value) => setViewMode(value as "list" | "calendar")}
@@ -239,11 +255,13 @@ export const StampHistoryPage = () => {
         </TabsContent>
 
         <TabsContent className="mt-6" value="calendar">
-          <CalendarView
-            entries={data.entries}
-            selectedMonth={selectedMonth}
-            selectedYear={selectedYear}
-          />
+          <SuspenseWrapper fallbackType="skeleton-card">
+            <CalendarView
+              entries={data.entries}
+              selectedMonth={selectedMonth}
+              selectedYear={selectedYear}
+            />
+          </SuspenseWrapper>
         </TabsContent>
       </Tabs>
 
