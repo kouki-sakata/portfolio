@@ -1,136 +1,158 @@
 package com.example.teamdev.service;
 
-import com.example.teamdev.entity.StampHistory;
-import com.example.teamdev.mapper.StampHistoryMapper;
+import com.example.teamdev.dto.StampEditData;
+import com.example.teamdev.service.stamp.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
 
 /**
- * 打刻記録編集
- * 登録処理
+ * 打刻記録編集サービス。
+ * SOLID原則に従ってリファクタリングされ、各責務を専門クラスにデリゲートします。
+ * このクラスはオーケストレーターとして機能し、全体のワークフローを制御します。
  */
 @Service
 public class StampEditService {
+
+    private final StampFormDataExtractor dataExtractor;
+    private final TimestampConverter timestampConverter;
+    private final OutTimeAdjuster outTimeAdjuster;
+    private final StampHistoryPersistence stampPersistence;
+    private final LogHistoryRegistrationService logHistoryService;
+
+    /**
+     * StampEditServiceのコンストラクタ。
+     *
+     * @param dataExtractor      フォームデータ抽出器
+     * @param timestampConverter タイムスタンプ変換器
+     * @param outTimeAdjuster    退勤時刻調整器
+     * @param stampPersistence   打刻履歴永続化
+     * @param logHistoryService  ログ履歴サービス
+     */
     @Autowired
-    StampHistoryMapper mapper;
-    @Autowired
-    LogHistoryRegistrationService logHistoryService;
-
-    // 年月日時刻の文字列を結合して、日時文字列をLocalDateTimeに変換
-    public static LocalDateTime parseToLocalDateTime(String year, String month,
-            String day, String time) {
-
-        // 年月日時刻の文字列を結合して、日時文字列を作成
-        String dateTimeString = year + "-" + month + "-" + day + " " + time;
-        // 日時文字列をLocalDateTimeに変換
-        LocalDateTime localDateTime = LocalDateTime.parse(dateTimeString,
-                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
-
-        return localDateTime;
+    public StampEditService(
+            StampFormDataExtractor dataExtractor,
+            TimestampConverter timestampConverter,
+            OutTimeAdjuster outTimeAdjuster,
+            StampHistoryPersistence stampPersistence,
+            LogHistoryRegistrationService logHistoryService) {
+        this.dataExtractor = dataExtractor;
+        this.timestampConverter = timestampConverter;
+        this.outTimeAdjuster = outTimeAdjuster;
+        this.stampPersistence = stampPersistence;
+        this.logHistoryService = logHistoryService;
     }
 
-    public void execute(List<Map<String, Object>> StampEditList,
+    /**
+     * 打刻編集リストを処理し、データベースに保存または更新します。
+     * リファクタリング後は各処理を専門クラスにデリゲートし、
+     * このメソッドは30行以下に収まるオーケストレーターとして機能します。
+     *
+     * @param stampEditList    打刻編集データのリスト
+     * @param updateEmployeeId 更新を実行する従業員のID
+     */
+    @Transactional
+    public void execute(List<Map<String, Object>> stampEditList, int updateEmployeeId) {
+        boolean anySaved = processStampEditList(stampEditList, updateEmployeeId);
+
+        if (anySaved) {
+            recordLogHistory(stampEditList, updateEmployeeId);
+        }
+    }
+
+    /**
+     * 打刻編集リストを処理します。
+     *
+     * @param stampEditList    打刻編集データのリスト
+     * @param updateEmployeeId 更新者の従業員ID
+     * @return 1つ以上の保存または更新が行われた場合true
+     */
+    private boolean processStampEditList(List<Map<String, Object>> stampEditList,
             int updateEmployeeId) {
-        //カンマ区切り対策追記
-        boolean save = false;
-        for (Map<String, Object> stampEdit : StampEditList) {
+        boolean anySaved = false;
 
-            String stYear = stampEdit.get("year").toString();
-            String stMonth = stampEdit.get("month").toString();
-            String stDay = stampEdit.get("day").toString();
-            String stInTime = stampEdit.get("inTime") != null ? stampEdit.get(
-                    "inTime").toString() : null;
-            String stOutTime = stampEdit.get("outTime") != null ? stampEdit.get(
-                    "outTime").toString() : null;
-            // カンマ区切り対策
-            String employeeIdStr = stampEdit.get("employeeId").toString();
-            if (employeeIdStr.contains(",")) {
-                employeeIdStr = employeeIdStr.split(",")[0];
-            }
-            int employeeId = Integer.parseInt(employeeIdStr);
-
-            //出勤時刻
-            Timestamp timestampInTime = null;
-            if (stInTime != null && !stInTime.isEmpty()) {
-                // LocalDateTimeに変換
-                LocalDateTime localDateTime = parseToLocalDateTime(stYear,
-                        stMonth, stDay, stInTime);
-                // LocalDateTimeからTimestampを作成
-                timestampInTime = Timestamp.valueOf(localDateTime);
-            }
-
-            //退勤時刻
-            Timestamp timestampOutTime = null;
-            if (stOutTime != null && !stOutTime.isEmpty()) {
-                // LocalDateTimeに変換
-                LocalDateTime localDateTime = parseToLocalDateTime(stYear,
-                        stMonth, stDay, stOutTime);
-                // LocalDateTimeからTimestampを作成
-                timestampOutTime = Timestamp.valueOf(localDateTime);
-            }
-            //退勤時刻の日付設定
-            //出勤時刻>退勤時刻の場合は退勤時刻の日付を+1する
-            if (timestampInTime != null) {
-                if (timestampOutTime != null) {
-                    // 出勤時刻が退勤時刻より前の場合は負の値、後の場合は正の値、同じ場合は0を返す
-                    int comparison = timestampInTime.compareTo(
-                            timestampOutTime);
-                    //出勤時刻>退勤時刻
-                    if (comparison > 0) {
-                        // 1日を加算
-                        LocalDateTime localDateTime = parseToLocalDateTime(
-                                stYear, stMonth, stDay, stOutTime);
-                        localDateTime = localDateTime.plusDays(1);
-                        timestampOutTime = Timestamp.valueOf(localDateTime);
-                    }
-                }
-            }
-            String idString = stampEdit.get("id") != null ? stampEdit.get(
-                    "id").toString() : "";
-            Integer id = !idString.isEmpty() ? Integer.parseInt(
-                    idString) : null;
-            //idが格納されている場合は更新
-            if (id != null) {
-                StampHistory entity = mapper.getById(id).orElse(null);
-                entity.setInTime(timestampInTime);
-                entity.setOutTime(timestampOutTime);
-                entity.setUpdateEmployeeId(
-                        updateEmployeeId);
-                mapper.update(entity);
-                Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-                entity.setUpdateDate(
-                        timestamp);
-                mapper.save(entity);
-                save = true;
-            } else {
-                //idが格納されていない場合は新規登録
-                StampHistory entity = new StampHistory();
-                entity.setYear(stYear);
-                entity.setMonth(stMonth);
-                entity.setDay(stDay);
-                entity.setMonth(stMonth);
-                entity.setEmployeeId(employeeId);
-                entity.setInTime(timestampInTime);
-                entity.setOutTime(timestampOutTime);
-                entity.setUpdateEmployeeId(updateEmployeeId);
-                Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-                entity.setUpdateDate(timestamp);
-                mapper.save(entity);
-                save = true;
-            }
+        for (Map<String, Object> stampEdit : stampEditList) {
+            boolean saved = processSingleStampEdit(stampEdit, updateEmployeeId);
+            anySaved |= saved;
         }
-        // 履歴記録
-        if (save) {
-            logHistoryService.execute(4, 3, null, Integer.parseInt(
-                            StampEditList.get(0).get("employeeId").toString()),
-                    updateEmployeeId, Timestamp.valueOf(LocalDateTime.now()));
+
+        return anySaved;
+    }
+
+    /**
+     * 単一の打刻編集データを処理します。
+     *
+     * @param stampEdit        打刻編集データ
+     * @param updateEmployeeId 更新者の従業員ID
+     * @return 保存または更新が行われた場合true
+     */
+    private boolean processSingleStampEdit(Map<String, Object> stampEdit,
+            int updateEmployeeId) {
+        // Step 1: データ抽出
+        StampEditData data = dataExtractor.extractFromMap(stampEdit);
+
+        // Step 2: 時刻変換
+        Timestamp inTime = convertInTime(data);
+        Timestamp outTime = convertOutTime(data);
+
+        // Step 3: 退勤時刻調整
+        Timestamp adjustedOutTime = outTimeAdjuster.adjustOutTimeIfNeeded(inTime, outTime);
+
+        // Step 4: データ永続化
+        return stampPersistence.saveOrUpdate(data, inTime, adjustedOutTime, updateEmployeeId);
+    }
+
+    /**
+     * 出勤時刻をTimestampに変換します。
+     *
+     * @param data 打刻編集データ
+     * @return 出勤時刻のTimestamp（未設定の場合null）
+     */
+    private Timestamp convertInTime(StampEditData data) {
+        if (!data.hasInTime()) {
+            return null;
         }
+        return timestampConverter.convertInTime(
+                data.getYear(), data.getMonth(), data.getDay(), data.getInTime());
+    }
+
+    /**
+     * 退勤時刻をTimestampに変換します。
+     *
+     * @param data 打刻編集データ
+     * @return 退勤時刻のTimestamp（未設定の場合null）
+     */
+    private Timestamp convertOutTime(StampEditData data) {
+        if (!data.hasOutTime()) {
+            return null;
+        }
+        return timestampConverter.convertOutTime(
+                data.getYear(), data.getMonth(), data.getDay(), data.getOutTime());
+    }
+
+    /**
+     * ログ履歴を記録します。
+     *
+     * @param stampEditList    打刻編集データのリスト
+     * @param updateEmployeeId 更新者の従業員ID
+     */
+    private void recordLogHistory(List<Map<String, Object>> stampEditList,
+            int updateEmployeeId) {
+        // 最初のエントリから従業員IDを取得
+        // TODO: この実装は改善の余地あり - 各エントリごとにログを記録すべき
+        String firstEmployeeIdStr = stampEditList.get(0).get("employeeId").toString();
+        if (firstEmployeeIdStr.contains(",")) {
+            firstEmployeeIdStr = firstEmployeeIdStr.split(",")[0];
+        }
+        int targetEmployeeId = Integer.parseInt(firstEmployeeIdStr);
+
+        logHistoryService.execute(4, 3, null, targetEmployeeId,
+                updateEmployeeId, Timestamp.valueOf(LocalDateTime.now()));
     }
 }

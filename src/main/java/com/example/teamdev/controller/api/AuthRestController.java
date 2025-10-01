@@ -4,15 +4,13 @@ import com.example.teamdev.dto.api.auth.LoginRequest;
 import com.example.teamdev.dto.api.auth.LoginResponse;
 import com.example.teamdev.dto.api.auth.SessionResponse;
 import com.example.teamdev.dto.api.common.EmployeeSummaryResponse;
-import com.example.teamdev.entity.Employee;
-import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.service.AuthSessionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -36,16 +34,16 @@ public class AuthRestController {
 
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
-    private final EmployeeMapper employeeMapper;
+    private final AuthSessionService authSessionService;
 
     public AuthRestController(
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
-        EmployeeMapper employeeMapper
+        AuthSessionService authSessionService
     ) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
-        this.employeeMapper = employeeMapper;
+        this.authSessionService = authSessionService;
     }
 
     @Operation(summary = "ログイン", description = "メールとパスワードでログインし、セッションを開始します")
@@ -66,8 +64,7 @@ public class AuthRestController {
             context.setAuthentication(authentication);
             securityContextRepository.saveContext(context, httpRequest, httpResponse);
 
-            Employee employee = employeeMapper.getEmployeeByEmail(authentication.getName());
-            EmployeeSummaryResponse employeeSummary = toEmployeeSummary(employee);
+            EmployeeSummaryResponse employeeSummary = authSessionService.getEmployeeSummaryByEmail(authentication.getName());
             return ResponseEntity.ok(new LoginResponse(employeeSummary));
         } catch (AuthenticationException ex) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials", ex);
@@ -85,25 +82,11 @@ public class AuthRestController {
             return ResponseEntity.ok(new SessionResponse(false, null));
         }
 
-        Employee employee = employeeMapper.getEmployeeByEmail(authentication.getName());
-        if (employee == null) {
+        EmployeeSummaryResponse employeeSummary = authSessionService.getEmployeeSummaryByEmailOrNull(authentication.getName());
+        if (employeeSummary == null) {
             return ResponseEntity.ok(new SessionResponse(false, null));
         }
 
-        return ResponseEntity.ok(new SessionResponse(true, toEmployeeSummary(employee)));
-    }
-
-    private EmployeeSummaryResponse toEmployeeSummary(Employee employee) {
-        if (employee == null) {
-            throw new AuthenticationServiceException("Employee not found");
-        }
-        boolean admin = employee.getAdmin_flag() != null && employee.getAdmin_flag() == 1;
-        return new EmployeeSummaryResponse(
-            employee.getId(),
-            employee.getFirst_name(),
-            employee.getLast_name(),
-            employee.getEmail(),
-            admin
-        );
+        return ResponseEntity.ok(new SessionResponse(true, employeeSummary));
     }
 }

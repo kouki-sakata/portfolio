@@ -28,7 +28,8 @@ public class CacheConfig {
         cacheManager.setCacheNames(java.util.Arrays.asList(
                 "employees",           // 従業員一覧キャッシュ
                 "employeeDataTables",  // DataTables用従業員データキャッシュ
-                "employeeById"         // ID別従業員キャッシュ
+                "employeeById",        // ID別従業員キャッシュ
+                "employeesGrouped"     // 管理者フラグ別グループ化従業員キャッシュ
         ));
 
         return cacheManager;
