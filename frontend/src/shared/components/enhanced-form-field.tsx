@@ -5,7 +5,7 @@
  */
 
 import { AlertCircle } from "lucide-react";
-import { cloneElement, memo } from "react";
+import { memo } from "react";
 import type {
   Control,
   ControllerRenderProps,
@@ -20,7 +20,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  useFormField,
 } from "@/components/ui/form";
 
 export type EnhancedFormFieldProps<
@@ -61,7 +60,7 @@ export type EnhancedFormFieldProps<
  *
  * @remarks
  * このコンポーネントはメモ化されており、props が変更されない限り再レンダリングされません。
- * aria-invalid および aria-describedby 属性を input 要素に動的に追加します。
+ * FormControl が aria-invalid および aria-describedby 属性を自動的に処理します。
  */
 const EnhancedFormFieldContentInner = <
   TFieldValues extends FieldValues = FieldValues,
@@ -78,44 +77,20 @@ const EnhancedFormFieldContentInner = <
     field: ControllerRenderProps<TFieldValues, Path<TFieldValues>>,
     fieldState: { error?: { message?: string } }
   ) => React.ReactElement;
-}) => {
-  const { formDescriptionId, formMessageId } = useFormField();
-
-  // children要素にaria属性を追加
-  const childElement = children(field, fieldState);
-
-  // aria-describedby の値を計算
-  let ariaDescribedBy: string | undefined;
-  if (fieldState.error) {
-    ariaDescribedBy = `${formDescriptionId} ${formMessageId}`;
-  } else if (description) {
-    ariaDescribedBy = formDescriptionId;
-  }
-
-  const enhancedChild = cloneElement(childElement, {
-    "aria-invalid": fieldState.error ? ("true" as const) : ("false" as const),
-    "aria-describedby": ariaDescribedBy,
-  });
-
-  return (
-    <>
-      <FormControl>
-        <div className="relative">
-          {enhancedChild}
-          {fieldState.error && (
-            <AlertCircle
-              aria-hidden="true"
-              className="absolute top-3 right-3 h-4 w-4 text-destructive"
-              role="img"
-            />
-          )}
-        </div>
-      </FormControl>
-      {description && <FormDescription>{description}</FormDescription>}
-      <FormMessage />
-    </>
-  );
-};
+}) => (
+  <>
+    <FormControl>{children(field, fieldState)}</FormControl>
+    {fieldState.error && (
+      <AlertCircle
+        aria-hidden="true"
+        className="pointer-events-none absolute top-9 right-3 h-4 w-4 text-destructive"
+        role="img"
+      />
+    )}
+    {description && <FormDescription>{description}</FormDescription>}
+    <FormMessage />
+  </>
+);
 
 EnhancedFormFieldContentInner.displayName = "EnhancedFormFieldContent";
 
@@ -168,7 +143,7 @@ export function EnhancedFormField<
       control={control}
       name={name}
       render={({ field, fieldState }) => (
-        <FormItem>
+        <FormItem className="relative">
           <FormLabel>{label}</FormLabel>
           <EnhancedFormFieldContent
             description={description}
