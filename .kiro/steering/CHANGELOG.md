@@ -1,5 +1,39 @@
 # Steering Documents Changelog
 
+## 2025-10-01 (Update 12)
+
+### Updated Documents
+- `CHANGELOG.md` - コード分割機能のmainブランチマージ完了を記録
+
+### Key Changes
+
+#### コード分割と遅延読み込みの実装完了（feature/task19-code-splitting完了、PR #24マージ）
+- **React.lazyによるルートベースのコード分割**
+  - 各機能ルート（SignIn、Home、Employees、StampHistory）を個別バンドルに分割
+  - 初期ロード時間の短縮とパフォーマンス向上
+  - 必要なコードのみを動的にロード
+- **SuspenseWrapperとの統合**
+  - ページ遷移時のスムーズなローディング体験
+  - ErrorBoundaryとの連携によるエラーハンドリング
+  - 統一されたローディングUI表示
+
+#### 技術的詳細
+- React 19のReact.lazy/Suspense機能を活用
+- Viteの動的インポート最適化
+- バンドルサイズの最適化とTree Shaking
+- ルートコンポーネント単位での遅延読み込み実装
+
+### Impact
+- **初期ロード改善**: メインバンドルサイズの削減により初期表示速度向上
+- **UX向上**: 必要な機能のみをオンデマンドで読み込み
+- **保守性**: ルート単位での明確な境界とコード管理
+- **スケーラビリティ**: 機能追加時のバンドルサイズ増加を抑制
+
+### Note
+本機能はUpdate 9（2025-09-30）で計画・文書化され、今回実装が完了しmainブランチにマージされました。既存のステアリングドキュメント（product.md、tech.md、structure.md）に変更はありません。
+
+---
+
 ## 2025-10-01 (Update 11)
 
 ### Updated Documents

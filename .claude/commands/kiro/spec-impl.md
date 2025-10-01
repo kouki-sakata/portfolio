@@ -4,6 +4,17 @@ allowed-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Web
 argument-hint: <feature-name> [task-numbers]
 ---
 
+### 使い方
+
+```bash
+# lintingエラーが起こったとき
+npm run lint:fix --prefix frontend # Auto-fix Biome issues
+
+# その後lintingチェック
+npm run lint --prefix frontend     # Biome checks (linting + formatting)
+
+```
+
 # Execute Spec Tasks with TDD
 
 Execute implementation tasks for **$1** using Kent Beck's Test-Driven
