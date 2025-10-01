@@ -125,6 +125,19 @@
     },
     {
       "includes": [
+        "**/shared/lib/validation-messages.ts",
+        "**/shared/lib/validation-messages.test.ts"
+      ],
+      "linter": {
+        "rules": {
+          "style": {
+            "useNamingConvention": "off" // ZodエラーコードはZod公式APIのsnake_case形式を使用
+          }
+        }
+      }
+    },
+    {
+      "includes": [
         "**/schemas/api.ts",
         "**/generated/**",
         "**/*.gen.ts",
