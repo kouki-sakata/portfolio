@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
-import { Suspense, lazy } from "react";
+import { lazy, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it } from "vitest";
 
@@ -73,7 +73,11 @@ describe("StampHistoryPage Component Lazy Loading", () => {
     it("should render fallback while loading lazy CalendarView component", () => {
       render(
         <TestWrapper>
-          <Suspense fallback={<div data-testid="calendar-loading">Loading calendar...</div>}>
+          <Suspense
+            fallback={
+              <div data-testid="calendar-loading">Loading calendar...</div>
+            }
+          >
             <LazyCalendarView
               entries={mockStampHistoryData.entries}
               selectedMonth="10"
@@ -90,7 +94,11 @@ describe("StampHistoryPage Component Lazy Loading", () => {
     it("should render CalendarView after lazy loading completes", async () => {
       render(
         <TestWrapper>
-          <Suspense fallback={<div data-testid="calendar-loading">Loading calendar...</div>}>
+          <Suspense
+            fallback={
+              <div data-testid="calendar-loading">Loading calendar...</div>
+            }
+          >
             <LazyCalendarView
               entries={mockStampHistoryData.entries}
               selectedMonth="10"
@@ -102,7 +110,11 @@ describe("StampHistoryPage Component Lazy Loading", () => {
 
       // Wait for lazy component to load and render
       // Use findByText which automatically waits for element to appear
-      const heading = await screen.findByText("カレンダー表示", {}, { timeout: 5000 });
+      const heading = await screen.findByText(
+        "カレンダー表示",
+        {},
+        { timeout: 5000 }
+      );
       expect(heading).toBeInTheDocument();
 
       // Fallback should be removed
@@ -125,7 +137,9 @@ describe("StampHistoryPage Component Lazy Loading", () => {
     it("should render fallback while loading lazy MonthlyStatsCard component", () => {
       render(
         <TestWrapper>
-          <Suspense fallback={<div data-testid="stats-loading">Loading stats...</div>}>
+          <Suspense
+            fallback={<div data-testid="stats-loading">Loading stats...</div>}
+          >
             <LazyMonthlyStatsCard entries={mockStampHistoryData.entries} />
           </Suspense>
         </TestWrapper>
@@ -138,7 +152,9 @@ describe("StampHistoryPage Component Lazy Loading", () => {
     it("should render MonthlyStatsCard after lazy loading completes", async () => {
       render(
         <TestWrapper>
-          <Suspense fallback={<div data-testid="stats-loading">Loading stats...</div>}>
+          <Suspense
+            fallback={<div data-testid="stats-loading">Loading stats...</div>}
+          >
             <LazyMonthlyStatsCard entries={mockStampHistoryData.entries} />
           </Suspense>
         </TestWrapper>
@@ -146,7 +162,11 @@ describe("StampHistoryPage Component Lazy Loading", () => {
 
       // Wait for lazy component to load and render
       // Use findByText which automatically waits for element to appear
-      const heading = await screen.findByText("月次統計", {}, { timeout: 5000 });
+      const heading = await screen.findByText(
+        "月次統計",
+        {},
+        { timeout: 5000 }
+      );
       expect(heading).toBeInTheDocument();
 
       // Fallback should be removed

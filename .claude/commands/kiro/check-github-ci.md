@@ -2,19 +2,6 @@
 
 GitHub Actions CI 状況を監視して、完了まで追跡します。
 
-## Implementation Notes
-
-- **Development Approach**:
-    - Utilize **context7** for all development activities.
-    - Consistently apply software development **best practices**.
-- **Coding Standards (TypeScript)**:
-    - **Type Safety**: Strictly enforce TypeScript's type consistency. All code
-      must be fully type-safe.
-    - **Biome + ultracite Rules**: Adhere to the ultracite preset for Biome, which provides:
-      - **Strict Type Safety**: Enforces TypeScript's strictest type checking (no `any`, strict null checks, exhaustive type handling)
-      - **AI-Ready Code Quality**: Optimized for AI-generated code with comprehensive linting and formatting rules
-      - **Performance**: Rust-powered Biome engine for instant feedback during development
-
 ### 使い方
 
 ```bash

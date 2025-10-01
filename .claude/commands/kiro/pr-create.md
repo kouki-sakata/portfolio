@@ -149,7 +149,8 @@ mcp_github_create_pull_request({
 #### 変更内容ベース判定
 
 - **バグ修正**: `fix|bug|error|crash|修正` → `bug|fix`
-- **新機能**: `feat|feature|add|implement|新機能|実装` → `feature|enhancement|feat`
+- **新機能**: `feat|feature|add|implement|新機能|実装` →
+  `feature|enhancement|feat`
 - **リファクタリング**: `refactor|clean|リファクタ` → `refactor|cleanup|clean`
 - **パフォーマンス**: `performance|perf|optimize` → `performance|perf`
 - **セキュリティ**: `security|secure` → `security`
@@ -165,7 +166,8 @@ mcp_github_create_pull_request({
 #### 基本姿勢
 
 1. **必ず Draft で開始**: すべての PR は Draft 状態で作成
-2. **段階的品質向上**: Phase 1(基本実装)→ Phase 2(テスト追加)→ Phase 3(ドキュメント更新)
+2. **段階的品質向上**: Phase 1(基本実装)→ Phase 2(テスト追加)→ Phase 3(
+   ドキュメント更新)
 3. **適切なラベル**: 最大 3 種類のラベルを必ず付与
 4. **テンプレート使用**: `.github/PULL_REQUEST_TEMPLATE.md` を必ず使用
 5. **日本語スペース**: 日本語と半角英数字間に必ず半角スペース
@@ -173,7 +175,7 @@ mcp_github_create_pull_request({
 #### ブランチ命名規則
 
 ```text
-{type}-{subject}
+{type}-{tasks.md.taskId}-{subject}
 
 例:
 - feat-user-profile
@@ -210,7 +212,8 @@ mcp_github_create_pull_request({
 
 #### HTML コメント保持の対処法
 
-**重要**: GitHub CLI (`gh pr edit`) は HTML コメントを自動エスケープし、シェル処理で `EOF < /dev/null` などの不正な文字列が混入する場合があります。
+**重要**: GitHub CLI (`gh pr edit`) は HTML コメントを自動エスケープし、シェル処理で
+`EOF < /dev/null` などの不正な文字列が混入する場合があります。
 
 **根本的解決策**:
 
