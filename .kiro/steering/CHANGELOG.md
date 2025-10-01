@@ -1,5 +1,36 @@
 # Steering Documents Changelog
 
+## 2025-10-01 (Update 10)
+
+### Updated Documents
+- `tech.md` - Biome設定ファイルパスをfrontend/biome.jsonに更新
+- `structure.md` - ルートディレクトリ構造からNode.js関連ファイルを削除、frontend配下に移動
+
+### Key Changes
+
+#### プロジェクト構造のクリーンアップ（refactor/frontend-node-cleanup完了）
+- **ルートディレクトリのNode.js汚染除去**
+  - `biome.jsonc` → `frontend/biome.jsonc`へ移動
+  - `.nvmrc` → `frontend/.nvmrc`へ移動
+  - ルートの `package.json`, `package-lock.json`, `tsconfig.json`を削除
+  - フロントエンド関連設定の完全な集約
+
+#### ステアリングドキュメントの更新
+- **tech.md**
+  - Biome設定ファイルの参照パスを更新（2箇所）
+  - ビルド設定コマンド説明にfrontend/biome.jsonc使用を明記
+- **structure.md**
+  - ルートディレクトリ構造からNode.js関連ファイルを削除
+  - frontend/配下に`.nvmrc`、`biome.jsonc`、`.biomeignore`を追加
+  - プロジェクト構造の正確性を向上
+
+### Impact
+- **プロジェクト整合性**: ステアリングドキュメントが最新のプロジェクト構造を正確に反映
+- **保守性向上**: フロントエンド設定の一元管理による管理負荷軽減
+- **明確性**: ドキュメントと実際のファイル配置の一致
+
+---
+
 ## 2025-09-30 (Update 9)
 
 ### Updated Documents

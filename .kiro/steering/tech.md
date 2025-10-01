@@ -73,7 +73,7 @@
 - **Biome**: 統合コード品質管理ツール（v2.2.4）
   - Linter: ESLint互換の高速リンター
   - Formatter: Prettier互換の高速フォーマッター
-  - 単一の設定ファイル（biome.jsonc）で管理
+  - 単一の設定ファイル（frontend/biome.jsonc）で管理
   - Ultracite設定を継承しプロジェクト固有のルールを追加
 - **Vitest**: 単体テストフレームワーク（v3.2.4）
 - **Playwright**: E2Eテスト（v1.49.1）
@@ -92,7 +92,7 @@
 npm run dev          # 開発サーバー起動
 npm run build        # 本番ビルド
 npm run preview      # ビルドプレビュー
-npm run lint         # Biomeリントチェック
+npm run lint         # Biomeリントチェック（frontend/biome.jsonc使用）
 npm run lint:fix     # Biome自動修正
 npm run typecheck    # TypeScript型チェック
 npm run test         # Vitestテスト実行

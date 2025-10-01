@@ -25,7 +25,6 @@ TeamDevelopBravo-main/
 │   └── openapi.yaml  # API仕様ファイル（自動生成元）
 ├── gradle/           # Gradle Wrapper
 ├── logs/             # アプリケーションログ
-├── node_modules/     # Node.js依存関係（ルート）
 ├── scripts/          # 開発支援スクリプト
 ├── src/              # Javaソースコード
 ├── .classpath        # Eclipseクラスパス
@@ -34,10 +33,8 @@ TeamDevelopBravo-main/
 ├── .gitattributes    # Git属性設定
 ├── .gitignore        # Git除外設定
 ├── .mcp.json         # MCPサーバー設定
-├── .nvmrc            # Node.jsバージョン指定
 ├── .project          # Eclipseプロジェクト設定
 ├── AGENTS.md         # エージェント設定ドキュメント
-├── biome.jsonc       # Biome統合コード品質設定
 ├── build.gradle      # Gradleビルド設定
 ├── CLAUDE.md         # Claude AI指示書
 ├── docker-compose.yml # Docker Compose設定
@@ -45,12 +42,9 @@ TeamDevelopBravo-main/
 ├── gradlew           # Gradle Wrapper（Unix）
 ├── gradlew.bat       # Gradle Wrapper（Windows）
 ├── HELP.md           # Spring Bootヘルプ
-├── package.json      # Node.js依存関係（ルート）
-├── package-lock.json # 依存関係ロックファイル
 ├── qodana.yaml       # Qodana静的解析設定
 ├── README.md         # プロジェクト概要
 ├── settings.gradle   # Gradle設定
-├── tsconfig.json     # TypeScript設定（ルート）
 └── ultracite.config.json # Ultracite設定
 ```
 
@@ -312,9 +306,12 @@ frontend/
 │   │   └── setup.ts
 │   ├── main.tsx      # エントリーポイント
 │   └── vite-env.d.ts # Vite型定義
+├── .biomeignore       # Biome除外設定
 ├── .env.development   # 開発環境変数
 ├── .env.example       # 環境変数テンプレート
 ├── .env.local         # ローカル設定（git-ignored）
+├── .nvmrc             # Node.jsバージョン指定
+├── biome.jsonc        # Biome統合コード品質設定
 ├── components.json    # shadcn/ui設定
 ├── index.html         # HTMLテンプレート
 ├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
