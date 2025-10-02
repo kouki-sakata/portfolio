@@ -1,7 +1,10 @@
 import type { QueryClient } from "@tanstack/react-query";
 import { QUERY_CONFIG } from "@/app/config/enhanced-query-client";
 // TODO: Replace with actual API functions when implemented
-import { getEmployeeById, getEmployees } from "@/features/employees/api/testHelpers";
+import {
+  getEmployeeById,
+  getEmployees,
+} from "@/features/employees/api/testHelpers";
 // TODO: Replace with actual API function when renamed
 import { getDashboardData } from "@/features/home/api/testHelpers";
 import { getStampHistory } from "@/features/stampHistory/api";

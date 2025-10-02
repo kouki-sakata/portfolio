@@ -5,7 +5,7 @@ import type { EmployeeSummary } from "@/features/auth/types";
 import type { EmployeeListResponse } from "@/features/employees/types";
 import { fetchEmployees } from "./index";
 
-export const getEmployees = async (params?: {
+export const getEmployees = async (_params?: {
   page?: number;
   size?: number;
 }): Promise<EmployeeListResponse> => {
@@ -14,9 +14,7 @@ export const getEmployees = async (params?: {
   return fetchEmployees(false);
 };
 
-export const getEmployeeById = async (
-  id: number
-): Promise<EmployeeSummary> => {
+export const getEmployeeById = async (id: number): Promise<EmployeeSummary> => {
   // For testing purposes, we return mock employee data
   // In real implementation, this would fetch a specific employee
   return {

@@ -4,17 +4,6 @@ allowed-tools: Bash, Read, Write, Edit, MultiEdit, Grep, Glob, LS, WebFetch, Web
 argument-hint: <feature-name> [task-numbers]
 ---
 
-### 使い方
-
-```bash
-# lintingエラーが起こったとき
-npm run lint:fix --prefix frontend # Auto-fix Biome issues
-
-# その後lintingチェック
-npm run lint --prefix frontend     # Biome checks (linting + formatting)
-
-```
-
 # Execute Spec Tasks with TDD
 
 Execute implementation tasks for **$1** using Kent Beck's Test-Driven
@@ -97,3 +86,25 @@ For each selected task:
   tests before implementation.
 - **Validation**: Check that all required spec files exist before starting.
 - **Task Tracking**: Update checkboxes in `tasks.md` as tasks are completed.
+
+### 使い方
+
+```bash
+# lintingエラーが起こったとき
+npm run lint:fix --prefix frontend # Auto-fix Biome issues
+
+# その後lintingチェック
+npm run lint --prefix frontend     # Biome checks (linting + formatting)
+
+```
+
+#### ブランチ命名規則
+
+```text
+{type}-{subject}
+
+例:
+- feat-user-profile
+- fix-login-error
+- refactor-api-client
+```

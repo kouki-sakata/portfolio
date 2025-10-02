@@ -3,6 +3,5 @@ import type { HomeDashboardResponse } from "@/features/home/types";
 import { getHomeDashboard } from "./homeDashboard";
 
 // Wrapper function with the expected name for tests
-export const getDashboardData = async (): Promise<HomeDashboardResponse> => {
-  return getHomeDashboard();
-};
+export const getDashboardData = async (): Promise<HomeDashboardResponse> =>
+  getHomeDashboard();

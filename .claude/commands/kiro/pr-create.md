@@ -172,17 +172,6 @@ mcp_github_create_pull_request({
 4. **テンプレート使用**: `.github/PULL_REQUEST_TEMPLATE.md` を必ず使用
 5. **日本語スペース**: 日本語と半角英数字間に必ず半角スペース
 
-#### ブランチ命名規則
-
-```text
-{type}-{tasks.md.taskId}-{subject}
-
-例:
-- feat-user-profile
-- fix-login-error
-- refactor-api-client
-```
-
 #### コミットメッセージ
 
 ```text
