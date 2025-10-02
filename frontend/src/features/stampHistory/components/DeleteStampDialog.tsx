@@ -1,5 +1,3 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-
 import {
   AlertDialog,
   AlertDialogAction,
@@ -10,9 +8,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { deleteStamp } from "@/features/stampHistory/api";
+import { useDeleteStampMutation } from "@/features/stampHistory/hooks/useStampHistoryMutations";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
-import { toast } from "@/hooks/use-toast";
 
 type DeleteStampDialogProps = {
   entry: StampHistoryEntry | null;
@@ -25,64 +22,18 @@ export const DeleteStampDialog = ({
   open,
   onOpenChange,
 }: DeleteStampDialogProps) => {
-  const queryClient = useQueryClient();
-
-  const mutation = useMutation({
-    mutationFn: deleteStamp,
-    onMutate: async (variables) => {
-      // キャンセルして進行中のリフェッチを防ぐ
-      await queryClient.cancelQueries({ queryKey: ["stamp-history"] });
-
-      // 前の値をスナップショット
-      const previousData = queryClient.getQueriesData({
-        queryKey: ["stamp-history"],
-      });
-
-      // 楽観的更新（削除対象エントリを除外）
-      queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
-        { queryKey: ["stamp-history"] },
-        (old) => {
-          if (!old?.entries) {
-            return old;
-          }
-          return {
-            ...old,
-            entries: old.entries.filter((e) => e.id !== variables.id),
-          };
-        }
-      );
-
-      return { previousData };
-    },
-    onError: (_error, _variables, context) => {
-      // エラー時はロールバック
-      if (context?.previousData) {
-        for (const [queryKey, data] of context.previousData) {
-          queryClient.setQueryData(queryKey, data);
-        }
-      }
-      toast({
-        title: "エラー",
-        description: "打刻の削除に失敗しました",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "成功",
-        description: "打刻を削除しました",
-      });
-      onOpenChange(false);
-    },
-    onSettled: () => {
-      // 成功・失敗に関わらずキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ["stamp-history"] });
-    },
-  });
+  const mutation = useDeleteStampMutation();
 
   const handleDelete = () => {
     if (entry?.id) {
-      mutation.mutate({ id: entry.id });
+      mutation.mutate(
+        { id: entry.id },
+        {
+          onSuccess: () => {
+            onOpenChange(false);
+          },
+        }
+      );
     }
   };
 

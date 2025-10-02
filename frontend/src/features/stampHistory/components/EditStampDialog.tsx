@@ -1,5 +1,4 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -21,13 +20,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { updateStamp } from "@/features/stampHistory/api";
+import { useUpdateStampMutation } from "@/features/stampHistory/hooks/useStampHistoryMutations";
 import {
   type EditStampFormData,
   EditStampSchema,
   type StampHistoryEntry,
 } from "@/features/stampHistory/types";
-import { toast } from "@/hooks/use-toast";
 
 type EditStampDialogProps = {
   entry: StampHistoryEntry | null;
@@ -40,7 +38,7 @@ export const EditStampDialog = ({
   open,
   onOpenChange,
 }: EditStampDialogProps) => {
-  const queryClient = useQueryClient();
+  const mutation = useUpdateStampMutation();
 
   const form = useForm<EditStampFormData>({
     resolver: zodResolver(EditStampSchema),
@@ -60,73 +58,19 @@ export const EditStampDialog = ({
     });
   }
 
-  const mutation = useMutation({
-    mutationFn: updateStamp,
-    onMutate: async (variables) => {
-      // キャンセルして進行中のリフェッチを防ぐ
-      await queryClient.cancelQueries({ queryKey: ["stamp-history"] });
-
-      // 前の値をスナップショット
-      const previousData = queryClient.getQueriesData({
-        queryKey: ["stamp-history"],
-      });
-
-      // 楽観的更新
-      queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
-        { queryKey: ["stamp-history"] },
-        (old) => {
-          if (!old?.entries) {
-            return old;
-          }
-          return {
-            ...old,
-            entries: old.entries.map((e) =>
-              e.id === variables.id
-                ? {
-                    ...e,
-                    inTime: variables.inTime ?? null,
-                    outTime: variables.outTime ?? null,
-                  }
-                : e
-            ),
-          };
-        }
-      );
-
-      return { previousData };
-    },
-    onError: (_error, _variables, context) => {
-      // エラー時はロールバック
-      if (context?.previousData) {
-        for (const [queryKey, data] of context.previousData) {
-          queryClient.setQueryData(queryKey, data);
-        }
-      }
-      toast({
-        title: "エラー",
-        description: "打刻の更新に失敗しました",
-        variant: "destructive",
-      });
-    },
-    onSuccess: () => {
-      toast({
-        title: "成功",
-        description: "打刻を更新しました",
-      });
-      onOpenChange(false);
-    },
-    onSettled: () => {
-      // 成功・失敗に関わらずキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ["stamp-history"] });
-    },
-  });
-
   const onSubmit = (data: EditStampFormData) => {
-    mutation.mutate({
-      id: data.id,
-      inTime: data.inTime || undefined,
-      outTime: data.outTime || undefined,
-    });
+    mutation.mutate(
+      {
+        id: data.id,
+        inTime: data.inTime || undefined,
+        outTime: data.outTime || undefined,
+      },
+      {
+        onSuccess: () => {
+          onOpenChange(false);
+        },
+      }
+    );
   };
 
   if (!entry) {
