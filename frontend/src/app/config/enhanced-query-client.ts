@@ -11,8 +11,23 @@ import {
 } from "@/shared/error-handling";
 
 /**
+ * クエリ設定の型定義
+ *
+ * @remarks
+ * TypeScript v5 satisfies演算子のための型定義
+ */
+type QueryConfigItem = {
+  readonly staleTime: number;
+  readonly gcTime: number;
+};
+
+/**
  * 機能別のデフォルト設定
  * 各機能のデータ特性に応じて最適なキャッシュ戦略を定義
+ *
+ * @remarks
+ * TypeScript v5のsatisfies演算子を使用し、
+ * 型の制約を満たしつつ具体的な値の型を保持
  */
 export const QUERY_CONFIG = {
   // 認証関連: セッション情報など、比較的短いキャッシュ
@@ -30,7 +45,7 @@ export const QUERY_CONFIG = {
     staleTime: 30 * 1000, // 30秒
     gcTime: 5 * 60 * 1000, // 5分
   },
-} as const;
+} as const satisfies Record<string, QueryConfigItem>;
 
 /**
  * React Query統合設定

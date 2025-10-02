@@ -1,8 +1,62 @@
 import type { QueryClient } from "@tanstack/react-query";
 
 /**
+ * クエリキーを作成するヘルパー関数
+ *
+ * @remarks
+ * TypeScript v5のconst type parameterを使用して、
+ * リテラル型を保持したままクエリキーを生成
+ *
+ * @example
+ * ```ts
+ * const key = createQueryKey(['users', { id: 1 }]);
+ * // key の型: readonly ['users', { readonly id: 1 }]
+ * ```
+ */
+export function createQueryKey<const T extends readonly unknown[]>(key: T): T {
+  return key;
+}
+
+/**
+ * ミューテーションキーを作成するヘルパー関数
+ *
+ * @remarks
+ * TypeScript v5のconst type parameterを使用
+ *
+ * @example
+ * ```ts
+ * const key = createMutationKey(['users', 'update', 1]);
+ * // key の型: readonly ['users', 'update', 1]
+ * ```
+ */
+export function createMutationKey<const T extends readonly unknown[]>(
+  key: T
+): T {
+  return key;
+}
+
+/**
+ * クエリキーファクトリーの型定義
+ *
+ * @remarks
+ * TypeScript v5 satisfies演算子のための型定義
+ */
+type QueryKeysConfig = {
+  readonly [key: string]: {
+    readonly all: readonly unknown[];
+    readonly [method: string]:
+      | readonly unknown[]
+      | ((...args: unknown[]) => readonly unknown[]);
+  };
+};
+
+/**
  * 型安全なクエリキーファクトリーパターン
  * 各機能のクエリキーを一元管理し、型安全性を保証
+ *
+ * @remarks
+ * TypeScript v5のsatisfies演算子を使用して
+ * 型制約を満たしつつ具体的な値の型を保持
  */
 export const queryKeys = {
   // 認証関連
@@ -35,7 +89,7 @@ export const queryKeys = {
     dashboard: () => [...queryKeys.home.all, "dashboard"] as const,
     news: () => [...queryKeys.home.all, "news"] as const,
   },
-} as const;
+} as const satisfies QueryKeysConfig;
 
 /**
  * 特定のキーに関連するすべてのクエリを無効化するヘルパー関数

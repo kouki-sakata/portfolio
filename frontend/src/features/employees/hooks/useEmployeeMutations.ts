@@ -1,9 +1,26 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  mutationOptions,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 
 import type { EmployeeSummary } from "@/features/auth/types";
 import { createEmployee, deleteEmployee, updateEmployee } from "../api";
 import type { EmployeeUpsertInput } from "../types";
 import { EMPLOYEES_QUERY_KEY } from "./useEmployees";
+
+/**
+ * 従業員作成用mutationオプション定義
+ *
+ * @remarks
+ * TypeScript v5のベストプラクティスに従い、mutationOptions関数を使用
+ */
+export const createEmployeeMutationOptions = () =>
+  mutationOptions({
+    mutationKey: ["employees", "create"] as const,
+    mutationFn: (payload: EmployeeUpsertInput & { password: string }) =>
+      createEmployee(payload),
+  });
 
 /**
  * 従業員作成用mutation
@@ -28,8 +45,7 @@ export function useCreateEmployee() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (payload: EmployeeUpsertInput & { password: string }) =>
-      createEmployee(payload),
+    ...createEmployeeMutationOptions(),
     onSuccess: async () => {
       // 従業員一覧を再フェッチ
       await queryClient.invalidateQueries({ queryKey: EMPLOYEES_QUERY_KEY });

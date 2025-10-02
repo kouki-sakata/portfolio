@@ -1,5 +1,4 @@
 import { AlertCircle, AlertTriangle, Home, RefreshCw } from "lucide-react";
-import type React from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -49,14 +48,18 @@ export type ErrorFallbackProps = {
 
 /**
  * エラー時に表示するフォールバックUIコンポーネント
+ *
+ * @remarks
+ * TypeScript v5推奨: React.FCではなく関数宣言を使用
+ * より良い型推論とgenericsサポートのため
  */
-export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
+export function ErrorFallback({
   error,
   reset,
   title,
   description,
   showDetails = import.meta.env.MODE === "development",
-}) => {
+}: ErrorFallbackProps) {
   // エラータイプに応じたタイトルとメッセージを取得
   const getErrorInfo = () => {
     if (title && description) {
@@ -169,26 +172,34 @@ export const ErrorFallback: React.FC<ErrorFallbackProps> = ({
       </Card>
     </div>
   );
-};
+}
 
 /**
  * シンプルなエラーフォールバック（最小限のUI）
+ *
+ * @remarks
+ * TypeScript v5推奨: React.FCではなく関数宣言を使用
  */
-export const SimpleErrorFallback: React.FC<{
+export function SimpleErrorFallback({
+  error,
+  reset,
+}: {
   error: Error;
   reset: () => void;
-}> = ({ error, reset }) => (
-  <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
-    <AlertCircle className="mb-4 h-12 w-12 text-destructive" />
-    <h2 className="mb-2 font-semibold text-xl">エラーが発生しました</h2>
-    <p className="mb-6 max-w-md text-center text-muted-foreground">
-      {error.message || "予期しないエラーが発生しました。"}
-    </p>
-    <Button onClick={reset} variant="default">
-      再試行
-    </Button>
-  </div>
-);
+}) {
+  return (
+    <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
+      <AlertCircle className="mb-4 h-12 w-12 text-destructive" />
+      <h2 className="mb-2 font-semibold text-xl">エラーが発生しました</h2>
+      <p className="mb-6 max-w-md text-center text-muted-foreground">
+        {error.message || "予期しないエラーが発生しました。"}
+      </p>
+      <Button onClick={reset} variant="default">
+        再試行
+      </Button>
+    </div>
+  );
+}
 
 /**
  * デフォルトのErrorFallbackコンポーネント
