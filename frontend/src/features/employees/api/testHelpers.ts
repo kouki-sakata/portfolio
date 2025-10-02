@@ -11,10 +11,10 @@ export const getEmployees = async (_params?: {
 }): Promise<EmployeeListResponse> => {
   // For testing purposes, we return mock data
   // In real implementation, this would paginate the results
-  return fetchEmployees(false);
+  return await fetchEmployees(false);
 };
 
-export const getEmployeeById = async (id: number): Promise<EmployeeSummary> => {
+export const getEmployeeById = (id: number): EmployeeSummary => {
   // For testing purposes, we return mock employee data
   // In real implementation, this would fetch a specific employee
   return {
