@@ -58,7 +58,11 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 - **セキュアな設計**: Spring Securityによる堅牢な認証・認可
 - **スケーラビリティ**: PostgreSQL 16 + MyBatisによる効率的なデータ管理
 - **開発効率化**: OpenAPI仕様によるフロント/バックエンドの自動型同期
-- **型安全性**: TypeScript + Zodによるランタイム/コンパイルタイムの二重検証
+- **型安全性**: TypeScript 5 + Zodによるランタイム/コンパイルタイムの二重検証
+  - satisfies演算子による型制約の保証
+  - Branded Typesによる名義的型付け（ID誤用防止）
+  - Template Literal Typesによる型安全なAPIパス
+  - 型述語関数による実行時型チェック
 - **UIコンポーネント**: shadcn/ui + Tailwind CSS 4によるモダンなデザインシステム
 - **SOLID原則準拠**: Phase 2リファクタリングによる保守性・拡張性の向上
   - サービス層の責任分離（従業員管理を4つの専門サービスに分割）
@@ -199,6 +203,14 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
     - 一貫性のあるエラー表示パターン
     - ユーザーフレンドリーなメッセージング
     - React Hook Form + Zodの統合改善
+- ✅ TypeScript v5型定義リファクタリング（完了 - 2025-10-02）
+  - satisfies演算子による型制約と推論の両立
+  - queryOptions/mutationOptionsパターン導入
+  - Branded Typesによる名義的型付け（エンティティID・トークン）
+  - Template Literal Typesによる型安全なAPI定義
+  - 型述語（Type Predicates）関数の実装
+  - React.FCから関数宣言への移行
+  - グローバル型定義ファイルの作成
 - 🔄 Playwright E2Eテスト拡充
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー

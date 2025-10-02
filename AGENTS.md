@@ -1,69 +1,24 @@
 # Repository Guidelines
 
-## Adhere to each best practice
-
-When implementing code, always refer to context7 and proceed with
-implementation.
-
-Before you start coding, please get the latest documentation using context7 (MCP
-server).
-
 ## Project Structure & Module Organization
-
-This Spring Boot app keeps domain code under
-`src/main/java/com/example/teamdev`, split into `config`, `controller`,
-`service`, `mapper`, `entity`, `dto`, and `util` packages. Views and static
-assets live in `src/main/resources/templates` and `src/main/resources/static`,
-while SQL seed files (`01_schema.sql`, `02_data.sql`) stay alongside
-`application-*.properties`. Tests belong in `src/test/java`, mirroring the main
-package tree. Docker tooling (`docker/`, `docker-compose.yml`) provisions MySQL
-and the app container, and workflow scripts reside in `scripts/`.
+Backend resides in `src/main/java/com/example/teamdev/` with packages `config`, `controller`, `service`, `mapper`, `entity`, `dto`, `util`; keep cross-cutting helpers in `util`. API contracts surface under `controller/api`. Shared SQL such as `01_schema.sql` and `02_data.sql` plus `application-*.properties` live in `src/main/resources`. SPA assets live in `frontend/` (React, Vite) and build output is copied to `src/main/resources/static`. JUnit sources mirror the main tree in `src/test/java`. Docker recipes (`docker/`, `docker-compose.yml`) spin up PostgreSQL + app, and automation scripts live in `scripts/`.
 
 ## Build, Test, and Development Commands
-
-- `./gradlew bootRun` — start the API with the default profile; pass
-  `SPRING_PROFILES_ACTIVE=dev` or `--args='--spring.profiles.active=test'` for
-  alternate configs.
-- `./gradlew build` — compile, run tests, and create the executable jar under
-  `build/libs/`.
-- `./gradlew test` — execute the JUnit suite; use before every push.
-- `./scripts/dev-workflow.sh --quick` — local CI shortcut (compilation + unit
-  tests); `--full` adds security scans and Docker checks.
-- `docker-compose up -d` — launch the containerized stack defined in `docker/`
-  for parity with production.
+- `SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun` – start the API locally against Postgres.
+- `npm run dev --prefix frontend` – launch the SPA dev server on port 5173.
+- `./gradlew build` – compile, run tests, and produce `build/libs/*.jar` including bundled SPA.
+- `./gradlew test` – execute JUnit/Testcontainers suite; run before every push.
+- `./scripts/dev-workflow.sh --quick` – compile + unit tests; `--full` adds Docker, security, and contract checks.
+- `docker-compose up -d` – provision app + PostgreSQL for parity with production.
 
 ## Coding Style & Naming Conventions
-
-Use Java 21 with four-space indentation and avoid tab characters. Classes are
-`PascalCase`, beans and methods `camelCase`, constants `UPPER_SNAKE_CASE`. Keep
-controllers lean—delegate to services and mappers. Annotate logging with Lombok
-`@Slf4j` where logging is needed, and prefer constructor injection. Front-end
-snippets in Thymeleaf templates follow HTML5 + ES6 standards; mirror existing
-naming under `static/js` and `static/css`.
+Use Java 21, four-space indentation, and constructor injection. Classes stay `PascalCase`, beans/methods `camelCase`, constants `UPPER_SNAKE_CASE`. Controllers should be thin facades delegating to services/mappers; annotate log-heavy classes with `@Slf4j`. Frontend TypeScript follows ESLint + Prettier defaults; React components live under `frontend/src/app` and `frontend/src/features` with `PascalCase` filenames.
 
 ## Testing Guidelines
-
-JUnit 5 is configured via `useJUnitPlatform()`. Name test classes `*Test` (unit)
-or `*IT` (integration) and locate them under the corresponding package in
-`src/test/java`. Activate the lightweight `test` profile when relying on
-in-memory data: `SPRING_PROFILES_ACTIVE=test ./gradlew test`. Cover business
-logic in services, include mapper-level checks with MyBatis testers, and assert
-security rules using `spring-security-test`. Aim to keep new features
-accompanied by positive and negative cases.
+Back-end tests use JUnit 5 (`useJUnitPlatform`) with `*Test` and `*IT` naming. Activate lightweight fixtures via `SPRING_PROFILES_ACTIVE=test ./gradlew test`. Add mapper tests for MyBatis SQL edges and security rules with `spring-security-test`. Frontend relies on Vitest and Playwright: `npm run test --prefix frontend` for unit/specs, `npm run test:e2e --prefix frontend` for UI coverage.
 
 ## Commit & Pull Request Guidelines
-
-Follow conventional commits observed in history (`feat:`, `fix:`, `security:`,
-`docs:`, `debug:`). Keep summary lines under 72 characters and add context-rich
-bodies when behavior changes. Pull requests should describe the change, link any
-GitHub issue, list validation commands (`./gradlew test`, workflow script
-options), and attach UI screenshots for template updates. Request review once CI
-succeeds and flag any follow-up work.
+Adopt conventional commit prefixes (`feat:`, `fix:`, `docs:`, `security:`, `debug:`) and keep subject lines ≤72 chars. PRs must describe behavior changes, link tracking issues, list validation commands run (e.g., `./gradlew test`, workflow scripts), and attach UI screenshots when touching templates or SPA views. Request review after CI passes and call out follow-up tasks.
 
 ## Security & Quality Checks
-
-Run `./gradlew dependencyCheckAnalyze` before merging to surface CVEs (fails on
-CVSS ≥ 7). SonarQube properties are preconfigured; trigger a local scan with
-`./gradlew sonar` when you need a full report. Avoid committing credentials—
-`scripts/dev-workflow.sh --security` performs secret scans and large-file
-detection for you.
+Run `./gradlew dependencyCheckAnalyze` before merging; the build fails for CVSS ≥7. Trigger SonarQube locally with `./gradlew sonar` when substantial refactors land. Use `scripts/dev-workflow.sh --security` to scan for secrets and large files. Never commit credentials—prefer `.env` templates and managed secrets stores.

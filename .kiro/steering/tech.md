@@ -18,7 +18,12 @@
 
 ### コアフレームワーク
 - **React 19**: 最新のReactフレームワーク（v19.1.1）
-- **TypeScript**: 型安全な開発（v5.8.3、strictモード有効 - exactOptionalPropertyTypes除く）
+- **TypeScript 5**: 型安全な開発（v5.8.3、strictモード有効 - exactOptionalPropertyTypes除く）
+  - satisfies演算子による型制約と型推論の両立
+  - const type parametersによるリテラル型推論
+  - Template Literal Typesによる型安全なAPI定義
+  - Branded Typesパターンによる名義的型付け
+  - 型述語（Type Predicates）による実行時型チェック
 - **Vite**: 高速ビルドツール（v7.1.7）
 - **React Router 7**: SPAルーティング（v7.9.2）
 
@@ -29,6 +34,8 @@
   - エラーリトライ戦略（exponential backoff、最大3回）
   - ダッシュボードデータのリアルタイム同期
   - Suspenseモードサポート（React 19統合）
+  - queryOptions/mutationOptionsパターン採用（TypeScript v5対応）
+  - グローバル型定義によるクエリキー型安全化
 - **TanStack Table**: 高性能テーブル/データグリッドライブラリ（v8.21.3）
   - Headless UIパターンによる完全なカスタマイズ性
   - ソート、フィルタリング、ページネーション機能
