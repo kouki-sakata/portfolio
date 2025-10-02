@@ -14,14 +14,14 @@ export const getEmployees = async (_params?: {
   return await fetchEmployees(false);
 };
 
-export const getEmployeeById = (id: number): EmployeeSummary => {
+export const getEmployeeById = async (id: number): Promise<EmployeeSummary> => {
   // For testing purposes, we return mock employee data
   // In real implementation, this would fetch a specific employee
-  return {
+  return Promise.resolve({
     id,
     email: `employee${id}@example.com`,
     firstName: "Test",
     lastName: "Employee",
     admin: false,
-  };
+  });
 };

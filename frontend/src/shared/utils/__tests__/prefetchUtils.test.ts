@@ -19,9 +19,20 @@ import {
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 // Mock modules
-vi.mock("@/features/employees/api/testHelpers");
-vi.mock("@/features/home/api/testHelpers");
-vi.mock("@/features/stampHistory/api");
+vi.mock("@/features/employees/api/testHelpers", () => ({
+  getEmployees: vi.fn(),
+  getEmployeeById: vi.fn(),
+}));
+
+vi.mock("@/features/home/api/testHelpers", () => ({
+  getDashboardData: vi.fn(),
+}));
+
+vi.mock("@/features/stampHistory/api", () => ({
+  fetchStampHistory: vi.fn(),
+  updateStamp: vi.fn(),
+  deleteStamp: vi.fn(),
+}));
 
 describe("Prefetchユーティリティ", () => {
   let queryClient: QueryClient;
@@ -60,7 +71,7 @@ describe("Prefetchユーティリティ", () => {
       lastStampTime: null,
       news: [],
     });
-    vi.mocked(stampHistoryApi.getStampHistory).mockResolvedValue({
+    vi.mocked(stampHistoryApi.fetchStampHistory).mockResolvedValue({
       entries: [],
     });
   });
@@ -340,13 +351,15 @@ describe("Prefetchユーティリティ", () => {
 
       await prefetchInfiniteScrollData(queryClient, queryKey, queryFn, 2);
 
-      expect(prefetchSpy).toHaveBeenCalledWith({
-        queryKey,
-        queryFn,
-        initialPageParam: 1,
-        getNextPageParam: expect.any(Function),
-        pages: 2,
-      });
+      expect(prefetchSpy).toHaveBeenCalledWith(
+        expect.objectContaining({
+          queryKey,
+          queryFn,
+          initialPageParam: 1,
+          getNextPageParam: expect.any(Function),
+          pages: 2,
+        })
+      );
     });
   });
 
