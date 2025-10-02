@@ -203,17 +203,19 @@ export const prefetchNextPage = <TData = unknown>(
  * 無限スクロール用のprefetch
  * スクロール位置に応じて次のデータセットを先読み
  */
-export const prefetchInfiniteScrollData = async (
+export const prefetchInfiniteScrollData = async <
+  TData extends { hasNext: boolean; nextPage: number },
+>(
   queryClient: QueryClient,
   queryKey: readonly unknown[],
-  queryFn: ({ pageParam }: { pageParam: number }) => Promise<unknown>,
+  queryFn: ({ pageParam }: { pageParam: number }) => Promise<TData>,
   pages = 2 // デフォルトで2ページ先まで先読み
 ): Promise<void> => {
   await queryClient.prefetchInfiniteQuery({
     queryKey,
     queryFn,
     initialPageParam: 1,
-    getNextPageParam: (lastPage: { hasNext: boolean; nextPage: number }) =>
+    getNextPageParam: (lastPage) =>
       lastPage.hasNext ? lastPage.nextPage : undefined,
     pages,
   });
