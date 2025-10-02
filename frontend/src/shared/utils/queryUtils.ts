@@ -36,60 +36,57 @@ export function createMutationKey<const T extends readonly unknown[]>(
 }
 
 /**
- * クエリキーファクトリーの型定義
- *
- * @remarks
- * TypeScript v5 satisfies演算子のための型定義
+ * 認証関連のクエリキー
  */
-type QueryKeysConfig = {
-  readonly [key: string]: {
-    readonly all: readonly unknown[];
-    readonly [method: string]:
-      | readonly unknown[]
-      | ((...args: unknown[]) => readonly unknown[]);
-  };
-};
+const authKeys = {
+  all: ["auth"] as const,
+  session: () => ["auth", "session"] as const,
+  user: (userId: string) => ["auth", "user", userId] as const,
+} as const;
+
+/**
+ * 従業員管理のクエリキー
+ */
+const employeesKeys = {
+  all: ["employees"] as const,
+  list: (filters?: { page?: number; search?: string }) =>
+    ["employees", "list", filters] as const,
+  detail: (id: number) => ["employees", "detail", id] as const,
+} as const;
+
+/**
+ * 打刻履歴のクエリキー
+ */
+const stampHistoryKeys = {
+  all: ["stampHistory"] as const,
+  list: (filters?: { year?: number; month?: number; employeeId?: number }) =>
+    ["stampHistory", "list", filters] as const,
+  detail: (id: number) => ["stampHistory", "detail", id] as const,
+} as const;
+
+/**
+ * ホーム画面のクエリキー
+ */
+const homeKeys = {
+  all: ["home"] as const,
+  dashboard: () => ["home", "dashboard"] as const,
+  news: () => ["home", "news"] as const,
+} as const;
 
 /**
  * 型安全なクエリキーファクトリーパターン
  * 各機能のクエリキーを一元管理し、型安全性を保証
  *
  * @remarks
- * TypeScript v5のsatisfies演算子を使用して
- * 型制約を満たしつつ具体的な値の型を保持
+ * TypeScript v5で循環参照を避けるため、各機能のキーを個別に定義してから統合
+ * これにより、厳格な型チェックモードでもエラーなくビルドできる
  */
 export const queryKeys = {
-  // 認証関連
-  auth: {
-    all: ["auth"] as const,
-    session: () => [...queryKeys.auth.all, "session"] as const,
-    user: (userId: string) => [...queryKeys.auth.all, "user", userId] as const,
-  },
-
-  // 従業員管理
-  employees: {
-    all: ["employees"] as const,
-    list: (filters?: { page?: number; search?: string }) =>
-      [...queryKeys.employees.all, "list", filters] as const,
-    detail: (id: number) => [...queryKeys.employees.all, "detail", id] as const,
-  },
-
-  // 打刻履歴
-  stampHistory: {
-    all: ["stampHistory"] as const,
-    list: (filters?: { year?: number; month?: number; employeeId?: number }) =>
-      [...queryKeys.stampHistory.all, "list", filters] as const,
-    detail: (id: number) =>
-      [...queryKeys.stampHistory.all, "detail", id] as const,
-  },
-
-  // ホーム画面
-  home: {
-    all: ["home"] as const,
-    dashboard: () => [...queryKeys.home.all, "dashboard"] as const,
-    news: () => [...queryKeys.home.all, "news"] as const,
-  },
-} as const satisfies QueryKeysConfig;
+  auth: authKeys,
+  employees: employeesKeys,
+  stampHistory: stampHistoryKeys,
+  home: homeKeys,
+} as const;
 
 /**
  * 特定のキーに関連するすべてのクエリを無効化するヘルパー関数
