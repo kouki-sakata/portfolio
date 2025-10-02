@@ -52,7 +52,7 @@ export const invalidateQueries = async (
  */
 export const invalidateMultipleQueries = async (
   queryClient: QueryClient,
-  keysList: readonly unknown[][]
+  keysList: readonly (readonly unknown[])[]
 ): Promise<void> => {
   await Promise.all(
     keysList.map((keys) => queryClient.invalidateQueries({ queryKey: keys }))
@@ -118,7 +118,7 @@ export const invalidateRelatedQueries = async (
 ): Promise<void> => {
   const invalidationMap: Record<
     string,
-    readonly unknown[][] | (() => readonly unknown[][])
+    readonly (readonly unknown[])[] | (() => readonly (readonly unknown[])[])
   > = {
     // 従業員関連
     "employee.create": [queryKeys.employees.all],
@@ -152,10 +152,12 @@ export const invalidateRelatedQueries = async (
     "session.expired": [queryKeys.auth.all],
   };
 
-  const keysToInvalidate =
-    typeof invalidationMap[action.type] === "function"
-      ? invalidationMap[action.type]()
-      : invalidationMap[action.type];
+  const mapValue = invalidationMap[action.type];
+
+  const keysToInvalidate: readonly (readonly unknown[])[] | undefined =
+    typeof mapValue === "function"
+      ? (mapValue as () => readonly (readonly unknown[])[])()
+      : mapValue;
 
   if (keysToInvalidate) {
     await invalidateMultipleQueries(queryClient, keysToInvalidate);
@@ -203,8 +205,8 @@ export const conditionalInvalidate = async (
  */
 export const cascadeInvalidate = async (
   queryClient: QueryClient,
-  primaryKeys: readonly unknown[][],
-  secondaryKeys?: readonly unknown[][],
+  primaryKeys: readonly (readonly unknown[])[],
+  secondaryKeys?: readonly (readonly unknown[])[],
   delayMs = 100
 ): Promise<void> => {
   // まず主要なクエリを無効化
