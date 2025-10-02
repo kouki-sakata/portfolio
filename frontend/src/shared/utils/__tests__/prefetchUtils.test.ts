@@ -67,11 +67,20 @@ describe("Prefetchユーティリティ", () => {
       admin: false,
     });
     vi.mocked(dashboardApi.getDashboardData).mockResolvedValue({
-      isStamped: false,
-      lastStampTime: null,
+      employee: {
+        id: 1,
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
+        admin: false,
+      },
       news: [],
     });
     vi.mocked(stampHistoryApi.fetchStampHistory).mockResolvedValue({
+      selectedYear: new Date().getFullYear().toString(),
+      selectedMonth: (new Date().getMonth() + 1).toString(),
+      years: [new Date().getFullYear().toString()],
+      months: ["1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
       entries: [],
     });
   });
@@ -485,7 +494,7 @@ describe("Prefetchユーティリティ", () => {
           priority: "medium" as const,
           queryKey: ["task1"] as const,
           queryFn: async () => {
-            startTimes.task1 = Date.now();
+            startTimes["task1"] = Date.now();
             await new Promise((resolve) => setTimeout(resolve, 10));
             return { data: "task1" };
           },
@@ -494,7 +503,7 @@ describe("Prefetchユーティリティ", () => {
           priority: "medium" as const,
           queryKey: ["task2"] as const,
           queryFn: async () => {
-            startTimes.task2 = Date.now();
+            startTimes["task2"] = Date.now();
             await new Promise((resolve) => setTimeout(resolve, 10));
             return { data: "task2" };
           },
@@ -504,7 +513,7 @@ describe("Prefetchユーティリティ", () => {
       await prefetchWithPriority(queryClient, tasks);
 
       // 並列実行のため、開始時刻がほぼ同じ
-      const timeDiff = Math.abs(startTimes.task1 - startTimes.task2);
+      const timeDiff = Math.abs((startTimes["task1"] ?? 0) - (startTimes["task2"] ?? 0));
       expect(timeDiff).toBeLessThan(5);
     });
   });

@@ -7,7 +7,7 @@ import {
 } from "@/features/employees/api/testHelpers";
 // TODO: Replace with actual API function when renamed
 import { getDashboardData } from "@/features/home/api/testHelpers";
-import { getStampHistory } from "@/features/stampHistory/api";
+import { fetchStampHistory } from "@/features/stampHistory/api";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 /**
@@ -40,9 +40,9 @@ export const prefetchRouteData = async (
           month: now.getMonth() + 1,
         }),
         queryFn: () =>
-          getStampHistory({
-            year: now.getFullYear(),
-            month: now.getMonth() + 1,
+          fetchStampHistory({
+            year: now.getFullYear().toString(),
+            month: (now.getMonth() + 1).toString(),
           }),
         staleTime: QUERY_CONFIG.dynamic.stampHistory.staleTime,
       });
@@ -122,9 +122,9 @@ export const prefetchAdjacentMonths = async (
         month: prevMonth,
       }),
       queryFn: () =>
-        getStampHistory({
-          year: prevYear,
-          month: prevMonth,
+        fetchStampHistory({
+          year: prevYear.toString(),
+          month: prevMonth.toString(),
         }),
       staleTime: QUERY_CONFIG.dynamic.stampHistory.staleTime,
     }),
@@ -134,9 +134,9 @@ export const prefetchAdjacentMonths = async (
         month: nextMonth,
       }),
       queryFn: () =>
-        getStampHistory({
-          year: nextYear,
-          month: nextMonth,
+        fetchStampHistory({
+          year: nextYear.toString(),
+          month: nextMonth.toString(),
         }),
       staleTime: QUERY_CONFIG.dynamic.stampHistory.staleTime,
     }),

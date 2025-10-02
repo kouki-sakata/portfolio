@@ -138,7 +138,7 @@ describe("楽観的更新ヘルパー関数", () => {
         onSuccessHandler,
       });
 
-      mutation.onSuccess?.(data, variables, {} as OptimisticContext<unknown>);
+      mutation.onSuccess?.(data, variables, {} as OptimisticContext<unknown>, queryClient);
 
       expect(onSuccessHandler).toHaveBeenCalledWith(data, variables);
     });
@@ -154,14 +154,15 @@ describe("楽観的更新ヘルパー関数", () => {
         mutationFn: vi.fn(),
         queryKey,
         optimisticUpdater: (old) => old,
-        invalidateQueries: [relatedKey1, relatedKey2],
+        invalidateQueries: [relatedKey1 as unknown[], relatedKey2 as unknown[]],
       });
 
       await mutation.onSettled?.(
         undefined,
         undefined,
         undefined,
-        {} as OptimisticContext<unknown>
+        {} as OptimisticContext<unknown>,
+        queryClient
       );
 
       // メインクエリと関連クエリが無効化される
@@ -186,7 +187,7 @@ describe("楽観的更新ヘルパー関数", () => {
         getItem: () => ({ id: 2, name: "Item 2" }),
       });
 
-      await mutation.onMutate?.({});
+      await mutation.onMutate?.(undefined as unknown);
 
       const updatedList = queryClient.getQueryData<Item[]>(listQueryKey);
       expect(updatedList).toHaveLength(2);
@@ -208,11 +209,11 @@ describe("楽観的更新ヘルパー関数", () => {
         getItem: () => ({ id: 1, name: "Updated Item 1" }),
       });
 
-      await mutation.onMutate?.({});
+      await mutation.onMutate?.(undefined as unknown);
 
       const updatedList = queryClient.getQueryData<Item[]>(listQueryKey);
-      expect(updatedList?.[0].name).toBe("Updated Item 1");
-      expect(updatedList?.[1].name).toBe("Item 2");
+      expect(updatedList?.[0]?.name).toBe("Updated Item 1");
+      expect(updatedList?.[1]?.name).toBe("Item 2");
     });
 
     it("delete操作でアイテムが削除される", async () => {
@@ -230,11 +231,11 @@ describe("楽観的更新ヘルパー関数", () => {
         getItem: () => ({ id: 1, name: "" }),
       });
 
-      await mutation.onMutate?.({});
+      await mutation.onMutate?.(undefined as unknown);
 
       const updatedList = queryClient.getQueryData<Item[]>(listQueryKey);
       expect(updatedList).toHaveLength(1);
-      expect(updatedList?.[0].id).toBe(2);
+      expect(updatedList?.[0]?.id).toBe(2);
     });
 
     it("個別のアイテムキャッシュも更新される", async () => {
@@ -250,7 +251,7 @@ describe("楽観的更新ヘルパー関数", () => {
         getItem: () => newItem,
       });
 
-      await mutation.onMutate?.({});
+      await mutation.onMutate?.(undefined as unknown);
 
       // 個別のアイテムキャッシュが設定される
       expect(queryClient.getQueryData(itemQueryKey(1))).toEqual(newItem);
@@ -268,10 +269,10 @@ describe("楽観的更新ヘルパー関数", () => {
         getItem: () => ({ id: 2, name: "Item 2" }),
       });
 
-      const context = await mutation.onMutate?.({});
+      const context = await mutation.onMutate?.(undefined as unknown);
 
       // エラー時のロールバック
-      mutation.onError?.(new Error("Test error"), {}, context ?? {});
+      mutation.onError?.(new Error("Test error"), undefined as unknown, context ?? {}, queryClient);
 
       expect(queryClient.getQueryData(listQueryKey)).toEqual(initialList);
     });
@@ -297,7 +298,7 @@ describe("楽観的更新ヘルパー関数", () => {
         currentPage: 1,
       });
 
-      await mutation.onMutate?.({ page: 1 });
+      await mutation.onMutate?.({ page: 1 } as { page?: number });
 
       const updatedPage = queryClient.getQueryData<PageData>(pageQueryKey(1));
       expect(updatedPage?.items).toHaveLength(2);
@@ -323,7 +324,7 @@ describe("楽観的更新ヘルパー関数", () => {
         currentPage: 1,
       });
 
-      await mutation.onMutate?.({ page: 1 });
+      await mutation.onMutate?.({ page: 1 } as { page?: number });
 
       const updatedPage = queryClient.getQueryData<PageData>(pageQueryKey(1));
       expect(updatedPage?.items).toHaveLength(1);
@@ -353,7 +354,7 @@ describe("楽観的更新ヘルパー関数", () => {
         ],
       });
 
-      await mutation.onMutate?.({});
+      await mutation.onMutate?.(undefined as unknown);
 
       expect(queryClient.getQueryData(key1)).toEqual({ value: 10 });
       expect(queryClient.getQueryData(key2)).toEqual({ value: 20 });
@@ -376,10 +377,10 @@ describe("楽観的更新ヘルパー関数", () => {
         ],
       });
 
-      const context = await mutation.onMutate?.({});
+      const context = await mutation.onMutate?.(undefined as unknown);
 
       // ロールバック
-      mutation.onError?.(new Error("Rollback test error"), {}, context ?? {});
+      mutation.onError?.(new Error("Rollback test error"), undefined as unknown, context ?? {}, queryClient);
 
       expect(queryClient.getQueryData(key1)).toEqual(initial1);
       expect(queryClient.getQueryData(key2)).toEqual(initial2);
@@ -398,9 +399,9 @@ describe("楽観的更新ヘルパー関数", () => {
       });
 
       // 複数回呼び出し
-      mutation.mutationFn?.({ test: 1 });
-      mutation.mutationFn?.({ test: 2 });
-      const promise = mutation.mutationFn?.({ test: 3 });
+      mutation.mutationFn?.({ test: 1 } as unknown);
+      mutation.mutationFn?.({ test: 2 } as unknown);
+      const promise = mutation.mutationFn?.({ test: 3 } as unknown);
 
       // 実際のタイムアウトを待つ
       await new Promise((resolve) => setTimeout(resolve, 20));
@@ -427,9 +428,9 @@ describe("楽観的更新ヘルパー関数", () => {
       });
 
       // 連続して呼び出し
-      mutation.mutationFn?.({ value: 1 });
+      mutation.mutationFn?.({ value: 1 } as unknown);
       // すぐに2回目（最初のはキャンセルされる）
-      const finalPromise = mutation.mutationFn?.({ value: 2 });
+      const finalPromise = mutation.mutationFn?.({ value: 2 } as unknown);
 
       // 実際のタイムアウトを待つ
       await new Promise((resolve) => setTimeout(resolve, 20));
