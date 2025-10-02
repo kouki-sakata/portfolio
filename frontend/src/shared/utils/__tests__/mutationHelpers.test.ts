@@ -138,7 +138,12 @@ describe("楽観的更新ヘルパー関数", () => {
         onSuccessHandler,
       });
 
-      mutation.onSuccess?.(data, variables, {} as OptimisticContext<unknown>, queryClient);
+      mutation.onSuccess?.(
+        data,
+        variables,
+        {} as OptimisticContext<unknown>,
+        queryClient
+      );
 
       expect(onSuccessHandler).toHaveBeenCalledWith(data, variables);
     });
@@ -272,7 +277,12 @@ describe("楽観的更新ヘルパー関数", () => {
       const context = await mutation.onMutate?.(undefined as unknown);
 
       // エラー時のロールバック
-      mutation.onError?.(new Error("Test error"), undefined as unknown, context ?? {}, queryClient);
+      mutation.onError?.(
+        new Error("Test error"),
+        undefined as unknown,
+        context ?? {},
+        queryClient
+      );
 
       expect(queryClient.getQueryData(listQueryKey)).toEqual(initialList);
     });
@@ -380,7 +390,12 @@ describe("楽観的更新ヘルパー関数", () => {
       const context = await mutation.onMutate?.(undefined as unknown);
 
       // ロールバック
-      mutation.onError?.(new Error("Rollback test error"), undefined as unknown, context ?? {}, queryClient);
+      mutation.onError?.(
+        new Error("Rollback test error"),
+        undefined as unknown,
+        context ?? {},
+        queryClient
+      );
 
       expect(queryClient.getQueryData(key1)).toEqual(initial1);
       expect(queryClient.getQueryData(key2)).toEqual(initial2);

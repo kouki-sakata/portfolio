@@ -494,7 +494,7 @@ describe("Prefetchユーティリティ", () => {
           priority: "medium" as const,
           queryKey: ["task1"] as const,
           queryFn: async () => {
-            startTimes["task1"] = Date.now();
+            startTimes.task1 = Date.now();
             await new Promise((resolve) => setTimeout(resolve, 10));
             return { data: "task1" };
           },
@@ -503,7 +503,7 @@ describe("Prefetchユーティリティ", () => {
           priority: "medium" as const,
           queryKey: ["task2"] as const,
           queryFn: async () => {
-            startTimes["task2"] = Date.now();
+            startTimes.task2 = Date.now();
             await new Promise((resolve) => setTimeout(resolve, 10));
             return { data: "task2" };
           },
@@ -513,7 +513,9 @@ describe("Prefetchユーティリティ", () => {
       await prefetchWithPriority(queryClient, tasks);
 
       // 並列実行のため、開始時刻がほぼ同じ
-      const timeDiff = Math.abs((startTimes["task1"] ?? 0) - (startTimes["task2"] ?? 0));
+      const timeDiff = Math.abs(
+        (startTimes.task1 ?? 0) - (startTimes.task2 ?? 0)
+      );
       expect(timeDiff).toBeLessThan(5);
     });
   });
