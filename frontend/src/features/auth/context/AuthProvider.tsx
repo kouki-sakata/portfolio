@@ -9,7 +9,10 @@ import {
 } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { configureQueryClientErrorHandler } from "@/app/config/queryClient";
+import {
+  configureQueryClientErrorHandler,
+  QUERY_CONFIG,
+} from "@/app/config/queryClient";
 import { login } from "@/features/auth/api/login";
 import { logout } from "@/features/auth/api/logout";
 import { fetchSession } from "@/features/auth/api/session";
@@ -79,7 +82,8 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
   const sessionQuery = useQuery({
     queryKey: AUTH_SESSION_KEY,
     queryFn: fetchSession,
-    staleTime: 5 * 60 * 1000,
+    staleTime: QUERY_CONFIG.auth.staleTime,
+    gcTime: QUERY_CONFIG.auth.gcTime,
   });
 
   const loginMutation = useMutation({

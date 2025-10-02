@@ -3,12 +3,14 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { submitStamp } from "@/features/home/api/stamp";
 import type {
   HomeDashboardResponse,
   StampResponse,
 } from "@/features/home/types";
+import { queryKeys } from "@/shared/utils/queryUtils";
 import { HomePage } from "./HomePage";
 
 // Mock the API modules
@@ -101,6 +103,29 @@ describe("HomePage", () => {
           screen.getByText("今日も素敵な一日を過ごしましょう。")
         ).toBeInTheDocument();
       });
+    });
+
+    it("ホームダッシュボードのキャッシュ設定を適用する", async () => {
+      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/おはようございます、山田 太郎 さん/)
+        ).toBeInTheDocument();
+      });
+
+      const cachedQuery = queryClient
+        .getQueryCache()
+        .find({ queryKey: queryKeys.home.dashboard() });
+
+      expect(cachedQuery?.options.staleTime).toBe(
+        QUERY_CONFIG.homeDashboard.staleTime
+      );
+      expect(cachedQuery?.options.gcTime).toBe(
+        QUERY_CONFIG.homeDashboard.gcTime
+      );
     });
   });
 

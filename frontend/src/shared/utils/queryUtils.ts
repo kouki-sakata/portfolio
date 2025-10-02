@@ -49,7 +49,7 @@ const authKeys = {
  */
 const employeesKeys = {
   all: ["employees"] as const,
-  list: (filters?: { page?: number; search?: string }) =>
+  list: (filters: { page?: number; search?: string } = {}) =>
     ["employees", "list", filters] as const,
   detail: (id: number) => ["employees", "detail", id] as const,
 } as const;
@@ -59,8 +59,13 @@ const employeesKeys = {
  */
 const stampHistoryKeys = {
   all: ["stampHistory"] as const,
-  list: (filters?: { year?: number; month?: number; employeeId?: number }) =>
-    ["stampHistory", "list", filters] as const,
+  list: (
+    filters: {
+      year?: number | string;
+      month?: number | string;
+      employeeId?: number;
+    } = {}
+  ) => ["stampHistory", "list", filters] as const,
   detail: (id: number) => ["stampHistory", "detail", id] as const,
 } as const;
 

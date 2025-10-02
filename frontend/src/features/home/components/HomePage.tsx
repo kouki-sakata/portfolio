@@ -1,14 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 
+import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { submitStamp } from "@/features/home/api/stamp";
 import type { HomeDashboardResponse } from "@/features/home/types";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
+import { queryKeys } from "@/shared/utils/queryUtils";
 import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
 
-const HOME_DASHBOARD_KEY = ["home", "overview"] as const;
+const HOME_DASHBOARD_KEY = queryKeys.home.dashboard();
 
 const formatTimestamp = () => {
   const now = new Date();
@@ -23,7 +25,8 @@ export const HomePage = () => {
   const { data, isLoading } = useQuery<HomeDashboardResponse>({
     queryKey: HOME_DASHBOARD_KEY,
     queryFn: getHomeDashboard,
-    staleTime: 60 * 1000,
+    staleTime: QUERY_CONFIG.homeDashboard.staleTime,
+    gcTime: QUERY_CONFIG.homeDashboard.gcTime,
   });
 
   const stampMutation = useMutation({
