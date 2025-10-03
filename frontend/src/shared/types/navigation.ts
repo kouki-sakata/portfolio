@@ -1,4 +1,4 @@
-import type { LucideIcon } from "lucide-react";
+import type { SpriteIconName } from "@/shared/components/icons/SpriteIcon";
 
 /**
  * ナビゲーションアイテムの基本型定義
@@ -10,8 +10,8 @@ export type NavigationItem = {
   label: string;
   /** ルートパス */
   href: string;
-  /** アイコンコンポーネント */
-  icon: LucideIcon;
+  /** アイコン識別子 */
+  icon: SpriteIconName;
   /** バッジ表示（通知数など） */
   badge?: number;
   /** アクティブかどうか */

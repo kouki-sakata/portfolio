@@ -21,6 +21,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionTimeoutNotification } from "@/features/auth/components/SessionTimeoutNotification";
 import { AuthProvider } from "@/features/auth/context/AuthProvider";
+import { IconSpriteSheet } from "@/shared/components/icons/SpriteIcon";
 
 // Lazy load route components for code splitting
 const SignInRoute = lazy(() =>
@@ -175,6 +176,7 @@ const router = createBrowserRouter([
 
 export const AppProviders = () => (
   <StrictMode>
+    <IconSpriteSheet />
     <ThemeProvider defaultTheme="system">
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />

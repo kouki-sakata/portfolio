@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
-import { Loader2 } from "lucide-react";
 import type { HTMLAttributes } from "react";
 import { cn } from "@/lib/utils";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 const spinnerVariants = cva("animate-spin", {
   variants: {
@@ -26,34 +26,12 @@ const spinnerVariants = cva("animate-spin", {
 export interface LoadingSpinnerProps
   extends HTMLAttributes<HTMLDivElement>,
     VariantProps<typeof spinnerVariants> {
-  /** アクセシビリティ用のラベル */
   label?: string;
-  /** ラベルテキストを表示するか */
   showText?: boolean;
-  /** フルスクリーン表示 */
   fullScreen?: boolean;
-  /** 中央寄せ */
   center?: boolean;
 }
 
-/**
- * ローディングスピナーコンポーネント
- *
- * @example
- * ```tsx
- * // 基本的な使用方法
- * <LoadingSpinner />
- *
- * // サイズとバリアントを指定
- * <LoadingSpinner size="lg" variant="secondary" />
- *
- * // テキスト付き
- * <LoadingSpinner showText label="データを読み込み中" />
- *
- * // フルスクリーン表示
- * <LoadingSpinner fullScreen />
- * ```
- */
 export function LoadingSpinner({
   label = "読み込み中",
   size,
@@ -85,9 +63,11 @@ export function LoadingSpinner({
         aria-live="polite"
         className="inline-flex items-center gap-2"
       >
-        <Loader2
+        <SpriteIcon
           className={spinnerVariants({ size, variant })}
           data-testid="loading-spinner-icon"
+          decorative
+          name="loader-2"
         />
         {showText && (
           <span className="text-muted-foreground text-sm">{label}</span>

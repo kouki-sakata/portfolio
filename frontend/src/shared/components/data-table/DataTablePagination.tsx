@@ -1,10 +1,4 @@
 import type { Table } from "@tanstack/react-table";
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 type DataTablePaginationProps<TData> = {
   table: Table<TData>;
@@ -70,7 +65,7 @@ export function DataTablePagination<TData>({
             variant="outline"
           >
             <span className="sr-only">最初のページへ</span>
-            <ChevronsLeftIcon className="size-4" />
+            <SpriteIcon className="size-4" decorative name="chevrons-left" />
           </Button>
           <Button
             className="size-8 p-0"
@@ -79,7 +74,7 @@ export function DataTablePagination<TData>({
             variant="outline"
           >
             <span className="sr-only">前のページへ</span>
-            <ChevronLeftIcon className="size-4" />
+            <SpriteIcon className="size-4" decorative name="chevron-left" />
           </Button>
           <Button
             className="size-8 p-0"
@@ -88,7 +83,7 @@ export function DataTablePagination<TData>({
             variant="outline"
           >
             <span className="sr-only">次のページへ</span>
-            <ChevronRightIcon className="size-4" />
+            <SpriteIcon className="size-4" decorative name="chevron-right" />
           </Button>
           <Button
             className="hidden size-8 p-0 lg:flex"
@@ -97,7 +92,7 @@ export function DataTablePagination<TData>({
             variant="outline"
           >
             <span className="sr-only">最後のページへ</span>
-            <ChevronsRightIcon className="size-4" />
+            <SpriteIcon className="size-4" decorative name="chevrons-right" />
           </Button>
         </div>
       </div>

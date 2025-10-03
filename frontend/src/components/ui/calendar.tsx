@@ -1,16 +1,18 @@
-import {
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+"use client";
+
 import * as React from "react";
 import {
   type DayButton,
   DayPicker,
   getDefaultClassNames,
 } from "react-day-picker";
+
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import {
+  SpriteIcon,
+  type SpriteIconName,
+} from "@/shared/components/icons/SpriteIcon";
 
 type CalendarRootProps = {
   className?: string;
@@ -37,14 +39,35 @@ const CalendarChevron = ({
   ...props
 }: CalendarChevronProps) => {
   if (orientation === "left") {
-    return <ChevronLeftIcon className={cn("size-4", className)} {...props} />;
+    return (
+      <SpriteIcon
+        className={cn("size-4", className)}
+        decorative
+        name={"chevron-left" as unknown as SpriteIconName}
+        {...props}
+      />
+    );
   }
 
   if (orientation === "right") {
-    return <ChevronRightIcon className={cn("size-4", className)} {...props} />;
+    return (
+      <SpriteIcon
+        className={cn("size-4", className)}
+        decorative
+        name={"chevron-right" as unknown as SpriteIconName}
+        {...props}
+      />
+    );
   }
 
-  return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
+  return (
+    <SpriteIcon
+      className={cn("size-4", className)}
+      decorative
+      name={"chevron-down" as unknown as SpriteIconName}
+      {...props}
+    />
+  );
 };
 
 type CalendarWeekNumberProps = {

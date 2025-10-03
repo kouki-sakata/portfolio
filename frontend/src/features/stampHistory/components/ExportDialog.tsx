@@ -1,4 +1,3 @@
-import { Download } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { useStampHistoryExport } from "../hooks/useStampHistoryExport";
 import type { ExportFormat, StampHistoryEntry } from "../types";
 import { ExportProgress } from "./ExportProgress";
@@ -36,7 +36,6 @@ export const ExportDialog = ({
 
   const { exportData, isExporting, progress } = useStampHistoryExport({
     onSuccess: () => {
-      // エクスポート完了後にダイアログを閉じる
       setTimeout(() => setOpen(false), 1000);
     },
   });
@@ -49,7 +48,7 @@ export const ExportDialog = ({
     <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
         <Button disabled={disabled || entries.length === 0} variant="outline">
-          <Download className="mr-2 h-4 w-4" />
+          <SpriteIcon className="mr-2 h-4 w-4" decorative name="download" />
           CSV出力
         </Button>
       </DialogTrigger>

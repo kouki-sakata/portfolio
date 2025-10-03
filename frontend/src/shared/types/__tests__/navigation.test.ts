@@ -1,4 +1,3 @@
-import { Home, Settings } from "lucide-react";
 import { describe, expect, it } from "vitest";
 
 import type {
@@ -8,6 +7,9 @@ import type {
   SidebarState,
 } from "../navigation";
 
+const HOME_ICON = "home" satisfies NavigationItem["icon"];
+const SETTINGS_ICON = "settings" satisfies NavigationItem["icon"];
+
 describe("Navigation Types", () => {
   describe("NavigationItem", () => {
     it("必須プロパティを持つNavigationItemを作成できる", () => {
@@ -15,13 +17,13 @@ describe("Navigation Types", () => {
         id: "home",
         label: "ホーム",
         href: "/",
-        icon: Home,
+        icon: HOME_ICON,
       };
 
       expect(item.id).toBe("home");
       expect(item.label).toBe("ホーム");
       expect(item.href).toBe("/");
-      expect(item.icon).toBe(Home);
+      expect(item.icon).toBe(HOME_ICON);
     });
 
     it("オプショナルプロパティを持つNavigationItemを作成できる", () => {
@@ -29,7 +31,7 @@ describe("Navigation Types", () => {
         id: "notifications",
         label: "通知",
         href: "/notifications",
-        icon: Settings,
+        icon: SETTINGS_ICON,
         badge: 5,
         active: true,
         disabled: false,
@@ -45,8 +47,7 @@ describe("Navigation Types", () => {
         id: "settings",
         label: "設定",
         href: "/settings",
-        icon: Settings,
-        // badgeは未定義
+        icon: SETTINGS_ICON,
       };
 
       expect(item.badge).toBeUndefined();
@@ -63,7 +64,7 @@ describe("Navigation Types", () => {
             id: "home",
             label: "ホーム",
             href: "/",
-            icon: Home,
+            icon: HOME_ICON,
           },
         ],
       };
@@ -82,7 +83,7 @@ describe("Navigation Types", () => {
             id: "settings",
             label: "設定",
             href: "/settings",
-            icon: Settings,
+            icon: SETTINGS_ICON,
           },
         ],
       };
@@ -149,13 +150,13 @@ describe("Navigation Types", () => {
           id: "home",
           label: "ホーム",
           href: "/",
-          icon: Home,
+          icon: HOME_ICON,
         },
         {
           id: "settings",
           label: "設定",
           href: "/settings",
-          icon: Settings,
+          icon: SETTINGS_ICON,
           badge: 2,
         },
       ];
@@ -180,7 +181,7 @@ describe("Navigation Types", () => {
               id: "home",
               label: "ホーム",
               href: "/",
-              icon: Home,
+              icon: HOME_ICON,
             },
           ],
         },
@@ -191,7 +192,7 @@ describe("Navigation Types", () => {
               id: "settings",
               label: "設定",
               href: "/settings",
-              icon: Settings,
+              icon: SETTINGS_ICON,
             },
           ],
         },
