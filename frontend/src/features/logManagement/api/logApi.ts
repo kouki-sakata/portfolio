@@ -10,6 +10,7 @@ import type {
 } from "../types";
 
 const DEFAULT_PAGE_SIZE = 50;
+const ABSOLUTE_URL_PATTERN = /^https?:/i;
 
 const joinValues = (
   values?: readonly (string | number)[]
@@ -93,19 +94,14 @@ const resolveApiUrl = (path: string): string => {
   const { apiBaseUrl } = getEnv();
   const normalizedPath = path.startsWith("/") ? path.slice(1) : path;
 
-  if (/^https?:/i.test(apiBaseUrl)) {
+  if (ABSOLUTE_URL_PATTERN.test(apiBaseUrl)) {
     const base = apiBaseUrl.endsWith("/") ? apiBaseUrl : `${apiBaseUrl}/`;
     return new URL(normalizedPath, base).toString();
   }
 
-  const origin =
-    typeof window !== "undefined" && window.location
-      ? window.location.origin
-      : "http://localhost";
+  const origin = window?.location ? window.location.origin : "http://localhost";
 
-  const base = apiBaseUrl.startsWith("/")
-    ? apiBaseUrl.slice(1)
-    : apiBaseUrl;
+  const base = apiBaseUrl.startsWith("/") ? apiBaseUrl.slice(1) : apiBaseUrl;
   const baseWithSlash = base.length > 0 ? `${base}/` : "";
 
   return new URL(`${baseWithSlash}${normalizedPath}`, origin).toString();
@@ -133,7 +129,7 @@ const resolveAcceptHeader = (format: LogExportFormat | undefined): string => {
   return "text/csv";
 };
 
-export const searchLogs = async (
+export const searchLogs = (
   filters?: LogSearchFilters
 ): Promise<LogSearchResponse> => {
   const effectiveFilters: LogSearchFilters = {
@@ -150,9 +146,7 @@ export const searchLogs = async (
   return api.get<LogSearchResponse>("/api/logs", { params });
 };
 
-export const exportLogs = async (
-  filters?: LogExportFilters
-): Promise<Blob> => {
+export const exportLogs = (filters?: LogExportFilters): Promise<Blob> => {
   const params = buildSearchParams(filters);
 
   return api.get<Blob>("/api/logs/export", {
@@ -174,7 +168,7 @@ export const streamLogExport = async (
     method: "GET",
     credentials: "include",
     headers: {
-      Accept: accept,
+      accept,
     },
   });
 

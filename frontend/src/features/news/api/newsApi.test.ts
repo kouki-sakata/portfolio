@@ -10,8 +10,8 @@ vi.mock("@/shared/api/axiosClient", () => ({
   },
 }));
 
-import { api } from "@/shared/api/axiosClient";
 import type { NewsItem, NewsListResponse } from "@/features/news/types";
+import { api } from "@/shared/api/axiosClient";
 
 import {
   createNews,

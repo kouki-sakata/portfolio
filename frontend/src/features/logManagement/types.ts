@@ -1,10 +1,4 @@
-export type LogLevel =
-  | "TRACE"
-  | "DEBUG"
-  | "INFO"
-  | "WARN"
-  | "ERROR"
-  | "FATAL";
+export type LogLevel = "TRACE" | "DEBUG" | "INFO" | "WARN" | "ERROR" | "FATAL";
 
 export type LogActor = {
   id: number;

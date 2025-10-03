@@ -10,18 +10,14 @@ vi.mock("@/shared/lib/env", () => ({
   getEnv: () => ({ apiBaseUrl: "https://example.com/api" }),
 }));
 
-import { api } from "@/shared/api/axiosClient";
-import { ApiError } from "@/shared/api/errors/ApiError";
 import type {
   LogSearchFilters,
   LogSearchResponse,
 } from "@/features/logManagement/types";
+import { api } from "@/shared/api/axiosClient";
+import { ApiError } from "@/shared/api/errors/ApiError";
 
-import {
-  exportLogs,
-  searchLogs,
-  streamLogExport,
-} from "./logApi";
+import { exportLogs, searchLogs, streamLogExport } from "./logApi";
 
 const mockedApi = vi.mocked(api);
 const originalFetch = globalThis.fetch;
@@ -132,7 +128,7 @@ describe("logApi", () => {
       {
         credentials: "include",
         headers: {
-          Accept: "text/csv",
+          accept: "text/csv",
         },
         method: "GET",
       }
@@ -141,9 +137,11 @@ describe("logApi", () => {
   });
 
   it("throws ApiError when streaming fails", async () => {
-    const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-      new Response("", { status: 500, statusText: "Server Error" })
-    );
+    const fetchSpy = vi
+      .spyOn(globalThis, "fetch")
+      .mockResolvedValue(
+        new Response("", { status: 500, statusText: "Server Error" })
+      );
 
     await expect(streamLogExport()).rejects.toBeInstanceOf(ApiError);
     expect(fetchSpy).toHaveBeenCalled();

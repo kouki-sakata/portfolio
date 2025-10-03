@@ -46,7 +46,7 @@ const buildListParams = (
   return Object.keys(params).length > 0 ? params : undefined;
 };
 
-export const fetchNewsList = async (
+export const fetchNewsList = (
   filters?: NewsListFilters
 ): Promise<NewsListResponse> => {
   const params = buildListParams(filters);
@@ -54,9 +54,7 @@ export const fetchNewsList = async (
   return api.get<NewsListResponse>("/api/news", config);
 };
 
-export const createNews = async (
-  payload: CreateNewsInput
-): Promise<NewsItem> =>
+export const createNews = async (payload: CreateNewsInput): Promise<NewsItem> =>
   api.post<NewsItem>("/api/news", {
     data: payload,
   });
@@ -117,14 +115,14 @@ export const createNewsPoller = ({
   };
 
   if (immediate) {
-    void run();
+    run();
   }
 
   timer = createInterval(() => {
     if (stopped) {
       return;
     }
-    void run();
+    run();
   }, intervalMs);
 
   const stop = () => {
