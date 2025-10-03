@@ -1,28 +1,19 @@
-import { AlertTriangle, Clock, LogOut, RefreshCw, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 type SessionTimeoutWarningProps = {
-  /** 残り時間（秒） */
   timeRemaining: number;
-  /** セッション延長処理 */
   onExtend: () => void;
-  /** ログアウト処理 */
   onLogout: () => void;
-  /** 閉じる処理 */
   onDismiss?: () => void;
-  /** 表示フラグ */
   show?: boolean;
-  /** 緊急フラグ（残り時間が少ない場合） */
   urgent?: boolean;
 };
 
-/**
- * 時間をフォーマット（秒 → 分:秒）
- */
 const formatTime = (seconds: number): string => {
   if (seconds <= 0) {
     return "0秒";
@@ -37,10 +28,6 @@ const formatTime = (seconds: number): string => {
   return `${seconds.toString()}秒`;
 };
 
-/**
- * セッションタイムアウト警告コンポーネント
- * セッション期限が近づいたときにユーザーに警告を表示
- */
 export const SessionTimeoutWarning = ({
   timeRemaining,
   onExtend,
@@ -51,15 +38,12 @@ export const SessionTimeoutWarning = ({
 }: SessionTimeoutWarningProps) => {
   const [displayTime, setDisplayTime] = useState(timeRemaining);
 
-  // タイマーの更新
   useEffect(() => {
     setDisplayTime(timeRemaining);
   }, [timeRemaining]);
 
-  // 緊急度の判定（1分以下で緊急）
   const isUrgent = urgent || displayTime <= 60;
 
-  // 表示しない場合
   if (!show) {
     return null;
   }
@@ -77,13 +61,15 @@ export const SessionTimeoutWarning = ({
       role="alert"
     >
       <div className="flex items-start gap-3">
-        <AlertTriangle
+        <SpriteIcon
           className={cn(
             "h-5 w-5 flex-shrink-0",
             isUrgent
               ? "text-red-600 dark:text-red-400"
               : "text-yellow-600 dark:text-yellow-400"
           )}
+          decorative
+          name="alert-triangle"
         />
 
         <div className="flex-1">
@@ -94,7 +80,7 @@ export const SessionTimeoutWarning = ({
           <AlertDescription>
             <div className="mb-3">
               <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4" />
+                <SpriteIcon className="h-4 w-4" decorative name="clock" />
                 <span className="font-semibold">
                   残り時間: {formatTime(displayTime)}
                 </span>
@@ -111,7 +97,7 @@ export const SessionTimeoutWarning = ({
                 size="sm"
                 variant={isUrgent ? "destructive" : "default"}
               >
-                <RefreshCw className="h-3 w-3" />
+                <SpriteIcon className="h-3 w-3" decorative name="refresh-cw" />
                 セッションを延長
               </Button>
 
@@ -121,7 +107,7 @@ export const SessionTimeoutWarning = ({
                 size="sm"
                 variant="outline"
               >
-                <LogOut className="h-3 w-3" />
+                <SpriteIcon className="h-3 w-3" decorative name="log-out" />
                 ログアウト
               </Button>
 
@@ -133,7 +119,7 @@ export const SessionTimeoutWarning = ({
                   size="sm"
                   variant="ghost"
                 >
-                  <X className="h-3 w-3" />
+                  <SpriteIcon className="h-3 w-3" decorative name="x" />
                   閉じる
                 </Button>
               )}

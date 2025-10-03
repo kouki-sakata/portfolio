@@ -1,5 +1,4 @@
 import type { Table } from "@tanstack/react-table";
-import { SlidersHorizontalIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,6 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 type DataTableViewOptionsProps<TData> = {
   table: Table<TData>;
@@ -26,7 +26,11 @@ export function DataTableViewOptions<TData>({
           size="sm"
           variant="outline"
         >
-          <SlidersHorizontalIcon className="mr-2 size-4" />
+          <SpriteIcon
+            className="mr-2 size-4"
+            decorative
+            name="sliders-horizontal"
+          />
           表示設定
         </Button>
       </DropdownMenuTrigger>

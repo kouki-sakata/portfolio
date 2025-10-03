@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { Edit, Trash2 } from "lucide-react";
 import { type FormEvent, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
@@ -21,6 +20,7 @@ import type {
   StampHistoryEntry,
   StampHistoryResponse,
 } from "@/features/stampHistory/types";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 import { SuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 import { queryKeys } from "@/shared/utils/queryUtils";
@@ -244,7 +244,11 @@ export const StampHistoryPage = () => {
                               size="sm"
                               variant="ghost"
                             >
-                              <Edit className="h-4 w-4" />
+                              <SpriteIcon
+                                className="h-4 w-4"
+                                decorative
+                                name="edit"
+                              />
                               <span className="sr-only">編集</span>
                             </Button>
                             <Button
@@ -253,7 +257,11 @@ export const StampHistoryPage = () => {
                               size="sm"
                               variant="ghost"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              <SpriteIcon
+                                className="h-4 w-4"
+                                decorative
+                                name="trash-2"
+                              />
                               <span className="sr-only">削除</span>
                             </Button>
                           </div>

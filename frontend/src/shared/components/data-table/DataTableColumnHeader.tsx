@@ -1,5 +1,4 @@
 import type { Column } from "@tanstack/react-table";
-import { ArrowDownIcon, ArrowUpIcon, ChevronsUpDownIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -10,11 +9,24 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 type DataTableColumnHeaderProps<TData, TValue = unknown> = {
   column: Column<TData, TValue>;
   title: string;
   className?: string;
+};
+
+const SortIcon = ({ direction }: { direction: "asc" | "desc" | false }) => {
+  if (direction === "desc") {
+    return <SpriteIcon className="ml-2 size-4" decorative name="arrow-down" />;
+  }
+  if (direction === "asc") {
+    return <SpriteIcon className="ml-2 size-4" decorative name="arrow-up" />;
+  }
+  return (
+    <SpriteIcon className="ml-2 size-4" decorative name="chevrons-up-down" />
+  );
 };
 
 export function DataTableColumnHeader<TData, TValue = unknown>({
@@ -26,17 +38,6 @@ export function DataTableColumnHeader<TData, TValue = unknown>({
     return <div className={cn(className)}>{title}</div>;
   }
 
-  const renderSortIcon = () => {
-    const sortDirection = column.getIsSorted();
-    if (sortDirection === "desc") {
-      return <ArrowDownIcon className="ml-2 size-4" />;
-    }
-    if (sortDirection === "asc") {
-      return <ArrowUpIcon className="ml-2 size-4" />;
-    }
-    return <ChevronsUpDownIcon className="ml-2 size-4" />;
-  };
-
   return (
     <div className={cn("flex items-center space-x-2", className)}>
       <DropdownMenu>
@@ -47,7 +48,7 @@ export function DataTableColumnHeader<TData, TValue = unknown>({
             variant="ghost"
           >
             <span>{title}</span>
-            {renderSortIcon()}
+            <SortIcon direction={column.getIsSorted()} />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">
@@ -55,14 +56,22 @@ export function DataTableColumnHeader<TData, TValue = unknown>({
             className="cursor-pointer"
             onClick={() => column.toggleSorting(false)}
           >
-            <ArrowUpIcon className="mr-2 size-3.5 text-muted-foreground/70" />
+            <SpriteIcon
+              className="mr-2 size-3.5 text-muted-foreground/70"
+              decorative
+              name="arrow-up"
+            />
             昇順
           </DropdownMenuItem>
           <DropdownMenuItem
             className="cursor-pointer"
             onClick={() => column.toggleSorting(true)}
           >
-            <ArrowDownIcon className="mr-2 size-3.5 text-muted-foreground/70" />
+            <SpriteIcon
+              className="mr-2 size-3.5 text-muted-foreground/70"
+              decorative
+              name="arrow-down"
+            />
             降順
           </DropdownMenuItem>
           {column.getIsSorted() && (

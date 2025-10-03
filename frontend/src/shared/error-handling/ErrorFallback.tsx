@@ -1,4 +1,3 @@
-import { AlertCircle, AlertTriangle, Home, RefreshCw } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import {
@@ -7,6 +6,10 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
+import {
+  SpriteIcon,
+  type SpriteIconName,
+} from "@/shared/components/icons/SpriteIcon";
 import {
   type ApiError,
   isAuthorizationError,
@@ -46,12 +49,10 @@ export type ErrorFallbackProps = {
   showDetails?: boolean;
 };
 
+const DEFAULT_ICON: SpriteIconName = "alert-circle";
+
 /**
  * エラー時に表示するフォールバックUIコンポーネント
- *
- * @remarks
- * TypeScript v5推奨: React.FCではなく関数宣言を使用
- * より良い型推論とgenericsサポートのため
  */
 export function ErrorFallback({
   error,
@@ -60,14 +61,20 @@ export function ErrorFallback({
   description,
   showDetails = import.meta.env.MODE === "development",
 }: ErrorFallbackProps) {
-  // エラータイプに応じたタイトルとメッセージを取得
-  const getErrorInfo = () => {
+  type ErrorInfo = {
+    title: string;
+    description: string;
+    icon: SpriteIconName;
+    variant: "default" | "destructive";
+  };
+
+  const getErrorInfo = (): ErrorInfo => {
     if (title && description) {
       return {
         title,
         description,
-        icon: AlertCircle,
-        variant: "destructive" as const,
+        icon: DEFAULT_ICON,
+        variant: "destructive",
       };
     }
 
@@ -76,8 +83,8 @@ export function ErrorFallback({
         title: "ネットワークエラー",
         description:
           "ネットワーク接続に問題が発生しました。インターネット接続を確認してください。",
-        icon: AlertTriangle,
-        variant: "destructive" as const,
+        icon: "alert-triangle",
+        variant: "destructive",
       };
     }
 
@@ -90,8 +97,8 @@ export function ErrorFallback({
       return {
         title: "入力エラー",
         description: fieldErrors || "入力内容を確認してください。",
-        icon: AlertCircle,
-        variant: "destructive" as const,
+        icon: DEFAULT_ICON,
+        variant: "destructive",
       };
     }
 
@@ -99,8 +106,8 @@ export function ErrorFallback({
       return {
         title: "権限エラー",
         description: "この操作を実行する権限がありません。",
-        icon: AlertCircle,
-        variant: "destructive" as const,
+        icon: DEFAULT_ICON,
+        variant: "destructive",
       };
     }
 
@@ -109,24 +116,21 @@ export function ErrorFallback({
         title: "エラーが発生しました",
         description:
           "予期しないエラーが発生しました。しばらくしてから再度お試しください。",
-        icon: AlertCircle,
-        variant: "destructive" as const,
+        icon: DEFAULT_ICON,
+        variant: "destructive",
       };
     }
 
-    // 標準のエラー
     return {
       title: "エラーが発生しました",
       description: error.message || "予期しないエラーが発生しました。",
-      icon: AlertCircle,
-      variant: "destructive" as const,
+      icon: DEFAULT_ICON,
+      variant: "destructive",
     };
   };
 
   const errorInfo = getErrorInfo();
-  const Icon = errorInfo.icon;
 
-  // ホームページに戻る処理
   const handleGoHome = () => {
     window.location.href = "/";
   };
@@ -136,7 +140,11 @@ export function ErrorFallback({
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex items-center space-x-2">
-            <Icon aria-hidden className="h-6 w-6 text-destructive" role="img" />
+            <SpriteIcon
+              aria-label="エラーアイコン"
+              className="h-6 w-6 text-destructive"
+              name={errorInfo.icon}
+            />
             <h1 className="font-bold text-2xl">{errorInfo.title}</h1>
           </div>
         </CardHeader>
@@ -148,7 +156,6 @@ export function ErrorFallback({
             </AlertDescription>
           </Alert>
 
-          {/* 開発環境でエラー詳細を表示 */}
           {showDetails && error.stack && (
             <div className="mt-4 rounded-lg bg-muted p-4">
               <h2 className="mb-2 font-semibold text-sm">エラー詳細</h2>
@@ -161,11 +168,11 @@ export function ErrorFallback({
 
         <CardFooter className="flex gap-2">
           <Button className="flex-1" onClick={reset} variant="default">
-            <RefreshCw className="mr-2 h-4 w-4" />
+            <SpriteIcon className="mr-2 h-4 w-4" decorative name="refresh-cw" />
             再試行
           </Button>
           <Button className="flex-1" onClick={handleGoHome} variant="outline">
-            <Home className="mr-2 h-4 w-4" />
+            <SpriteIcon className="mr-2 h-4 w-4" decorative name="home" />
             ホームに戻る
           </Button>
         </CardFooter>
@@ -174,12 +181,6 @@ export function ErrorFallback({
   );
 }
 
-/**
- * シンプルなエラーフォールバック（最小限のUI）
- *
- * @remarks
- * TypeScript v5推奨: React.FCではなく関数宣言を使用
- */
 export function SimpleErrorFallback({
   error,
   reset,
@@ -189,7 +190,11 @@ export function SimpleErrorFallback({
 }) {
   return (
     <div className="flex min-h-[400px] flex-col items-center justify-center p-8">
-      <AlertCircle className="mb-4 h-12 w-12 text-destructive" />
+      <SpriteIcon
+        className="mb-4 h-12 w-12 text-destructive"
+        decorative
+        name="alert-circle"
+      />
       <h2 className="mb-2 font-semibold text-xl">エラーが発生しました</h2>
       <p className="mb-6 max-w-md text-center text-muted-foreground">
         {error.message || "予期しないエラーが発生しました。"}
@@ -200,8 +205,3 @@ export function SimpleErrorFallback({
     </div>
   );
 }
-
-/**
- * デフォルトのErrorFallbackコンポーネント
- */
-export default ErrorFallback;
