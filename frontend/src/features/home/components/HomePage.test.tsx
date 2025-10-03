@@ -120,12 +120,17 @@ describe("HomePage", () => {
         .getQueryCache()
         .find({ queryKey: queryKeys.home.dashboard() });
 
-      expect(cachedQuery?.options.staleTime).toBe(
+      const cachedOptions = cachedQuery?.options as
+        | {
+            staleTime?: number;
+            gcTime?: number;
+          }
+        | undefined;
+
+      expect(cachedOptions?.staleTime).toBe(
         QUERY_CONFIG.homeDashboard.staleTime
       );
-      expect(cachedQuery?.options.gcTime).toBe(
-        QUERY_CONFIG.homeDashboard.gcTime
-      );
+      expect(cachedOptions?.gcTime).toBe(QUERY_CONFIG.homeDashboard.gcTime);
     });
   });
 

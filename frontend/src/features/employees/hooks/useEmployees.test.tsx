@@ -159,9 +159,14 @@ describe("useEmployees", () => {
       .getQueryCache()
       .find({ queryKey: EMPLOYEES_QUERY_KEY });
 
-    expect(cachedQuery?.options.staleTime).toBe(
-      QUERY_CONFIG.employees.staleTime
-    );
-    expect(cachedQuery?.options.gcTime).toBe(QUERY_CONFIG.employees.gcTime);
+    const cachedOptions = cachedQuery?.options as
+      | {
+          staleTime?: number;
+          gcTime?: number;
+        }
+      | undefined;
+
+    expect(cachedOptions?.staleTime).toBe(QUERY_CONFIG.employees.staleTime);
+    expect(cachedOptions?.gcTime).toBe(QUERY_CONFIG.employees.gcTime);
   });
 });

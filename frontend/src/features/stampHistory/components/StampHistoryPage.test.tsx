@@ -7,8 +7,10 @@ import { fetchStampHistory } from "@/features/stampHistory/api";
 import { queryKeys } from "@/shared/utils/queryUtils";
 import { StampHistoryPage } from "./StampHistoryPage";
 
+type StampHistoryApiModule = typeof import("@/features/stampHistory/api");
+
 vi.mock("@/features/stampHistory/api", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = (await importOriginal()) as StampHistoryApiModule;
   return {
     ...actual,
     fetchStampHistory: vi.fn(async () => ({
@@ -18,7 +20,7 @@ vi.mock("@/features/stampHistory/api", async (importOriginal) => {
       selectedYear: "2025",
       selectedMonth: "10",
     })),
-  };
+  } satisfies StampHistoryApiModule;
 });
 
 describe("StampHistoryPage", () => {
@@ -51,10 +53,15 @@ describe("StampHistoryPage", () => {
       .getQueryCache()
       .find({ queryKey: queryKeys.stampHistory.list() });
 
-    expect(cachedQuery?.options.staleTime).toBe(
-      QUERY_CONFIG.stampHistory.staleTime
-    );
-    expect(cachedQuery?.options.gcTime).toBe(QUERY_CONFIG.stampHistory.gcTime);
+    const cachedOptions = cachedQuery?.options as
+      | {
+          staleTime?: number;
+          gcTime?: number;
+        }
+      | undefined;
+
+    expect(cachedOptions?.staleTime).toBe(QUERY_CONFIG.stampHistory.staleTime);
+    expect(cachedOptions?.gcTime).toBe(QUERY_CONFIG.stampHistory.gcTime);
   });
 
   it("renders the heading after data loads", async () => {
