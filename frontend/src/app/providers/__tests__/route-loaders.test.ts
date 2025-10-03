@@ -70,7 +70,7 @@ describe("route loaders", () => {
       staleTime: QUERY_CONFIG.employees.staleTime,
       gcTime: QUERY_CONFIG.employees.gcTime,
     });
-    expect(fetchEmployees).toHaveBeenCalledWith(false);
+    expect(fetchEmployees).toHaveBeenCalledWith();
   });
 
   it("prefetches stamp history data", async () => {

@@ -86,12 +86,8 @@ describe("EmployeeListPage Lazy Loading", () => {
     );
 
     // Wait for lazy component to load and render
-    await waitFor(
-      () => {
-        expect(screen.getByText("従業員管理")).toBeInTheDocument();
-      },
-      { timeout: 3000 }
-    );
+    const heading = await screen.findByText("従業員管理", {}, { timeout: 3000 });
+    expect(heading).toBeInTheDocument();
 
     // Fallback should be removed
     expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
