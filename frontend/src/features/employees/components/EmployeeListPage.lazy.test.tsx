@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { lazy, type ReactNode, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -86,7 +86,11 @@ describe("EmployeeListPage Lazy Loading", () => {
     );
 
     // Wait for lazy component to load and render
-    const heading = await screen.findByText("従業員管理", {}, { timeout: 3000 });
+    const heading = await screen.findByText(
+      "従業員管理",
+      {},
+      { timeout: 3000 }
+    );
     expect(heading).toBeInTheDocument();
 
     // Fallback should be removed
