@@ -1,5 +1,57 @@
 # Steering Documents Changelog
 
+## 2025-10-03 (Update 14)
+
+### Updated Documents
+- `product.md` - React Query Route Loader統合の完了状態を追加
+- `tech.md` - Route Loader統合の技術詳細を追加
+- `structure.md` - app/providersディレクトリ構造とemployee hooksの更新
+
+### Key Changes
+
+#### React Query Route Loader統合（PR #27マージ完了）
+- **ルート遷移時のデータプリフェッチング最適化**
+  - 各ルートに特化したローダー関数の実装
+  - QueryClient.prefetchQueryによる事前データ取得
+  - ナビゲーション前のデータ準備によるUX向上
+
+- **実装詳細**
+  - `app/providers/routeLoaders.ts`: ルートローダー定義
+  - `app/providers/AppProviders.tsx`: プロバイダー統合
+  - 従業員、ホーム、打刻履歴ページへの適用
+
+- **テストカバレッジの強化**
+  - 91件の新規テスト追加
+  - ルートローダーの動作検証
+  - 型安全性の向上とリンターエラーの修正
+
+#### テストファイルのクリーンアップ
+- 不要なテストファイルの削除
+- テストの型安全性向上
+- Biomeリンターエラーの包括的修正
+
+#### 削除されたファイル
+- `AGENTS.md`: 不要なドキュメント
+- `TYPESCRIPT_V5_REFACTORING.md`: 完了したリファクタリング記録
+- `frontend/src/types/api-routes.ts`: 不要な型定義
+- `frontend/src/types/branded.ts`: 統合済みの型定義
+
+### Technical Achievements
+- **パフォーマンス**: ルート遷移時の体感速度向上
+- **UX**: データロード待機時間の削減
+- **保守性**: テストカバレッジの向上
+- **型安全性**: TypeScriptエラーの完全解決
+
+### Impact
+- **ナビゲーション高速化**: プリフェッチによる即座のページ表示
+- **開発効率**: 明確なルートローダーパターンの確立
+- **品質向上**: 包括的なテストによる信頼性向上
+
+### Note
+React Query 5のprefetchQuery機能を活用し、SPAのナビゲーション体験を大幅に改善。これによりサーバーサイドレンダリングに近いUXをSPAで実現。
+
+---
+
 ## 2025-10-02 (Update 13)
 
 ### Updated Documents

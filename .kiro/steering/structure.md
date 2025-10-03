@@ -205,7 +205,12 @@ frontend/
 │   ├── app/          # メインアプリケーション
 │   │   ├── config/       # アプリケーション設定
 │   │   │   ├── enhanced-query-client.ts  # 拡張QueryClient設定
-│   │   │   └── enhanced-query-client.test.ts
+│   │   │   ├── enhanced-query-client.test.ts
+│   │   │   └── queryClient.ts            # QueryClient基本設定
+│   │   ├── providers/    # コンテキストプロバイダー
+│   │   │   ├── AppProviders.tsx          # アプリケーションプロバイダー統合
+│   │   │   ├── routeLoaders.ts           # ルートローダー定義
+│   │   │   └── __tests__/                # プロバイダーテスト
 │   │   ├── App.css
 │   │   ├── App.test.tsx
 │   │   ├── App.tsx
@@ -235,7 +240,8 @@ frontend/
 │   │   │   │   ├── EmployeesPage.tsx  # 従業員一覧ページ（TanStack Table）
 │   │   │   │   └── columns.tsx         # DataTable列定義
 │   │   │   ├── hooks/
-│   │   │   │   └── useEmployees.ts     # 従業員データフック
+│   │   │   │   ├── useEmployees.ts           # 従業員データフック
+│   │   │   │   └── useEmployeeMutations.ts   # 従業員更新操作フック
 │   │   │   └── types/
 │   │   ├── home/     # ホーム画面
 │   │   │   ├── api/      # APIクライアント実装

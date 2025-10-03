@@ -36,6 +36,11 @@
   - Suspenseモードサポート（React 19統合）
   - queryOptions/mutationOptionsパターン採用（TypeScript v5対応）
   - グローバル型定義によるクエリキー型安全化
+  - **Route Loader統合**（2025-10-03）
+    - ルート遷移前のデータプリフェッチング
+    - 各ルートに特化したローダー関数
+    - QueryClient.prefetchQueryによる効率的なキャッシュ
+    - ナビゲーションのパフォーマンス向上
 - **TanStack Table**: 高性能テーブル/データグリッドライブラリ（v8.21.3）
   - Headless UIパターンによる完全なカスタマイズ性
   - ソート、フィルタリング、ページネーション機能
