@@ -117,7 +117,7 @@ describe("useEmployees", () => {
 
     // Assert: クエリキーが正しいことを確認（内部的にはqueryKeyプロパティで確認）
     // この確認は実装側でqueryKeyが正しく設定されているかのテスト
-    expect(employeeApi.fetchEmployees).toHaveBeenCalledWith(false);
+    expect(employeeApi.fetchEmployees).toHaveBeenCalledWith();
   });
 
   it("should have correct staleTime configuration", async () => {
