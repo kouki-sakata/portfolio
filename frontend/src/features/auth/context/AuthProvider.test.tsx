@@ -33,9 +33,13 @@ vi.mock("@/features/auth/api/login");
 vi.mock("@/features/auth/api/logout");
 vi.mock("@/features/auth/api/session");
 vi.mock("@/features/auth/services/SessionManager");
-vi.mock("@/app/config/queryClient", () => ({
-  configureQueryClientErrorHandler: vi.fn(),
-}));
+vi.mock("@/app/config/queryClient", async (importOriginal) => {
+  const actual = await importOriginal();
+  return {
+    ...actual,
+    configureQueryClientErrorHandler: vi.fn(),
+  };
+});
 
 describe("AuthProvider", () => {
   let queryClient: QueryClient;

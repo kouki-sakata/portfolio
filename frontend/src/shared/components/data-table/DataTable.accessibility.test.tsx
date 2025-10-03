@@ -37,6 +37,8 @@ const columns: ColumnDef<Person>[] = [
   },
 ];
 
+const createUser = () => userEvent.setup({ delay: null });
+
 describe("DataTable Accessibility", () => {
   it("should have proper ARIA labels for interactive elements", () => {
     render(
@@ -61,7 +63,7 @@ describe("DataTable Accessibility", () => {
   });
 
   it("should support keyboard navigation", async () => {
-    const user = userEvent.setup();
+    const user = createUser();
 
     render(<DataTable columns={columns} data={mockData} enableGlobalFilter />);
 
@@ -113,7 +115,7 @@ describe("DataTable Accessibility", () => {
   });
 
   it("should announce changes to screen readers", async () => {
-    const user = userEvent.setup();
+    const user = createUser();
 
     render(<DataTable columns={columns} data={mockData} enableGlobalFilter />);
 
@@ -128,7 +130,7 @@ describe("DataTable Accessibility", () => {
   });
 
   it("should have focus indicators", async () => {
-    const user = userEvent.setup();
+    const user = createUser();
 
     render(
       <DataTable columns={columns} data={mockData} enableColumnVisibility />
@@ -186,7 +188,7 @@ describe("DataTable Accessibility", () => {
   });
 
   it("should have keyboard support for clickable rows", async () => {
-    const user = userEvent.setup();
+    const user = createUser();
     const onRowClick = vi.fn();
 
     render(
