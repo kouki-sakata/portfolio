@@ -10,6 +10,7 @@ type MockCanvas = {
 };
 
 const originalImageConstructor = globalThis.Image;
+const imageConstructorKey = "Image" as const;
 
 describe("imageOptimization utilities", () => {
   let canvasMock: MockCanvas;
@@ -52,29 +53,28 @@ describe("imageOptimization utilities", () => {
         this.height = 800;
       }
 
+      get src(): string {
+        return this._src;
+      }
+
       set src(value: string) {
         this._src = value;
         queueMicrotask(() => {
           this.onload?.();
         });
       }
-
-      get src(): string {
-        return this._src;
-      }
     }
 
-    (globalThis as { Image: typeof Image }).Image =
-      MockImage as unknown as typeof Image;
+    const mockImageConstructor = MockImage as unknown as typeof Image;
+    Reflect.set(globalThis, imageConstructorKey, mockImageConstructor);
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
     if (originalImageConstructor) {
-      (globalThis as { Image: typeof Image }).Image = originalImageConstructor;
+      Reflect.set(globalThis, imageConstructorKey, originalImageConstructor);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-      (globalThis as { Image?: typeof Image }).Image = undefined;
+      Reflect.deleteProperty(globalThis, imageConstructorKey);
     }
   });
 

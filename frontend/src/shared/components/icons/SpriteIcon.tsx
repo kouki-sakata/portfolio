@@ -92,7 +92,7 @@ export const spriteIconDefinitions: Record<SpriteIconName, IconNode> =
 const renderIconNode = (node: IconNode) =>
   node.map(([tagName, attributes]) => {
     const elementKey =
-      attributes["key"] ?? attributes["d"] ?? attributes["x"] ?? tagName;
+      attributes.key ?? attributes.d ?? attributes.x ?? tagName;
 
     return createElement(tagName, {
       ...sanitizeAttributes(attributes),

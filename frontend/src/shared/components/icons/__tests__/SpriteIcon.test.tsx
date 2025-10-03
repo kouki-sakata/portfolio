@@ -20,11 +20,11 @@ describe("SVG sprite system", () => {
     const symbols = screen.getAllByTestId(/sprite-symbol-/i);
     expect(symbols).toHaveLength(definedEntries.length);
 
-    definedEntries.forEach(([name]) => {
+    for (const [name] of definedEntries) {
       const symbolId = `${ICON_SYMBOL_PREFIX}${name}`;
       const symbol = screen.getByTestId(`sprite-symbol-${symbolId}`);
       expect(symbol.tagName.toLowerCase()).toBe("symbol");
-    });
+    }
   });
 
   it("SpriteIconコンポーネントが指定したシンボルを使用する", () => {

@@ -96,8 +96,11 @@ describe("LazyImage", () => {
             rootBounds: null,
           } satisfies IntersectionObserverEntry,
         ],
-        new IntersectionObserver(() => {})
+        new IntersectionObserver(() => {
+          /* noop */
+        })
       );
+      await Promise.resolve();
     });
 
     expect(img.getAttribute("src")).toBe(optimizedSrc);
@@ -137,8 +140,11 @@ describe("LazyImage", () => {
             rootBounds: null,
           } satisfies IntersectionObserverEntry,
         ],
-        new IntersectionObserver(() => {})
+        new IntersectionObserver(() => {
+          /* noop */
+        })
       );
+      await Promise.resolve();
     });
 
     expect(img.getAttribute("src")).toBe("/img/dashboard.png");

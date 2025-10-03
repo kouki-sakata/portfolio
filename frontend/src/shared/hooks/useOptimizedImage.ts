@@ -97,7 +97,9 @@ export const useOptimizedImage = ({
       }
     };
 
-    void run();
+    run().catch(() => {
+      // 例外は上記でリカバリー済みのためここでは握り潰す
+    });
 
     return () => {
       cancelled = true;

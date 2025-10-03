@@ -25,7 +25,7 @@ export type LazyImageProps = {
   quality?: number;
 } & Pick<
   ImgHTMLAttributes<HTMLImageElement>,
-  "className" | "width" | "height" | "onLoad" | "onError" | "sizes"
+  "className" | "width" | "height" | "sizes"
 >;
 
 const isBrowserEnvironment = () => typeof window !== "undefined";
@@ -39,8 +39,6 @@ export const LazyImage = ({
   quality,
   width,
   height,
-  onLoad,
-  onError,
   sizes,
 }: LazyImageProps) => {
   const imageRef = useRef<HTMLImageElement | null>(null);
@@ -57,12 +55,12 @@ export const LazyImage = ({
 
   const handleIntersection = useCallback<IntersectionObserverCallback>(
     (entries, observer) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         if (entry.isIntersecting) {
           setIsVisible(true);
           observer.disconnect();
         }
-      });
+      }
     },
     []
   );
@@ -113,14 +111,13 @@ export const LazyImage = ({
   );
 
   return (
+    // biome-ignore lint/performance/noImgElement: HTMLImageElement provides required semantics outside Next.js.
     <img
       alt={alt}
       className={cn("transition-opacity duration-300", className)}
       decoding="async"
       height={height}
       loading="lazy"
-      onError={onError}
-      onLoad={onLoad}
       ref={imageRef}
       sizes={sizes}
       src={currentSrc}
