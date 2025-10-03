@@ -16,9 +16,10 @@ import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
-import type {
-  StampHistoryEntry,
-  StampHistoryResponse,
+import {
+  emptyMonthlySummary,
+  type StampHistoryEntry,
+  type StampHistoryResponse,
 } from "@/features/stampHistory/types";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
@@ -100,6 +101,7 @@ export const StampHistoryPage = () => {
     years: [],
     months: [],
     entries: [],
+    summary: { ...emptyMonthlySummary },
   };
 
   const selectedYear: string = filters.year ?? data.selectedYear;
@@ -173,7 +175,7 @@ export const StampHistoryPage = () => {
       </form>
 
       <SuspenseWrapper fallbackType="skeleton-card">
-        <MonthlyStatsCard entries={data.entries} />
+        <MonthlyStatsCard entries={data.entries} summary={data.summary} />
       </SuspenseWrapper>
 
       <Tabs
