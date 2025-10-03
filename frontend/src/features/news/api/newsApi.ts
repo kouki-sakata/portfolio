@@ -12,14 +12,22 @@ import type {
 
 const DEFAULT_POLL_INTERVAL_MS = 30_000;
 
+type NewsQueryParams = {
+  category?: string;
+  published?: boolean;
+  page?: number;
+  size?: number;
+  search?: string;
+};
+
 const buildListParams = (
   filters?: NewsListFilters
-): Record<string, string | number | boolean> | undefined => {
+): NewsQueryParams | undefined => {
   if (!filters) {
     return;
   }
 
-  const params: Record<string, string | number | boolean> = {};
+  const params: NewsQueryParams = {};
 
   if (filters.category?.trim()) {
     params.category = filters.category.trim();

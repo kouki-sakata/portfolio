@@ -9,6 +9,21 @@ import type {
   LogSearchResponse,
 } from "../types";
 
+type LogQueryParams = {
+  keyword?: string;
+  levels?: string;
+  employeeIds?: string;
+  operations?: string;
+  from?: string;
+  to?: string;
+  hasErrors?: boolean;
+  ipAddresses?: string;
+  page?: number;
+  size?: number;
+  sort?: string;
+  format?: LogExportFormat;
+};
+
 const DEFAULT_PAGE_SIZE = 50;
 const ABSOLUTE_URL_PATTERN = /^https?:/i;
 
@@ -28,12 +43,12 @@ const joinValues = (
 
 const buildSearchParams = (
   filters?: LogSearchFilters | LogExportFilters
-): Record<string, string | number | boolean> | undefined => {
+): LogQueryParams | undefined => {
   if (!filters) {
     return;
   }
 
-  const params: Record<string, string | number | boolean> = {};
+  const params: LogQueryParams = {};
 
   if (filters.keyword?.trim()) {
     params.keyword = filters.keyword.trim();
@@ -99,7 +114,7 @@ const resolveApiUrl = (path: string): string => {
     return new URL(normalizedPath, base).toString();
   }
 
-  const origin = window?.location ? window.location.origin : "http://localhost";
+  const origin = globalThis.window?.location?.origin ?? "http://localhost";
 
   const base = apiBaseUrl.startsWith("/") ? apiBaseUrl.slice(1) : apiBaseUrl;
   const baseWithSlash = base.length > 0 ? `${base}/` : "";
@@ -107,16 +122,19 @@ const resolveApiUrl = (path: string): string => {
   return new URL(`${baseWithSlash}${normalizedPath}`, origin).toString();
 };
 
-const buildQueryString = (
-  params?: Record<string, string | number | boolean>
-): string => {
+const buildQueryString = (params?: LogQueryParams): string => {
   if (!params) {
     return "";
   }
 
   const searchParams = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    searchParams.set(key, String(value));
+  for (const [key, value] of Object.entries(params) as [
+    keyof LogQueryParams,
+    LogQueryParams[keyof LogQueryParams],
+  ][]) {
+    if (value !== undefined) {
+      searchParams.set(key, String(value));
+    }
   }
 
   return searchParams.toString();
@@ -138,7 +156,7 @@ export const searchLogs = (
     ...filters,
   };
 
-  const params = buildSearchParams(effectiveFilters) ?? {
+  const params: LogQueryParams = buildSearchParams(effectiveFilters) ?? {
     page: 1,
     size: DEFAULT_PAGE_SIZE,
   };
