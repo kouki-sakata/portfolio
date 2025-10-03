@@ -33,7 +33,7 @@ export const EMPLOYEES_QUERY_KEY = queryKeys.employees.list();
 export function useEmployees() {
   return useQuery<EmployeeListResponse>({
     queryKey: EMPLOYEES_QUERY_KEY,
-    queryFn: () => fetchEmployees(false),
+    queryFn: () => fetchEmployees(),
     staleTime: QUERY_CONFIG.employees.staleTime,
     gcTime: QUERY_CONFIG.employees.gcTime,
   });

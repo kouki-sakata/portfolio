@@ -148,7 +148,7 @@ export function useDeleteEmployees() {
   return useMutation({
     mutationFn: async (employeeIds: number | number[]) => {
       const ids = Array.isArray(employeeIds) ? employeeIds : [employeeIds];
-      await Promise.all(ids.map((id) => deleteEmployee(id)));
+      await deleteEmployee(ids);
     },
     onMutate: async (employeeIds) => {
       const ids = Array.isArray(employeeIds) ? employeeIds : [employeeIds];
