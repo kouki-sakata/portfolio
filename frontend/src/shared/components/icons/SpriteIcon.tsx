@@ -37,7 +37,13 @@ export const ICON_SYMBOL_PREFIX = "icon-" as const;
 
 const DEFAULT_VIEW_BOX = "0 0 24 24";
 
-const sanitizeAttributes = (attributes: Record<string, string>) => {
+type IconNodeAttributes = Record<string, string | number | undefined> & {
+  key?: string | number;
+  d?: string;
+  x?: string | number;
+};
+
+const sanitizeAttributes = (attributes: IconNodeAttributes) => {
   const { key: _omitKey, ...rest } = attributes;
   return rest;
 };
@@ -91,11 +97,19 @@ export const spriteIconDefinitions: Record<SpriteIconName, IconNode> =
 
 const renderIconNode = (node: IconNode) =>
   node.map(([tagName, attributes]) => {
+    const normalizedAttributes = attributes as IconNodeAttributes;
+    const candidateKey =
+      normalizedAttributes.key ??
+      normalizedAttributes.d ??
+      normalizedAttributes.x ??
+      tagName;
     const elementKey =
-      attributes.key ?? attributes.d ?? attributes.x ?? tagName;
+      typeof candidateKey === "string" || typeof candidateKey === "number"
+        ? candidateKey
+        : tagName;
 
     return createElement(tagName, {
-      ...sanitizeAttributes(attributes),
+      ...sanitizeAttributes(normalizedAttributes),
       key: elementKey,
     });
   });
