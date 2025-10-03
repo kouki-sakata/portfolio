@@ -19,6 +19,13 @@ vi.mock("@/features/stampHistory/api", async (importOriginal) => {
       months: ["10"],
       selectedYear: "2025",
       selectedMonth: "10",
+      summary: {
+        totalWorkingDays: 0,
+        presentDays: 0,
+        absentDays: 0,
+        totalWorkingHours: 0,
+        averageWorkingHours: 0,
+      },
     })),
   } satisfies StampHistoryApiModule;
 });

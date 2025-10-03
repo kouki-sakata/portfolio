@@ -82,7 +82,7 @@ export const fetchStampHistory = async (
     );
     return mapResponse(response);
   } catch (error) {
-    handleApiError(error);
+    return handleApiError(error);
   }
 };
 
@@ -91,18 +91,18 @@ export const updateStamp = async (
 ): Promise<void> => {
   const { id, inTime, outTime } = payload;
 
-  const data: Record<string, string> = {};
-  if (inTime) {
+  const data: { inTime?: string; outTime?: string } = {};
+  if (inTime && inTime.length > 0) {
     data.inTime = inTime;
   }
-  if (outTime) {
+  if (outTime && outTime.length > 0) {
     data.outTime = outTime;
   }
 
   try {
     await api.put<void>(`/api/stamp/${id}`, { data });
   } catch (error) {
-    handleApiError(error);
+    return handleApiError(error);
   }
 };
 
@@ -112,7 +112,7 @@ export const deleteStamp = async (
   try {
     await api.delete<void>(`/api/stamp/${payload.id}`);
   } catch (error) {
-    handleApiError(error);
+    return handleApiError(error);
   }
 };
 
