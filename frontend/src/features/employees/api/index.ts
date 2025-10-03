@@ -142,7 +142,7 @@ export const toEmployeeApiErrorResponse = (
   fieldErrors: normalizeFieldErrors(error.details),
 });
 
-export const fetchEmployees = async (
+export const fetchEmployees = (
   query?: EmployeeListQuery
 ): Promise<EmployeeListResponse> => {
   const params = buildListParams(query);
@@ -155,7 +155,7 @@ export const fetchEmployees = async (
   );
 };
 
-export const createEmployee = async (
+export const createEmployee = (
   payload: EmployeeUpsertInput & { password: string }
 ): Promise<EmployeeSummary> => {
   const data = buildUpsertPayload(payload);
@@ -163,7 +163,7 @@ export const createEmployee = async (
   return api.post<EmployeeSummary>("/api/employees", { data });
 };
 
-export const updateEmployee = async (
+export const updateEmployee = (
   employeeId: number,
   payload: EmployeeUpsertInput & { password?: string }
 ): Promise<EmployeeSummary> => {
