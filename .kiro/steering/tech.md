@@ -54,7 +54,7 @@
   - Button、Form、Input、Label、Toast等の基本UIコンポーネント実装済み
   - カスタムカードコンポーネント（StampCard、NewsCard）実装済み
   - DataTableコンポーネント（TanStack Table統合）実装済み
-- **React Hook Form**: フォーム状態管理（v7.53.0）
+- **React Hook Form**: フォーム状態管理（v7.63.0）
   - Zod統合によるランタイムバリデーション
   - 高パフォーマンスな非制御コンポーネント
 - **Tailwind CSS 4**: ユーティリティファーストCSS（v4.1.13）
