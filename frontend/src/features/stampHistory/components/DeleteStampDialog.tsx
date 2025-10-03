@@ -13,6 +13,7 @@ import {
 import { deleteStamp } from "@/features/stampHistory/api";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { toast } from "@/hooks/use-toast";
+import { queryKeys } from "@/shared/utils/queryUtils";
 
 type DeleteStampDialogProps = {
   entry: StampHistoryEntry | null;
@@ -31,16 +32,18 @@ export const DeleteStampDialog = ({
     mutationFn: deleteStamp,
     onMutate: async (variables) => {
       // キャンセルして進行中のリフェッチを防ぐ
-      await queryClient.cancelQueries({ queryKey: ["stamp-history"] });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
 
       // 前の値をスナップショット
       const previousData = queryClient.getQueriesData({
-        queryKey: ["stamp-history"],
+        queryKey: queryKeys.stampHistory.all,
       });
 
       // 楽観的更新（削除対象エントリを除外）
       queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
-        { queryKey: ["stamp-history"] },
+        { queryKey: queryKeys.stampHistory.all },
         (old) => {
           if (!old?.entries) {
             return old;
@@ -76,7 +79,9 @@ export const DeleteStampDialog = ({
     },
     onSettled: () => {
       // 成功・失敗に関わらずキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ["stamp-history"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
     },
   });
 

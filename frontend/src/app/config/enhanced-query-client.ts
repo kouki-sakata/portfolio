@@ -30,20 +30,25 @@ type QueryConfigItem = {
  * 型の制約を満たしつつ具体的な値の型を保持
  */
 export const QUERY_CONFIG = {
-  // 認証関連: セッション情報など、比較的短いキャッシュ
   auth: {
-    staleTime: 5 * 60 * 1000, // 5分
-    gcTime: 10 * 60 * 1000, // 10分（旧cacheTime）
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
   },
-  // マスターデータ: 従業員マスタなど、変更頻度が低いデータ
-  master: {
-    staleTime: 30 * 60 * 1000, // 30分
-    gcTime: 60 * 60 * 1000, // 60分
+  employees: {
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   },
-  // 動的データ: 打刻履歴など、リアルタイム性が求められるデータ
+  homeDashboard: {
+    staleTime: 60 * 1000,
+    gcTime: 5 * 60 * 1000,
+  },
+  stampHistory: {
+    staleTime: 2 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  },
   dynamic: {
-    staleTime: 30 * 1000, // 30秒
-    gcTime: 5 * 60 * 1000, // 5分
+    staleTime: 30 * 1000,
+    gcTime: 5 * 60 * 1000,
   },
 } as const satisfies Record<string, QueryConfigItem>;
 

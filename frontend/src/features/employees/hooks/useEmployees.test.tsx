@@ -3,9 +3,10 @@ import { renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { describe, expect, it, vi } from "vitest";
 
+import { QUERY_CONFIG } from "@/app/config/queryClient";
 import type { EmployeeListResponse } from "@/features/employees/types";
 import * as employeeApi from "../api";
-import { useEmployees } from "./useEmployees";
+import { EMPLOYEES_QUERY_KEY, useEmployees } from "./useEmployees";
 
 // APIのモック
 vi.mock("../api");
@@ -48,7 +49,7 @@ function createWrapper() {
       <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
     );
   }
-  return Wrapper;
+  return { wrapper: Wrapper, queryClient };
 }
 
 describe("useEmployees", () => {
@@ -57,8 +58,10 @@ describe("useEmployees", () => {
     vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
 
     // Act: フックをレンダリング
+    const { wrapper: Wrapper } = createWrapper();
+
     const { result } = renderHook(() => useEmployees(), {
-      wrapper: createWrapper(),
+      wrapper: Wrapper,
     });
 
     // Assert: 初期状態の確認
@@ -83,8 +86,10 @@ describe("useEmployees", () => {
     );
 
     // Act
+    const { wrapper: Wrapper } = createWrapper();
+
     const { result } = renderHook(() => useEmployees(), {
-      wrapper: createWrapper(),
+      wrapper: Wrapper,
     });
 
     // Wait: エラー状態を待つ
@@ -101,8 +106,10 @@ describe("useEmployees", () => {
     vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
 
     // Act
+    const { wrapper: Wrapper } = createWrapper();
+
     const { result } = renderHook(() => useEmployees(), {
-      wrapper: createWrapper(),
+      wrapper: Wrapper,
     });
 
     // Wait
@@ -118,8 +125,10 @@ describe("useEmployees", () => {
     vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
 
     // Act
+    const { wrapper: Wrapper } = createWrapper();
+
     const { result } = renderHook(() => useEmployees(), {
-      wrapper: createWrapper(),
+      wrapper: Wrapper,
     });
 
     // Wait
@@ -128,5 +137,36 @@ describe("useEmployees", () => {
     // Assert: staleTime設定により、データが新鮮な状態であることを確認
     // （30秒以内は再フェッチされない）
     expect(result.current.isStale).toBe(false);
+  });
+
+  it("applies employees cache timing configuration", async () => {
+    vi.mocked(employeeApi.fetchEmployees).mockResolvedValue(mockEmployees);
+
+    const { wrapper: Wrapper, queryClient } = createWrapper();
+
+    renderHook(() => useEmployees(), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => {
+      const query = queryClient
+        .getQueryCache()
+        .find({ queryKey: EMPLOYEES_QUERY_KEY });
+      expect(query?.state.status).toBe("success");
+    });
+
+    const cachedQuery = queryClient
+      .getQueryCache()
+      .find({ queryKey: EMPLOYEES_QUERY_KEY });
+
+    const cachedOptions = cachedQuery?.options as
+      | {
+          staleTime?: number;
+          gcTime?: number;
+        }
+      | undefined;
+
+    expect(cachedOptions?.staleTime).toBe(QUERY_CONFIG.employees.staleTime);
+    expect(cachedOptions?.gcTime).toBe(QUERY_CONFIG.employees.gcTime);
   });
 });

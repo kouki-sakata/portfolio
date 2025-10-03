@@ -181,7 +181,7 @@
     - プリロード戦略を最適化
     - _Requirements: 7.2, 6.5_
 
-- [ ] 
+- [x] 
     20. React Query キャッシュ最適化
 
     - staleTimeとcacheTimeを機能別に調整

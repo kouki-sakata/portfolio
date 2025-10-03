@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HomeRoute } from "@/features/home/routes/HomeRoute";
+import { queryKeys } from "@/shared/utils/queryUtils";
 
 describe("HomeRoute", () => {
   afterEach(() => {
@@ -14,7 +15,7 @@ describe("HomeRoute", () => {
       defaultOptions: { queries: { retry: false } },
     });
 
-    queryClient.setQueryData(["home", "overview"], {
+    queryClient.setQueryData(queryKeys.home.dashboard(), {
       employee: {
         id: 1,
         firstName: "太郎",

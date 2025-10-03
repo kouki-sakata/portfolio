@@ -12,6 +12,11 @@ import {
 
 import { queryClient } from "@/app/config/queryClient";
 import { AppLayout } from "@/app/layouts/AppLayout";
+import {
+  employeeAdminRouteLoader,
+  homeRouteLoader,
+  stampHistoryRouteLoader,
+} from "@/app/providers/routeLoaders";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionTimeoutNotification } from "@/features/auth/components/SessionTimeoutNotification";
@@ -114,9 +119,21 @@ const router = createBrowserRouter([
         path: "/",
         element: <AppLayout />,
         children: [
-          { index: true, element: <HomeRoute /> },
-          { path: "attendance", element: <HomeRoute /> },
-          { path: "stamp-history", element: <StampHistoryRoute /> },
+          {
+            index: true,
+            element: <HomeRoute />,
+            loader: () => homeRouteLoader(queryClient),
+          },
+          {
+            path: "attendance",
+            element: <HomeRoute />,
+            loader: () => homeRouteLoader(queryClient),
+          },
+          {
+            path: "stamp-history",
+            element: <StampHistoryRoute />,
+            loader: () => stampHistoryRouteLoader(queryClient),
+          },
           {
             path: "news",
             element: (
@@ -129,6 +146,7 @@ const router = createBrowserRouter([
           {
             path: "admin/employees",
             element: <EmployeeAdminRoute />,
+            loader: () => employeeAdminRouteLoader(queryClient),
           },
           {
             path: "admin/news",

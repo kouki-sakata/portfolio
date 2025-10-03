@@ -28,6 +28,7 @@ import {
   type StampHistoryEntry,
 } from "@/features/stampHistory/types";
 import { toast } from "@/hooks/use-toast";
+import { queryKeys } from "@/shared/utils/queryUtils";
 
 type EditStampDialogProps = {
   entry: StampHistoryEntry | null;
@@ -64,16 +65,18 @@ export const EditStampDialog = ({
     mutationFn: updateStamp,
     onMutate: async (variables) => {
       // キャンセルして進行中のリフェッチを防ぐ
-      await queryClient.cancelQueries({ queryKey: ["stamp-history"] });
+      await queryClient.cancelQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
 
       // 前の値をスナップショット
       const previousData = queryClient.getQueriesData({
-        queryKey: ["stamp-history"],
+        queryKey: queryKeys.stampHistory.all,
       });
 
       // 楽観的更新
       queryClient.setQueriesData<{ entries?: StampHistoryEntry[] }>(
-        { queryKey: ["stamp-history"] },
+        { queryKey: queryKeys.stampHistory.all },
         (old) => {
           if (!old?.entries) {
             return old;
@@ -117,7 +120,9 @@ export const EditStampDialog = ({
     },
     onSettled: () => {
       // 成功・失敗に関わらずキャッシュを無効化
-      queryClient.invalidateQueries({ queryKey: ["stamp-history"] });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
     },
   });
 

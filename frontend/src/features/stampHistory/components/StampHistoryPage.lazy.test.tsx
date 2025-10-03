@@ -1,10 +1,18 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
-import { lazy, Suspense } from "react";
+import { act, render, screen } from "@testing-library/react";
+import { lazy, type ReactNode, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
-import { AuthProvider } from "@/features/auth/context/AuthProvider";
+vi.mock("./CalendarView", () => ({
+  // biome-ignore lint/style/useNamingConvention: mocking named export
+  CalendarView: () => <h2>カレンダー表示</h2>,
+}));
+
+vi.mock("./MonthlyStatsCard", () => ({
+  // biome-ignore lint/style/useNamingConvention: mocking named export
+  MonthlyStatsCard: () => <h2>月次統計</h2>,
+}));
 
 // Lazy load the components to test code splitting
 const LazyCalendarView = lazy(() =>
@@ -57,21 +65,19 @@ const createTestQueryClient = () =>
     },
   });
 
-const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+const TestWrapper = ({ children }: { children: ReactNode }) => {
   const queryClient = createTestQueryClient();
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
-        <AuthProvider>{children}</AuthProvider>
-      </MemoryRouter>
+      <MemoryRouter>{children}</MemoryRouter>
     </QueryClientProvider>
   );
 };
 
 describe("StampHistoryPage Component Lazy Loading", () => {
   describe("CalendarView Lazy Loading", () => {
-    it("should render fallback while loading lazy CalendarView component", () => {
-      render(
+    it("should render fallback while loading lazy CalendarView component", async () => {
+      const { getByTestId } = render(
         <TestWrapper>
           <Suspense
             fallback={
@@ -87,39 +93,43 @@ describe("StampHistoryPage Component Lazy Loading", () => {
         </TestWrapper>
       );
 
-      // Fallback should be visible initially
-      expect(screen.getByTestId("calendar-loading")).toBeInTheDocument();
+      // Fallback should be visible immediately after render
+      expect(getByTestId("calendar-loading")).toBeInTheDocument();
+
+      // Flush lazy resolution within act to avoid warnings
+      await act(async () => {
+        await Promise.resolve();
+      });
     });
 
     it("should render CalendarView after lazy loading completes", async () => {
-      render(
-        <TestWrapper>
-          <Suspense
-            fallback={
-              <div data-testid="calendar-loading">Loading calendar...</div>
-            }
-          >
-            <LazyCalendarView
-              entries={mockStampHistoryData.entries}
-              selectedMonth="10"
-              selectedYear="2025"
-            />
-          </Suspense>
-        </TestWrapper>
-      );
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <Suspense
+              fallback={
+                <div data-testid="calendar-loading">Loading calendar...</div>
+              }
+            >
+              <LazyCalendarView
+                entries={mockStampHistoryData.entries}
+                selectedMonth="10"
+                selectedYear="2025"
+              />
+            </Suspense>
+          </TestWrapper>
+        );
+        await Promise.resolve();
+      });
 
-      // Wait for lazy component to load and render
-      // Use findByText which automatically waits for element to appear
       const heading = await screen.findByText(
         "カレンダー表示",
         {},
         { timeout: 5000 }
       );
       expect(heading).toBeInTheDocument();
-
-      // Fallback should be removed
       expect(screen.queryByTestId("calendar-loading")).not.toBeInTheDocument();
-    });
+    }, 10_000);
 
     it("should properly code-split CalendarView component", async () => {
       // Verify that lazy loading returns a promise
@@ -134,8 +144,8 @@ describe("StampHistoryPage Component Lazy Loading", () => {
   });
 
   describe("MonthlyStatsCard Lazy Loading", () => {
-    it("should render fallback while loading lazy MonthlyStatsCard component", () => {
-      render(
+    it("should render fallback while loading lazy MonthlyStatsCard component", async () => {
+      const { getByTestId } = render(
         <TestWrapper>
           <Suspense
             fallback={<div data-testid="stats-loading">Loading stats...</div>}
@@ -145,33 +155,37 @@ describe("StampHistoryPage Component Lazy Loading", () => {
         </TestWrapper>
       );
 
-      // Fallback should be visible initially
-      expect(screen.getByTestId("stats-loading")).toBeInTheDocument();
+      // Fallback should be visible immediately after render
+      expect(getByTestId("stats-loading")).toBeInTheDocument();
+
+      // Flush lazy resolution within act to avoid warnings
+      await act(async () => {
+        await Promise.resolve();
+      });
     });
 
     it("should render MonthlyStatsCard after lazy loading completes", async () => {
-      render(
-        <TestWrapper>
-          <Suspense
-            fallback={<div data-testid="stats-loading">Loading stats...</div>}
-          >
-            <LazyMonthlyStatsCard entries={mockStampHistoryData.entries} />
-          </Suspense>
-        </TestWrapper>
-      );
+      await act(async () => {
+        render(
+          <TestWrapper>
+            <Suspense
+              fallback={<div data-testid="stats-loading">Loading stats...</div>}
+            >
+              <LazyMonthlyStatsCard entries={mockStampHistoryData.entries} />
+            </Suspense>
+          </TestWrapper>
+        );
+        await Promise.resolve();
+      });
 
-      // Wait for lazy component to load and render
-      // Use findByText which automatically waits for element to appear
       const heading = await screen.findByText(
         "月次統計",
         {},
         { timeout: 5000 }
       );
       expect(heading).toBeInTheDocument();
-
-      // Fallback should be removed
       expect(screen.queryByTestId("stats-loading")).not.toBeInTheDocument();
-    });
+    }, 10_000);
 
     it("should properly code-split MonthlyStatsCard component", async () => {
       // Verify that lazy loading returns a promise

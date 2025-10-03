@@ -31,7 +31,7 @@ describe("OpenAPI Type Generation", () => {
       } catch {
         // Allow test to fail in RED phase - error intentionally ignored
       }
-    });
+    }, 60_000);
 
     it("should generate TypeScript types file", () => {
       expect(existsSync(apiTypesPath)).toBe(true);

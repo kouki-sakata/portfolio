@@ -1,7 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import { Edit, Trash2 } from "lucide-react";
-import { type FormEvent, lazy, useState } from "react";
+import { type FormEvent, lazy, useMemo, useState } from "react";
 
+import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
@@ -22,6 +23,7 @@ import type {
 } from "@/features/stampHistory/types";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 import { SuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
+import { queryKeys } from "@/shared/utils/queryUtils";
 
 // Lazy load heavy components for code splitting
 const CalendarView = lazy(() =>
@@ -38,8 +40,6 @@ const MonthlyStatsCard = lazy(() =>
   )
 );
 
-const STAMP_HISTORY_KEY = ["stamp-history"] as const;
-
 export const StampHistoryPage = () => {
   const [filters, setFilters] = useState<{ year?: string; month?: string }>({});
   const [selectedEntry, setSelectedEntry] = useState<StampHistoryEntry | null>(
@@ -49,9 +49,22 @@ export const StampHistoryPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
+  const activeFilters = useMemo(() => {
+    const normalized: { year?: string; month?: string } = {};
+    if (filters.year) {
+      normalized.year = filters.year;
+    }
+    if (filters.month) {
+      normalized.month = filters.month;
+    }
+    return normalized;
+  }, [filters.month, filters.year]);
+
   const query = useQuery<StampHistoryResponse>({
-    queryKey: [...STAMP_HISTORY_KEY, filters],
-    queryFn: () => fetchStampHistory(filters),
+    queryKey: queryKeys.stampHistory.list(activeFilters),
+    queryFn: () => fetchStampHistory(activeFilters),
+    staleTime: QUERY_CONFIG.stampHistory.staleTime,
+    gcTime: QUERY_CONFIG.stampHistory.gcTime,
   });
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
