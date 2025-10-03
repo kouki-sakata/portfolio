@@ -17,7 +17,7 @@ export const homeRouteLoader = async (queryClient: QueryClient) =>
 export const employeeAdminRouteLoader = async (queryClient: QueryClient) =>
   queryClient.prefetchQuery({
     queryKey: queryKeys.employees.list(),
-    queryFn: () => fetchEmployees(false),
+    queryFn: () => fetchEmployees(),
     staleTime: QUERY_CONFIG.employees.staleTime,
     gcTime: QUERY_CONFIG.employees.gcTime,
   });

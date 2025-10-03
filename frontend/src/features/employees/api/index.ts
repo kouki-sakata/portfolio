@@ -22,12 +22,14 @@ export type EmployeeListQuery = {
 const RETRYABLE_STATUS_CODES = new Set([0, 408, 425, 429, 500, 502, 503, 504]);
 const DEFAULT_MAX_RETRIES = 3;
 
-const buildListParams = (query?: EmployeeListQuery) => {
+const buildListParams = (
+  query?: EmployeeListQuery
+): EmployeeListQuery | undefined => {
   if (!query) {
     return;
   }
 
-  const params: Record<string, string | number | boolean> = {};
+  const params: EmployeeListQuery = {};
 
   if (typeof query.adminOnly === "boolean") {
     params.adminOnly = query.adminOnly;
@@ -79,12 +81,14 @@ const normalizeFieldErrors = (
 
   addEntries(details);
 
-  const nestedErrors = details.errors;
+  const { errors: nestedErrors, fieldErrors } = details as {
+    errors?: unknown;
+    fieldErrors?: unknown;
+  };
   if (nestedErrors && typeof nestedErrors === "object") {
     addEntries(nestedErrors as Record<string, unknown>);
   }
 
-  const fieldErrors = details.fieldErrors;
   if (fieldErrors && typeof fieldErrors === "object") {
     addEntries(fieldErrors as Record<string, unknown>);
   }
