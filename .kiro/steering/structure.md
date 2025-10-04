@@ -313,8 +313,9 @@ frontend/
 │   ├── styles/       # グローバルスタイル
 │   │   └── index.css
 │   ├── test/         # テストユーティリティ
-│   │   ├── msw/     # MSWモックサーバー設定（2025-10-04追加）
-│   │   │   └── server.ts
+│   │   ├── msw/     # MSWモックサーバー設定（v2.11.3、2025-10-04追加）
+│   │   │   ├── server.ts           # Node環境用MSWサーバー
+│   │   │   └── handlers/           # APIモックハンドラー
 │   │   └── setup.ts  # Vitest + MSW統合セットアップ
 │   ├── main.tsx      # エントリーポイント
 │   └── vite-env.d.ts # Vite型定義
@@ -514,11 +515,15 @@ frontend/dist/
 
 ### フロントエンドテスト
 - **単体テスト**: Vitest + Testing Library
-- **統合テスト**: MSW (Mock Service Worker) + Vitest（2025-10-04追加）
+- **統合テスト**: MSW (Mock Service Worker) v2.11.3 + Vitest（2025-10-04導入）
   - APIモックによるリアルな統合テスト
   - 認証フロー、エラーハンドリング、リトライメカニズムのテスト
-- **E2Eテスト**: Playwright
-- **カバレッジ**: Vitest Coverage
+  - ネットワークレベルでのHTTP通信シミュレーション
+- **E2Eテスト**: Playwright v1.49.1（型安全性強化、2025-10-04改善）
+  - 環境変数型定義による型安全なテスト設定
+  - テストヘルパー関数の型推論最適化
+  - ビジュアルリグレッションテスト対応
+- **カバレッジ**: Vitest Coverage v8
 
 ## 開発ワークフロー
 

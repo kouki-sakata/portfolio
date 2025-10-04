@@ -88,12 +88,15 @@
   - 単一の設定ファイル（frontend/biome.jsonc）で管理
   - Ultracite設定を継承しプロジェクト固有のルールを追加
 - **Vitest**: 単体テストフレームワーク（v3.2.4）
-- **MSW (Mock Service Worker)**: API モックフレームワーク（v2.8.0）
+- **MSW (Mock Service Worker)**: API モックフレームワーク（v2.11.3）
   - Node環境でのAPIモック実装
   - 統合テストでの実際のHTTP通信シミュレーション
   - エラーハンドリングやリトライメカニズムのテスト
   - テストセットアップの自動化（setup.ts統合）
 - **Playwright**: E2Eテスト（v1.49.1）
+  - 型安全性強化（環境変数アクセス最適化）
+  - テストヘルパー関数の型推論改善
+  - ブラウザテスト自動化とビジュアルテスト
 - **Testing Library**: React テストユーティリティ
 - **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
 - **openapi-zod-client**: OpenAPIからZodスキーマを生成（v1.18.3）
@@ -318,10 +321,13 @@ VITE_DEBUG_MODE=true
 ### テスト戦略
 1. **単体テスト**: JUnit 5 + Mockito / Vitest
 2. **統合テスト**: Spring Boot Test + Testcontainers / MSW + Vitest
-   - MSWによるAPIモック統合テスト（2025-10-04追加）
+   - MSWによるAPIモック統合テスト（v2.11.3、2025-10-04導入）
    - 認証フロー、エラーハンドリング、リトライメカニズムのテスト
 3. **APIテスト**: @Tag("api") による分離実行
-4. **E2Eテスト**: Playwright
+4. **E2Eテスト**: Playwright（型安全性強化、2025-10-04改善）
+   - 環境変数型定義による型安全なテスト設定
+   - テストヘルパー関数の型推論最適化
+   - ブラウザ操作の自動化とスクリーンショット比較
 5. **契約テスト**: OpenAPI仕様準拠（オプション）
 
 ### テストカバレッジ目標（Phase 2で大幅向上）
