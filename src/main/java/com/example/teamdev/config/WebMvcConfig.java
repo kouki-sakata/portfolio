@@ -1,12 +1,10 @@
 package com.example.teamdev.config;
 
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@Profile("!legacy-ui")
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private static final String SPA_FORWARD_DESTINATION = "forward:/index.html";

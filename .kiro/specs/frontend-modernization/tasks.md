@@ -277,7 +277,7 @@
     - 環境別のProfile設定を文書化
     - _Requirements: 1.2, 1.4_
 
-- [ ] 
+- [x] 
     30. Thymeleafテンプレートの削除
 
     - src/main/resources/templatesディレクトリを削除

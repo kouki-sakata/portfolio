@@ -104,16 +104,4 @@ public final class AppConstants {
         }
     }
 
-    /**
-     * HTTPステータス・リダイレクト関連の定数
-     */
-    public static final class Navigation {
-        public static final String REDIRECT_SIGNIN = "redirect:/signin";
-        public static final String REDIRECT_HOME_INIT = "redirect:/home/init";
-        public static final String REDIRECT_EMPLOYEE_MANAGE_INIT = "redirect:/employeemanage/init";
-
-        private Navigation() {
-            throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");
-        }
-    }
 }
