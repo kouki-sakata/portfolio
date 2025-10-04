@@ -177,10 +177,11 @@ const router = createBrowserRouter([
 export const AppProviders = () => (
   <StrictMode>
     <IconSpriteSheet />
-    <ThemeProvider defaultTheme="system">
+    <ThemeProvider defaultTheme="system" disablePersistence>
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
-        {import.meta.env.DEV ? (
+        {import.meta.env.DEV &&
+        import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
           <ReactQueryDevtools initialIsOpen={false} />
         ) : null}
       </QueryClientProvider>

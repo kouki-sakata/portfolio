@@ -39,7 +39,9 @@
       "includes": [
         "**/components/ui/**/*",
         "**/features/stampHistory/components/CalendarView.tsx",
-        "src/shared/api/__tests__/**/*.ts"
+        "src/shared/api/__tests__/**/*.ts",
+        "src/app/providers/AppProviders.tsx",
+        "src/shared/components/data-table/DataTableViewOptions.tsx"
       ],
       "linter": {
         "rules": {
