@@ -4,14 +4,16 @@
   "linter": {
     "rules": {
       "performance": {
-        "noBarrelFile": "off" // プロジェクトではindex.tsパターンを使用
+        "noBarrelFile": "off"
+        // プロジェクトではindex.tsパターンを使用
       },
       "style": {
         "noMagicNumbers": "off",
         "useNamingConvention": {
           "level": "error",
           "options": {
-            "strictCase": false // APIレスポンスのsnake_case、大文字定数を許可
+            "strictCase": false
+            // APIレスポンスのsnake_case、大文字定数を許可
           }
         },
         "useFilenamingConvention": {
@@ -36,22 +38,28 @@
     {
       "includes": [
         "**/components/ui/**/*",
-        "**/features/stampHistory/components/CalendarView.tsx"
+        "**/features/stampHistory/components/CalendarView.tsx",
+        "src/shared/api/__tests__/**/*.ts"
       ],
       "linter": {
         "rules": {
           "performance": {
-            "noNamespaceImport": "off" // UIコンポーネントではReactやRadixUIの名前空間インポートを許可
+            "noNamespaceImport": "off"
+            // UIコンポーネントではReactやRadixUIの名前空間インポートを許可
           },
           "style": {
-            "useNamingConvention": "off", // react-day-pickerなど外部ライブラリのAPIがsnake_caseを使用する場合があるため
-            "noNestedTernary": "off" // UIコンポーネントでは条件レンダリングのための三項演算子のネストを許可
+            "useNamingConvention": "off",
+            // react-day-pickerなど外部ライブラリのAPIがsnake_caseを使用する場合があるため
+            "noNestedTernary": "off"
+            // UIコンポーネントでは条件レンダリングのための三項演算子のネストを許可
           },
           "complexity": {
-            "useLiteralKeys": "off" // react-day-pickerのModifiers型などインデックスシグネチャ型ではブラケット記法が型安全性のために必要
+            "useLiteralKeys": "off"
+            // react-day-pickerのModifiers型などインデックスシグネチャ型ではブラケット記法が型安全性のために必要
           },
           "correctness": {
-            "noNestedComponentDefinitions": "off" // react-day-pickerのcomponentsプロップで動的なコンポーネントを渡すために必要
+            "noNestedComponentDefinitions": "off"
+            // react-day-pickerのcomponentsプロップで動的なコンポーネントを渡すために必要
           }
         }
       }
@@ -66,15 +74,20 @@
       "linter": {
         "rules": {
           "style": {
-            "noMagicNumbers": "off" // テストファイルではマジックナンバーを許可
+            "noMagicNumbers": "off"
+            // テストファイルではマジックナンバーを許可
           },
           "complexity": {
-            "noExcessiveCognitiveComplexity": "off", // テストファイルでは複雑度チェックを無効化
-            "noVoid": "off" // テストファイルではvoidを許可
+            "noExcessiveCognitiveComplexity": "off",
+            // テストファイルでは複雑度チェックを無効化
+            "noVoid": "off"
+            // テストファイルではvoidを許可
           },
           "performance": {
-            "noNamespaceImport": "off", // Vitestのvi.spyOnでモック化するためのnamespace importを許可
-            "useTopLevelRegex": "off" // テストファイルでは正規表現の定数化を不要とする
+            "noNamespaceImport": "off",
+            // Vitestのvi.spyOnでモック化するためのnamespace importを許可
+            "useTopLevelRegex": "off"
+            // テストファイルでは正規表現の定数化を不要とする
           }
         }
       }
@@ -88,7 +101,8 @@
       "linter": {
         "rules": {
           "complexity": {
-            "noVoid": "off" // 認証関連では非同期処理のvoidを許可
+            "noVoid": "off"
+            // 認証関連では非同期処理のvoidを許可
           }
         }
       }
@@ -98,7 +112,8 @@
       "linter": {
         "rules": {
           "suspicious": {
-            "noAlert": "off" // TODO: カスタムダイアログ実装後に有効化
+            "noAlert": "off"
+            // TODO: カスタムダイアログ実装後に有効化
           }
         }
       }
@@ -108,7 +123,8 @@
       "linter": {
         "rules": {
           "style": {
-            "noMagicNumbers": "off" // 設定ファイルではマジックナンバーを許可
+            "noMagicNumbers": "off"
+            // 設定ファイルではマジックナンバーを許可
           }
         }
       }
@@ -118,7 +134,8 @@
       "linter": {
         "rules": {
           "suspicious": {
-            "noConsole": "off" // ロギングユーティリティのためconsole使用を許可
+            "noConsole": "off"
+            // ロギングユーティリティのためconsole使用を許可
           }
         }
       }
@@ -131,7 +148,8 @@
       "linter": {
         "rules": {
           "style": {
-            "useNamingConvention": "off" // ZodエラーコードはZod公式APIのsnake_case形式を使用
+            "useNamingConvention": "off"
+            // ZodエラーコードはZod公式APIのsnake_case形式を使用
           }
         }
       }
