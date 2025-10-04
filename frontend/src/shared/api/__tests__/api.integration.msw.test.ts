@@ -117,9 +117,8 @@ describe("API integration via MSW", () => {
     } catch (error) {
       const apiError = error as ApiError;
       const normalized = toEmployeeApiErrorResponse(apiError);
-      expect(normalized.fieldErrors?.["email"]?.[0]).toBe(
-        "メールアドレスは既に使用されています"
-      );
+      const emailErrors = normalized.fieldErrors?.["email"];
+      expect(emailErrors?.[0]).toBe("メールアドレスは既に使用されています");
       expect(normalized.code).toBe("DUPLICATE_EMAIL");
     }
   });
