@@ -1,22 +1,45 @@
-import { act, renderHook } from "@testing-library/react";
+import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useFeatureFlag } from "../../hooks/use-feature-flag";
 import { FeatureFlagProvider } from "../FeatureFlagContext";
+
+type FetchMock = ReturnType<typeof vi.fn<typeof fetch>>;
+
+let activeFetchMock: FetchMock;
 
 describe("FeatureFlagContext", () => {
   beforeEach(() => {
     // Clear localStorage before each test to ensure isolation
     localStorage.clear();
+    vi.resetAllMocks();
+    const defaultResponse: Pick<Response, "ok" | "json"> = {
+      ok: true,
+      json: async () => ({ useShadcnUI: false }),
+    };
+    const defaultFetch = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(defaultResponse as Response);
+
+    vi.stubGlobal("fetch", defaultFetch);
+    activeFetchMock = defaultFetch;
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
   });
 
   describe("FeatureFlagProvider", () => {
-    it("should provide default feature flags", () => {
+    it("should provide default feature flags", async () => {
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       expect(result.current.flags).toEqual({
@@ -24,7 +47,7 @@ describe("FeatureFlagContext", () => {
       });
     });
 
-    it("should allow custom initial flags", () => {
+    it("should allow custom initial flags", async () => {
       const customFlags = { useShadcnUI: true };
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
@@ -34,16 +57,75 @@ describe("FeatureFlagContext", () => {
         ),
       });
 
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
+      });
+
       expect(result.current.flags.useShadcnUI).toBe(true);
     });
   });
 
-  describe("useFeatureFlag hook", () => {
-    it("should toggle a feature flag", () => {
+  describe("server synchronization", () => {
+    it("should fetch server feature flags on mount and merge them", async () => {
+      const fetchResponse: Pick<Response, "ok" | "json"> = {
+        ok: true,
+        json: async () => ({ useShadcnUI: true }),
+      };
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(fetchResponse as Response);
+
+      vi.stubGlobal("fetch", fetchMock);
+      activeFetchMock = fetchMock;
+
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(result.current.flags.useShadcnUI).toBe(true);
+      });
+
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/public/feature-flags",
+        expect.objectContaining({ credentials: "include" })
+      );
+    });
+
+    it("should fall back to existing flags when server sync fails", async () => {
+      const fetchMock = vi
+        .fn<typeof fetch>()
+        .mockRejectedValue(new Error("network error"));
+
+      vi.stubGlobal("fetch", fetchMock);
+      activeFetchMock = fetchMock;
+
+      const { result } = renderHook(() => useFeatureFlag(), {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <FeatureFlagProvider>{children}</FeatureFlagProvider>
+        ),
+      });
+
+      await waitFor(() => {
+        expect(fetchMock).toHaveBeenCalled();
+      });
+
+      expect(result.current.flags.useShadcnUI).toBe(false);
+    });
+  });
+
+  describe("useFeatureFlag hook", () => {
+    it("should toggle a feature flag", async () => {
+      const { result } = renderHook(() => useFeatureFlag(), {
+        wrapper: ({ children }: { children: ReactNode }) => (
+          <FeatureFlagProvider>{children}</FeatureFlagProvider>
+        ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       expect(result.current.flags.useShadcnUI).toBe(false);
@@ -61,11 +143,15 @@ describe("FeatureFlagContext", () => {
       expect(result.current.flags.useShadcnUI).toBe(false);
     });
 
-    it("should set a specific feature flag value", () => {
+    it("should set a specific feature flag value", async () => {
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       act(() => {
@@ -81,11 +167,15 @@ describe("FeatureFlagContext", () => {
       expect(result.current.flags.useShadcnUI).toBe(false);
     });
 
-    it("should check if a feature is enabled", () => {
+    it("should check if a feature is enabled", async () => {
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       expect(result.current.isEnabled("useShadcnUI")).toBe(false);
@@ -113,11 +203,15 @@ describe("FeatureFlagContext", () => {
   });
 
   describe("localStorage persistence", () => {
-    it("should persist feature flags to localStorage", () => {
+    it("should persist feature flags to localStorage", async () => {
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       act(() => {
@@ -132,7 +226,7 @@ describe("FeatureFlagContext", () => {
       }
     });
 
-    it("should load feature flags from localStorage on mount", () => {
+    it("should load feature flags from localStorage on mount", async () => {
       localStorage.setItem(
         "featureFlags",
         JSON.stringify({ useShadcnUI: true })
@@ -142,6 +236,10 @@ describe("FeatureFlagContext", () => {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
         ),
+      });
+
+      await waitFor(() => {
+        expect(activeFetchMock).toHaveBeenCalled();
       });
 
       expect(result.current.flags.useShadcnUI).toBe(true);

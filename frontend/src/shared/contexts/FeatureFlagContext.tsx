@@ -11,10 +11,44 @@ const DEFAULT_FLAGS: FeatureFlags = {
 };
 
 const STORAGE_KEY = "featureFlags";
+const FEATURE_FLAG_ENDPOINT = "/api/public/feature-flags";
 
 type FeatureFlagProviderProps = {
   children: ReactNode;
   initialFlags?: Partial<FeatureFlags>;
+};
+
+const mergeFlags = (
+  current: FeatureFlags,
+  incoming: Partial<FeatureFlags>
+): FeatureFlags => ({
+  ...current,
+  ...incoming,
+});
+
+const hasDifferences = (
+  current: FeatureFlags,
+  incoming: Partial<FeatureFlags>
+): boolean =>
+  Object.entries(incoming).some(([key, value]) => {
+    const typedKey = key as keyof FeatureFlags;
+    return value !== undefined && current[typedKey] !== value;
+  });
+
+const isFeatureFlagsResponse = (
+  value: unknown
+): value is Partial<FeatureFlags> => {
+  if (value === null || typeof value !== "object") {
+    return false;
+  }
+
+  const candidate = value as Partial<Record<keyof FeatureFlags, unknown>>;
+
+  if ("useShadcnUI" in candidate) {
+    return typeof candidate.useShadcnUI === "boolean";
+  }
+
+  return true;
 };
 
 export const FeatureFlagProvider = ({
@@ -43,6 +77,55 @@ export const FeatureFlagProvider = ({
       localStorage.setItem(STORAGE_KEY, JSON.stringify(flags));
     }
   }, [flags]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const controller = new AbortController();
+    let isMounted = true;
+
+    const synchronizeFlags = async () => {
+      try {
+        const response = await fetch(FEATURE_FLAG_ENDPOINT, {
+          credentials: "include",
+          signal: controller.signal,
+          headers: {
+            Accept: "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          return;
+        }
+
+        const payload = (await response.json()) as unknown;
+
+        if (!(isMounted && isFeatureFlagsResponse(payload))) {
+          return;
+        }
+
+        setFlags((prev) => {
+          if (!hasDifferences(prev, payload)) {
+            return prev;
+          }
+          return mergeFlags(prev, payload);
+        });
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    };
+
+    void synchronizeFlags();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
 
   const toggleFlag = (flag: keyof FeatureFlags) => {
     setFlags((prev) => ({
