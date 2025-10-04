@@ -175,10 +175,13 @@ security_check() {
 # ビルドテスト
 build_test() {
     log_info "ビルドテスト実行中..."
-    
+
+    export VITE_BUILD_SOURCEMAP="${VITE_BUILD_SOURCEMAP:-false}"
+    export VITE_ANALYZE_BUNDLE="${VITE_ANALYZE_BUNDLE:-}"
+
     if ./gradlew build -x test --quiet; then
         log_success "ビルド成功"
-        
+
         # JARファイルの確認
         if ls build/libs/*.jar > /dev/null 2>&1; then
             JAR_SIZE=$(du -h build/libs/*.jar | cut -f1)
