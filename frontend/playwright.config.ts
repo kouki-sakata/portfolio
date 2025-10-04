@@ -3,6 +3,10 @@ import { defineConfig, devices } from "@playwright/test";
 const BASE_URL = process.env.E2E_BASE_URL ?? "http://127.0.0.1:5173";
 const shouldSkipWebServer = process.env.E2E_SKIP_WEB_SERVER === "true";
 
+const envFlags: Record<string, string> = {};
+envFlags.VITE_DISABLE_REACT_QUERY_DEVTOOLS = "true";
+envFlags.VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS = "true";
+
 export default defineConfig({
   testDir: "./e2e",
   timeout: 30_000,
@@ -15,10 +19,7 @@ export default defineConfig({
     trace: "on-first-retry",
     video: "retain-on-failure",
     screenshot: "only-on-failure",
-    env: {
-      VITE_DISABLE_REACT_QUERY_DEVTOOLS: "true",
-      VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS: "true",
-    },
+    env: envFlags,
   },
   projects: [
     {

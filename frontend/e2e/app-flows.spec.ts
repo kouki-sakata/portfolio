@@ -42,20 +42,27 @@ const signIn = async (page: Page, email: string, password: string) => {
 };
 
 test.describe("勤怠管理の主要E2Eフロー", () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(({ page }) => {
     page.on("console", (message) => {
       const args = message.args();
       if (args.length === 0) {
         console.log(`[console:${message.type()}]`, message.text());
         return;
       }
-      Promise.all(args.map((arg) => arg.jsonValue().catch(() => {})))
-        .then((values) => {
-          console.log(`[console:${message.type()}]`, message.text(), values);
-        })
-        .catch(() => {
-          console.log(`[console:${message.type()}]`, message.text());
-        });
+      void (async () => {
+        const values = await Promise.all(
+          args.map(async (arg) => {
+            try {
+              return await arg.jsonValue();
+            } catch {
+              return;
+            }
+          })
+        );
+        console.log(`[console:${message.type()}]`, message.text(), values);
+      })().catch(() => {
+        console.log(`[console:${message.type()}]`, message.text());
+      });
     });
   });
 

@@ -38,15 +38,17 @@ export function ThemeProvider({
     return defaultTheme;
   });
 
-  const resolvedTheme = useMemo(
-    () =>
-      theme === "system"
-        ? typeof window === "undefined"
-          ? "light"
-          : getSystemTheme()
-        : theme,
-    [theme]
-  );
+  const resolvedTheme = useMemo(() => {
+    if (theme !== "system") {
+      return theme;
+    }
+
+    if (typeof window === "undefined") {
+      return "light";
+    }
+
+    return getSystemTheme();
+  }, [theme]);
 
   useEffect(() => {
     const root = window.document.documentElement;

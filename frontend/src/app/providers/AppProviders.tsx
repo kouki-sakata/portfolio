@@ -181,7 +181,7 @@ export const AppProviders = () => (
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         {import.meta.env.DEV &&
-        import.meta.env.VITE_DISABLE_REACT_QUERY_DEVTOOLS !== "true" ? (
+        import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
           <ReactQueryDevtools initialIsOpen={false} />
         ) : null}
       </QueryClientProvider>

@@ -18,7 +18,9 @@ type DataTableViewOptionsProps<TData> = {
 export function DataTableViewOptions<TData>({
   table,
 }: DataTableViewOptionsProps<TData>) {
-  if (import.meta.env.VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS === "true") {
+  const disableViewOptions =
+    import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] === "true";
+  if (disableViewOptions) {
     return null;
   }
 
