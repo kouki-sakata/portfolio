@@ -17,7 +17,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles({"test", "legacy-ui"})
-class LegacyUiProfileIntegrationTest extends PostgresContainerSupport {
+class ModernUiOnlyIntegrationTest extends PostgresContainerSupport {
 
     @Autowired
     private MockMvc mockMvc;
@@ -26,15 +26,16 @@ class LegacyUiProfileIntegrationTest extends PostgresContainerSupport {
     private ApplicationContext applicationContext;
 
     @Test
-    void legacyUiControllersAreLoaded() {
-        assertThat(applicationContext.containsBean("signInController")).isTrue();
-        assertThat(applicationContext.containsBean("webMvcConfig")).isFalse();
+    void legacyMvcControllersAreNotRegistered() {
+        assertThat(applicationContext.containsBean("signInController")).isFalse();
+        assertThat(applicationContext.containsBean("employeeManageController")).isFalse();
+        assertThat(applicationContext.containsBean("webMvcConfig")).isTrue();
     }
 
     @Test
-    void featureFlagEndpointReturnsLegacyFlags() throws Exception {
+    void featureFlagEndpointAlwaysEnablesModernUi() throws Exception {
         mockMvc.perform(get("/api/public/feature-flags"))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.useShadcnUI").value(false));
+            .andExpect(jsonPath("$.useShadcnUI").value(true));
     }
 }
