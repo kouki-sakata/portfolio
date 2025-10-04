@@ -79,20 +79,10 @@ src/
 │   │   │   ├── api/           # REST APIコントローラー
 │   │   │   │   ├── AuthRestController.java
 │   │   │   │   ├── EmployeeRestController.java
-│   │   │   │   ├── FeatureFlagRestController.java # フィーチャーフラグAPI(2025-10-04追加)
+│   │   │   │   ├── FeatureFlagRestController.java # フィーチャーフラグAPI（2025-10-04追加）
 │   │   │   │   ├── HomeRestController.java
 │   │   │   │   └── StampHistoryRestController.java
-│   │   │   ├── EmployeeListController.java
-│   │   │   ├── EmployeeManageController.java
-│   │   │   ├── HomeController.java
-│   │   │   ├── LogHistoryController.java
-│   │   │   ├── NewsManageController.java
-│   │   │   ├── SignInController.java
-│   │   │   ├── SpaForwardingController.java
-│   │   │   ├── StampDeleteController.java
-│   │   │   ├── StampEditController.java
-│   │   │   ├── StampHistoryController.java
-│   │   │   └── StampOutputController.java
+│   │   │   └── SpaForwardingController.java # SPA単一エントリポイント
 │   │   ├── dto/               # データ転送オブジェクト
 │   │   │   ├── api/           # API用DTO
 │   │   │   │   ├── auth/      # 認証関連
@@ -176,8 +166,7 @@ src/
 │   │   └── TeamDevelopApplication.java  # メインクラス
 │   └── resources/
 │       ├── mapper/            # MyBatis XMLマッパー
-│       ├── static/            # 静的リソース
-│       ├── templates/         # Thymeleafテンプレート（レガシー）
+│       ├── static/            # 静的リソース（React SPAビルド成果物）
 │       ├── 01_schema.sql      # データベーススキーマ
 │       ├── 02_data.sql        # 初期データ
 │       ├── application.properties       # アプリケーション設定

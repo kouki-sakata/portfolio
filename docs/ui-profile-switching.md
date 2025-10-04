@@ -1,40 +1,38 @@
 # UIプロフィール切り替えガイド
 
-TeamDevelop Bravoでは、Spring Profilesを用いてSPA版とレガシーThymeleaf版のUIを環境ごとに切り替えられるようになりました。以下のプロフィールを組み合わせて使用します。
+2025年10月時点でTeamDevelop BravoのUIはReact
+SPA構成に統一され、レガシーThymeleaf版は廃止されました。本ドキュメントは最新構成でのプロフィール運用方針をまとめたものです。
 
-## 利用可能なプロフィール
+## 現在のプロフィール方針
 
-- `modern-ui`
-  - デフォルト設定。React + ViteでビルドされたSPAを提供します。
-  - `WebMvcConfig` が有効になり、任意の非APIリクエストが `index.html` にフォワードされます。
-  - フロントエンドのフィーチャーフラグAPI (`/api/public/feature-flags`) は `useShadcnUI = true` を返します。
-- `legacy-ui`
-  - 既存のThymeleafベースUIを有効化します。
-  - `@Controller` に `@Profile("legacy-ui")` が付与されているレガシー画面が読み込まれ、`WebMvcConfig` は無効化されます。
-  - フィーチャーフラグAPIは `useShadcnUI = false` を返し、フロントエンドはラッパーコンポーネント経由で旧UIを利用します。
+- **modern-ui**
+    - 互換目的で引き続き指定できますが、特別な構成は保持していません。
+    - 指定の有無にかかわらず `WebMvcConfig` が常時有効となり、非APIリクエストは
+      `index.html` にフォワードされます。
+    - フィーチャーフラグAPI (`GET /api/public/feature-flags`) は常に
+      `useShadcnUI = true` を返します。
+- **legacy-ui**
+    - レガシーUI削除に伴い非推奨となりました。指定しても関連するコントローラは存在しないためエラーになります。
 
-## 推奨組み合わせ
+## 推奨プロフィール設定
 
-| 環境 | 推奨プロフィール | 備考 |
-| ---- | ---------------- | ---- |
-| 開発 (`dev`) | `dev,modern-ui` | SPA開発をデフォルトとします。旧UI検証が必要な場合のみ `dev,legacy-ui` を使用します。 |
-| テスト (`test`) | `test,modern-ui` | CIの統合テストはSPA版を前提としています。レガシー互換テストが必要な場合は `test,legacy-ui` を指定します。 |
-| 本番 (`prod`) | `prod,modern-ui` | SPA版を標準運用とします。ロールバック時に `prod,legacy-ui` を指定できます。 |
+| 環境           | 推奨指定   | 備考                                                           |
+|--------------|--------|--------------------------------------------------------------|
+| 開発 (`dev`)   | `dev`  | 追加プロフィール指定は不要です。旧スクリプト互換が必要であれば `dev,modern-ui` としても動作は同じです。 |
+| テスト (`test`) | `test` | CIはSPA前提で動作します。`modern-ui` を併記しても構いませんが効果はありません。             |
+| 本番 (`prod`)  | `prod` | SPA構成が常時有効です。`legacy-ui` は指定しないでください。                        |
 
 ## 実行例
 
 ```bash
-# SPA版で開発サーバーを起動
-SPRING_PROFILES_ACTIVE=dev,modern-ui ./gradlew bootRun
+# SPA版で開発サーバーを起動（推奨）
+SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
 
-# レガシーUIで挙動確認
-SPRING_PROFILES_ACTIVE=dev,legacy-ui ./gradlew bootRun
+# 互換性のために modern-ui を明示する例（挙動は同じ）
+SPRING_PROFILES_ACTIVE=dev,modern-ui ./gradlew bootRun
 ```
 
-## フィーチャーフラグAPI
-
-- エンドポイント: `GET /api/public/feature-flags`
-- レスポンス例:
+## フィーチャーフラグAPIのレスポンス
 
 ```json
 {
@@ -42,4 +40,12 @@ SPRING_PROFILES_ACTIVE=dev,legacy-ui ./gradlew bootRun
 }
 ```
 
-プロフィールに応じて `useShadcnUI` の値が自動的に切り替わります。フロントエンドはこの値を参照してshadcn/uiコンポーネントの使用可否を判定してください。
+`useShadcnUI` は常に `true`
+を返します。フロントエンド実装ではこの値に依存した切り替えを削除するか、真値を前提とした簡略化を行ってください。
+
+## 参考: レガシーUI撤去の影響
+
+- レガシーMVCコントローラは削除済みのため、`legacy-ui`
+  プロファイルを指定すると起動時にBean解決が失敗します。
+- フィーチャーフラグサービスは環境判定を行わず、SPA UIを常時有効にします。
+- `docs/postgres-migration-guide.md` など、旧プロファイルを前提としたドキュメントは順次更新対象です。

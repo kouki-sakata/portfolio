@@ -383,18 +383,16 @@ VITE_DEBUG_MODE=true
 - **dev**: 開発環境（Swagger有効、詳細ログ）
 - **test**: テスト環境（Testcontainers）
 - **prod**: 本番環境（最適化、Swagger無効）
-- **legacy**: レガシーUI専用プロファイル（Thymeleafベース、2025-10-04追加）
-- **modern**: モダンUI専用プロファイル（React SPA、2025-10-04追加）
 
-### UI切り替え機能（2025-10-04追加）
-- **フィーチャーフラグAPI**: `/api/feature-flags`でUIプロファイル情報を提供
-- **HTTPヘッダー制御**: `X-UI-Profile`ヘッダーによる動的プロファイル判定
-- **段階的移行サポート**: レガシーとモダンUIの共存可能
-- **フォールバック機能**: プロファイル未設定時のデフォルト動作（modern）
-- **FeatureFlagContext**: Reactコンテキストによるフロントエンドフラグ管理
-  - エラーハンドリングとリトライ機能
-  - キャッシュ戦略による効率的な状態管理
+### ~~UI切り替え機能（2025-10-04追加、PR #38で削除）~~
+- ~~**legacy**: レガシーUI専用プロファイル（Thymeleafベース）~~ [DEPRECATED - 2025-10-04削除]
+- **modern**: モダンUI（React SPA） - デフォルト設定に統一
+- **フィーチャーフラグ基盤**: 将来の機能フラグ用にFeatureFlagServiceは保持
+  - `/api/feature-flags`エンドポイント（拡張可能な設計）
+  - FeatureFlagContextによるReactフロントエンド統合
   - TypeScript型安全性の完全サポート
+
+**移行完了**: Thymeleafレガシーコードを完全削除し、React SPA単一構成に移行（2025-10-04、PR #38）
 
 ### ビルドプロファイル
 - **開発ビルド**: ソースマップ付き、最適化なし

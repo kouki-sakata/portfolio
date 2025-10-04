@@ -1,5 +1,63 @@
 # Steering Documents Changelog
 
+## 2025-10-04 (Update 18)
+
+### Updated Documents
+- `product.md` - レガシーUIコントローラーとThymeleaf依存の削除完了を追加
+- `tech.md` - レガシーUIプロファイル(legacy)の削除を反映
+- `structure.md` - controller/配下のレガシーコントローラー削除を反映
+- `CHANGELOG.md` - 最新のリファクタリング履歴を記録
+
+### Key Changes
+
+#### レガシーUI完全削除リファクタリング(PR #38マージ完了)
+- **Thymeleaf依存の完全削除**
+  - Spring Boot StarterからThymeleaf依存を除去
+  - MVCコントローラーの完全削除
+  - templatesディレクトリの削除
+  - レガシーUIコードの完全撤廃
+
+- **削除されたコントローラー**
+  - `EmployeeListController.java`
+  - `EmployeeManageController.java`
+  - `HomeController.java`
+  - `LogHistoryController.java`
+  - `NewsManageController.java`
+  - `SignInController.java`
+  - `StampDeleteController.java`
+  - `StampEditController.java`
+  - `StampHistoryController.java`
+  - `StampOutputController.java`
+
+- **SPA化の完全移行**
+  - React SPAによる全機能の提供
+  - REST API (`/api/*`) のみを提供
+  - `SpaForwardingController`による単一エントリポイント化
+  - レガシーUIとモダンUIの共存が不要に
+
+- **プロファイル構成の簡素化**
+  - `legacy`プロファイルの削除
+  - `modern`プロファイルがデフォルトに統一
+  - プロファイル切り替え機能の削除
+  - `FeatureFlagService`は将来の機能フラグ用に保持
+
+### Technical Achievements
+- **コードベース削減**: 10個のコントローラーファイル削除
+- **依存関係削減**: Thymeleaf関連の依存を完全除去
+- **アーキテクチャ簡素化**: SPA単一構成への完全移行
+- **保守性向上**: レガシーコードの除去による技術的負債の解消
+
+### Impact
+- **技術的負債削減**: レガシーUI保守コストの完全撤廃
+- **アーキテクチャ明確化**: React SPA単一構成による明確な技術選択
+- **開発効率**: フロント/バックエンド分離による並行開発の促進
+- **デプロイ簡素化**: プロファイル管理の複雑性を削減
+
+### Note
+PR #38のマージにより、TeamDevelop BravoはReact + Spring Boot SPAアーキテクチャへの完全移行を達成。Thymeleafベースのレガシーコードを全て削除し、モダンな技術スタックに統一されました。
+
+---
+
 ## 2025-10-04 (Update 17)
 
 ### Updated Documents
