@@ -1,0 +1,67 @@
+import type { BuildOptions } from "vite";
+
+type BuildCommand = "build" | "serve";
+
+type BuildContext = {
+  command: BuildCommand;
+  mode: string;
+  env?: NodeJS.ProcessEnv;
+};
+
+const SOURCE_MAP_ENV_KEY = "VITE_BUILD_SOURCEMAP";
+const DEFAULT_CHUNK_WARNING_LIMIT = 700;
+const VENDOR_MANUAL_CHUNKS = {
+  "react-vendor": ["react", "react-dom", "react/jsx-runtime"],
+  "router-vendor": ["react-router-dom"],
+  "ui-vendor": [
+    "@radix-ui/react-label",
+    "@radix-ui/react-slot",
+    "@radix-ui/react-toast",
+    "@radix-ui/react-alert-dialog",
+    "@radix-ui/react-dialog",
+    "@radix-ui/react-dropdown-menu",
+    "@radix-ui/react-select",
+    "@radix-ui/react-tabs",
+    "@radix-ui/react-checkbox",
+    "@radix-ui/react-popover",
+    "@radix-ui/react-progress",
+  ],
+  "data-vendor": ["@tanstack/react-query", "@tanstack/react-table"],
+  "form-vendor": ["react-hook-form", "zod", "@hookform/resolvers"],
+  "date-vendor": ["date-fns", "react-day-picker"],
+  "icons-vendor": ["lucide-react"],
+} satisfies Record<string, string[]>;
+
+const shouldEnableSourcemap = (env: NodeJS.ProcessEnv): boolean => {
+  const value = env[SOURCE_MAP_ENV_KEY];
+  if (!value) {
+    return false;
+  }
+  const normalized = value.trim().toLowerCase();
+  return normalized === "true" || normalized === "1";
+};
+
+export const createBuildOptions = ({
+  command,
+  mode,
+  env = process.env,
+}: BuildContext): BuildOptions => {
+  const isProductionBuild = command === "build" && mode === "production";
+
+  return {
+    outDir: "dist",
+    sourcemap: isProductionBuild ? shouldEnableSourcemap(env) : true,
+    manifest: isProductionBuild,
+    cssCodeSplit: true,
+    reportCompressedSize: false,
+    minify: "esbuild",
+    target: "es2022",
+    chunkSizeWarningLimit: DEFAULT_CHUNK_WARNING_LIMIT,
+    assetsInlineLimit: 4096,
+    rollupOptions: {
+      output: {
+        manualChunks: VENDOR_MANUAL_CHUNKS,
+      },
+    },
+  } satisfies BuildOptions;
+};

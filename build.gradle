@@ -148,7 +148,12 @@ tasks.register('npmBuild', NpmTask) {
 	dependsOn 'npmInstall'
 	workingDir = frontendDir
 	args = ['run', 'build']
-	environment = [CI: 'true']
+	environment = [
+		CI: 'true',
+		NODE_ENV: 'production',
+		VITE_BUILD_SOURCEMAP: System.getenv('VITE_BUILD_SOURCEMAP') ?: 'false',
+		VITE_ANALYZE_BUNDLE: System.getenv('VITE_ANALYZE_BUNDLE') ?: ''
+	]
 	inputs.dir(file("${frontendDir}/src"))
 	inputs.files(
 		file("${frontendDir}/package.json"),
@@ -166,6 +171,14 @@ tasks.named('processResources') {
 	from("${frontendDir}/dist") {
 		into 'static'
 	}
+}
+
+tasks.named('bootJar') {
+	dependsOn 'npmBuild'
+}
+
+tasks.named('build') {
+	dependsOn 'npmBuild'
 }
 
 tasks.named('check') {
