@@ -1,5 +1,8 @@
 import { expect, type Page, test } from "@playwright/test";
 
+import type { EmployeeSummary } from "@/features/auth/types";
+import { type AppMockServer, createAppMockServer } from "./support/mockServer";
+
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "admin.user@example.com";
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "AdminPass123!";
 
@@ -16,7 +19,19 @@ const fillCredentials = async (page: Page, email: string, password: string) => {
 };
 
 test.describe("サインイン UI フロー", () => {
+  let server: AppMockServer;
+
   test.beforeEach(async ({ page }) => {
+    const adminUser: EmployeeSummary = {
+      id: 1,
+      firstName: "太郎",
+      lastName: "山田",
+      email: ADMIN_EMAIL,
+      admin: true,
+    };
+
+    server = await createAppMockServer(page, { user: adminUser });
+
     const sessionResponse = page.waitForResponse(
       (response) =>
         response.url().includes("/api/auth/session") &&
@@ -31,7 +46,7 @@ test.describe("サインイン UI フロー", () => {
   });
 
   test("有効な資格情報でサインインできる", async ({ page }) => {
-    await fillCredentials(page, ADMIN_EMAIL, ADMIN_PASSWORD);
+    await fillCredentials(page, server.user.email, ADMIN_PASSWORD);
 
     await page.getByRole("button", { name: "サインイン" }).click();
 
@@ -42,7 +57,9 @@ test.describe("サインイン UI フロー", () => {
   });
 
   test("誤ったパスワードでエラーメッセージを表示する", async ({ page }) => {
-    await fillCredentials(page, ADMIN_EMAIL, INVALID_PASSWORD);
+    server.setLoginFailure({ status: 401 });
+
+    await fillCredentials(page, server.user.email, INVALID_PASSWORD);
 
     await page.getByRole("button", { name: "サインイン" }).click();
 

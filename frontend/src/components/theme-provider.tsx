@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { type Theme, ThemeProviderContext } from "@/hooks/use-theme";
 
@@ -6,41 +6,87 @@ type ThemeProviderProps = {
   children: React.ReactNode;
   defaultTheme?: Theme;
   storageKey?: string;
+  disablePersistence?: boolean;
 };
+
+const getSystemTheme = () =>
+  window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 
 export function ThemeProvider({
   children,
   defaultTheme = "system",
   storageKey = "vite-ui-theme",
+  disablePersistence = false,
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme | null) ?? defaultTheme
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window === "undefined") {
+      return defaultTheme;
+    }
+
+    if (disablePersistence) {
+      window.localStorage.removeItem(storageKey);
+    } else {
+      const storedTheme = window.localStorage.getItem(
+        storageKey
+      ) as Theme | null;
+      if (storedTheme) {
+        return storedTheme;
+      }
+    }
+
+    return defaultTheme;
+  });
+
+  const resolvedTheme = useMemo(
+    () =>
+      theme === "system"
+        ? typeof window === "undefined"
+          ? "light"
+          : getSystemTheme()
+        : theme,
+    [theme]
   );
 
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove("light", "dark");
+    root.classList.add(resolvedTheme);
+  }, [resolvedTheme]);
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
-        : "light";
+  useEffect(() => {
+    if (disablePersistence) {
+      window.localStorage.removeItem(storageKey);
+      return;
+    }
+    window.localStorage.setItem(storageKey, theme);
+  }, [theme, disablePersistence, storageKey]);
 
-      root.classList.add(systemTheme);
+  useEffect(() => {
+    if (theme !== "system") {
       return;
     }
 
-    root.classList.add(theme);
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+    const handleChange = () => {
+      if (theme === "system") {
+        const next = mediaQuery.matches ? "dark" : "light";
+        window.document.documentElement.classList.remove("light", "dark");
+        window.document.documentElement.classList.add(next);
+      }
+    };
+
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
   }, [theme]);
 
   const value = {
     theme,
-    setTheme: (newTheme: Theme) => {
-      localStorage.setItem(storageKey, newTheme);
-      setTheme(newTheme);
+    setTheme: (nextTheme: Theme) => {
+      if (!disablePersistence) {
+        window.localStorage.setItem(storageKey, nextTheme);
+      }
+      setTheme(nextTheme);
     },
   };
 
