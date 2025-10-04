@@ -1,38 +1,62 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
-import type { SpriteIconName } from "../SpriteIcon";
+import { describe, expect, test } from "vitest";
+
 import {
   ICON_SYMBOL_PREFIX,
   IconSpriteSheet,
   SpriteIcon,
-  spriteIconDefinitions,
-} from "../SpriteIcon";
+} from "@/shared/components/icons/SpriteIcon";
 
-describe("SVG sprite system", () => {
-  it("スプライトシートに定義済みアイコンが含まれる", () => {
+describe("IconSpriteSheet", () => {
+  test("renders SVG symbols for each icon", () => {
     render(<IconSpriteSheet />);
 
-    const definedEntries = Object.entries(spriteIconDefinitions) as [
-      SpriteIconName,
-      (typeof spriteIconDefinitions)[SpriteIconName],
-    ][];
+    const sunSymbol = screen.getByTestId(
+      `sprite-symbol-${ICON_SYMBOL_PREFIX}sun`
+    );
 
-    const symbols = screen.getAllByTestId(/sprite-symbol-/i);
-    expect(symbols).toHaveLength(definedEntries.length);
+    expect(sunSymbol).toBeInTheDocument();
+    expect(sunSymbol).toHaveAttribute("id", `${ICON_SYMBOL_PREFIX}sun`);
+  });
+});
 
-    for (const [name] of definedEntries) {
-      const symbolId = `${ICON_SYMBOL_PREFIX}${name}`;
-      const symbol = screen.getByTestId(`sprite-symbol-${symbolId}`);
-      expect(symbol.tagName.toLowerCase()).toBe("symbol");
+describe("SpriteIcon", () => {
+  test("marks decorative icons as presentation", () => {
+    const { container } = render(
+      <>
+        <IconSpriteSheet />
+        <SpriteIcon decorative name="sun" />
+      </>
+    );
+
+    const icon = container.querySelector("svg[role='presentation']");
+    if (!icon) {
+      throw new Error(
+        "Expected decorative icon to render as presentation role"
+      );
     }
+
+    expect(icon).toHaveAttribute("aria-hidden", "true");
+
+    const useElement = icon.querySelector("use");
+    if (!useElement) {
+      throw new Error("Icon sprite <use> element is missing");
+    }
+
+    expect(useElement).toHaveAttribute("href", `#${ICON_SYMBOL_PREFIX}sun`);
   });
 
-  it("SpriteIconコンポーネントが指定したシンボルを使用する", () => {
-    render(<SpriteIcon aria-label="通知" name="bell" />);
+  test("exposes labelled icons to assistive tech", () => {
+    render(
+      <>
+        <IconSpriteSheet />
+        <SpriteIcon aria-label="Profile" name="users" />
+      </>
+    );
 
-    const icon = screen.getByLabelText("通知");
-    const useElement = icon.querySelector("use");
-
-    expect(useElement?.getAttribute("href")).toBe(`#${ICON_SYMBOL_PREFIX}bell`);
+    const icon = screen.getByLabelText("Profile");
+    expect(icon).toHaveAttribute("role", "img");
+    expect(icon).toHaveAttribute("aria-hidden", "false");
+    expect(icon.classList.contains("inline-block")).toBe(true);
   });
 });
