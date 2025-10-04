@@ -268,7 +268,7 @@
 
 ## 移行とクリーンアップ
 
-- [ ] 
+-[x] 
     29. Spring Profilesによる段階的切り替え設定
 
     - WebMvcConfigでSPAルーティングを設定
