@@ -67,7 +67,8 @@ src/
 │   │   │   ├── OpenApiConfig.java
 │   │   │   ├── SecurityConfig.java
 │   │   │   ├── ShutdownConfig.java
-│   │   │   └── StartupConfig.java
+│   │   │   ├── StartupConfig.java
+│   │   │   └── WebMvcConfig.java      # MVC設定(2025-10-04追加)
 │   │   ├── constant/          # 定数クラス
 │   │   │   ├── AppConstants.java
 │   │   │   ├── DisplayName.java
@@ -78,6 +79,7 @@ src/
 │   │   │   ├── api/           # REST APIコントローラー
 │   │   │   │   ├── AuthRestController.java
 │   │   │   │   ├── EmployeeRestController.java
+│   │   │   │   ├── FeatureFlagRestController.java # フィーチャーフラグAPI(2025-10-04追加)
 │   │   │   │   ├── HomeRestController.java
 │   │   │   │   └── StampHistoryRestController.java
 │   │   │   ├── EmployeeListController.java
@@ -94,7 +96,7 @@ src/
 │   │   ├── dto/               # データ転送オブジェクト
 │   │   │   ├── api/           # API用DTO
 │   │   │   │   ├── auth/      # 認証関連
-│   │   │   │   ├── common/    # 共通
+│   │   │   │   ├── common/    # 共通（FeatureFlagsResponse.java含む、2025-10-04更新）
 │   │   │   │   ├── employee/  # 従業員
 │   │   │   │   ├── home/      # ホーム画面
 │   │   │   │   └── stamp/     # 打刻
@@ -158,7 +160,9 @@ src/
 │   │   │   ├── HomeNewsService.java                # ホーム画面向け取得
 │   │   │   ├── 【ログ履歴系】
 │   │   │   ├── LogHistoryQueryService.java         # 照会専用
-│   │   │   └── LogHistoryRegistrationService.java  # 登録専用
+│   │   │   ├── LogHistoryRegistrationService.java  # 登録専用
+│   │   │   ├── 【フィーチャーフラグ系】
+│   │   │   └── FeatureFlagService.java             # Spring Profilesベースフラグ管理(2025-10-04追加)
 │   │   ├── util/              # ユーティリティクラス
 │   │   │   ├── DateFormatUtil.java
 │   │   │   ├── LogUtil.java
@@ -286,6 +290,10 @@ frontend/
 │   │   │       ├── SuspenseWrapper.tsx
 │   │   │       └── skeletons/
 │   │   │           └── SkeletonVariants.tsx
+│   │   ├── contexts/    # グローバルコンテキスト
+│   │   │   ├── FeatureFlagContext.tsx # フィーチャーフラグ管理（2025-10-04追加）
+│   │   │   └── __tests__/
+│   │   │       └── FeatureFlagContext.test.tsx
 │   │   ├── error-handling/ # グローバルエラーハンドリング
 │   │   │   ├── ErrorBoundary.tsx
 │   │   │   ├── ErrorFallback.tsx

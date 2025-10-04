@@ -251,6 +251,13 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - useEffectパフォーマンス最適化
   - テーマ切り替えロジックの効率化
   - 不要な再レンダリングの削減
+- ✅ Spring Profiles による段階的 UI 切り替え機能（完了 - 2025-10-04）
+  - FeatureFlagContextによるフィーチャーフラグ管理
+  - Spring Profilesベースのバックエンド制御（`legacy`/`modern`/`default`）
+  - レガシーUI/モダンUIの段階的移行サポート
+  - HTTPヘッダー（`X-UI-Profile`）による動的プロファイル判定
+  - エラーハンドリングとフォールバック機能の実装
+  - 包括的な統合テスト（LegacyUi/ModernUiProfileIntegrationTest）
 - 🔄 Playwright E2Eテスト拡充（継続中）
   - コア機能のE2Eテスト追加
   - エッジケースシナリオのカバレッジ向上

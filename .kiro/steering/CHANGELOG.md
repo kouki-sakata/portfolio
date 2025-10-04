@@ -1,5 +1,56 @@
 # Steering Documents Changelog
 
+## 2025-10-04 (Update 17)
+
+### Updated Documents
+- `product.md` - Spring Profilesによる段階的UI切り替え機能の完了状態を追加
+- `tech.md` - UI切り替え機能の技術詳細とFeatureFlagServiceを追加
+- `structure.md` - FeatureFlagRestController、FeatureFlagService、FeatureFlagContextの構造を追加
+- `CHANGELOG.md` - 最新の更新履歴を記録
+
+### Key Changes
+
+#### Spring Profilesによる段階的UI切り替え機能(PR #36マージ完了)
+- **FeatureFlagContext実装**
+  - Reactコンテキストによるフィーチャーフラグ管理
+  - `/api/feature-flags` APIからのプロファイル情報取得
+  - エラーハンドリングとリトライ機能
+  - キャッシュ戦略による効率的な状態管理
+  - 包括的なテストカバレッジ(124テストケース)
+
+- **バックエンド実装**
+  - `FeatureFlagService`: Spring Profilesベースのフラグ管理
+  - `FeatureFlagRestController`: フラグ情報提供API
+  - `WebMvcConfig`: MVC設定とプロファイル制御
+  - HTTPヘッダー(`X-UI-Profile`)による動的判定
+
+- **プロファイルサポート**
+  - `legacy`: レガシーUI専用(Thymeleafベース)
+  - `modern`: モダンUI専用(React SPA)
+  - `default`: デフォルトはモダンUI
+
+- **統合テスト**
+  - `LegacyUiProfileIntegrationTest`: レガシーUIプロファイルテスト
+  - `ModernUiProfileIntegrationTest`: モダンUIプロファイルテスト
+  - プロファイル切り替えの動作検証
+
+### Technical Achievements
+- **段階的移行**: レガシーとモダンUIの共存可能
+- **型安全性**: TypeScriptによる完全な型保証
+- **テストカバレッジ**: フロント124+、バック89テストケース
+- **エラーハンドリング**: 堅牢なフォールバック機構
+
+### Impact
+- **移行リスク削減**: 段階的なUI移行により破壊的変更を回避
+- **運用柔軟性**: プロファイル切り替えによる柔軟なデプロイ戦略
+- **品質保証**: 包括的なテストによる信頼性向上
+- **開発効率**: フィーチャーフラグによるA/Bテスト・カナリアリリース対応
+
+### Note
+最新のコミット(50c3781, 2e163b2, d2f165f)で実装された段階的UI切り替え機能により、レガシーシステムからモダンSPAへの移行をリスクなく実行できる基盤が整いました。
+
+---
+
 ## 2025-10-04 (Update 16)
 
 ### Updated Documents

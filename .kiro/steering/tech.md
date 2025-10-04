@@ -180,6 +180,8 @@ npm run generate:zod-schemas   # Zodスキーマのみ生成
     - `NewsManageReleaseService`: 公開管理専用
     - `NewsManageDeletionService`: 削除専用
     - `HomeNewsService`: ホーム画面向け取得
+  - **フィーチャーフラグ系**:
+    - `FeatureFlagService`: Spring Profilesベースのフィーチャーフラグ管理（2025-10-04追加）
 
 ### データベース
 - **PostgreSQL 16**: プライマリデータベース
@@ -381,6 +383,18 @@ VITE_DEBUG_MODE=true
 - **dev**: 開発環境（Swagger有効、詳細ログ）
 - **test**: テスト環境（Testcontainers）
 - **prod**: 本番環境（最適化、Swagger無効）
+- **legacy**: レガシーUI専用プロファイル（Thymeleafベース、2025-10-04追加）
+- **modern**: モダンUI専用プロファイル（React SPA、2025-10-04追加）
+
+### UI切り替え機能（2025-10-04追加）
+- **フィーチャーフラグAPI**: `/api/feature-flags`でUIプロファイル情報を提供
+- **HTTPヘッダー制御**: `X-UI-Profile`ヘッダーによる動的プロファイル判定
+- **段階的移行サポート**: レガシーとモダンUIの共存可能
+- **フォールバック機能**: プロファイル未設定時のデフォルト動作（modern）
+- **FeatureFlagContext**: Reactコンテキストによるフロントエンドフラグ管理
+  - エラーハンドリングとリトライ機能
+  - キャッシュ戦略による効率的な状態管理
+  - TypeScript型安全性の完全サポート
 
 ### ビルドプロファイル
 - **開発ビルド**: ソースマップ付き、最適化なし
