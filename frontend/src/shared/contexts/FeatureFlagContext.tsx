@@ -92,7 +92,7 @@ export const FeatureFlagProvider = ({
           credentials: "include",
           signal: controller.signal,
           headers: {
-            Accept: "application/json",
+            accept: "application/json",
           },
         });
 
@@ -119,7 +119,9 @@ export const FeatureFlagProvider = ({
       }
     };
 
-    void synchronizeFlags();
+    synchronizeFlags().catch(() => {
+      // swallow initial sync errors; subsequent API usage handles surfacing issues
+    });
 
     return () => {
       isMounted = false;

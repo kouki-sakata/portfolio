@@ -232,6 +232,14 @@ describe("FeatureFlagContext", () => {
         JSON.stringify({ useShadcnUI: true })
       );
 
+      const fetchMock = vi.fn<typeof fetch>().mockResolvedValue({
+        ok: true,
+        json: async () => ({ useShadcnUI: true }),
+      } as Response);
+
+      vi.stubGlobal("fetch", fetchMock);
+      activeFetchMock = fetchMock;
+
       const { result } = renderHook(() => useFeatureFlag(), {
         wrapper: ({ children }: { children: ReactNode }) => (
           <FeatureFlagProvider>{children}</FeatureFlagProvider>
