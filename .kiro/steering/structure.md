@@ -268,14 +268,18 @@ frontend/
 │   │       └── types/
 │   ├── shared/       # 共通コンポーネント
 │   │   ├── api/      # API共通設定
-│   │   │   └── errors/    # カスタムエラークラス
-│   │   │       ├── AuthenticationError.ts
-│   │   │       ├── AuthorizationError.ts
-│   │   │       ├── NetworkError.ts
-│   │   │       ├── ValidationError.ts
-│   │   │       ├── UnexpectedError.ts
-│   │   │       ├── error-classifier.ts
-│   │   │       └── index.ts
+│   │   │   ├── __tests__/    # API統合テスト（2025-10-04追加）
+│   │   │   │   └── api.integration.msw.test.ts
+│   │   │   ├── errors/    # カスタムエラークラス
+│   │   │   │   ├── AuthenticationError.ts
+│   │   │   │   ├── AuthorizationError.ts
+│   │   │   │   ├── NetworkError.ts
+│   │   │   │   ├── ValidationError.ts
+│   │   │   │   ├── UnexpectedError.ts
+│   │   │   │   ├── error-classifier.ts
+│   │   │   │   └── index.ts
+│   │   │   └── events/    # APIイベント管理
+│   │   │       └── authEvents.ts
 │   │   ├── components/
 │   │   │   └── loading/    # ローディング状態管理
 │   │   │       ├── LoadingSpinner.tsx
@@ -309,7 +313,9 @@ frontend/
 │   ├── styles/       # グローバルスタイル
 │   │   └── index.css
 │   ├── test/         # テストユーティリティ
-│   │   └── setup.ts
+│   │   ├── msw/     # MSWモックサーバー設定（2025-10-04追加）
+│   │   │   └── server.ts
+│   │   └── setup.ts  # Vitest + MSW統合セットアップ
 │   ├── main.tsx      # エントリーポイント
 │   └── vite-env.d.ts # Vite型定義
 ├── .biomeignore       # Biome除外設定
@@ -508,6 +514,9 @@ frontend/dist/
 
 ### フロントエンドテスト
 - **単体テスト**: Vitest + Testing Library
+- **統合テスト**: MSW (Mock Service Worker) + Vitest（2025-10-04追加）
+  - APIモックによるリアルな統合テスト
+  - 認証フロー、エラーハンドリング、リトライメカニズムのテスト
 - **E2Eテスト**: Playwright
 - **カバレッジ**: Vitest Coverage
 
