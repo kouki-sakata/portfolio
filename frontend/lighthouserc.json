@@ -5,11 +5,18 @@
       "startServerCommand": "npm run preview",
       "startServerReadyPattern": "Local:",
       "startServerReadyTimeout": 10000,
-      "url": ["http://localhost:4173/", "http://localhost:4173/sign-in"],
+      "puppeteerScript": "./lighthouse-auth.js",
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/signin",
+        "http://localhost:4173/stamp-history",
+        "http://localhost:4173/admin/employees"
+      ],
       "settings": {
         "preset": "desktop",
         "budgetsPath": "./performance/performance-budgets.json",
         "formFactor": "desktop",
+        "disableStorageReset": true,
         "screenEmulation": {
           "mobile": false,
           "width": 1366,

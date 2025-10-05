@@ -77,6 +77,7 @@
     "msw": "^2.11.3",
     "openapi-zod-client": "^1.18.3",
     "postcss": "^8.5.6",
+    "puppeteer": "^23.11.1",
     "rollup-plugin-visualizer": "^6.0.3",
     "tailwindcss": "^4.1.13",
     "typescript": "~5.8.3",
