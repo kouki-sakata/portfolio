@@ -263,6 +263,17 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
   - React SPAへの完全移行達成
   - `legacy`プロファイルの削除とアーキテクチャ簡素化
   - SPA単一構成による技術的負債の解消
+- ✅ パフォーマンス監視基盤の実装（完了 - 2025-10-05、Task 32）
+  - Lighthouse CI統合による自動パフォーマンステスト
+  - パフォーマンス閾値チェック関数の実装（performanceChecks.ts）
+  - パフォーマンス目標設定
+    - Lighthouse Performance Score: 90以上
+    - LCP (Largest Contentful Paint): 1500ms以下
+    - TTI (Time to Interactive): 2000ms以下
+    - バンドルサイズ: 300KB以下（script）、550KB以下（total）
+    - API応答時間: p95=200ms、p99=500ms
+  - TypeScript strict mode型安全性の向上（配列アクセスの型保証）
+  - 13件のテストケース実装によるパフォーマンス監視品質保証
 - 🔄 Playwright E2Eテスト拡充（継続中）
   - コア機能のE2Eテスト追加
   - エッジケースシナリオのカバレッジ向上

@@ -191,6 +191,8 @@ src/
 frontend/
 ├── dist/              # ビルド出力
 ├── node_modules/      # Node.js依存関係
+├── performance/       # パフォーマンス予算設定（2025-10-05追加）
+│   └── performance-budgets.json # バンドルサイズ予算定義
 ├── public/            # 静的アセット
 │   ├── img/          # 画像ファイル
 │   └── vite.svg      # Viteロゴ
@@ -289,6 +291,8 @@ frontend/
 │   │   │   ├── GlobalErrorHandler.ts
 │   │   │   ├── error-logger.ts
 │   │   │   └── index.ts
+│   │   ├── performance/  # パフォーマンス監視（2025-10-05追加）
+│   │   │   └── performanceChecks.ts # Lighthouse/API/バンドル評価関数
 │   │   ├── hooks/
 │   │   ├── types/
 │   │   └── utils/
@@ -324,6 +328,7 @@ frontend/
 ├── biome.jsonc        # Biome統合コード品質設定
 ├── components.json    # shadcn/ui設定
 ├── index.html         # HTMLテンプレート
+├── lighthouserc.json  # Lighthouse CI設定（2025-10-05追加）
 ├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
 ├── package.json       # 依存関係とスクリプト
 ├── package-lock.json  # ロックファイル

@@ -105,6 +105,11 @@
   - React Hook Formとの統合によるフォームバリデーション
   - ZodEffects型の適切な処理（z.infer、z.input、z.output）
   - API型安全性の強化とランタイムバリデーション
+- **Lighthouse CI**: パフォーマンス監視ツール（@lhci/cli@0.13.x）
+  - 自動化されたパフォーマンステスト
+  - Core Web Vitals測定（LCP、TTI等）
+  - パフォーマンス予算管理
+  - CI/CDパイプライン統合対応
 - **Ultracite**: 統合開発ツール（v5.4.4、グローバルインストール推奨）
 
 ### ビルド設定
@@ -124,6 +129,7 @@ npm run biome:ci     # CI用Biomeチェック
 npm run generate:api # OpenAPI仕様からTypeScript型とZodスキーマを生成
 npm run generate:api-types    # TypeScript型のみ生成
 npm run generate:zod-schemas   # Zodスキーマのみ生成
+npm run perf:lhci    # Lighthouse CI パフォーマンステスト実行
 ```
 
 ### APIクライアント層
@@ -376,6 +382,29 @@ VITE_DEBUG_MODE=true
 - **アプリケーションログ**: SLF4J + Logback
 - **アクセスログ**: Spring Boot組み込み
 - **エラー追跡**: ログファイル出力
+
+### パフォーマンス監視（2025-10-05追加）
+- **Lighthouse CI**: 自動化されたパフォーマンステスト
+  - 設定ファイル: `frontend/lighthouserc.json`
+  - 実行コマンド: `npm run perf:lhci --prefix frontend`
+  - デスクトッププリセット（1366x768、CPU制限なし）
+  - 3回の測定実行による平均値算出
+- **パフォーマンス目標**:
+  - Lighthouse Performance Score: 90以上
+  - LCP (Largest Contentful Paint): 1500ms以下
+  - TTI (Time to Interactive): 2000ms以下
+- **バンドルサイズ予算**:
+  - JavaScript: 300KB以下
+  - 総リソースサイズ: 550KB以下
+  - サードパーティリソース: 25個以下
+- **API応答時間目標**:
+  - p95パーセンタイル: 200ms以下
+  - p99パーセンタイル: 500ms以下
+- **パフォーマンス評価関数**: `frontend/src/shared/performance/performanceChecks.ts`
+  - `evaluateLighthouseMetrics()`: Core Web Vitals評価
+  - `evaluateBundleBudget()`: バンドルサイズチェック
+  - `evaluateApiPerformance()`: API応答時間評価
+  - `calculatePercentile()`: パーセンタイル計算
 
 ## プロファイル管理
 
