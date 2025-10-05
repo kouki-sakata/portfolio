@@ -2,8 +2,13 @@
   "ci": {
     "collect": {
       "numberOfRuns": 3,
-      "staticDistDir": "./dist",
-      "url": ["/"],
+      "startServerCommand": "npm run preview",
+      "startServerReadyPattern": "Local:",
+      "startServerReadyTimeout": 10000,
+      "url": [
+        "http://localhost:4173/",
+        "http://localhost:4173/sign-in"
+      ],
       "settings": {
         "preset": "desktop",
         "budgetsPath": "./performance/performance-budgets.json",
