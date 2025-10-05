@@ -164,7 +164,8 @@
         "**/*.gen.ts",
         "**/*.generated.ts",
         "src/types/**",
-        "**/types/index.ts"
+        "**/types/index.ts",
+        "lighthouserc.json"
       ],
       "linter": {
         "enabled": false
