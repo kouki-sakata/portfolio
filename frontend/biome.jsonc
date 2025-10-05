@@ -1,8 +1,6 @@
 {
   "$schema": "https://biomejs.dev/schemas/2.2.4/schema.json",
-  "extends": [
-    "ultracite"
-  ],
+  "extends": ["ultracite"],
   "linter": {
     "rules": {
       "performance": {
@@ -22,11 +20,7 @@
           "level": "error",
           "options": {
             "requireAscii": true,
-            "filenameCases": [
-              "kebab-case",
-              "PascalCase",
-              "camelCase"
-            ]
+            "filenameCases": ["kebab-case", "PascalCase", "camelCase"]
           }
         }
       },
@@ -118,9 +112,7 @@
       }
     },
     {
-      "includes": [
-        "**/features/employees/components/EmployeeListPage.tsx"
-      ],
+      "includes": ["**/features/employees/components/EmployeeListPage.tsx"],
       "linter": {
         "rules": {
           "suspicious": {
@@ -131,10 +123,7 @@
       }
     },
     {
-      "includes": [
-        "**/*.config.ts",
-        "**/*.config.js"
-      ],
+      "includes": ["**/*.config.ts", "**/*.config.js"],
       "linter": {
         "rules": {
           "style": {
@@ -145,9 +134,7 @@
       }
     },
     {
-      "includes": [
-        "src/shared/error-handling/error-logger.ts"
-      ],
+      "includes": ["src/shared/error-handling/error-logger.ts"],
       "linter": {
         "rules": {
           "suspicious": {
