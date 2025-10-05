@@ -42,8 +42,7 @@
         "src/shared/api/__tests__/**/*.ts",
         "src/app/providers/AppProviders.tsx",
         "src/shared/components/data-table/DataTableViewOptions.tsx",
-        "vite.config.ts",
-        "lighthouserc.json"
+        "vite.config.ts"
       ],
       "linter": {
         "rules": {
@@ -165,7 +164,8 @@
         "**/*.gen.ts",
         "**/*.generated.ts",
         "src/types/**",
-        "**/types/index.ts"
+        "**/types/index.ts",
+        "lighthouserc.json"
       ],
       "linter": {
         "enabled": false

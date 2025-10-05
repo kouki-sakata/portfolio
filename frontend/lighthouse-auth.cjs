@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Lighthouse CI - 認証用Puppeteerスクリプト
  *
