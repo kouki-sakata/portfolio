@@ -3,9 +3,7 @@
     "collect": {
       "numberOfRuns": 3,
       "staticDistDir": "./dist",
-      "url": [
-        "/"
-      ],
+      "url": ["/"],
       "settings": {
         "preset": "desktop",
         "budgetsPath": "./performance/performance-budgets.json",
