@@ -17,7 +17,7 @@ module.exports = async (browser, _context) => {
 
   try {
     // サインインページに移動
-    await page.goto("http://localhost:4173/signin", {
+    await page.goto("http://localhost:5173/signin", {
       waitUntil: "networkidle2",
       timeout: 10_000,
     });

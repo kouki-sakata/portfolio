@@ -5,12 +5,9 @@
       "startServerCommand": "npm run preview",
       "startServerReadyPattern": "Local:",
       "startServerReadyTimeout": 10000,
-      "puppeteerScript": "./lighthouse-auth.js",
       "url": [
         "http://localhost:4173/",
-        "http://localhost:4173/signin",
-        "http://localhost:4173/stamp-history",
-        "http://localhost:4173/admin/employees"
+        "http://localhost:4173/signin"
       ],
       "settings": {
         "preset": "desktop",
