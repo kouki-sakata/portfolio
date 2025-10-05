@@ -1,5 +1,60 @@
 # Steering Documents Changelog
 
+## 2025-10-05 (Update 20)
+
+### Updated Documents
+- `CHANGELOG.md` - Lighthouse CI統合とパフォーマンス監視基盤の実装完了を記録
+
+### Key Changes
+
+#### パフォーマンス監視基盤の実装（PR #40マージ完了、Task 32）
+- **Lighthouse CI統合**
+  - 自動化されたパフォーマンステストの実装
+  - Core Web Vitals測定（LCP、TTI等）
+  - CI/CDパイプラインへの統合対応
+  - デスクトッププリセット（1366x768、CPU制限なし、3回測定）
+
+- **パフォーマンス目標設定**
+  - Lighthouse Performance Score: 90以上
+  - LCP (Largest Contentful Paint): 1500ms以下
+  - TTI (Time to Interactive): 2000ms以下
+  - バンドルサイズ予算: JavaScript 300KB以下、総リソース550KB以下
+  - API応答時間: p95=200ms、p99=500ms
+
+- **パフォーマンス評価関数実装**
+  - `frontend/src/shared/performance/performanceChecks.ts`
+  - `evaluateLighthouseMetrics()`: Core Web Vitals評価
+  - `evaluateBundleBudget()`: バンドルサイズチェック
+  - `evaluateApiPerformance()`: API応答時間評価
+  - `calculatePercentile()`: パーセンタイル計算
+
+- **認証ページのLighthouse CI対応**
+  - Playwrightによる認証フロー自動化
+  - セッション確立後のパフォーマンステスト実装
+  - 実際のユーザー体験に基づく測定
+
+- **TypeScript型安全性の向上**
+  - 配列アクセスの型保証（Array.at()メソッド活用）
+  - strictモードにおける型安全な実装パターン
+  - 13件のテストケース実装による品質保証
+
+### Technical Achievements
+- **自動化**: CI/CD統合による継続的パフォーマンス監視
+- **型安全性**: TypeScript strict modeによる配列アクセスの型保証
+- **テストカバレッジ**: 13件のパフォーマンステストケース実装
+- **予算管理**: performance-budgets.jsonによるバンドルサイズ制御
+
+### Impact
+- **品質保証**: 継続的なパフォーマンス監視により品質劣化を早期検出
+- **ユーザー体験**: Core Web Vitalsの定量的管理によるUX向上
+- **開発効率**: 自動化されたパフォーマンステストによるフィードバック高速化
+- **予算管理**: バンドルサイズ予算によるリソース肥大化の防止
+
+### Note
+最新のコミット（8ec0332、363dd39、7546f89等）でLighthouse CI統合が完了。TeamDevelop Bravoはパフォーマンス監視の自動化により、継続的な品質改善の基盤を確立しました。
+
+---
+
 ## 2025-10-04 (Update 19)
 
 ### Updated Documents
