@@ -80,8 +80,9 @@ if (enableOpenApiContract) {
 
     dependencies {
         // OpenAPI v3 parser and operation validator
-        contractTestImplementation 'org.openapi4j:openapi-parser:1.0.9'
-        contractTestImplementation 'org.openapi4j:openapi-operation-validator:1.0.9'
+        // 1.0.9 は Maven Central に公開されていないため 1.0.8 を利用
+        contractTestImplementation 'org.openapi4j:openapi-parser:1.0.8'
+        contractTestImplementation 'org.openapi4j:openapi-operation-validator:1.0.8'
     }
 
     tasks.register('contractTest', Test) {
