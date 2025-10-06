@@ -60,6 +60,19 @@ node {
 
 // --- Optional: OpenAPI contract test wiring (enable with -PenableOpenApiContract) ---
 def enableOpenApiContract = project.hasProperty('enableOpenApiContract')
+def openapi4jVersion = '1.0.8'
+
+configurations.configureEach { configuration ->
+    if (configuration.name.startsWith('contractTest') || configuration.name.startsWith('test')) {
+        configuration.resolutionStrategy.eachDependency { details ->
+            if (details.requested.group == 'org.openapi4j' &&
+                details.requested.name in ['openapi-parser', 'openapi-operation-validator']) {
+                details.useVersion(openapi4jVersion)
+                details.because('Version 1.0.9 is not published on Maven Central')
+            }
+        }
+    }
+}
 
 if (enableOpenApiContract) {
     logger.lifecycle("OpenAPI contract tests are ENABLED (-PenableOpenApiContract)")
@@ -80,8 +93,9 @@ if (enableOpenApiContract) {
 
     dependencies {
         // OpenAPI v3 parser and operation validator
-        contractTestImplementation 'org.openapi4j:openapi-parser:1.0.9'
-        contractTestImplementation 'org.openapi4j:openapi-operation-validator:1.0.9'
+        // 1.0.9 は Maven Central に公開されていないため 1.0.8 を利用
+        contractTestImplementation "org.openapi4j:openapi-parser:${openapi4jVersion}"
+        contractTestImplementation "org.openapi4j:openapi-operation-validator:${openapi4jVersion}"
     }
 
     tasks.register('contractTest', Test) {
