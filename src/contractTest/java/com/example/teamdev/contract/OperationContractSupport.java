@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.openapi4j.operation.validator.model.Request;
 import org.openapi4j.operation.validator.model.Response;
+import org.openapi4j.operation.validator.model.impl.Body;
 import org.openapi4j.operation.validator.model.impl.DefaultResponse;
 import org.openapi4j.operation.validator.validation.OperationValidator;
-import org.openapi4j.operation.validator.validation.ValidationData;
+import org.openapi4j.schema.validator.ValidationData;
 import org.openapi4j.parser.OpenApi3Parser;
 import org.openapi4j.parser.model.v3.OpenApi3;
+import org.openapi4j.parser.model.v3.Operation;
+import org.openapi4j.parser.model.v3.Path;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -37,13 +40,35 @@ public final class OperationContractSupport {
             File out = new File("build/openapi.json");
             out.getParentFile().mkdirs();
             Files.writeString(out.toPath(), json);
-            CACHED_API = new OpenApi3Parser().parse(out.toURI(), true);
+            CACHED_API = new OpenApi3Parser().parse(out, true);
         }
         return CACHED_API;
     }
 
-    public static OperationValidator validator(OpenApi3 api, String path, Request.Method method) {
-        return new OperationValidator(api, path, method);
+    public static OperationValidator validator(OpenApi3 api, String pathString, Request.Method method) {
+        Path path = api.getPaths().get(pathString);
+        if (path == null) {
+            throw new IllegalArgumentException("Path not found in OpenAPI spec: " + pathString);
+        }
+        
+        // Get the operation based on the HTTP method
+        Operation operation = switch (method) {
+            case GET -> path.getGet();
+            case POST -> path.getPost();
+            case PUT -> path.getPut();
+            case PATCH -> path.getPatch();
+            case DELETE -> path.getDelete();
+            case HEAD -> path.getHead();
+            case OPTIONS -> path.getOptions();
+            case TRACE -> path.getTrace();
+        };
+        
+        if (operation == null) {
+            throw new IllegalArgumentException(
+                "Operation " + method + " not found for path: " + pathString);
+        }
+        
+        return new OperationValidator(api, path, operation);
     }
 
     public static Response toResponse(HttpServletResponse servletResponse, ObjectMapper mapper) throws Exception {
@@ -64,17 +89,17 @@ public final class OperationContractSupport {
         String body = servletResponse instanceof org.springframework.mock.web.MockHttpServletResponse m ? m.getContentAsString() : null;
         if (body != null && !body.isBlank() && content != null && content.contains("json")) {
             JsonNode node = mapper.readTree(body);
-            builder.body(node);
+            builder.body(Body.from(node));
         }
 
         return builder.build();
     }
 
-    public static <T> void assertValid(OperationValidator validator, Response response) {
-        ValidationData<T> data = new ValidationData<>();
-        validator.validateResponse(response, data);
-        if (!data.isValid()) {
-            throw new AssertionError("OpenAPI validation failed: " + data.results().toString());
+    public static void assertValid(OperationValidator validator, Response response) {
+        ValidationData<Void> results = new ValidationData<>();
+        validator.validateResponse(response, results);
+        if (!results.isValid()) {
+            throw new AssertionError("OpenAPI validation failed: " + results.results().toString());
         }
     }
 }
