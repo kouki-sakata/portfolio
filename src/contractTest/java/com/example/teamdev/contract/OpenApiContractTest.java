@@ -50,15 +50,15 @@ class OpenApiContractTest extends com.example.teamdev.testconfig.PostgresContain
         // openapi4j: org.openapi4j.parser.OpenApi3Parser / model.v3.OpenApi3
         // 依存は contractTest のみが参照するため、通常ビルドや通常テストには影響しません
         org.openapi4j.parser.model.v3.OpenApi3 api = new org.openapi4j.parser.OpenApi3Parser()
-            .parse(tmp.toURI(), true);
+            .parse(tmp, true);
 
         assertThat(api).isNotNull();
         assertThat(api.getOpenapi()).isNotBlank();
 
         // 代表的なパスの存在を検証（細かなレスポンス検証は後続で OperationValidator を追加予定）
         assertThat(api.getPaths()).isNotNull();
-        assertThat(api.getPaths().getPath("/api/auth/session")).isNotNull();
-        assertThat(api.getPaths().getPath("/api/auth/login")).isNotNull();
+        assertThat(api.getPaths().get("/api/auth/session")).isNotNull();
+        assertThat(api.getPaths().get("/api/auth/login")).isNotNull();
     }
 }
 

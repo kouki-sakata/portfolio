@@ -60,7 +60,7 @@ node {
 
 // --- Optional: OpenAPI contract test wiring (enable with -PenableOpenApiContract) ---
 def enableOpenApiContract = project.hasProperty('enableOpenApiContract')
-def openapi4jVersion = '1.0.8'
+def openapi4jVersion = '1.0.7'
 
 configurations.configureEach { configuration ->
     if (configuration.name.startsWith('contractTest') || configuration.name.startsWith('test')) {
