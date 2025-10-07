@@ -16,7 +16,7 @@ export const dashboardQueryOptions = (
   repository: IHomeRepository = createHomeRepository()
 ) =>
   queryOptions({
-    queryKey: ["home", "overview"] as const,
+    queryKey: ["home", "dashboard"] as const,
     queryFn: () => repository.getDashboard(),
     staleTime: 60 * 1000,
     refetchInterval: 5 * 60 * 1000, // 5分ごとに自動更新

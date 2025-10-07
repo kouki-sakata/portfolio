@@ -1,20 +1,13 @@
 import { memo } from "react";
 
-/**
- * ニュース項目の型
- */
-export type NewsItem = {
-  id: number;
-  newsDate: string;
-  content: string;
-};
+import type { HomeNewsItem } from "@/features/home/types";
 
 /**
  * NewsSectionのProps
  * Interface Segregation: ニュース表示に必要な情報のみ
  */
 export type NewsSectionProps = {
-  news: NewsItem[];
+  news: HomeNewsItem[];
   isLoading?: boolean;
 };
 

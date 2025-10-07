@@ -56,13 +56,13 @@ export class HomeRepository implements IHomeRepository {
   }
 
   async getDashboard(): Promise<HomeDashboardResponse> {
-    const response = await this.httpClient.get<unknown>("/home/dashboard");
+    const response = await this.httpClient.get<unknown>("/home/overview");
     return HomeDashboardResponseSchema.parse(response);
   }
 
   async submitStamp(request: StampRequest): Promise<StampResponse> {
     const response = await this.httpClient.post<unknown>(
-      "/home/stamp",
+      "/home/stamps",
       request
     );
     return StampResponseSchema.parse(response);

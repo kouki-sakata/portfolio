@@ -1,21 +1,15 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { HttpResponse, http } from "msw";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { QUERY_CONFIG } from "@/app/config/queryClient";
-import { getHomeDashboard } from "@/features/home/api/homeDashboard";
-import { submitStamp } from "@/features/home/api/stamp";
 import type {
   HomeDashboardResponse,
   StampResponse,
 } from "@/features/home/types";
-import { queryKeys } from "@/shared/utils/queryUtils";
-import { HomePage } from "./HomePage";
-
-// Mock the API modules
-vi.mock("@/features/home/api/homeDashboard");
-vi.mock("@/features/home/api/stamp");
+import { mswServer } from "@/test/msw/server";
+import { HomePageRefactored as HomePage } from "./HomePageRefactored";
 
 describe("HomePage", () => {
   let queryClient: QueryClient;
@@ -31,7 +25,6 @@ describe("HomePage", () => {
 
   afterEach(() => {
     cleanup();
-    vi.clearAllMocks();
   });
 
   const mockDashboardData: HomeDashboardResponse = {
@@ -67,11 +60,12 @@ describe("HomePage", () => {
 
   describe("ダッシュボードデータの表示", () => {
     it("ローディング中はPageLoaderが表示される", () => {
-      vi.mocked(getHomeDashboard).mockImplementation(
-        () =>
-          new Promise(() => {
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () => {
+          return new Promise(() => {
             // Intentionally never resolves to test loading state
-          })
+          });
+        })
       );
 
       renderWithQueryClient(<HomePage />);
@@ -82,7 +76,11 @@ describe("HomePage", () => {
     });
 
     it("従業員名を含む挨拶メッセージが表示される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -94,7 +92,11 @@ describe("HomePage", () => {
     });
 
     it("サブタイトルが表示される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -106,7 +108,11 @@ describe("HomePage", () => {
     });
 
     it("ホームダッシュボードのキャッシュ設定を適用する", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -118,7 +124,7 @@ describe("HomePage", () => {
 
       const cachedQuery = queryClient
         .getQueryCache()
-        .find({ queryKey: queryKeys.home.dashboard() });
+        .find({ queryKey: ["home", "overview"] });
 
       const cachedOptions = cachedQuery?.options as
         | {
@@ -127,16 +133,18 @@ describe("HomePage", () => {
           }
         | undefined;
 
-      expect(cachedOptions?.staleTime).toBe(
-        QUERY_CONFIG.homeDashboard.staleTime
-      );
-      expect(cachedOptions?.gcTime).toBe(QUERY_CONFIG.homeDashboard.gcTime);
+      // useDashboard hook defines staleTime: 60 * 1000
+      expect(cachedOptions?.staleTime).toBe(60 * 1000);
     });
   });
 
   describe("打刻カードの機能", () => {
     beforeEach(async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
       renderWithQueryClient(<HomePage />);
       await waitFor(() => {
         expect(screen.getByText("ワンクリック打刻")).toBeInTheDocument();
@@ -172,18 +180,31 @@ describe("HomePage", () => {
         message: "出勤打刻が完了しました",
         success: true,
       };
-      vi.mocked(submitStamp).mockResolvedValue(mockResponse);
+
+      let capturedRequest: Request | null = null;
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", ({ request }) => {
+          capturedRequest = request.clone();
+          return HttpResponse.json(mockResponse);
+        })
+      );
 
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: "出勤打刻" }));
 
       await waitFor(() => {
-        expect(submitStamp).toHaveBeenCalled();
-        const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall?.[0]).toMatchObject({
-          stampType: "1",
-          nightWorkFlag: "0",
-        });
+        expect(capturedRequest).not.toBeNull();
+      });
+
+      if (!capturedRequest) {
+        throw new Error("Request was not captured");
+      }
+
+      const body = await (capturedRequest as Request).json();
+      expect(body).toMatchObject({
+        stampType: "1",
+        nightWorkFlag: "0",
       });
     });
 
@@ -192,18 +213,31 @@ describe("HomePage", () => {
         message: "退勤打刻が完了しました",
         success: true,
       };
-      vi.mocked(submitStamp).mockResolvedValue(mockResponse);
+
+      let capturedRequest: Request | null = null;
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", ({ request }) => {
+          capturedRequest = request.clone();
+          return HttpResponse.json(mockResponse);
+        })
+      );
 
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: "退勤打刻" }));
 
       await waitFor(() => {
-        expect(submitStamp).toHaveBeenCalled();
-        const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall?.[0]).toMatchObject({
-          stampType: "2",
-          nightWorkFlag: "0",
-        });
+        expect(capturedRequest).not.toBeNull();
+      });
+
+      if (!capturedRequest) {
+        throw new Error("Request was not captured");
+      }
+
+      const body = await (capturedRequest as Request).json();
+      expect(body).toMatchObject({
+        stampType: "2",
+        nightWorkFlag: "0",
       });
     });
 
@@ -212,19 +246,32 @@ describe("HomePage", () => {
         message: "出勤打刻が完了しました",
         success: true,
       };
-      vi.mocked(submitStamp).mockResolvedValue(mockResponse);
+
+      let capturedRequest: Request | null = null;
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", ({ request }) => {
+          capturedRequest = request.clone();
+          return HttpResponse.json(mockResponse);
+        })
+      );
 
       const user = userEvent.setup();
       await user.click(screen.getByRole("checkbox", { name: /夜勤扱い/ }));
       await user.click(screen.getByRole("button", { name: "出勤打刻" }));
 
       await waitFor(() => {
-        expect(submitStamp).toHaveBeenCalled();
-        const firstCall = vi.mocked(submitStamp).mock.calls[0];
-        expect(firstCall?.[0]).toMatchObject({
-          stampType: "1",
-          nightWorkFlag: "1",
-        });
+        expect(capturedRequest).not.toBeNull();
+      });
+
+      if (!capturedRequest) {
+        throw new Error("Request was not captured");
+      }
+
+      const body = await (capturedRequest as Request).json();
+      expect(body).toMatchObject({
+        stampType: "1",
+        nightWorkFlag: "1",
       });
     });
 
@@ -233,7 +280,12 @@ describe("HomePage", () => {
         message: "出勤打刻が完了しました",
         success: true,
       };
-      vi.mocked(submitStamp).mockResolvedValue(mockResponse);
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", () =>
+          HttpResponse.json(mockResponse)
+        )
+      );
 
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: "出勤打刻" }));
@@ -244,7 +296,11 @@ describe("HomePage", () => {
     });
 
     it("打刻失敗時にエラーメッセージが表示される", async () => {
-      vi.mocked(submitStamp).mockRejectedValue(new Error("Network error"));
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", () =>
+          HttpResponse.error()
+        )
+      );
 
       const user = userEvent.setup();
       await user.click(screen.getByRole("button", { name: "出勤打刻" }));
@@ -261,9 +317,12 @@ describe("HomePage", () => {
         message: "打刻が完了しました",
         success: true,
       };
-      vi.mocked(submitStamp).mockImplementation(
-        () =>
-          new Promise((resolve) => setTimeout(() => resolve(mockResponse), 100))
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", async () => {
+          await new Promise((resolve) => setTimeout(resolve, 100));
+          return HttpResponse.json(mockResponse);
+        })
       );
 
       const user = userEvent.setup();
@@ -280,7 +339,11 @@ describe("HomePage", () => {
 
   describe("ニュースカードの機能", () => {
     it("ニュースカードのタイトルが表示される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -292,7 +355,11 @@ describe("HomePage", () => {
     });
 
     it("ニュースアイテムが表示される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -313,7 +380,12 @@ describe("HomePage", () => {
         ...mockDashboardData,
         news: [],
       };
-      vi.mocked(getHomeDashboard).mockResolvedValue(emptyNewsData);
+
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(emptyNewsData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -327,7 +399,11 @@ describe("HomePage", () => {
 
   describe("レスポンシブデザイン", () => {
     it("メインセクションにhomeクラスが適用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 
@@ -337,7 +413,11 @@ describe("HomePage", () => {
     });
 
     it("グリッドレイアウトが適用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 
@@ -347,7 +427,11 @@ describe("HomePage", () => {
     });
 
     it("カードコンポーネントが適切なクラスを持つ", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 
@@ -360,7 +444,11 @@ describe("HomePage", () => {
 
   describe("shadcn/uiコンポーネントの使用", () => {
     it("shadcn/uiのCardコンポーネントが使用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 
@@ -374,7 +462,11 @@ describe("HomePage", () => {
     });
 
     it("shadcn/uiのButtonコンポーネントが使用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -391,7 +483,11 @@ describe("HomePage", () => {
     });
 
     it("shadcn/uiのCheckboxコンポーネントが使用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       renderWithQueryClient(<HomePage />);
 
@@ -405,7 +501,11 @@ describe("HomePage", () => {
 
   describe("Tailwind CSS v4の使用", () => {
     it("Tailwindのユーティリティクラスが使用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 
@@ -419,7 +519,11 @@ describe("HomePage", () => {
     });
 
     it("レスポンシブクラスが適用される", async () => {
-      vi.mocked(getHomeDashboard).mockResolvedValue(mockDashboardData);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
 
       const { container } = renderWithQueryClient(<HomePage />);
 

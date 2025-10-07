@@ -26,13 +26,13 @@ const navigationGroups: NavigationGroup[] = [
       {
         id: "stamp",
         label: "出退勤",
-        href: "/stamp",
+        href: "/attendance",
         icon: "clock",
       },
       {
         id: "history",
         label: "勤怠履歴",
-        href: "/history",
+        href: "/stamp-history",
         icon: "history",
       },
     ],
@@ -44,7 +44,7 @@ const navigationGroups: NavigationGroup[] = [
       {
         id: "employees",
         label: "社員管理",
-        href: "/employees",
+        href: "/admin/employees",
         icon: "users",
       },
       {

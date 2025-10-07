@@ -117,7 +117,6 @@ const router = createBrowserRouter([
         element: <SignInRoute />,
       },
       {
-        path: "/",
         element: <AppLayout />,
         children: [
           {

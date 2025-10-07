@@ -57,7 +57,9 @@ export const NewsCard = memo(
                 >
                   {news.newsDate}
                 </time>
-                <p className="text-sm text-neutral-900 leading-relaxed">{news.content}</p>
+                <p className="text-neutral-900 text-sm leading-relaxed">
+                  {news.content}
+                </p>
               </div>
             </li>
           ))}

@@ -2,7 +2,7 @@ import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
-import { NewsSection } from "./NewsSection";
+import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
 
 /**
@@ -19,19 +19,24 @@ export const HomePageRefactored = () => {
   }
 
   return (
-    <section className="home">
+    <section className="home container mx-auto px-4 py-6">
       <HomeHero
         firstName={data.employee.firstName}
         lastName={data.employee.lastName}
       />
 
-      <div className="home-grid">
+      <div className="home-grid grid grid-cols-1 gap-6 lg:grid-cols-2">
         <StampCard
+          className="home-card"
           isLoading={isStamping}
           message={message}
           onStamp={handleStamp}
         />
-        <NewsSection isLoading={false} news={data.news} />
+        <NewsCard
+          className="home-card"
+          isLoading={false}
+          newsItems={data.news}
+        />
       </div>
     </section>
   );
@@ -47,10 +52,12 @@ type HomeHeroProps = {
 };
 
 const HomeHero = ({ firstName, lastName }: HomeHeroProps) => (
-  <header className="home-hero">
-    <h1 className="home-hero__title">
+  <header className="home-hero mb-8">
+    <h1 className="home-hero__title mb-2 font-bold text-2xl text-gray-900 md:text-3xl">
       おはようございます、{lastName} {firstName} さん
     </h1>
-    <p className="home-hero__subtitle">今日も素敵な一日を過ごしましょう。</p>
+    <p className="home-hero__subtitle text-gray-600">
+      今日も素敵な一日を過ごしましょう。
+    </p>
   </header>
 );

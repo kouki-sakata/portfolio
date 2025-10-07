@@ -7,7 +7,7 @@ import {
 } from "@/features/home/repositories/HomeRepository";
 import type { StampRequest, StampResponse } from "@/features/home/types";
 
-const HOME_DASHBOARD_KEY = ["home", "overview"] as const;
+const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
 
 /**
  * 打刻用カスタムフック
