@@ -2,7 +2,7 @@ import "@/styles/global.css";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
-import { lazy, StrictMode, useEffect } from "react";
+import { lazy, StrictMode, Suspense, useEffect } from "react";
 import {
   createBrowserRouter,
   Outlet,
@@ -22,6 +22,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SessionTimeoutNotification } from "@/features/auth/components/SessionTimeoutNotification";
 import { AuthProvider } from "@/features/auth/context/AuthProvider";
 import { IconSpriteSheet } from "@/shared/components/icons/SpriteIcon";
+import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 // Lazy load route components for code splitting
 const SignInRoute = lazy(() =>
@@ -178,7 +179,9 @@ export const AppProviders = () => (
     <IconSpriteSheet />
     <ThemeProvider defaultTheme="system" disablePersistence>
       <QueryClientProvider client={queryClient}>
-        <RouterProvider router={router} />
+        <Suspense fallback={<PageLoader label="画面を読み込み中" />}>
+          <RouterProvider router={router} />
+        </Suspense>
         {import.meta.env.DEV &&
         import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
           <ReactQueryDevtools initialIsOpen={false} />

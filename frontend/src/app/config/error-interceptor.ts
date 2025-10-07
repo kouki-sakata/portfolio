@@ -43,7 +43,7 @@ export const handle401Error = async (
     }
 
     // ログインページへリダイレクト
-    const loginPath = config.loginPath ?? "/auth/signin";
+    const loginPath = config.loginPath ?? "/signin";
     config.onRedirect(loginPath);
   }
 };

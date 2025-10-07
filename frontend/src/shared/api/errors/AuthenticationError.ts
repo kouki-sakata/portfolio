@@ -7,7 +7,7 @@ import { ApiError } from "./ApiError";
 export class AuthenticationError extends ApiError {
   readonly redirectTo?: string;
 
-  constructor(message = "Unauthorized", redirectTo = "/auth/signin") {
+  constructor(message = "Unauthorized", redirectTo = "/signin") {
     super(message, 401, "AUTHENTICATION_ERROR");
     this.redirectTo = redirectTo;
 
@@ -31,7 +31,7 @@ export class AuthenticationError extends ApiError {
    * リダイレクト先のパスを取得
    */
   getRedirectPath(): string {
-    return this.redirectTo || "/auth/signin";
+    return this.redirectTo || "/signin";
   }
 
   /**

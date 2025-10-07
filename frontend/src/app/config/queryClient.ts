@@ -76,11 +76,12 @@ export const queryClient = createQueryClient();
  */
 export const configureQueryClientErrorHandler = (
   logout: () => Promise<void>,
-  redirect: (path: string) => void
+  redirect: (path: string) => void,
+  loginPath = "/signin"
 ): void => {
   globalErrorHandler = createGlobalErrorHandler({
     onLogout: logout,
     onRedirect: redirect,
-    loginPath: "/auth/signin",
+    loginPath,
   });
 };

@@ -106,7 +106,7 @@ describe("Enhanced Query Client", () => {
       await new Promise((resolve) => setTimeout(resolve, 10));
 
       expect(mockOnLogout).toHaveBeenCalled();
-      expect(mockOnRedirect).toHaveBeenCalledWith("/auth/signin");
+      expect(mockOnRedirect).toHaveBeenCalledWith("/signin");
       // 認証エラーではToastを表示しない
       expect(mockToast).not.toHaveBeenCalled();
     });

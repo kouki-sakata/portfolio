@@ -44,7 +44,7 @@ const defaultConfig: AuthProviderConfig = {
     warningBeforeExpiry: WARNING_THRESHOLD_MINUTES,
     autoExtendSession: false,
   },
-  loginPath: "/auth/signin",
+  loginPath: "/signin",
   defaultRedirectPath: "/",
 };
 
@@ -193,8 +193,12 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     // ESLintのno-misused-promisesルールを回避
     // handleLogoutは非同期関数だが、エラーハンドラー内で適切に処理される
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    configureQueryClientErrorHandler(handleLogout, navigate);
-  }, [navigate, handleLogout]);
+    configureQueryClientErrorHandler(
+      handleLogout,
+      navigate,
+      mergedConfig.loginPath
+    );
+  }, [navigate, handleLogout, mergedConfig.loginPath]);
 
   // セッション変更の監視
   useEffect(() => {
