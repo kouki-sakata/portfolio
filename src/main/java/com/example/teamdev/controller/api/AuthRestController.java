@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -47,7 +48,7 @@ public class AuthRestController {
     }
 
     @Operation(summary = "ログイン", description = "メールとパスワードでログインし、セッションを開始します")
-    @PostMapping("/login")
+    @PostMapping(value = "/login", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<LoginResponse> login(
         @Valid @RequestBody LoginRequest request,
         HttpServletRequest httpRequest,
@@ -72,7 +73,7 @@ public class AuthRestController {
     }
 
     @Operation(summary = "セッション状態取得", description = "現在の認証状態と従業員概要を返します")
-    @GetMapping("/session")
+    @GetMapping(value = "/session", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<SessionResponse> session(CsrfToken csrfToken) {
         if (csrfToken != null) {
             csrfToken.getToken();

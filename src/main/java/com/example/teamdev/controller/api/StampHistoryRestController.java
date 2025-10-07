@@ -8,6 +8,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -29,7 +30,7 @@ public class StampHistoryRestController {
     }
 
     @Operation(summary = "打刻履歴取得", description = "年・月の指定がなければ当月を返却")
-    @GetMapping
+    @GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StampHistoryResponse> history(
         @RequestParam(value = "year", required = false) String year,
         @RequestParam(value = "month", required = false) String month
