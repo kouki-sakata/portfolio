@@ -18,7 +18,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -61,7 +60,7 @@ class AuthRestControllerIntegrationTest extends PostgresContainerSupport {
         mockMvc.perform(get("/api/auth/session"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.authenticated").value(false))
-            .andExpect(jsonPath("$.employee", nullValue()));
+            .andExpect(jsonPath("$.employee").doesNotExist());
     }
 
     @DisplayName("Successful login returns employee summary and persists session")
