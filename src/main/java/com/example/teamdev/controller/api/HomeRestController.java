@@ -6,6 +6,7 @@ import com.example.teamdev.dto.api.home.HomeDashboardResponse;
 import com.example.teamdev.dto.api.home.HomeNewsItem;
 import com.example.teamdev.dto.api.home.StampRequest;
 import com.example.teamdev.dto.api.home.StampResponse;
+import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.service.HomeNewsService;
@@ -14,6 +15,7 @@ import com.example.teamdev.util.MessageUtil;
 import com.example.teamdev.util.SecurityUtil;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,7 +48,7 @@ public class HomeRestController {
     }
 
     @Operation(summary = "ホーム概要", description = "ログイン中の従業員情報とお知らせ一覧を返却")
-    @GetMapping("/overview")
+    @GetMapping(value = "/overview", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<HomeDashboardResponse> overview() {
         Employee currentEmployee = SecurityUtil.getCurrentEmployee();
         if (currentEmployee == null) {
@@ -62,7 +64,7 @@ public class HomeRestController {
     }
 
     @Operation(summary = "打刻", description = "出勤/退勤の打刻を記録")
-    @PostMapping("/stamps")
+    @PostMapping(value = "/stamps", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<StampResponse> stamp(@Valid @RequestBody StampRequest request) {
         Integer employeeId = SecurityUtil.getCurrentEmployeeId();
         if (employeeId == null) {
@@ -74,7 +76,7 @@ public class HomeRestController {
 
         LocalDateTime dateTime = LocalDateTime.parse(request.stampTime(), INPUT_FORMATTER);
         String formattedDateTime = dateTime.format(OUTPUT_FORMATTER);
-        String messageKey = request.stampType().equals(AppConstants.Stamp.TYPE_ATTENDANCE) ?
+        String messageKey = request.stampType() == StampType.ATTENDANCE ?
             "stamp.attendance.success" : "stamp.departure.success";
         String message = MessageUtil.getMessage(messageKey, new Object[]{formattedDateTime});
 
