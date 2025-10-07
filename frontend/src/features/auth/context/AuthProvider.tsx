@@ -67,11 +67,18 @@ const getCsrfToken = (): string | null => {
 };
 
 export const AuthProvider = ({ children, config }: AuthProviderProps) => {
-  const mergedConfig = { ...defaultConfig, ...config };
+  const mergedConfig = useMemo(
+    () => ({ ...defaultConfig, ...config }),
+    [config]
+  );
   const queryClient = useQueryClient();
   const sessionManager = getSessionManager();
   const navigate = useNavigate();
   const sessionCheckInterval = useRef<NodeJS.Timeout | null>(null);
+
+  // Extract frequently used config values to prevent unnecessary re-renders
+  const { sessionDuration, warningBeforeExpiry } = mergedConfig.sessionConfig;
+  const { loginPath } = mergedConfig;
 
   // State for enhanced features
   const [csrfToken, setCsrfToken] = useState<string | null>(getCsrfToken());
@@ -122,11 +129,9 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     const now = new Date();
     setSessionInfo({
       createdAt: now,
-      expiresAt: new Date(
-        now.getTime() + mergedConfig.sessionConfig.sessionDuration
-      ),
+      expiresAt: new Date(now.getTime() + sessionDuration),
       lastActivity: now,
-      warningThreshold: mergedConfig.sessionConfig.warningBeforeExpiry,
+      warningThreshold: warningBeforeExpiry,
     });
 
     // CSRFトークンを更新
@@ -149,7 +154,10 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
       setSessionTimeoutWarning(false);
       setTimeUntilExpiry(null);
     }
-  }, [logoutMutation, sessionManager]);
+    // Note: logoutMutation is intentionally excluded from deps to prevent infinite loops
+    // React Query mutations are functionally stable even though the reference changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionManager]);
 
   const refreshCsrfToken = useCallback(() => {
     setCsrfToken(getCsrfToken());
@@ -165,14 +173,12 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
         createdAt: sessionData.createdAt,
         expiresAt: sessionData.expiresAt,
         lastActivity: new Date(),
-        warningThreshold: mergedConfig.sessionConfig.warningBeforeExpiry,
+        warningThreshold: warningBeforeExpiry,
       });
     }
-  }, [
-    queryClient,
-    sessionManager,
-    mergedConfig.sessionConfig.warningBeforeExpiry,
-  ]);
+    // Note: queryClient is from useQueryClient hook and is stable across renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionManager, warningBeforeExpiry]);
 
   // セッション期限チェック
   const isSessionExpiring = useMemo(() => {
@@ -182,23 +188,18 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
     const now = new Date();
     const timeRemaining = sessionInfo.expiresAt.getTime() - now.getTime();
-    const warningThresholdMs =
-      mergedConfig.sessionConfig.warningBeforeExpiry * 60 * 1000;
+    const warningThresholdMs = warningBeforeExpiry * 60 * 1000;
 
     return timeRemaining <= warningThresholdMs && timeRemaining > 0;
-  }, [sessionInfo, mergedConfig.sessionConfig.warningBeforeExpiry]);
+  }, [sessionInfo, warningBeforeExpiry]);
 
   // グローバル401エラーハンドラーの設定
   useEffect(() => {
     // ESLintのno-misused-promisesルールを回避
     // handleLogoutは非同期関数だが、エラーハンドラー内で適切に処理される
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    configureQueryClientErrorHandler(
-      handleLogout,
-      navigate,
-      mergedConfig.loginPath
-    );
-  }, [navigate, handleLogout, mergedConfig.loginPath]);
+    configureQueryClientErrorHandler(handleLogout, navigate, loginPath);
+  }, [navigate, handleLogout, loginPath]);
 
   // セッション変更の監視
   useEffect(() => {
@@ -208,7 +209,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
           createdAt: sessionData.createdAt,
           expiresAt: sessionData.expiresAt,
           lastActivity: new Date(),
-          warningThreshold: mergedConfig.sessionConfig.warningBeforeExpiry,
+          warningThreshold: warningBeforeExpiry,
         });
       } else {
         setSessionInfo(null);
@@ -216,7 +217,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     });
 
     return unsubscribe;
-  }, [sessionManager, mergedConfig.sessionConfig.warningBeforeExpiry]);
+  }, [sessionManager, warningBeforeExpiry]);
 
   // セッションデータの初期化
   useEffect(() => {
@@ -229,15 +230,17 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
           createdAt: sessionData.createdAt,
           expiresAt: sessionData.expiresAt,
           lastActivity: new Date(),
-          warningThreshold: mergedConfig.sessionConfig.warningBeforeExpiry,
+          warningThreshold: warningBeforeExpiry,
         });
       }
     }
+    // Only depend on authenticated flag and employee ID to prevent infinite loops
+    // The employee object reference changes on every query refetch, causing unnecessary re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     sessionQuery.data?.authenticated,
-    sessionQuery.data?.employee,
-    sessionManager,
-    mergedConfig.sessionConfig.warningBeforeExpiry,
+    sessionQuery.data?.employee?.id, // Only track ID, not the entire object
+    warningBeforeExpiry,
   ]);
 
   // セッション期限の定期チェック
@@ -252,8 +255,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
       setTimeUntilExpiry(remaining > 0 ? remaining : null);
 
-      const warningThresholdMs =
-        mergedConfig.sessionConfig.warningBeforeExpiry * 60 * 1000;
+      const warningThresholdMs = warningBeforeExpiry * 60 * 1000;
 
       if (remaining <= warningThresholdMs && remaining > 0) {
         setSessionTimeoutWarning(true);
@@ -273,11 +275,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
         clearInterval(sessionCheckInterval.current);
       }
     };
-  }, [
-    sessionInfo,
-    mergedConfig.sessionConfig.warningBeforeExpiry,
-    handleLogout,
-  ]);
+  }, [sessionInfo, warningBeforeExpiry, handleLogout]);
 
   const authenticated = sessionQuery.data?.authenticated ?? false;
 

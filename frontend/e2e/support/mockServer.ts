@@ -329,6 +329,22 @@ export class AppMockServer {
       return;
     }
 
+    if (normalizedPath === "/stamp-history" && method === "GET") {
+      const currentYear = new Date().getFullYear().toString();
+      const currentMonth = (new Date().getMonth() + 1).toString();
+
+      await route.fulfill(
+        buildJsonResponse({
+          year: currentYear,
+          month: currentMonth,
+          years: [currentYear, (Number.parseInt(currentYear) - 1).toString()],
+          months: Array.from({ length: 12 }, (_, i) => (i + 1).toString()),
+          entries: [],
+        })
+      );
+      return;
+    }
+
     await route.fallback();
   }
 }

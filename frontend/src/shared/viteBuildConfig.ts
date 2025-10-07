@@ -55,12 +55,34 @@ export const createBuildOptions = ({
     cssCodeSplit: true,
     reportCompressedSize: false,
     minify: "esbuild",
-    target: "es2022",
+    // Changed from es2022 to es2020 for broader browser compatibility
+    // Supports: Chrome 87+, Firefox 78+, Safari 14+, Edge 88+
+    target: ["es2020", "edge88", "firefox78", "chrome87", "safari14"],
     chunkSizeWarningLimit: DEFAULT_CHUNK_WARNING_LIMIT,
     assetsInlineLimit: 4096,
+    // Enable module preload polyfill for better code splitting support
+    modulePreload: {
+      polyfill: true,
+    },
     rollupOptions: {
       output: {
         manualChunks: VENDOR_MANUAL_CHUNKS,
+        // Optimize chunk file names for better caching
+        chunkFileNames: isProductionBuild
+          ? "assets/[name]-[hash].js"
+          : "assets/[name].js",
+        entryFileNames: isProductionBuild
+          ? "assets/[name]-[hash].js"
+          : "assets/[name].js",
+        assetFileNames: isProductionBuild
+          ? "assets/[name]-[hash].[ext]"
+          : "assets/[name].[ext]",
+      },
+      // Tree-shaking optimization
+      treeshake: {
+        moduleSideEffects: "no-external",
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false,
       },
     },
   } satisfies BuildOptions;
