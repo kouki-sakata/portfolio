@@ -238,7 +238,7 @@ describe("Error Handling System Integration", () => {
       // ログアウトとリダイレクトが呼ばれたことを確認
       await waitFor(() => {
         expect(mockOnLogout).toHaveBeenCalled();
-        expect(mockOnRedirect).toHaveBeenCalledWith("/auth/signin");
+        expect(mockOnRedirect).toHaveBeenCalledWith("/signin");
       });
 
       // 認証エラーではToastを表示しない

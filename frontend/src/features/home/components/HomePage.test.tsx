@@ -124,7 +124,7 @@ describe("HomePage", () => {
 
       const cachedQuery = queryClient
         .getQueryCache()
-        .find({ queryKey: ["home", "overview"] });
+        .find({ queryKey: ["home", "dashboard"] });
 
       const cachedOptions = cachedQuery?.options as
         | {

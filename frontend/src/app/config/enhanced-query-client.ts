@@ -145,7 +145,7 @@ const handleQueryError = (error: unknown, config: QueryClientConfig): void => {
           console.warn("Logout error during auth error handling:", logoutError);
         }
       }
-      const loginPath = config.loginPath || "/auth/signin";
+      const loginPath = config.loginPath || "/signin";
       config.onRedirect?.(loginPath);
     };
 
