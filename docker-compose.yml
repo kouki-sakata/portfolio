@@ -11,7 +11,7 @@ services:
         condition: service_healthy
     environment:
       DB_HOST: db
-      DB_PORT: 15432
+      DB_PORT: 5432
       DB_NAME: ${DOCKER_DB_NAME:-teamdev_db}
       DB_USERNAME: ${DOCKER_DB_USERNAME:-user}
       DB_PASSWORD: ${DOCKER_DB_PASSWORD:-password}

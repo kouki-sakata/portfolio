@@ -203,6 +203,9 @@ npm run perf:lhci    # Lighthouse CI パフォーマンステスト実行
 ### APIドキュメント
 - **Swagger/OpenAPI**: Springdoc OpenAPI（v2.6.0）
 - **Swagger UI**: http://localhost:8080/swagger-ui/index.html（devプロファイル）
+- **OpenAPI契約テスト**: OpenAPI4j v1.0.7（バージョン固定、Maven Central互換性確保）
+  - セッションレスポンスのnull許容フィールド対応（2025-10-07）
+  - StampResponse型整合性の修正完了（2025-10-07）
 
 ### ビルドツール
 - **Gradle 8.14.2**: ビルド自動化
@@ -336,7 +339,10 @@ VITE_DEBUG_MODE=true
    - 環境変数型定義による型安全なテスト設定
    - テストヘルパー関数の型推論最適化
    - ブラウザ操作の自動化とスクリーンショット比較
-5. **契約テスト**: OpenAPI仕様準拠（オプション）
+5. **契約テスト**: OpenAPI4j v1.0.7による仕様準拠検証（オプション、2025-10-07安定化）
+   - `-PenableOpenApiContract`フラグで有効化
+   - セッションレスポンスのnull許容フィールド対応完了
+   - StampResponse型整合性の修正完了
 
 ### テストカバレッジ目標（Phase 2で大幅向上）
 - **全体**: 314+テスト、309+成功（98.4%成功率）

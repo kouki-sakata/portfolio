@@ -30,6 +30,9 @@ RUN apk --no-cache upgrade && \
 
 WORKDIR /app
 
+# Create logs directory with proper permissions
+RUN mkdir -p logs && chown -R appuser:appgroup logs
+
 # Copy JAR file
 COPY --from=build --chown=appuser:appgroup /app/build/libs/*.jar app.jar
 

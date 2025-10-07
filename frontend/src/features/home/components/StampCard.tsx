@@ -44,7 +44,7 @@ export const StampCard = memo(
       <Card className={cn("w-full", className)}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">ワンクリック打刻</CardTitle>
+            <CardTitle className="text-lg text-neutral-900">ワンクリック打刻</CardTitle>
             <div className="flex items-center space-x-2">
               <Checkbox
                 aria-label="夜勤扱い"
@@ -54,7 +54,7 @@ export const StampCard = memo(
                 onCheckedChange={(checked) => setNightWork(checked === true)}
               />
               <label
-                className="font-medium text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-medium text-sm text-neutral-900 leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 htmlFor="nightwork"
               >
                 夜勤扱い

@@ -1,5 +1,45 @@
 # Steering Documents Changelog
 
+## 2025-10-07 (Update 21)
+
+### Updated Documents
+- `product.md` - OpenAPI契約テストの安定化完了を追加
+- `tech.md` - OpenAPI4j依存関係バージョン固定とセッションレスポンス修正を追加
+- `CHANGELOG.md` - 最新の更新履歴を記録
+
+### Key Changes
+
+#### OpenAPI契約テストの安定化（PR #46マージ完了、2025-10-07）
+- **セッションレスポンスのOpenAPI契約修正**
+  - `/api/auth/session`のnull許容フィールド対応
+  - `id`、`name`、`email`フィールドをnullable設定
+  - セッション未確立時のレスポンス仕様を明確化
+
+- **OpenAPI4j依存関係の最適化**
+  - バージョン1.0.7に固定（Maven Central互換性確保）
+  - v1.0.9はMaven Centralに公開されていないため回避
+  - `openapi-parser`と`openapi-operation-validator`の一貫性保証
+
+- **StampResponse型整合性の修正**
+  - `stampTime`フィールドの適切な型設定
+  - OpenAPI仕様との完全な整合性確保
+  - 契約テストの信頼性向上
+
+### Technical Achievements
+- **契約テスト安定性**: OpenAPI仕様準拠の完全な自動検証
+- **依存関係管理**: Maven Central互換性を考慮したバージョン固定
+- **型安全性**: フロント/バックエンド間のAPI契約の厳密化
+
+### Impact
+- **品質保証**: API仕様とレスポンスの一貫性を自動保証
+- **信頼性向上**: 契約テストの安定化により破壊的変更を早期検出
+- **保守性**: 明確なAPI契約により開発者体験向上
+
+### Note
+最新のコミット（4c5d39c、2f7fb70、498388c等）でOpenAPI契約テストの安定化が完了。セッションレスポンスのnull許容フィールド対応とOpenAPI4j v1.0.7への固定により、契約テストの信頼性が大幅に向上しました。
+
+---
+
 ## 2025-10-05 (Update 20)
 
 ### Updated Documents

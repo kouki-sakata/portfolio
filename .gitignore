@@ -2,6 +2,7 @@
 CLAUDE.md
 AGENTS.md
 .mcp.json
+.claude
 
 # Compiled class files
 *.class

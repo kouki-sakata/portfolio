@@ -52,12 +52,12 @@ export const NewsCard = memo(
             <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
               <div className="space-y-1">
                 <time
-                  className="text-muted-foreground text-xs"
+                  className="text-neutral-500 text-xs"
                   dateTime={news.newsDate}
                 >
                   {news.newsDate}
                 </time>
-                <p className="text-sm leading-relaxed">{news.content}</p>
+                <p className="text-sm text-neutral-900 leading-relaxed">{news.content}</p>
               </div>
             </li>
           ))}
