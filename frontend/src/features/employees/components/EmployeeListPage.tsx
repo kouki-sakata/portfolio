@@ -1,8 +1,13 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { PageLoader } from "@/shared/components/layout/PageLoader";
+import {
+  SkeletonCard,
+  SkeletonForm,
+  SkeletonTable,
+} from "@/shared/components/loading/skeletons/SkeletonVariants";
 import type { EmployeeSummary } from "../../auth/types";
 import {
   useCreateEmployee,
@@ -167,7 +172,7 @@ export function EmployeeListPage() {
 
   // ローディング状態
   if (isLoading || !data) {
-    return <PageLoader label="従業員情報を読み込み中" />;
+    return <EmployeeListSkeleton />;
   }
 
   // エラー状態
@@ -235,3 +240,26 @@ export function EmployeeListPage() {
     </div>
   );
 }
+
+const EmployeeListSkeleton = () => (
+  <div
+    className="container mx-auto space-y-6 py-6"
+    data-testid="employee-list-skeleton"
+  >
+    <div className="flex items-center justify-between">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <Skeleton className="h-10 w-28" />
+    </div>
+
+    <SkeletonCard className="bg-card" />
+
+    <div className="rounded-lg border bg-card p-6 shadow-sm">
+      <SkeletonForm className="max-w-3xl" fields={3} showButton />
+    </div>
+
+    <SkeletonTable className="bg-card" columns={5} rows={5} showHeader />
+  </div>
+);
