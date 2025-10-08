@@ -248,6 +248,10 @@ npm run generate:api --prefix frontend
 
 > `./gradlew test` は Testcontainers で PostgreSQL を起動するため、Docker が動作する環境で実行してください。
 
+## 🤖 Codex 並列作業の統合
+
+Codex を使って複数の変更を同時進行するときは、[Codex 並列変更の統合ガイド](docs/codex-parallel-integration.md) を参照してください。4 本前後のストリームを安全にまとめるためのブランチ運用、テスト順序、コンフリクト解消のポイントを記載しています。
+
 ## 🎯 Kiro Spec-Driven Workflow
 
 このプロジェクトは Kiro による仕様駆動開発を採用しています。
