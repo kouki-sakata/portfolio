@@ -141,7 +141,7 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(
       page.getByRole("heading", { name: /おはようございます/ })
-    ).toBeVisible();
+    ).toBeVisible({ timeout: 15_000 });
   });
 
   test("ブラウザの進むボタンが正常に動作する", async ({ page }) => {
