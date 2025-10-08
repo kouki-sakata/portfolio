@@ -1,5 +1,12 @@
 @import "tailwindcss";
 
+@theme {
+  --color-background: #f6f8fa;
+  --color-foreground: #0f172a;
+  --color-primary: #1d4ed8;
+  --color-primary-foreground: #f8fafc;
+}
+
 :root {
   color-scheme: light;
   font-family:
@@ -7,8 +14,8 @@
     sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  background-color: #f6f8fa;
-  color: #0f172a;
+  background-color: var(--color-background);
+  color: var(--color-foreground);
 }
 
 * {
@@ -27,8 +34,8 @@ body {
 }
 
 .app-header {
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
   padding: 1rem 2rem;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.2);
 }
@@ -105,8 +112,8 @@ body {
   appearance: none;
   border: none;
   border-radius: 999px;
-  background-color: #1d4ed8;
-  color: #ffffff;
+  background-color: var(--color-primary);
+  color: var(--color-primary-foreground);
   padding: 0.75rem 1.5rem;
   font-weight: 600;
   cursor: pointer;
@@ -136,7 +143,7 @@ body {
   height: 1.5rem;
   border-radius: 50%;
   border: 3px solid rgba(59, 130, 246, 0.3);
-  border-top-color: rgba(29, 78, 216, 1);
+  border-top-color: var(--color-primary);
   animation: spin 0.8s linear infinite;
 }
 
