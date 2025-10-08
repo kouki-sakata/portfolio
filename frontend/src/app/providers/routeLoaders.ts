@@ -14,6 +14,14 @@ export const homeRouteLoader = async (queryClient: QueryClient) =>
     gcTime: QUERY_CONFIG.homeDashboard.gcTime,
   });
 
+export const attendanceRouteLoader = async (queryClient: QueryClient) =>
+  queryClient.prefetchQuery({
+    queryKey: queryKeys.home.dashboard(),
+    queryFn: getHomeDashboard,
+    staleTime: QUERY_CONFIG.homeDashboard.staleTime,
+    gcTime: QUERY_CONFIG.homeDashboard.gcTime,
+  });
+
 export const employeeAdminRouteLoader = async (queryClient: QueryClient) =>
   queryClient.prefetchQuery({
     queryKey: queryKeys.employees.list(),

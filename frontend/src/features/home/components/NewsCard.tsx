@@ -1,5 +1,6 @@
 import { memo } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -49,18 +50,19 @@ export const NewsCard = memo(
       return (
         <ul className="space-y-4">
           {newsItems.map((news) => (
-            <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
-              <div className="space-y-1">
-                <time
-                  className="text-neutral-500 text-xs"
-                  dateTime={news.newsDate}
-                >
+            <li
+              className="rounded-xl border border-slate-200/60 bg-white/90 p-4 shadow-sm"
+              key={news.id}
+            >
+              <div className="flex items-center justify-between text-xs">
+                <time className="text-slate-500" dateTime={news.newsDate}>
                   {news.newsDate}
                 </time>
-                <p className="text-neutral-900 text-sm leading-relaxed">
-                  {news.content}
-                </p>
+                <Badge variant="outline">お知らせ</Badge>
               </div>
+              <p className="mt-2 font-medium text-slate-800 text-sm leading-relaxed">
+                {news.content}
+              </p>
             </li>
           ))}
         </ul>
@@ -68,11 +70,27 @@ export const NewsCard = memo(
     };
 
     return (
-      <Card className={cn("w-full", className)}>
+      <Card
+        className={cn(
+          "w-full border border-slate-200/80 bg-gradient-to-br from-white via-white to-slate-50 shadow-md",
+          className
+        )}
+        data-testid="news-card"
+      >
         <CardHeader>
-          <CardTitle className="text-lg">最新のお知らせ</CardTitle>
+          <CardTitle className="flex items-center justify-between font-semibold text-slate-900 text-xl">
+            最新のお知らせ
+            <Badge aria-hidden="true" variant="secondary">
+              更新
+            </Badge>
+          </CardTitle>
         </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
+        <CardContent className="space-y-4 text-slate-700">
+          {renderContent()}
+          <p className="text-slate-500 text-xs">
+            最新ニュースはホーム画面にのみ表示されます。詳細は通知センターから確認してください。
+          </p>
+        </CardContent>
       </Card>
     );
   }

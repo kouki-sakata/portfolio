@@ -13,6 +13,7 @@ import {
 import { queryClient } from "@/app/config/queryClient";
 import { AppLayout } from "@/app/layouts/AppLayout";
 import {
+  attendanceRouteLoader,
   employeeAdminRouteLoader,
   homeRouteLoader,
   stampHistoryRouteLoader,
@@ -34,6 +35,12 @@ const SignInRoute = lazy(() =>
 const EmployeeAdminRoute = lazy(() =>
   import("@/features/employees/routes/EmployeeAdminRoute").then((module) => ({
     default: module.EmployeeAdminRoute,
+  }))
+);
+
+const AttendanceRoute = lazy(() =>
+  import("@/features/attendance/routes/AttendanceRoute").then((module) => ({
+    default: module.AttendanceRoute,
   }))
 );
 
@@ -127,8 +134,8 @@ const router = createBrowserRouter([
           },
           {
             path: "attendance",
-            element: <HomeRoute />,
-            loader: () => homeRouteLoader(queryClient),
+            element: <AttendanceRoute />,
+            loader: () => attendanceRouteLoader(queryClient),
           },
           {
             path: "stamp-history",

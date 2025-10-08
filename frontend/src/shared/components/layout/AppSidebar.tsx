@@ -1,5 +1,13 @@
 import type React from "react";
 import { NavLink } from "react-router-dom";
+
+import { queryClient } from "@/app/config/queryClient";
+import {
+  attendanceRouteLoader,
+  employeeAdminRouteLoader,
+  homeRouteLoader,
+  stampHistoryRouteLoader,
+} from "@/app/providers/routeLoaders";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import type {
   NavigationGroup,
@@ -75,6 +83,24 @@ const navigationGroups: NavigationGroup[] = [
   },
 ];
 
+const navigationPrefetchers: Record<string, () => Promise<unknown>> = {
+  "/": () => homeRouteLoader(queryClient),
+  "/attendance": () => attendanceRouteLoader(queryClient),
+  "/stamp-history": () => stampHistoryRouteLoader(queryClient),
+  "/admin/employees": () => employeeAdminRouteLoader(queryClient),
+};
+
+const prefetchRoute = (href: string) => {
+  const prefetcher = navigationPrefetchers[href];
+  if (!prefetcher) {
+    return;
+  }
+
+  prefetcher().catch(() => {
+    // ignore prefetch errors (non-blocking)
+  });
+};
+
 const NavigationItemComponent: React.FC<{
   item: NavigationItem;
   onClick?: () => void;
@@ -82,19 +108,30 @@ const NavigationItemComponent: React.FC<{
   <NavLink
     className={({ isActive }) =>
       cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2 font-medium text-sm transition-colors",
-        "hover:bg-gray-100 hover:text-gray-900",
+        "group flex items-center gap-3 rounded-lg border border-transparent px-3 py-2 font-medium text-sm transition-all duration-150",
+        "hover:border-slate-200 hover:bg-slate-100/70 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2",
         isActive
-          ? "border-blue-700 border-r-2 bg-blue-50 text-blue-700"
-          : "text-gray-600",
+          ? "border-primary/40 bg-primary/10 text-primary"
+          : "text-slate-600",
         item.disabled && "pointer-events-none cursor-not-allowed opacity-50"
       )
     }
     onClick={onClick}
+    onFocus={() => prefetchRoute(item.href)}
+    onPointerEnter={() => prefetchRoute(item.href)}
     to={item.href}
   >
-    <SpriteIcon className="h-5 w-5 flex-shrink-0" decorative name={item.icon} />
-    <span className="flex-1">{item.label}</span>
+    <SpriteIcon
+      className={cn(
+        "h-5 w-5 flex-shrink-0 transition-colors",
+        "group-hover:text-primary",
+        "group-focus-visible:text-primary",
+        "group-[aria-current='page']:text-primary"
+      )}
+      decorative
+      name={item.icon}
+    />
+    <span className="flex-1 text-left">{item.label}</span>
     {item.badge !== undefined && item.badge > 0 && (
       <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-500 px-2 py-0.5 text-white text-xs">
         {item.badge > 99 ? "99+" : item.badge}
@@ -109,7 +146,7 @@ const NavigationGroupComponent: React.FC<{
 }> = ({ group, onItemClick }) => (
   <div className="space-y-1">
     {group.title && (
-      <h3 className="px-3 font-semibold text-gray-500 text-xs uppercase tracking-wider">
+      <h3 className="px-3 font-semibold text-slate-500 text-xs uppercase tracking-wider">
         {group.title}
       </h3>
     )}

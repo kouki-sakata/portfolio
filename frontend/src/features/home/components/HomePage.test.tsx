@@ -102,7 +102,9 @@ describe("HomePage", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("今日も素敵な一日を過ごしましょう。")
+          screen.getByText(
+            "今日の業務予定と最新のお知らせを確認できます。必要に応じて出勤・退勤の打刻を行ってください。"
+          )
         ).toBeInTheDocument();
       });
     });
@@ -398,17 +400,17 @@ describe("HomePage", () => {
   });
 
   describe("レスポンシブデザイン", () => {
-    it("メインセクションにhomeクラスが適用される", async () => {
+    it("ヒーローセクションが表示される", async () => {
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
           HttpResponse.json(mockDashboardData)
         )
       );
 
-      const { container } = renderWithQueryClient(<HomePage />);
+      renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        expect(container.querySelector(".home")).toBeInTheDocument();
+        expect(screen.getByTestId("home-hero")).toBeInTheDocument();
       });
     });
 
@@ -419,10 +421,10 @@ describe("HomePage", () => {
         )
       );
 
-      const { container } = renderWithQueryClient(<HomePage />);
+      renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        expect(container.querySelector(".home-grid")).toBeInTheDocument();
+        expect(screen.getByTestId("home-dashboard-grid")).toBeInTheDocument();
       });
     });
 
@@ -433,10 +435,10 @@ describe("HomePage", () => {
         )
       );
 
-      const { container } = renderWithQueryClient(<HomePage />);
+      renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        const cards = container.querySelectorAll(".home-card");
+        const cards = screen.getAllByTestId(/-(?:card)$/);
         expect(cards).toHaveLength(2); // 打刻カードとニュースカード
       });
     });
@@ -450,13 +452,10 @@ describe("HomePage", () => {
         )
       );
 
-      const { container } = renderWithQueryClient(<HomePage />);
+      renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        // shadcn/uiのCardは特定のクラスを持つ
-        const cards = container.querySelectorAll(
-          ".rounded-xl.border.border-neutral-200"
-        );
+        const cards = screen.getAllByTestId(/-(?:card)$/);
         expect(cards).toHaveLength(2);
       });
     });

@@ -10,6 +10,8 @@ type NavLinkProps = {
   children: React.ReactNode;
   className?: string | ((props: { isActive: boolean }) => string);
   onClick?: React.MouseEventHandler;
+  onFocus?: React.FocusEventHandler;
+  onPointerEnter?: React.PointerEventHandler;
 };
 
 // react-router-domのNavLinkをモック
@@ -21,13 +23,26 @@ vi.mock("react-router-dom", async () => {
   return {
     ...actual,
     // biome-ignore lint/style/useNamingConvention: Component name must match React Router's NavLink
-    NavLink: ({ to, children, className, onClick }: NavLinkProps) => {
+    NavLink: ({
+      to,
+      children,
+      className,
+      onClick,
+      onFocus,
+      onPointerEnter,
+    }: NavLinkProps) => {
       const classValue =
         typeof className === "function"
           ? className({ isActive: false })
           : className;
       return (
-        <a className={classValue} href={to} onClick={onClick}>
+        <a
+          className={classValue}
+          href={to}
+          onClick={onClick}
+          onFocus={onFocus}
+          onPointerEnter={onPointerEnter}
+        >
           {children}
         </a>
       );

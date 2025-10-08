@@ -17,12 +17,18 @@ export const useStamp = (
   repository: IHomeRepository = createHomeRepository()
 ) => {
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState<string | null>(null);
+  const [messageState, setMessageState] = useState<{
+    message: string;
+    status: "success" | "error";
+  } | null>(null);
 
   const stampMutation = useMutation<StampResponse, Error, StampRequest>({
     mutationFn: (request: StampRequest) => repository.submitStamp(request),
     onSuccess: (response: StampResponse) => {
-      setMessage(response.message);
+      setMessageState({
+        message: response.message,
+        status: response.success ? "success" : "error",
+      });
       queryClient
         .invalidateQueries({ queryKey: HOME_DASHBOARD_KEY })
         .catch(() => {
@@ -30,13 +36,16 @@ export const useStamp = (
         });
     },
     onError: () => {
-      setMessage("打刻に失敗しました。再度お試しください。");
+      setMessageState({
+        message: "打刻に失敗しました。再度お試しください。",
+        status: "error",
+      });
     },
   });
 
   const handleStamp = useCallback(
     async (type: "1" | "2", nightWork: boolean) => {
-      setMessage(null);
+      setMessageState(null);
       const timestamp = new Date().toISOString().slice(0, 19);
 
       await stampMutation.mutateAsync({
@@ -49,13 +58,14 @@ export const useStamp = (
   );
 
   const clearMessage = useCallback(() => {
-    setMessage(null);
+    setMessageState(null);
   }, []);
 
   return {
     handleStamp,
     isLoading: stampMutation.isPending,
-    message,
+    message: messageState?.message ?? null,
+    messageStatus: messageState?.status ?? null,
     clearMessage,
   };
 };
