@@ -1,0 +1,23 @@
+{
+  "feature_name": "critical-serena-refactoring",
+  "created_at": "2025-10-08T15:30:00Z",
+  "updated_at": "2025-10-08T16:45:00Z",
+  "language": "ja",
+  "phase": "tasks-generated",
+  "description": "Serena MCPツールを活用したクリティカルなリファクタリング",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": false
+    }
+  },
+  "ready_for_implementation": false
+}
