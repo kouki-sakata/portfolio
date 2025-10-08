@@ -8,6 +8,37 @@ const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "admin.user@example.com";
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "AdminPass123!";
 
 /**
+ * ホーム画面の挨拶ヘッディングが描画されるまで待機する
+ */
+const waitForHomeGreeting = async (page: Page) => {
+  await expect(page).toHaveURL(/\/$/);
+
+  const greetingHeading = page.getByRole("heading", {
+    name: /おはようございます/,
+  });
+
+  await expect
+    .poll(
+      async () => {
+        const headingCount = await greetingHeading.count();
+        if (headingCount === 0) {
+          return "missing";
+        }
+
+        return (await greetingHeading.first().isVisible())
+          ? "visible"
+          : "hidden";
+      },
+      {
+        message:
+          "ホーム画面の挨拶ヘッディングが表示されるまで待機しましたが確認できませんでした。",
+        timeout: 15_000,
+      }
+    )
+    .toBe("visible");
+};
+
+/**
  * サインインヘルパー関数
  */
 const signIn = async (page: Page, email: string, password: string) => {
@@ -25,10 +56,7 @@ const signIn = async (page: Page, email: string, password: string) => {
   });
 
   await test.step("ホーム画面の読み込みを待機", async () => {
-    await expect(page).toHaveURL(/\/$/);
-    await expect(
-      page.getByRole("heading", { name: /おはようございます/ })
-    ).toBeVisible({ timeout: 15_000 });
+    await waitForHomeGreeting(page);
   });
 };
 
@@ -138,10 +166,7 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await page.goBack();
 
     // ホームに戻ることを確認
-    await expect(page).toHaveURL(/\/$/);
-    await expect(
-      page.getByRole("heading", { name: /おはようございます/ })
-    ).toBeVisible({ timeout: 15_000 });
+    await waitForHomeGreeting(page);
   });
 
   test("ブラウザの進むボタンが正常に動作する", async ({ page }) => {
