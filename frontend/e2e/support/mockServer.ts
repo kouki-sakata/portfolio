@@ -337,7 +337,10 @@ export class AppMockServer {
         buildJsonResponse({
           year: currentYear,
           month: currentMonth,
-          years: [currentYear, (Number.parseInt(currentYear) - 1).toString()],
+          years: [
+            currentYear,
+            (Number.parseInt(currentYear, 10) - 1).toString(),
+          ],
           months: Array.from({ length: 12 }, (_, i) => (i + 1).toString()),
           entries: [],
         })
