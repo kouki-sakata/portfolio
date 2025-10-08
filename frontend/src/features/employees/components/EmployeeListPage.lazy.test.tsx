@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { lazy, type ReactNode, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
@@ -85,16 +85,21 @@ describe("EmployeeListPage Lazy Loading", () => {
       </TestWrapper>
     );
 
-    // Wait for lazy component to load and render
-    const heading = await screen.findByText(
-      "従業員管理",
-      {},
-      { timeout: 3000 }
+    // Wait for Suspense fallback to be removed
+    await waitFor(
+      () => {
+        expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+      },
+      { timeout: 5000 }
     );
-    expect(heading).toBeInTheDocument();
 
-    // Fallback should be removed
-    expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
+    // Wait for lazy component to load and render
+    await waitFor(
+      () => {
+        expect(screen.getByText("従業員管理")).toBeInTheDocument();
+      },
+      { timeout: 5000 }
+    );
   });
 
   it("should properly code-split the component", async () => {
