@@ -202,10 +202,7 @@ export function TransitionSuspenseWrapper({
     } else {
       onTransitionEnd?.();
     }
-    // Note: onTransitionStart and onTransitionEnd are intentionally excluded from deps
-    // to prevent infinite loops. These callbacks should be stable or memoized by the parent.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPending]);
+  }, [isPending, onTransitionEnd, onTransitionStart]);
 
   return (
     <div className={isPending ? "opacity-50 transition-opacity" : ""}>

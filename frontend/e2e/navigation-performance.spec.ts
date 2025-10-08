@@ -60,9 +60,9 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await expect(page).toHaveURL(/\/stamp-history/);
 
     // ページコンテンツが表示されることを確認
-    await expect(
-      page.getByRole("heading", { name: "打刻履歴" })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: "打刻履歴" })).toBeVisible({
+      timeout: 5000,
+    });
 
     const navigationEnd = Date.now();
     const navigationTime = navigationEnd - navigationStart;
@@ -81,9 +81,7 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     // まず勤怠履歴へ移動
     await page.getByRole("link", { name: "勤怠履歴" }).click();
     await expect(page).toHaveURL(/\/stamp-history/);
-    await expect(
-      page.getByRole("heading", { name: "打刻履歴" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "打刻履歴" })).toBeVisible();
 
     // ホームへ戻る際の時間を計測
     const navigationStart = Date.now();
@@ -93,7 +91,9 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await expect(page).toHaveURL(/\/$/);
     await expect(
       page.getByRole("heading", { name: /おはようございます/ })
-    ).toBeVisible({ timeout: 5000 });
+    ).toBeVisible({
+      timeout: 5000,
+    });
 
     const navigationEnd = Date.now();
     const navigationTime = navigationEnd - navigationStart;
@@ -113,9 +113,11 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await page.getByRole("link", { name: "社員管理" }).click();
 
     await expect(page).toHaveURL(/\/admin\/employees/);
-    await expect(
-      page.getByRole("heading", { name: "従業員管理" })
-    ).toBeVisible({ timeout: 5000 });
+    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
+      {
+        timeout: 5000,
+      }
+    );
 
     const navigationEnd = Date.now();
     const navigationTime = navigationEnd - navigationStart;
@@ -158,9 +160,7 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
 
     // 勤怠履歴に戻ることを確認
     await expect(page).toHaveURL(/\/stamp-history/);
-    await expect(
-      page.getByRole("heading", { name: "打刻履歴" })
-    ).toBeVisible();
+    await expect(page.getByRole("heading", { name: "打刻履歴" })).toBeVisible();
   });
 
   test("ページナビゲーション中にコンソールエラーが発生しない", async ({

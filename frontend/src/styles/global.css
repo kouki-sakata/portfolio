@@ -1,13 +1,10 @@
 @import "tailwindcss";
 
-@theme {
+:root {
   --color-background: #f6f8fa;
   --color-foreground: #0f172a;
   --color-primary: #1d4ed8;
   --color-primary-foreground: #f8fafc;
-}
-
-:root {
   color-scheme: light;
   font-family:
     "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",

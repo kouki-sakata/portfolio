@@ -154,17 +154,18 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
       setSessionTimeoutWarning(false);
       setTimeUntilExpiry(null);
     }
-    // Note: logoutMutation is intentionally excluded from deps to prevent infinite loops
-    // React Query mutations are functionally stable even though the reference changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionManager]);
+  }, [logoutMutation.mutateAsync, sessionManager]);
 
   const refreshCsrfToken = useCallback(() => {
     setCsrfToken(getCsrfToken());
   }, []);
 
-  const refreshSession = useCallback(async () => {
+  const invalidateAuthSession = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: AUTH_SESSION_KEY });
+  }, [queryClient]);
+
+  const refreshSession = useCallback(async () => {
+    await invalidateAuthSession();
 
     // セッション情報を更新
     const sessionData = sessionManager.getSession();
@@ -176,9 +177,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
         warningThreshold: warningBeforeExpiry,
       });
     }
-    // Note: queryClient is from useQueryClient hook and is stable across renders
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionManager, warningBeforeExpiry]);
+  }, [invalidateAuthSession, sessionManager, warningBeforeExpiry]);
 
   // セッション期限チェック
   const isSessionExpiring = useMemo(() => {
@@ -238,8 +237,9 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
     // The employee object reference changes on every query refetch, causing unnecessary re-renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
+    sessionManager,
     sessionQuery.data?.authenticated,
-    sessionQuery.data?.employee?.id, // Only track ID, not the entire object
+    sessionQuery.data?.employee,
     warningBeforeExpiry,
   ]);
 
