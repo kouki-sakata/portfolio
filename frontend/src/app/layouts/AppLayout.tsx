@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AppHeader } from "@/shared/components/layout/AppHeader";
 import { AppShell } from "@/shared/components/layout/AppShell";
 import { AppSidebar } from "@/shared/components/layout/AppSidebar";
+import { NavigationProgress } from "@/shared/components/layout/NavigationProgress";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 export const AppLayout = () => {
@@ -31,17 +32,20 @@ export const AppLayout = () => {
   }
 
   return (
-    <AppShell>
-      {/* デスクトップ用サイドバー */}
-      <AppSidebar className="hidden lg:block" />
+    <>
+      <NavigationProgress />
+      <AppShell>
+        {/* デスクトップ用サイドバー */}
+        <AppSidebar className="hidden lg:block" />
 
-      {/* メインコンテンツエリア */}
-      <div className="flex min-h-screen flex-col lg:min-h-0">
-        <AppHeader />
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
-        </main>
-      </div>
-    </AppShell>
+        {/* メインコンテンツエリア */}
+        <div className="flex min-h-screen flex-col lg:min-h-0">
+          <AppHeader />
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <Outlet />
+          </main>
+        </div>
+      </AppShell>
+    </>
   );
 };

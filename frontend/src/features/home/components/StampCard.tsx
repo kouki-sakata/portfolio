@@ -1,4 +1,5 @@
-import { memo, useState } from "react";
+import { Loader2 } from "lucide-react";
+import { memo, useEffect, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,6 +21,13 @@ export type StampCardProps = {
   isLoading?: boolean;
   message?: string | null;
   className?: string;
+  onDismissMessage?: () => void;
+  /**
+   * メッセージを自動でクリアするまでの遅延（ミリ秒）
+   *
+   * @default 5000
+   */
+  autoDismissDelay?: number;
 };
 
 /**
@@ -33,6 +41,8 @@ export const StampCard = memo(
     isLoading = false,
     message = null,
     className,
+    onDismissMessage,
+    autoDismissDelay = 5000,
   }: StampCardProps) => {
     const [nightWork, setNightWork] = useState(false);
 
@@ -40,11 +50,43 @@ export const StampCard = memo(
       await onStamp(type, nightWork);
     };
 
+    useEffect(() => {
+      if (!message || !onDismissMessage) {
+        return;
+      }
+
+      const timer = window.setTimeout(() => {
+        onDismissMessage();
+      }, autoDismissDelay);
+
+      return () => {
+        window.clearTimeout(timer);
+      };
+    }, [autoDismissDelay, message, onDismissMessage]);
+
+    const messageStyles = useMemo(() => {
+      if (!message) {
+        return "";
+      }
+
+      const isErrorMessage = message.includes("失敗") ||
+        message.includes("エラー");
+
+      return isErrorMessage
+        ? "border-red-200 bg-red-50 text-red-700"
+        : "border-emerald-200 bg-emerald-50 text-emerald-700";
+    }, [message]);
+
     return (
-      <Card className={cn("w-full", className)}>
+      <Card
+        className={cn(
+          "w-full border border-slate-200/80 bg-white shadow-sm transition-shadow hover:shadow-md",
+          className
+        )}
+      >
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-neutral-900">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <CardTitle className="text-lg font-semibold text-slate-900">
               ワンクリック打刻
             </CardTitle>
             <div className="flex items-center space-x-2">
@@ -56,7 +98,7 @@ export const StampCard = memo(
                 onCheckedChange={(checked) => setNightWork(checked === true)}
               />
               <label
-                className="font-medium text-neutral-900 text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-medium text-slate-700 text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 htmlFor="nightwork"
               >
                 夜勤扱い
@@ -67,30 +109,52 @@ export const StampCard = memo(
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
-              className="w-full"
+              className="w-full justify-center bg-blue-600 text-white shadow-sm transition-all hover:bg-blue-700 focus-visible:ring-blue-500"
               disabled={isLoading}
               onClick={() => handleStamp("1")}
               size="lg"
               variant="default"
             >
-              出勤打刻
+              {isLoading ? (
+                <>
+                  <Loader2
+                    aria-hidden
+                    className="h-4 w-4 animate-spin"
+                  />
+                  処理中...
+                </>
+              ) : (
+                "出勤打刻"
+              )}
             </Button>
             <Button
-              className="w-full"
+              className="w-full justify-center border border-blue-200 bg-blue-50 text-blue-700 shadow-sm transition-all hover:bg-blue-100 focus-visible:ring-blue-400"
               disabled={isLoading}
               onClick={() => handleStamp("2")}
               size="lg"
-              variant="outline"
+              variant="secondary"
             >
-              退勤打刻
+              {isLoading ? (
+                <>
+                  <Loader2
+                    aria-hidden
+                    className="h-4 w-4 animate-spin"
+                  />
+                  処理中...
+                </>
+              ) : (
+                "退勤打刻"
+              )}
             </Button>
           </div>
           {message ? (
             <CardDescription
+              aria-live="polite"
               className={cn(
-                "text-center font-medium",
-                message.includes("失敗") ? "text-destructive" : "text-primary"
+                "rounded-md border px-3 py-2 text-center text-sm font-medium transition-colors",
+                messageStyles
               )}
+              role="status"
             >
               {message}
             </CardDescription>

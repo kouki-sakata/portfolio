@@ -1,5 +1,8 @@
 import { useState } from "react";
 
+import { AlertCircle } from "lucide-react";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
@@ -35,7 +38,13 @@ export function EmployeeListPage() {
   const { toast } = useToast();
 
   // データフェッチング
-  const { data, isLoading, isError } = useEmployees();
+  const { data, isLoading, isError, error, refetch } = useEmployees();
+
+  const handleRetry = () => {
+    refetch().catch(() => {
+      // 追加のエラーハンドリングは不要
+    });
+  };
 
   // Mutations
   const createMutation = useCreateEmployee();
@@ -166,20 +175,29 @@ export function EmployeeListPage() {
   };
 
   // ローディング状態
-  if (isLoading || !data) {
+  if (isLoading) {
     return <PageLoader label="従業員情報を読み込み中" />;
   }
 
   // エラー状態
-  if (isError) {
+  if (isError || !data) {
     return (
-      <div className="flex h-full items-center justify-center">
-        <div className="text-center">
-          <h2 className="mb-4 font-bold text-2xl">エラーが発生しました</h2>
-          <p className="text-muted-foreground">
-            従業員情報の読み込みに失敗しました
-          </p>
-        </div>
+      <div className="flex h-full flex-col items-center justify-center gap-4 px-4">
+        <Alert
+          className="w-full max-w-xl border-red-200 bg-red-50 text-red-700"
+          variant="destructive"
+        >
+          <AlertCircle aria-hidden className="h-5 w-5" />
+          <AlertTitle>従業員情報の取得に失敗しました</AlertTitle>
+          <AlertDescription>
+            {error instanceof Error
+              ? error.message
+              : "時間をおいて再度お試しください。"}
+          </AlertDescription>
+        </Alert>
+        <Button onClick={handleRetry} variant="outline">
+          再読み込み
+        </Button>
       </div>
     );
   }

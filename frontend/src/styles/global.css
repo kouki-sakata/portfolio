@@ -140,6 +140,10 @@ body {
   animation: spin 0.8s linear infinite;
 }
 
+.navigation-progress-bar {
+  animation: progress-slide 1.2s ease-in-out infinite;
+}
+
 .not-found {
   text-align: center;
   display: grid;
@@ -158,6 +162,18 @@ body {
 @keyframes spin {
   to {
     transform: rotate(360deg);
+  }
+}
+
+@keyframes progress-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(-15%);
+  }
+  100% {
+    transform: translateX(120%);
   }
 }
 

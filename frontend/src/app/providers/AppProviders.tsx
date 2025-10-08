@@ -43,6 +43,12 @@ const HomeRoute = lazy(() =>
   }))
 );
 
+const AttendanceRoute = lazy(() =>
+  import("@/features/home/routes/AttendanceRoute").then((module) => ({
+    default: module.AttendanceRoute,
+  }))
+);
+
 const StampHistoryRoute = lazy(() =>
   import("@/features/stampHistory/routes/StampHistoryRoute").then((module) => ({
     default: module.StampHistoryRoute,
@@ -127,7 +133,7 @@ const router = createBrowserRouter([
           },
           {
             path: "attendance",
-            element: <HomeRoute />,
+            element: <AttendanceRoute />,
             loader: () => homeRouteLoader(queryClient),
           },
           {

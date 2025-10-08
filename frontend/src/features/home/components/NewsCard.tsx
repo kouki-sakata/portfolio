@@ -31,8 +31,8 @@ export const NewsCard = memo(
       if (isLoading) {
         return (
           <div className="space-y-3">
+            <Skeleton className="h-4 w-2/5" />
             <Skeleton className="h-4 w-3/4" />
-            <Skeleton className="h-4 w-full" />
             <Skeleton className="h-4 w-5/6" />
           </div>
         );
@@ -40,7 +40,7 @@ export const NewsCard = memo(
 
       if (newsItems.length === 0) {
         return (
-          <CardDescription className="py-8 text-center text-muted-foreground">
+          <CardDescription className="py-8 text-center text-slate-500">
             現在表示できるお知らせはありません。
           </CardDescription>
         );
@@ -49,15 +49,18 @@ export const NewsCard = memo(
       return (
         <ul className="space-y-4">
           {newsItems.map((news) => (
-            <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
+            <li
+              className="border-slate-200/80 border-b pb-3 last:border-0 last:pb-0"
+              key={news.id}
+            >
               <div className="space-y-1">
                 <time
-                  className="text-neutral-500 text-xs"
+                  className="text-slate-500 text-xs"
                   dateTime={news.newsDate}
                 >
                   {news.newsDate}
                 </time>
-                <p className="text-neutral-900 text-sm leading-relaxed">
+                <p className="text-slate-700 text-sm leading-relaxed">
                   {news.content}
                 </p>
               </div>
@@ -68,11 +71,20 @@ export const NewsCard = memo(
     };
 
     return (
-      <Card className={cn("w-full", className)}>
+      <Card
+        className={cn(
+          "w-full border border-slate-200/80 bg-white shadow-sm transition-shadow hover:shadow-md",
+          className
+        )}
+      >
         <CardHeader>
-          <CardTitle className="text-lg">最新のお知らせ</CardTitle>
+          <CardTitle className="font-semibold text-lg text-slate-900">
+            最新のお知らせ
+          </CardTitle>
         </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
+        <CardContent className="space-y-2 text-slate-600 text-sm">
+          {renderContent()}
+        </CardContent>
       </Card>
     );
   }
