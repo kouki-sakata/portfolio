@@ -176,6 +176,16 @@
       "assist": {
         "enabled": false
       }
+    },
+    {
+      "includes": ["**/styles/global.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+          }
+        }
+      }
     }
   ]
 }

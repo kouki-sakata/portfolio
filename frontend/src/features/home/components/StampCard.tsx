@@ -44,7 +44,7 @@ export const StampCard = memo(
       <Card className={cn("w-full", className)}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-foreground">
+            <CardTitle className="text-foreground text-lg">
               ワンクリック打刻
             </CardTitle>
             <div className="flex items-center space-x-2">
