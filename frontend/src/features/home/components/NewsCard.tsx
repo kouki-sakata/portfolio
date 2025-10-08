@@ -52,12 +52,12 @@ export const NewsCard = memo(
             <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
               <div className="space-y-1">
                 <time
-                  className="text-neutral-500 text-xs"
+                  className="text-slate-500 text-xs"
                   dateTime={news.newsDate}
                 >
                   {news.newsDate}
                 </time>
-                <p className="text-neutral-900 text-sm leading-relaxed">
+                <p className="text-slate-900 text-sm leading-relaxed">
                   {news.content}
                 </p>
               </div>
@@ -68,9 +68,17 @@ export const NewsCard = memo(
     };
 
     return (
-      <Card className={cn("w-full", className)}>
+      <Card
+        aria-busy={isLoading}
+        className={cn("w-full bg-card text-card-foreground", className)}
+      >
         <CardHeader>
-          <CardTitle className="text-lg">最新のお知らせ</CardTitle>
+          <CardTitle className="font-semibold text-lg text-slate-900">
+            最新のお知らせ
+          </CardTitle>
+          <CardDescription className="text-muted-foreground text-sm">
+            重要なお知らせを新着順で表示します。
+          </CardDescription>
         </CardHeader>
         <CardContent>{renderContent()}</CardContent>
       </Card>

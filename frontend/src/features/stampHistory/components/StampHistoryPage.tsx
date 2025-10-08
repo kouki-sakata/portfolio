@@ -11,6 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
@@ -22,8 +23,12 @@ import {
   type StampHistoryResponse,
 } from "@/features/stampHistory/types";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
-import { PageLoader } from "@/shared/components/layout/PageLoader";
 import { SuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
+import {
+  SkeletonCard,
+  SkeletonForm,
+  SkeletonTable,
+} from "@/shared/components/loading/skeletons/SkeletonVariants";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 // Lazy load heavy components for code splitting
@@ -84,7 +89,7 @@ export const StampHistoryPage = () => {
   };
 
   if (query.isLoading) {
-    return <PageLoader label="打刻履歴を読み込み中" />;
+    return <StampHistorySkeleton />;
   }
 
   if (query.isError) {
@@ -302,3 +307,29 @@ export const StampHistoryPage = () => {
     </div>
   );
 };
+
+const StampHistorySkeleton = () => (
+  <div
+    className="container mx-auto space-y-6 py-8"
+    data-testid="stamp-history-skeleton"
+  >
+    <header className="flex items-center justify-between">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <Skeleton className="h-10 w-28" />
+    </header>
+
+    <SkeletonCard className="bg-card" />
+
+    <div className="rounded-lg border bg-card p-6 shadow-sm">
+      <SkeletonForm className="grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-2" />
+      <div className="mt-6 flex justify-end">
+        <Skeleton className="h-10 w-24" />
+      </div>
+    </div>
+
+    <SkeletonTable className="bg-card" columns={6} rows={6} showHeader />
+  </div>
+);

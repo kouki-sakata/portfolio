@@ -1,13 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-
+import { mswServer } from "@/test/msw/server";
 import { FeatureFlagProvider } from "../../../contexts/FeatureFlagContext";
 import { ButtonWrapper } from "../ButtonWrapper";
 
 describe("ButtonWrapper", () => {
   beforeEach(() => {
     localStorage.clear();
+    mswServer.use(
+      http.get("/api/public/feature-flags", () => HttpResponse.json({}))
+    );
   });
 
   describe("with feature flag disabled", () => {
