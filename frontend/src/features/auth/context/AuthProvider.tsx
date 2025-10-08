@@ -221,14 +221,15 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
   // セッションデータの初期化
   useEffect(() => {
-    if (sessionQuery.data?.authenticated && sessionQuery.data.employee) {
-      sessionManager.setSession(sessionQuery.data.employee);
+    const sessionData = sessionQuery.data;
+    if (sessionData?.authenticated && sessionData.employee) {
+      sessionManager.setSession(sessionData.employee);
 
-      const sessionData = sessionManager.getSession();
-      if (sessionData) {
+      const activeSession = sessionManager.getSession();
+      if (activeSession) {
         setSessionInfo({
-          createdAt: sessionData.createdAt,
-          expiresAt: sessionData.expiresAt,
+          createdAt: activeSession.createdAt,
+          expiresAt: activeSession.expiresAt,
           lastActivity: new Date(),
           warningThreshold: warningBeforeExpiry,
         });
