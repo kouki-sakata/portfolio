@@ -43,7 +43,7 @@ describe("employeeApi", () => {
       search: "john",
     });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/employees", {
+    expect(mockedApi.get).toHaveBeenCalledWith("/employees", {
       params: {
         adminOnly: true,
         page: 2,
@@ -85,7 +85,7 @@ describe("employeeApi", () => {
       admin: false,
     });
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/api/employees", {
+    expect(mockedApi.post).toHaveBeenCalledWith("/employees", {
       data: {
         firstName: "John",
         lastName: "Doe",
@@ -114,7 +114,7 @@ describe("employeeApi", () => {
       admin: true,
     });
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/api/employees/1", {
+    expect(mockedApi.put).toHaveBeenCalledWith("/employees/1", {
       data: {
         firstName: "Jane",
         lastName: "Doe",
@@ -130,7 +130,7 @@ describe("employeeApi", () => {
 
     await deleteEmployee([1, 2, 3]);
 
-    expect(mockedApi.delete).toHaveBeenCalledWith("/api/employees", {
+    expect(mockedApi.delete).toHaveBeenCalledWith("/employees", {
       data: { ids: [1, 2, 3] },
     });
   });

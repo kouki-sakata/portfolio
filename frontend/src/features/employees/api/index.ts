@@ -152,10 +152,7 @@ export const fetchEmployees = (
   const params = buildListParams(query);
 
   return withRetry(() =>
-    api.get<EmployeeListResponse>(
-      "/api/employees",
-      params ? { params } : undefined
-    )
+    api.get<EmployeeListResponse>("/employees", params ? { params } : undefined)
   );
 };
 
@@ -164,7 +161,7 @@ export const createEmployee = (
 ): Promise<EmployeeSummary> => {
   const data = buildUpsertPayload(payload);
 
-  return api.post<EmployeeSummary>("/api/employees", { data });
+  return api.post<EmployeeSummary>("/employees", { data });
 };
 
 export const updateEmployee = (
@@ -173,7 +170,7 @@ export const updateEmployee = (
 ): Promise<EmployeeSummary> => {
   const data = buildUpsertPayload(payload);
 
-  return api.put<EmployeeSummary>(`/api/employees/${employeeId}`, { data });
+  return api.put<EmployeeSummary>(`/employees/${employeeId}`, { data });
 };
 
 export const deleteEmployee = async (ids: number | number[]): Promise<void> => {
@@ -184,7 +181,7 @@ export const deleteEmployee = async (ids: number | number[]): Promise<void> => {
   }
 
   await withRetry(() =>
-    api.delete<void>("/api/employees", {
+    api.delete<void>("/employees", {
       data: { ids: normalizedIds },
     })
   );

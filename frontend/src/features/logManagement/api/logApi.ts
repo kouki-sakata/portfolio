@@ -161,13 +161,13 @@ export const searchLogs = (
     size: DEFAULT_PAGE_SIZE,
   };
 
-  return api.get<LogSearchResponse>("/api/logs", { params });
+  return api.get<LogSearchResponse>("/logs", { params });
 };
 
 export const exportLogs = (filters?: LogExportFilters): Promise<Blob> => {
   const params = buildSearchParams(filters);
 
-  return api.get<Blob>("/api/logs/export", {
+  return api.get<Blob>("/logs/export", {
     params,
     responseType: "blob",
   });

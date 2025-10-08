@@ -64,7 +64,7 @@ describe("newsApi", () => {
       pageSize: 50,
     });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/news", {
+    expect(mockedApi.get).toHaveBeenCalledWith("/news", {
       params: {
         category: "maintenance",
         published: true,
@@ -88,7 +88,7 @@ describe("newsApi", () => {
 
     const result = await createNews(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/api/news", {
+    expect(mockedApi.post).toHaveBeenCalledWith("/news", {
       data: payload,
     });
     expect(result).toBe(created);
@@ -109,7 +109,7 @@ describe("newsApi", () => {
       publishAt: updated.publishedAt,
     });
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/api/news/7", {
+    expect(mockedApi.put).toHaveBeenCalledWith("/news/7", {
       data: {
         title: updated.title,
         content: updated.content,
@@ -125,21 +125,21 @@ describe("newsApi", () => {
 
     await deleteNews(8);
 
-    expect(mockedApi.delete).toHaveBeenCalledWith("/api/news/8");
+    expect(mockedApi.delete).toHaveBeenCalledWith("/news/8");
   });
 
   it("updates publication status", async () => {
     mockedApi.patch.mockResolvedValue(undefined);
 
     await setNewsPublicationStatus(5, true);
-    expect(mockedApi.patch).toHaveBeenCalledWith("/api/news/5/status", {
+    expect(mockedApi.patch).toHaveBeenCalledWith("/news/5/status", {
       data: { published: true },
     });
 
     mockedApi.patch.mockClear();
 
     await setNewsPublicationStatus(5, false);
-    expect(mockedApi.patch).toHaveBeenCalledWith("/api/news/5/status", {
+    expect(mockedApi.patch).toHaveBeenCalledWith("/news/5/status", {
       data: { published: false },
     });
   });
