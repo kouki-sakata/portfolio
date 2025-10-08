@@ -47,20 +47,13 @@ export const NewsCard = memo(
       }
 
       return (
-        <ul className="space-y-4">
+        <ul className="home-news-list">
           {newsItems.map((news) => (
-            <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
-              <div className="space-y-1">
-                <time
-                  className="text-neutral-500 text-xs"
-                  dateTime={news.newsDate}
-                >
-                  {news.newsDate}
-                </time>
-                <p className="text-neutral-900 text-sm leading-relaxed">
-                  {news.content}
-                </p>
-              </div>
+            <li className="home-news-list__item" key={news.id}>
+              <time className="home-news-list__date" dateTime={news.newsDate}>
+                {news.newsDate}
+              </time>
+              <p className="home-news-list__content">{news.content}</p>
             </li>
           ))}
         </ul>
@@ -69,10 +62,14 @@ export const NewsCard = memo(
 
     return (
       <Card className={cn("w-full", className)}>
-        <CardHeader>
-          <CardTitle className="text-lg">最新のお知らせ</CardTitle>
+        <CardHeader className="home-card__header">
+          <CardTitle className="home-card__title text-[color:inherit]">
+            最新のお知らせ
+          </CardTitle>
         </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
+        <CardContent className="relative z-[1] space-y-2">
+          {renderContent()}
+        </CardContent>
       </Card>
     );
   }
