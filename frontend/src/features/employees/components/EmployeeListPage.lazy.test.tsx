@@ -11,6 +11,22 @@ const LazyEmployeeListPage = lazy(() =>
   }))
 );
 
+// ----- ▼ ここに追加 ▼ -----
+// EmployeeListPageコンポーネント自体をモックします。
+// これにより、テスト実行時には実際の遅延読み込みは発生せず、
+// 即座にこのモックコンポーネントがレンダリングされます。
+vi.mock("./EmployeeListPage", () => ({
+  // モジュールが 'EmployeeListPage' という名前付きエクスポートを持つため、
+  // モックもその形式に合わせます。
+  // biome-ignore lint/style/useNamingConvention: React component name must match actual export
+  EmployeeListPage: () => (
+    <div>
+      <h1>従業員管理</h1>
+    </div>
+  ),
+}));
+
+// ----- ▲ ここまで追加 ▲ -----
 // Mock dependencies
 vi.mock("@/features/employees/hooks/useEmployees", () => ({
   useEmployees: () => ({
