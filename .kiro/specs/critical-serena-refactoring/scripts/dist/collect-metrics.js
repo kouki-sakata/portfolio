@@ -42,6 +42,28 @@ const fs = __importStar(require("fs/promises"));
 const path = __importStar(require("path"));
 const zlib_1 = require("zlib");
 /**
+ * Collect endpoint-specific metrics from Spring Boot Actuator
+ */
+async function collectEndpointSpecificMetrics(baseUrl, uri) {
+    const encodedUri = encodeURIComponent(uri);
+    const metricsUrl = `${baseUrl}/actuator/metrics/http.server.requests?tag=uri:${encodedUri}`;
+    const response = await fetch(metricsUrl);
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    const measurements = data.measurements || [];
+    // Extract specific percentiles for this endpoint
+    const p95Measurement = measurements.find(m => m.statistic === '0.95');
+    const p99Measurement = measurements.find(m => m.statistic === '0.99');
+    const countMeasurement = measurements.find(m => m.statistic === 'COUNT');
+    return {
+        p95: p95Measurement ? p95Measurement.value * 1000 : 0, // Convert to milliseconds
+        p99: p99Measurement ? p99Measurement.value * 1000 : 0, // Convert to milliseconds
+        count: countMeasurement ? countMeasurement.value : 0
+    };
+}
+/**
  * Collect API response time metrics from Spring Boot Actuator
  */
 async function collectActuatorMetrics(baseUrl) {
@@ -59,15 +81,21 @@ async function collectActuatorMetrics(baseUrl) {
         // Get available endpoints
         const endpoints = {};
         const uriTags = data.availableTags?.find((tag) => tag.tag === 'uri')?.values || [];
-        // For each endpoint, collect metrics
+        // For each endpoint, collect specific metrics
         for (const uri of uriTags) {
-            // In real implementation, we would make individual calls for each endpoint
-            // For now, using mock data
-            endpoints[uri] = {
-                p95: p95Value * 1000, // Convert to milliseconds
-                p99: p99Value * 1000,
-                count: Math.floor(Math.random() * 10000) + 1000
-            };
+            try {
+                const endpointMetrics = await collectEndpointSpecificMetrics(baseUrl, uri);
+                endpoints[uri] = endpointMetrics;
+            }
+            catch (error) {
+                // Fallback to overall metrics if endpoint-specific collection fails
+                console.warn(`Failed to collect metrics for ${uri}, using fallback values`);
+                endpoints[uri] = {
+                    p95: p95Value * 1000, // Convert to milliseconds
+                    p99: p99Value * 1000,
+                    count: 100 // Conservative fallback count
+                };
+            }
         }
         // Calculate overall metrics
         const allP95Values = Object.values(endpoints).map(e => e.p95);
@@ -89,6 +117,17 @@ async function collectActuatorMetrics(baseUrl) {
     }
 }
 /**
+ * Validate file path to prevent path traversal attacks
+ */
+function validateFilePath(basePath, fileName) {
+    const normalizedBasePath = path.resolve(basePath);
+    const candidatePath = path.resolve(basePath, fileName);
+    if (!candidatePath.startsWith(normalizedBasePath)) {
+        throw new Error(`Path traversal detected: ${fileName}`);
+    }
+    return candidatePath;
+}
+/**
  * Collect frontend bundle size metrics
  */
 async function collectBundleMetrics(distPath) {
@@ -99,7 +138,7 @@ async function collectBundleMetrics(distPath) {
         let cssSize = 0;
         let cssGzipSize = 0;
         for (const file of files) {
-            const filePath = path.join(distPath, file);
+            const filePath = validateFilePath(distPath, file);
             const stats = await fs.stat(filePath);
             if (!stats.isFile())
                 continue;
@@ -237,20 +276,55 @@ async function generateBaselineMetrics(apiMetrics, bundleMetrics, dbMetrics, out
     return baseline;
 }
 /**
+ * Create empty API metrics for fallback scenarios
+ */
+function createEmptyApiMetrics() {
+    return {
+        endpoints: {},
+        overall: { p95: 0, p99: 0 }
+    };
+}
+/**
+ * Create empty bundle metrics for fallback scenarios
+ */
+function createEmptyBundleMetrics() {
+    return {
+        js: { raw: 0, gzipped: 0 },
+        css: { raw: 0, gzipped: 0 },
+        total: { raw: 0, gzipped: 0 }
+    };
+}
+/**
+ * Create empty database metrics for fallback scenarios
+ */
+function createEmptyDatabaseMetrics() {
+    return {
+        slowest_queries: [],
+        overall: { avg_query_time_ms: 0, p99_query_time_ms: 0 }
+    };
+}
+/**
  * Main function to collect all metrics and save results
  */
 async function collectAndSaveMetrics(options) {
     try {
         console.log('Starting metrics collection...');
-        // Collect API metrics
-        console.log('Collecting API metrics from Actuator...');
-        const apiMetrics = await collectActuatorMetrics(options.actuatorUrl);
-        // Collect bundle metrics
-        console.log('Collecting frontend bundle metrics...');
-        const bundleMetrics = await collectBundleMetrics(options.bundlePath);
-        // Collect database metrics
-        console.log('Collecting database query metrics...');
-        const dbMetrics = await collectDatabaseMetrics(options.logPath);
+        // Collect all metrics in parallel for better performance
+        console.log('Collecting all metrics in parallel...');
+        const [apiMetrics, bundleMetrics, dbMetrics] = await Promise.all([
+            collectActuatorMetrics(options.actuatorUrl).catch(error => {
+                console.warn('Failed to collect API metrics:', error.message);
+                return createEmptyApiMetrics();
+            }),
+            collectBundleMetrics(options.bundlePath).catch(error => {
+                console.warn('Failed to collect bundle metrics:', error.message);
+                return createEmptyBundleMetrics();
+            }),
+            collectDatabaseMetrics(options.logPath).catch(error => {
+                console.warn('Failed to collect database metrics:', error.message);
+                return createEmptyDatabaseMetrics();
+            })
+        ]);
         // Generate and save baseline
         console.log('Generating baseline metrics...');
         const baseline = await generateBaselineMetrics(apiMetrics, bundleMetrics, dbMetrics, options.outputPath, options.specPath);
