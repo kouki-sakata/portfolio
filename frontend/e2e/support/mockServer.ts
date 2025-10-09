@@ -7,6 +7,7 @@ import type {
   StampResponse,
 } from "@/features/home/types";
 import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
+import type { NewsItem } from "@/features/news/types";
 
 const DEFAULT_ADMIN_USER: EmployeeSummary = {
   id: 1,
@@ -45,6 +46,14 @@ type CreateAppMockServerOptions = {
   homeDashboard?: HomeDashboardResponse;
   stampResponse?: StampResponse;
   featureFlags?: Partial<FeatureFlags>;
+  initialNewsItems?: NewsItem[];
+};
+
+type ErrorSimulation = {
+  endpoint: string;
+  method: string;
+  status: number;
+  message?: string;
 };
 
 type AxiosPayload<T> = {
@@ -81,7 +90,7 @@ const buildJsonResponse = <T>(body: T) => ({
   },
 });
 
-const parseEmployeeId = (pathname: string): number | null => {
+const parseIdFromPath = (pathname: string): number | null => {
   const segments = pathname.split("/");
   const lastSegment = segments.at(-1);
   if (!lastSegment) {
@@ -126,6 +135,12 @@ export class AppMockServer {
 
   private nextEmployeeId: number;
 
+  private newsItems: NewsItem[];
+
+  private nextNewsId: number;
+
+  private errorSimulations: ErrorSimulation[] = [];
+
   constructor(page: Page, options: CreateAppMockServerOptions = {}) {
     this.page = page;
     this.user = options.user ?? { ...DEFAULT_ADMIN_USER };
@@ -153,6 +168,14 @@ export class AppMockServer {
       this.user.id
     );
     this.nextEmployeeId = maxEmployeeId + 1;
+
+    const newsItems = options.initialNewsItems ?? [];
+    this.newsItems = newsItems.map((item) => ({ ...item }));
+    const maxNewsId = this.newsItems.reduce(
+      (max, item) => (item.id > max ? item.id : max),
+      0
+    );
+    this.nextNewsId = maxNewsId + 1;
   }
 
   async prime() {
@@ -189,6 +212,30 @@ export class AppMockServer {
     return this.lastStampRequest ? { ...this.lastStampRequest } : null;
   }
 
+  getNewsItems(): NewsItem[] {
+    return this.newsItems.map((item) => ({ ...item }));
+  }
+
+  setNewsItems(items: NewsItem[]) {
+    this.newsItems = items.map((item) => ({ ...item }));
+  }
+
+  setErrorSimulation(simulation: ErrorSimulation | null) {
+    if (simulation === null) {
+      this.errorSimulations = [];
+    } else {
+      this.errorSimulations = [simulation];
+    }
+  }
+
+  addErrorSimulation(simulation: ErrorSimulation) {
+    this.errorSimulations.push(simulation);
+  }
+
+  clearErrorSimulations() {
+    this.errorSimulations = [];
+  }
+
   private async handleRoute(route: Route) {
     const request = route.request();
     const url = new URL(request.url());
@@ -201,6 +248,20 @@ export class AppMockServer {
       if (!normalizedPath.startsWith("/")) {
         normalizedPath = `/${normalizedPath}`;
       }
+    }
+
+    // Check error simulations
+    const errorSim = this.errorSimulations.find(
+      (sim) => normalizedPath.startsWith(sim.endpoint) && sim.method === method
+    );
+    if (errorSim) {
+      await route.fulfill({
+        status: errorSim.status,
+        ...buildJsonResponse({
+          message: errorSim.message ?? "Simulated error",
+        }),
+      });
+      return;
     }
 
     if (normalizedPath === "/auth/session" && method === "GET") {
@@ -277,7 +338,7 @@ export class AppMockServer {
     }
 
     if (normalizedPath.startsWith("/employees/") && method === "PUT") {
-      const employeeId = parseEmployeeId(normalizedPath);
+      const employeeId = parseIdFromPath(normalizedPath);
       if (!employeeId) {
         await route.fulfill({ status: 400, body: "" });
         return;
@@ -343,8 +404,170 @@ export class AppMockServer {
           ],
           months: Array.from({ length: 12 }, (_, i) => (i + 1).toString()),
           entries: [],
+          summary: {
+            totalWorkingDays: 0,
+            totalWorkingHours: 0,
+            averageWorkingHours: 0,
+            presentDays: 0,
+            absentDays: 0,
+          },
+      );
+      return;
+    }
+
+    // News endpoints
+    if (normalizedPath === "/news" && method === "GET") {
+      await route.fulfill(
+        buildJsonResponse({
+          items: this.newsItems,
+          total: this.newsItems.length,
+          page: 1,
+          pageSize: 50,
         })
       );
+      return;
+    }
+
+    if (normalizedPath === "/news" && method === "POST") {
+      const payload = getAxiosPayload<Omit<NewsItem, "id">>(
+        request.postDataJSON(),
+        request.postData()
+      );
+      if (!payload) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const newItem: NewsItem = {
+        ...payload,
+        id: this.nextNewsId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        authorId: this.user.id,
+      };
+      this.nextNewsId += 1;
+      this.newsItems = [...this.newsItems, newItem];
+
+      await route.fulfill({
+        status: 201,
+        ...buildJsonResponse(newItem),
+      });
+      return;
+    }
+
+    if (normalizedPath.startsWith("/news/") && method === "PUT") {
+      const newsId = parseIdFromPath(normalizedPath);
+      if (!newsId) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const payload = getAxiosPayload<Partial<NewsItem>>(
+        request.postDataJSON(),
+        request.postData()
+      );
+      if (!payload) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const index = this.newsItems.findIndex((item) => item.id === newsId);
+      if (index < 0) {
+        await route.fulfill({ status: 404, body: "" });
+        return;
+      }
+
+      const updatedItem: NewsItem = {
+        ...this.newsItems[index],
+        ...payload,
+        id: newsId,
+        updatedAt: new Date().toISOString(),
+      };
+      this.newsItems = [
+        ...this.newsItems.slice(0, index),
+        updatedItem,
+        ...this.newsItems.slice(index + 1),
+      ];
+
+      await route.fulfill(buildJsonResponse(updatedItem));
+      return;
+    }
+
+    if (normalizedPath.startsWith("/news/") && method === "DELETE") {
+      const newsId = parseIdFromPath(normalizedPath);
+      if (!newsId) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      this.newsItems = this.newsItems.filter((item) => item.id !== newsId);
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+
+    if (
+      normalizedPath.startsWith("/news/") &&
+      normalizedPath.endsWith("/status") &&
+      method === "PATCH"
+    ) {
+      const segments = normalizedPath.split("/");
+      const newsId = Number.parseInt(segments[2] ?? "", 10);
+      if (Number.isNaN(newsId)) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const payload = getAxiosPayload<{ published: boolean }>(
+        request.postDataJSON(),
+        request.postData()
+      );
+      if (!payload) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const index = this.newsItems.findIndex((item) => item.id === newsId);
+      if (index < 0) {
+        await route.fulfill({ status: 404, body: "" });
+        return;
+      }
+
+      const updatedItem: NewsItem = {
+        ...this.newsItems[index],
+        published: payload.published,
+        updatedAt: new Date().toISOString(),
+      };
+      this.newsItems = [
+        ...this.newsItems.slice(0, index),
+        updatedItem,
+        ...this.newsItems.slice(index + 1),
+      ];
+
+      await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+
+    // Logs endpoints
+    if (normalizedPath === "/logs" && method === "GET") {
+      await route.fulfill(
+        buildJsonResponse({
+          logs: [],
+          total: 0,
+          page: 1,
+          pageSize: 50,
+        })
+      );
+      return;
+    }
+
+    if (normalizedPath === "/logs/export" && method === "GET") {
+      await route.fulfill({
+        status: 200,
+        headers: {
+          "content-type": "text/csv",
+        },
+        body: "id,timestamp,level,message\n",
+      });
       return;
     }
 
