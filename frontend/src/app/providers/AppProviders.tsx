@@ -126,11 +126,6 @@ const router = createBrowserRouter([
             loader: () => homeRouteLoader(queryClient),
           },
           {
-            path: "attendance",
-            element: <HomeRoute />,
-            loader: () => homeRouteLoader(queryClient),
-          },
-          {
             path: "stamp-history",
             element: <StampHistoryRoute />,
             loader: () => stampHistoryRouteLoader(queryClient),

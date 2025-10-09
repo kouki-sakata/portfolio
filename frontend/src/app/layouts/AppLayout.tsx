@@ -4,6 +4,7 @@ import { useAuth } from "@/features/auth/hooks/useAuth";
 import { AppHeader } from "@/shared/components/layout/AppHeader";
 import { AppShell } from "@/shared/components/layout/AppShell";
 import { AppSidebar } from "@/shared/components/layout/AppSidebar";
+import { NavigationProgress } from "@/shared/components/layout/NavigationProgress";
 import { PageLoader } from "@/shared/components/layout/PageLoader";
 
 export const AppLayout = () => {
@@ -32,6 +33,7 @@ export const AppLayout = () => {
 
   return (
     <AppShell>
+      <NavigationProgress />
       {/* デスクトップ用サイドバー */}
       <AppSidebar className="hidden lg:block" />
 

@@ -37,10 +37,10 @@ describe("API Client Integration Tests", () => {
 
       // Mock successful response
       const responseData = { id: 1, name: "Test User" };
-      mockInstance.onGet("/api/users/1").reply(200, responseData);
+      mockInstance.onGet("/users/1").reply(200, responseData);
 
       // Make request
-      const response = await client.get("/api/users/1");
+      const response = await client.get("/users/1");
 
       // Verify response
       expect(response.data).toEqual(responseData);
@@ -64,16 +64,16 @@ describe("API Client Integration Tests", () => {
       const emitSpy = vi.spyOn(authEvents, "emitUnauthorized");
 
       // Mock 401 response
-      mockInstance.onGet("/api/protected").reply(401, {
+      mockInstance.onGet("/protected").reply(401, {
         message: "Authentication required",
         code: "UNAUTHORIZED",
       });
 
       // Make request and expect error
-      await expect(client.get("/api/protected")).rejects.toThrow(ApiError);
+      await expect(client.get("/protected")).rejects.toThrow(ApiError);
 
       try {
-        await client.get("/api/protected");
+        await client.get("/protected");
       } catch (error) {
         expect(error).toBeInstanceOf(ApiError);
         const apiError = error as ApiError;
@@ -94,13 +94,13 @@ describe("API Client Integration Tests", () => {
       const mockInstance = new MockAdapter(client);
 
       // Mock network error
-      mockInstance.onGet("/api/test").networkError();
+      mockInstance.onGet("/test").networkError();
 
       // Make request and expect error
-      await expect(client.get("/api/test")).rejects.toThrow(ApiError);
+      await expect(client.get("/test")).rejects.toThrow(ApiError);
 
       try {
-        await client.get("/api/test");
+        await client.get("/test");
       } catch (error) {
         expect(error).toBeInstanceOf(ApiError);
         const apiError = error as ApiError;
@@ -119,13 +119,13 @@ describe("API Client Integration Tests", () => {
       const mockInstance = new MockAdapter(client);
 
       // Mock timeout
-      mockInstance.onGet("/api/slow").timeout();
+      mockInstance.onGet("/slow").timeout();
 
       // Make request and expect error
-      await expect(client.get("/api/slow")).rejects.toThrow(ApiError);
+      await expect(client.get("/slow")).rejects.toThrow(ApiError);
 
       try {
-        await client.get("/api/slow");
+        await client.get("/slow");
       } catch (error) {
         expect(error).toBeInstanceOf(ApiError);
         const apiError = error as ApiError;
@@ -181,10 +181,10 @@ describe("API Client Integration Tests", () => {
       );
 
       // Mock response
-      mockInstance.onGet("/api/test").reply(200, {});
+      mockInstance.onGet("/test").reply(200, {});
 
       // Make request
-      await client.get("/api/test");
+      await client.get("/test");
 
       // Verify CSRF token was NOT added
       const request = mockInstance.history.get[0];
@@ -204,13 +204,13 @@ describe("API Client Integration Tests", () => {
       const emitSpy = vi.spyOn(authEvents, "emitUnauthorized");
 
       // Mock 401 response
-      mockInstance.onGet("/api/protected").reply(401, {
+      mockInstance.onGet("/protected").reply(401, {
         message: "Unauthorized",
       });
 
       // Make request - should throw axios error, not ApiError
       try {
-        await client.get("/api/protected");
+        await client.get("/protected");
       } catch (error) {
         // Should be an axios error, not ApiError
         expect(error).not.toBeInstanceOf(ApiError);

@@ -65,7 +65,7 @@ describe("logApi", () => {
 
     const result = await searchLogs(filters);
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/logs", {
+    expect(mockedApi.get).toHaveBeenCalledWith("/logs", {
       params: {
         keyword: "failed",
         levels: "ERROR,WARN",
@@ -89,7 +89,7 @@ describe("logApi", () => {
 
     const result = await exportLogs({ format: "csv", keyword: "audit" });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/logs/export", {
+    expect(mockedApi.get).toHaveBeenCalledWith("/logs/export", {
       params: {
         format: "csv",
         keyword: "audit",

@@ -21,6 +21,10 @@ describe("HomePage", () => {
         mutations: { retry: false },
       },
     });
+
+    mswServer.use(
+      http.get("/api/public/feature-flags", () => HttpResponse.json({}))
+    );
   });
 
   afterEach(() => {
@@ -59,7 +63,7 @@ describe("HomePage", () => {
     );
 
   describe("ダッシュボードデータの表示", () => {
-    it("ローディング中はPageLoaderが表示される", () => {
+    it("ローディング中はダッシュボードスケルトンが表示される", () => {
       mswServer.use(
         http.get("http://localhost/api/home/overview", () => {
           return new Promise(() => {
@@ -70,9 +74,7 @@ describe("HomePage", () => {
 
       renderWithQueryClient(<HomePage />);
 
-      expect(
-        screen.getByText("ダッシュボードを読み込み中")
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("home-dashboard-skeleton")).toBeInTheDocument();
     });
 
     it("従業員名を含む挨拶メッセージが表示される", async () => {
@@ -298,7 +300,13 @@ describe("HomePage", () => {
     it("打刻失敗時にエラーメッセージが表示される", async () => {
       mswServer.use(
         http.post("http://localhost/api/home/stamps", () =>
-          HttpResponse.error()
+          HttpResponse.json(
+            {
+              message: "エラー",
+              success: false,
+            },
+            { status: 500 }
+          )
         )
       );
 

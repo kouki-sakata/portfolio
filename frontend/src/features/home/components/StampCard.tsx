@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,6 +21,7 @@ export type StampCardProps = {
   isLoading?: boolean;
   message?: string | null;
   className?: string;
+  showSkeleton?: boolean;
 };
 
 /**
@@ -33,6 +35,7 @@ export const StampCard = memo(
     isLoading = false,
     message = null,
     className,
+    showSkeleton = true,
   }: StampCardProps) => {
     const [nightWork, setNightWork] = useState(false);
 
@@ -40,11 +43,32 @@ export const StampCard = memo(
       await onStamp(type, nightWork);
     };
 
+    if (isLoading && showSkeleton) {
+      return (
+        <Card
+          aria-busy="true"
+          className={cn("w-full", className)}
+          data-testid="stamp-card-skeleton"
+        >
+          <CardHeader>
+            <Skeleton className="h-6 w-32" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+            <Skeleton className="h-4 w-3/4" />
+          </CardContent>
+        </Card>
+      );
+    }
+
     return (
       <Card className={cn("w-full", className)}>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg text-neutral-900">
+            <CardTitle className="font-semibold text-lg text-slate-900">
               ワンクリック打刻
             </CardTitle>
             <div className="flex items-center space-x-2">
@@ -56,7 +80,7 @@ export const StampCard = memo(
                 onCheckedChange={(checked) => setNightWork(checked === true)}
               />
               <label
-                className="font-medium text-neutral-900 text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                className="font-medium text-slate-800 text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 htmlFor="nightwork"
               >
                 夜勤扱い
@@ -67,16 +91,16 @@ export const StampCard = memo(
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
-              className="w-full"
+              className="hover:-translate-y-0.5 w-full border border-primary/70 bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/90 focus-visible:ring-primary/30 disabled:translate-y-0 disabled:bg-primary/70"
               disabled={isLoading}
               onClick={() => handleStamp("1")}
               size="lg"
-              variant="default"
+              variant="outline"
             >
               出勤打刻
             </Button>
             <Button
-              className="w-full"
+              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100 focus-visible:ring-slate-300 disabled:translate-y-0"
               disabled={isLoading}
               onClick={() => handleStamp("2")}
               size="lg"
@@ -89,7 +113,9 @@ export const StampCard = memo(
             <CardDescription
               className={cn(
                 "text-center font-medium",
-                message.includes("失敗") ? "text-destructive" : "text-primary"
+                message.includes("失敗")
+                  ? "text-destructive"
+                  : "text-emerald-600"
               )}
             >
               {message}

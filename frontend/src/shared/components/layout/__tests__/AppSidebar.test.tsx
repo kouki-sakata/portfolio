@@ -52,12 +52,14 @@ describe("AppSidebar", () => {
 
     // 主要なナビゲーションアイテムが表示されている
     expect(screen.getByText("ホーム")).toBeInTheDocument();
-    expect(screen.getByText("出退勤")).toBeInTheDocument();
     expect(screen.getByText("勤怠履歴")).toBeInTheDocument();
     expect(screen.getByText("社員管理")).toBeInTheDocument();
     expect(screen.getByText("通知")).toBeInTheDocument();
     expect(screen.getByText("レポート")).toBeInTheDocument();
     expect(screen.getByText("設定")).toBeInTheDocument();
+
+    // 不要な「出退勤」リンクが表示されていないことを確認
+    expect(screen.queryByText("出退勤")).not.toBeInTheDocument();
   });
 
   it("管理グループのタイトルが表示される", () => {
