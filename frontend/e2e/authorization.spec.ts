@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, expectAccessDenied } from "./support/helpers";
 import {
   createAdminUser,
   createTestUser,
   TEST_CREDENTIALS,
 } from "./support/factories";
+import { expectAccessDenied, signIn } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 test.describe("権限制御の包括的テスト", () => {
   test("一般ユーザーは従業員管理ページにアクセスできない", async ({ page }) => {
@@ -48,7 +47,9 @@ test.describe("権限制御の包括的テスト", () => {
 
     await test.step("管理者で従業員管理ページにアクセス", async () => {
       await page.goto("/admin/employees");
-      await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible({
+      await expect(
+        page.getByRole("heading", { name: "従業員管理" })
+      ).toBeVisible({
         timeout: 10_000,
       });
     });
@@ -74,19 +75,29 @@ test.describe("権限制御の包括的テスト", () => {
   // TODO: 一般ユーザーのサイドバーメニュー表示テストを修正
   // - サイドバーコンポーネントのレンダリング確認が必要
   // - 管理者メニューのセレクタが正しくない可能性
-  test.skip("一般ユーザーのサイドバーには管理者メニューが表示されない", async ({ page }) => {
+  test("一般ユーザーのサイドバーには管理者メニューが表示されない", async ({
+    page,
+  }) => {
     const regularUser = createTestUser();
     await createAppMockServer(page, { user: regularUser });
 
-    await signIn(page, TEST_CREDENTIALS.user.email, TEST_CREDENTIALS.user.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.user.email,
+      TEST_CREDENTIALS.user.password
+    );
 
     await test.step("サイドバーで管理者メニューの非表示を確認", async () => {
       // 従業員管理リンクが存在しないことを確認
-      const employeeManagementLink = page.getByRole("link", { name: "社員管理" });
+      const employeeManagementLink = page.getByRole("link", {
+        name: "社員管理",
+      });
       await expect(employeeManagementLink).not.toBeVisible();
 
       // ログ管理リンクが存在しないことを確認
-      const logManagementLink = page.getByRole("link", { name: /ログ|ログ管理/ });
+      const logManagementLink = page.getByRole("link", {
+        name: /ログ|ログ管理/,
+      });
       await expect(logManagementLink).not.toBeVisible();
     });
   });
@@ -95,11 +106,17 @@ test.describe("権限制御の包括的テスト", () => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("サイドバーで管理者メニューの表示を確認", async () => {
       // 従業員管理リンクが表示される
-      const employeeManagementLink = page.getByRole("link", { name: "社員管理" });
+      const employeeManagementLink = page.getByRole("link", {
+        name: "社員管理",
+      });
       await expect(employeeManagementLink).toBeVisible();
 
       // ログ管理リンクが表示される（実装に応じて調整）
@@ -112,12 +129,18 @@ test.describe("権限制御の包括的テスト", () => {
     const regularUser = createTestUser();
     await createAppMockServer(page, { user: regularUser });
 
-    await signIn(page, TEST_CREDENTIALS.user.email, TEST_CREDENTIALS.user.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.user.email,
+      TEST_CREDENTIALS.user.password
+    );
 
     await test.step("勤怠履歴ページに遷移", async () => {
       await page.getByRole("link", { name: "勤怠履歴" }).click();
       await expect(page).toHaveURL(/\/stamp-history/);
-      await expect(page.getByRole("heading", { name: "打刻履歴" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "打刻履歴" })
+      ).toBeVisible();
     });
 
     await test.step("自分の履歴のみが表示される（他ユーザーフィルタなし）", async () => {
@@ -131,7 +154,11 @@ test.describe("権限制御の包括的テスト", () => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("勤怠履歴ページに遷移", async () => {
       await page.getByRole("link", { name: "勤怠履歴" }).click();
@@ -151,7 +178,9 @@ test.describe("権限制御の包括的テスト", () => {
     });
   });
 
-  test("一般ユーザーが直接API経由で従業員作成を試みると403エラー", async ({ page }) => {
+  test("一般ユーザーが直接API経由で従業員作成を試みると403エラー", async ({
+    page,
+  }) => {
     const regularUser = createTestUser();
     const server = await createAppMockServer(page, {
       user: regularUser,
@@ -208,7 +237,9 @@ test.describe("権限制御の包括的テスト", () => {
 
     await test.step("従業員管理ページに遷移", async () => {
       await page.goto("/admin/employees");
-      await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "従業員管理" })
+      ).toBeVisible();
     });
 
     await test.step("従業員を選択して削除", async () => {

@@ -1,8 +1,7 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, waitForToast } from "./support/helpers";
 import { createAdminUser, TEST_CREDENTIALS } from "./support/factories";
+import { waitForToast } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 test.describe("フォームバリデーションの包括的テスト", () => {
   test.beforeEach(async ({ page }) => {
@@ -13,9 +12,11 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
 
     await page.goto("/admin/employees");
-    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible({
-      timeout: 10_000,
-    });
+    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
+      {
+        timeout: 10_000,
+      }
+    );
 
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();
@@ -24,7 +25,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
   // TODO: 必須項目バリデーションテストを修正
   // - フォームのバリデーションメッセージセレクタが正しくない可能性
   // - エラーメッセージの表示タイミングや条件を再確認する必要がある
-  test.skip("必須項目が空の場合、エラーメッセージが表示される", async ({ page }) => {
+  test("必須項目が空の場合、エラーメッセージが表示される", async ({ page }) => {
     await test.step("空のまま送信", async () => {
       await page.getByRole("button", { name: "登録する" }).click();
     });
@@ -32,22 +33,22 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     await test.step("必須項目エラーを確認", async () => {
       // 姓のエラー
       await expect(
-        page.locator('text=/姓.*必須|required/i').first()
+        page.locator("text=/姓.*必須|required/i").first()
       ).toBeVisible({ timeout: 3000 });
 
       // 名のエラー
       await expect(
-        page.locator('text=/名.*必須|required/i').first()
+        page.locator("text=/名.*必須|required/i").first()
       ).toBeVisible();
 
       // メールアドレスのエラー
       await expect(
-        page.locator('text=/メールアドレス.*必須|email.*required/i').first()
+        page.locator("text=/メールアドレス.*必須|email.*required/i").first()
       ).toBeVisible();
 
       // パスワードのエラー
       await expect(
-        page.locator('text=/パスワード.*必須|password.*required/i').first()
+        page.locator("text=/パスワード.*必須|password.*required/i").first()
       ).toBeVisible();
     });
   });
@@ -55,7 +56,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
   // TODO: メールアドレス形式バリデーションテストを修正
   // - フォームのバリデーションメッセージが期待通り表示されない
   // - エラーメッセージのテキストパターンを見直す必要がある
-  test.skip("メールアドレス形式が不正な場合、エラーメッセージが表示される", async ({ page }) => {
+  test("メールアドレス形式が不正な場合、エラーメッセージが表示される", async ({
+    page,
+  }) => {
     await test.step("不正な形式のメールアドレスを入力", async () => {
       await page.getByLabel("姓").fill("テスト");
       await page.getByLabel("名").fill("太郎");
@@ -71,7 +74,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
   });
 
-  test("パスワード強度が不十分な場合、エラーメッセージが表示される", async ({ page }) => {
+  test("パスワード強度が不十分な場合、エラーメッセージが表示される", async ({
+    page,
+  }) => {
     await test.step("弱いパスワードを入力", async () => {
       await page.getByLabel("姓").fill("テスト");
       await page.getByLabel("名").fill("太郎");
@@ -82,22 +87,31 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
     await test.step("パスワード強度エラーを確認", async () => {
       await expect(
-        page.getByText(/パスワードは.*文字以上|password.*characters|強度|strength/i)
+        page.getByText(
+          /パスワードは.*文字以上|password.*characters|強度|strength/i
+        )
       ).toBeVisible({ timeout: 3000 });
     });
   });
 
-  test("重複するメールアドレスの場合、エラーメッセージが表示される", async ({ page }) => {
+  test("重複するメールアドレスの場合、エラーメッセージが表示される", async ({
+    page,
+  }) => {
     await test.step("既存のメールアドレスを入力", async () => {
       await page.getByLabel("姓").fill("テスト");
       await page.getByLabel("名").fill("太郎");
-      await page.getByLabel("メールアドレス").fill(TEST_CREDENTIALS.admin.email);
+      await page
+        .getByLabel("メールアドレス")
+        .fill(TEST_CREDENTIALS.admin.email);
       await page.getByLabel("パスワード").fill("Password123!");
       await page.getByRole("button", { name: "登録する" }).click();
     });
 
     await test.step("重複エラーを確認", async () => {
-      await waitForToast(page, /既に登録|重複|already exists|使用されています/i);
+      await waitForToast(
+        page,
+        /既に登録|重複|already exists|使用されています/i
+      );
     });
   });
 
@@ -115,7 +129,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
   });
 
-  test("入力フィールドのリアルタイムバリデーションが動作する", async ({ page }) => {
+  test("入力フィールドのリアルタイムバリデーションが動作する", async ({
+    page,
+  }) => {
     await test.step("メールアドレスフィールドにフォーカスして離脱", async () => {
       const emailField = page.getByLabel("メールアドレス");
       await emailField.focus();
@@ -142,10 +158,11 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
       // エラー状態のクラスまたは属性を確認
       const hasErrorClass = await emailField
-        .evaluate((el) =>
-          el.classList.contains("error") ||
-          el.classList.contains("invalid") ||
-          el.getAttribute("aria-invalid") === "true"
+        .evaluate(
+          (el) =>
+            el.classList.contains("error") ||
+            el.classList.contains("invalid") ||
+            el.getAttribute("aria-invalid") === "true"
         )
         .catch(() => false);
 
@@ -153,7 +170,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
   });
 
-  test("パスワード確認フィールドが一致しない場合、エラーが表示される", async ({ page }) => {
+  test("パスワード確認フィールドが一致しない場合、エラーが表示される", async ({
+    page,
+  }) => {
     // パスワード確認フィールドが実装されている場合のテスト
     const hasPasswordConfirm = await page
       .getByLabel(/パスワード.*確認|confirm.*password/i)
@@ -170,7 +189,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
       await page.getByLabel("名").fill("太郎");
       await page.getByLabel("メールアドレス").fill("test@example.com");
       await page.getByLabel("パスワード").fill("Password123!");
-      await page.getByLabel(/パスワード.*確認|confirm.*password/i).fill("DifferentPass123!");
+      await page
+        .getByLabel(/パスワード.*確認|confirm.*password/i)
+        .fill("DifferentPass123!");
       await page.getByRole("button", { name: "登録する" }).click();
     });
 
@@ -215,7 +236,9 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
   });
 
-  test("フォームクリア後、エラーメッセージがリセットされる", async ({ page }) => {
+  test("フォームクリア後、エラーメッセージがリセットされる", async ({
+    page,
+  }) => {
     await test.step("エラーを発生させる", async () => {
       await page.getByLabel("メールアドレス").fill("invalid");
       await page.getByRole("button", { name: "登録する" }).click();

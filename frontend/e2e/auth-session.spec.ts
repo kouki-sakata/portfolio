@@ -1,22 +1,27 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, waitForToast } from "./support/helpers";
 import { createAdminUser, TEST_CREDENTIALS } from "./support/factories";
+import { signIn } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 test.describe("認証・セッション管理の包括的テスト", () => {
   // TODO: ログアウト機能のテストを修正
   // - ログアウトボタンのセレクタが見つからない可能性
   // - ログアウト後のリダイレクト処理のタイミング調整が必要
-  test.skip("ログアウト機能が正常に動作する", async ({ page }) => {
+  test("ログアウト機能が正常に動作する", async ({ page }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("ログアウトボタンをクリック", async () => {
       // ヘッダーまたはサイドバーからログアウトボタンを探す
-      const logoutButton = page.getByRole("button", { name: /ログアウト|サインアウト/ });
+      const logoutButton = page.getByRole("button", {
+        name: /ログアウト|サインアウト/,
+      });
       await logoutButton.click();
     });
 
@@ -34,11 +39,17 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     });
   });
 
-  test("セッション期限切れ後、自動的にログインページにリダイレクトされる", async ({ page }) => {
+  test("セッション期限切れ後、自動的にログインページにリダイレクトされる", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("セッション期限切れをシミュレート", async () => {
       // セッションAPIに401エラーを返すように設定
@@ -58,7 +69,9 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     });
   });
 
-  test("ログイン後、直前にアクセスしようとしたページにリダイレクトされる", async ({ page }) => {
+  test("ログイン後、直前にアクセスしようとしたページにリダイレクトされる", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
@@ -73,14 +86,18 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     });
 
     await test.step("ログイン実行", async () => {
-      await page.getByLabel("メールアドレス").fill(TEST_CREDENTIALS.admin.email);
+      await page
+        .getByLabel("メールアドレス")
+        .fill(TEST_CREDENTIALS.admin.email);
       await page.getByLabel("パスワード").fill(TEST_CREDENTIALS.admin.password);
       await page.getByRole("button", { name: "サインイン" }).click();
     });
 
     await test.step("元のページにリダイレクトされる", async () => {
       // 従業員管理ページに戻る（実装によってはホームにリダイレクト）
-      await expect(page).toHaveURL(/\/(admin\/employees)?/, { timeout: 10_000 });
+      await expect(page).toHaveURL(/\/(admin\/employees)?/, {
+        timeout: 10_000,
+      });
     });
   });
 
@@ -102,7 +119,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
   // TODO: 複数タブでのセッション管理テストを修正
   // - mockServerが複数ページで共有されていない可能性
   // - タブ間のセッション同期メカニズムの確認が必要
-  test.skip("複数タブで同時ログイン状態を維持できる", async ({ browser }) => {
+  test("複数タブで同時ログイン状態を維持できる", async ({ browser }) => {
     const adminUser = createAdminUser();
 
     const context = await browser.newContext();
@@ -112,7 +129,11 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     await createAppMockServer(page1, { user: adminUser });
 
     await test.step("タブ1でログイン", async () => {
-      await signIn(page1, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+      await signIn(
+        page1,
+        TEST_CREDENTIALS.admin.email,
+        TEST_CREDENTIALS.admin.password
+      );
     });
 
     await test.step("タブ2で同じセッションが有効", async () => {
@@ -126,7 +147,9 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     await context.close();
   });
 
-  test("ログイン状態でログインページにアクセスするとホームにリダイレクト", async ({ page }) => {
+  test("ログイン状態でログインページにアクセスするとホームにリダイレクト", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
@@ -176,14 +199,20 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     await test.step("誤った認証情報でログイン試行", async () => {
       server.setLoginFailure({ status: 401, message: "Invalid credentials" });
 
-      await page.getByLabel("メールアドレス").fill(TEST_CREDENTIALS.invalid.email);
-      await page.getByLabel("パスワード").fill(TEST_CREDENTIALS.invalid.password);
+      await page
+        .getByLabel("メールアドレス")
+        .fill(TEST_CREDENTIALS.invalid.email);
+      await page
+        .getByLabel("パスワード")
+        .fill(TEST_CREDENTIALS.invalid.password);
       await page.getByRole("button", { name: "サインイン" }).click();
     });
 
     await test.step("エラーメッセージが表示される", async () => {
       await expect(
-        page.getByText(/メールアドレスまたはパスワードが正しくありません|Invalid credentials/)
+        page.getByText(
+          /メールアドレスまたはパスワードが正しくありません|Invalid credentials/
+        )
       ).toBeVisible();
 
       // ログインページに留まる
@@ -198,7 +227,9 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     await page.goto("/signin");
 
     await test.step("ログインボタンを連続クリック", async () => {
-      await page.getByLabel("メールアドレス").fill(TEST_CREDENTIALS.admin.email);
+      await page
+        .getByLabel("メールアドレス")
+        .fill(TEST_CREDENTIALS.admin.email);
       await page.getByLabel("パスワード").fill(TEST_CREDENTIALS.admin.password);
 
       const loginButton = page.getByRole("button", { name: "サインイン" });

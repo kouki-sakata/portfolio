@@ -6,8 +6,8 @@ import type {
   StampRequest,
   StampResponse,
 } from "@/features/home/types";
-import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
 import type { NewsItem } from "@/features/news/types";
+import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
 
 const DEFAULT_ADMIN_USER: EmployeeSummary = {
   id: 1,

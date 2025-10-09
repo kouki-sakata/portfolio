@@ -1,20 +1,23 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, waitForToast } from "./support/helpers";
 import {
   createAdminUser,
-  TEST_CREDENTIALS,
-  STAMP_TYPES,
   NIGHT_WORK_FLAGS,
+  STAMP_TYPES,
+  TEST_CREDENTIALS,
 } from "./support/factories";
+import { signIn, waitForToast } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 test.describe("打刻機能の包括的テスト", () => {
   test("退勤打刻が正常に動作する", async ({ page }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("退勤打刻を実行", async () => {
       // 退勤ボタンが存在することを確認（実際のUIに応じて調整が必要）
@@ -36,7 +39,11 @@ test.describe("打刻機能の包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("外出打刻を実行", async () => {
       const leaveButton = page.getByRole("button", { name: /外出/ });
@@ -56,7 +63,11 @@ test.describe("打刻機能の包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("復帰打刻を実行", async () => {
       const returnButton = page.getByRole("button", { name: /復帰/ });
@@ -76,7 +87,11 @@ test.describe("打刻機能の包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("深夜勤務フラグをONにして出勤打刻", async () => {
       // 深夜勤務チェックボックスをON（実際のUIに応じて調整）
@@ -97,14 +112,20 @@ test.describe("打刻機能の包括的テスト", () => {
     });
   });
 
-  test("連続して同じ打刻タイプを実行した場合のエラーハンドリング", async ({ page }) => {
+  test("連続して同じ打刻タイプを実行した場合のエラーハンドリング", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
       stampResponse: { message: "既に打刻済みです", success: false },
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("出勤打刻を実行", async () => {
       await page.getByRole("button", { name: "出勤打刻" }).click();
@@ -129,7 +150,11 @@ test.describe("打刻機能の包括的テスト", () => {
       message: "サーバーエラーが発生しました",
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("打刻を実行してエラーを確認", async () => {
       await page.getByRole("button", { name: "出勤打刻" }).click();

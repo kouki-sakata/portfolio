@@ -69,7 +69,7 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
   // TODO: 出勤打刻機能のテストを修正
   // - 打刻ボタンが正しくレンダリングされない可能性
   // - mockServerの打刻APIレスポンスの設定確認が必要
-  test.skip("ホーム画面で出勤打刻が成功する", async ({ page }) => {
+  test("ホーム画面で出勤打刻が成功する", async ({ page }) => {
     const adminUser: EmployeeSummary = {
       id: 1,
       firstName: "太郎",

@@ -58,9 +58,7 @@ export const createEmployeeList = (
 /**
  * ニュースアイテムを作成するファクトリ
  */
-export const createNewsItem = (
-  overrides?: Partial<NewsItem>
-): NewsItem => {
+export const createNewsItem = (overrides?: Partial<NewsItem>): NewsItem => {
   const now = new Date().toISOString();
   return {
     id: 1,

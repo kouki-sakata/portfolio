@@ -1,13 +1,12 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, waitForToast, acceptDialog } from "./support/helpers";
 import {
   createAdminUser,
-  createTestUser,
   createNewsItemList,
+  createTestUser,
   TEST_CREDENTIALS,
 } from "./support/factories";
+import { acceptDialog, signIn, waitForToast } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 // お知らせ管理機能は未実装のため、一時的に全テストをスキップ
 // TODO: お知らせ管理機能の実装完了後にtest.describeに戻す
@@ -21,7 +20,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       initialNewsItems: newsItems,
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("お知らせページに遷移", async () => {
       // お知らせリンクをクリック（実装に応じて調整）
@@ -42,7 +45,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -76,7 +83,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       initialNewsItems: newsItems,
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -97,7 +108,9 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /更新しました/);
 
       const newsItems = server.getNewsItems();
-      const updatedItem = newsItems.find((item) => item.title === "更新されたお知らせ");
+      const updatedItem = newsItems.find(
+        (item) => item.title === "更新されたお知らせ"
+      );
       expect(updatedItem).toBeDefined();
       expect(updatedItem?.content).toBe("内容が更新されました。");
     });
@@ -111,7 +124,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       initialNewsItems: newsItems,
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -129,7 +146,9 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /削除しました/);
 
       const remainingItems = server.getNewsItems();
-      const deletedItem = remainingItems.find((item) => item.title === "テストニュース1");
+      const deletedItem = remainingItems.find(
+        (item) => item.title === "テストニュース1"
+      );
       expect(deletedItem).toBeUndefined();
     });
   });
@@ -142,7 +161,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       initialNewsItems: newsItems,
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -158,7 +181,9 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /更新しました|変更しました/);
 
       const newsItems = server.getNewsItems();
-      const updatedItem = newsItems.find((item) => item.title === "テストニュース1");
+      const updatedItem = newsItems.find(
+        (item) => item.title === "テストニュース1"
+      );
       expect(updatedItem?.published).toBe(true);
     });
   });
@@ -187,7 +212,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       initialNewsItems: newsItems,
     });
 
-    await signIn(page, TEST_CREDENTIALS.user.email, TEST_CREDENTIALS.user.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.user.email,
+      TEST_CREDENTIALS.user.password
+    );
 
     await test.step("お知らせ一覧を表示", async () => {
       await page.goto("/news");
@@ -206,14 +235,20 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     });
   });
 
-  test("お知らせが0件の場合、空状態メッセージが表示される", async ({ page }) => {
+  test("お知らせが0件の場合、空状態メッセージが表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
       initialNewsItems: [],
     });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -228,7 +263,11 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await page.goto("/news");
 
@@ -240,9 +279,9 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     });
 
     await test.step("バリデーションエラーを確認", async () => {
-      await expect(
-        page.getByText(/必須|入力してください/).first()
-      ).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText(/必須|入力してください/).first()).toBeVisible(
+        { timeout: 3000 }
+      );
     });
   });
 });

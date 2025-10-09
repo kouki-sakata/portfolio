@@ -1,18 +1,25 @@
 import { expect, test } from "@playwright/test";
-
-import { createAppMockServer } from "./support/mockServer";
-import { signIn, waitForToast, setupConsoleErrorListener } from "./support/helpers";
 import { createAdminUser, TEST_CREDENTIALS } from "./support/factories";
+import {
+  setupConsoleErrorListener,
+  signIn,
+  waitForToast,
+} from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 test.describe("エラーハンドリングの包括的テスト", () => {
   // TODO: ネットワークエラー時のトースト通知表示テストを修正
   // - mockServerのsetErrorSimulationが正しく動作していない可能性
   // - トースト通知の表示タイミングや条件を再確認する必要がある
-  test.skip("ネットワークエラー時にトースト通知が表示される", async ({ page }) => {
+  test("ネットワークエラー時にトースト通知が表示される", async ({ page }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("ネットワークエラーをシミュレート", async () => {
       // 打刻APIにネットワークエラーを設定
@@ -34,11 +41,17 @@ test.describe("エラーハンドリングの包括的テスト", () => {
   // TODO: サーバーエラー（500）時のエラーメッセージ表示テストを修正
   // - エラーシミュレーション後のトースト通知が期待通り表示されない
   // - エラーメッセージの検証パターンを見直す必要がある
-  test.skip("サーバーエラー（500）時に適切なエラーメッセージが表示される", async ({ page }) => {
+  test("サーバーエラー（500）時に適切なエラーメッセージが表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("サーバーエラーをシミュレート", async () => {
       server.setErrorSimulation({
@@ -56,7 +69,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     });
   });
 
-  test("バリデーションエラー時にフィールド下にエラーが表示される", async ({ page }) => {
+  test("バリデーションエラー時にフィールド下にエラーが表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
@@ -65,7 +80,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
 
     await test.step("従業員管理ページに遷移", async () => {
       await page.goto("/admin/employees");
-      await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible({
+      await expect(
+        page.getByRole("heading", { name: "従業員管理" })
+      ).toBeVisible({
         timeout: 10_000,
       });
     });
@@ -85,7 +102,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     });
   });
 
-  test("不正なメールアドレス形式でバリデーションエラーが表示される", async ({ page }) => {
+  test("不正なメールアドレス形式でバリデーションエラーが表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
@@ -110,7 +129,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     });
   });
 
-  test("存在しないリソースへのアクセスで404エラーページが表示される", async ({ page }) => {
+  test("存在しないリソースへのアクセスで404エラーページが表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
@@ -129,7 +150,11 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("タイムアウトをシミュレート", async () => {
       // 長時間レスポンスしないエンドポイント（実装依存）
@@ -185,7 +210,11 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     const consoleErrors = setupConsoleErrorListener(page);
 
     await test.step("通常のフローを実行", async () => {
-      await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+      await signIn(
+        page,
+        TEST_CREDENTIALS.admin.email,
+        TEST_CREDENTIALS.admin.password
+      );
 
       // 複数のページをナビゲート
       await page.getByRole("link", { name: "勤怠履歴" }).click();
@@ -241,7 +270,11 @@ test.describe("エラーハンドリングの包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    await signIn(page, TEST_CREDENTIALS.admin.email, TEST_CREDENTIALS.admin.password);
+    await signIn(
+      page,
+      TEST_CREDENTIALS.admin.email,
+      TEST_CREDENTIALS.admin.password
+    );
 
     await test.step("エラーを発生させる", async () => {
       server.setErrorSimulation({
@@ -262,7 +295,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
       // ナビゲーションが正常に動作
       await page.getByRole("link", { name: "勤怠履歴" }).click();
       await expect(page).toHaveURL(/\/stamp-history/);
-      await expect(page.getByRole("heading", { name: "打刻履歴" })).toBeVisible();
+      await expect(
+        page.getByRole("heading", { name: "打刻履歴" })
+      ).toBeVisible();
     });
   });
 });
