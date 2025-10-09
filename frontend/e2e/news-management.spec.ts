@@ -107,8 +107,8 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     await test.step("更新成功を確認", async () => {
       await waitForToast(page, /更新しました/);
 
-      const newsItems = server.getNewsItems();
-      const updatedItem = newsItems.find(
+      const updatedNewsItems = server.getNewsItems();
+      const updatedItem = updatedNewsItems.find(
         (item) => item.title === "更新されたお知らせ"
       );
       expect(updatedItem).toBeDefined();
@@ -180,8 +180,8 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
     await test.step("ステータス変更を確認", async () => {
       await waitForToast(page, /更新しました|変更しました/);
 
-      const newsItems = server.getNewsItems();
-      const updatedItem = newsItems.find(
+      const currentNewsItems = server.getNewsItems();
+      const updatedItem = currentNewsItems.find(
         (item) => item.title === "テストニュース1"
       );
       expect(updatedItem?.published).toBe(true);

@@ -411,6 +411,7 @@ export class AppMockServer {
             presentDays: 0,
             absentDays: 0,
           },
+        })
       );
       return;
     }

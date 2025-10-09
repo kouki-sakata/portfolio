@@ -224,7 +224,7 @@ test.describe("エラーハンドリングの包括的テスト", () => {
       await expect(page).toHaveURL(/\/$/);
     });
 
-    await test.step("クリティカルなコンソールエラーがないことを確認", async () => {
+    await test.step("クリティカルなコンソールエラーがないことを確認", () => {
       const criticalErrors = consoleErrors.filter(
         (error) =>
           error.includes("Maximum update depth exceeded") ||
