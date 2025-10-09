@@ -411,24 +411,24 @@ Received: <element(s) not found>
 
 ## 5. 打刻機能 (4件) 🟠
 
-### 5.1 外出打刻ボタンが未実装
+### 5.1 休憩開始打刻ボタンが未実装
 
 **テストファイル**: `e2e/stamp-comprehensive.spec.ts:35`
-**テスト名**: `打刻機能の包括的テスト > 外出打刻が正常に動作する`
+**テスト名**: `打刻機能の包括的テスト > 休憩開始打刻が正常に動作する`
 
 **エラー内容**:
 ```
 Test timeout of 30000ms exceeded.
 Error: locator.click: Test timeout of 30000ms exceeded.
-waiting for getByRole('button', { name: /外出/ })
+waiting for getByRole('button', { name: /休憩開始/ })
 ```
 
 **問題**:
-- ホーム画面に「外出」ボタンが存在しない
-- 外出打刻機能が実装されていない
+- ホーム画面に「休憩開始」ボタンが存在しない
+- 休憩開始打刻機能が実装されていない
 
 **実装要件**:
-- [ ] ホーム画面に「外出」打刻ボタンを追加
+- [ ] ホーム画面に「休憩開始」打刻ボタンを追加
 - [ ] `/api/home/stamps` へ `stampType: "BREAK_START"` をPOST
 - [ ] 成功時にトースト通知を表示
 
@@ -436,24 +436,24 @@ waiting for getByRole('button', { name: /外出/ })
 
 ---
 
-### 5.2 復帰打刻ボタンが未実装
+### 5.2 休憩終了打刻ボタンが未実装
 
 **テストファイル**: `e2e/stamp-comprehensive.spec.ts:55`
-**テスト名**: `打刻機能の包括的テスト > 復帰打刻が正常に動作する`
+**テスト名**: `打刻機能の包括的テスト > 休憩終了打刻が正常に動作する`
 
 **エラー内容**:
 ```
 Test timeout of 30000ms exceeded.
 Error: locator.click: Test timeout of 30000ms exceeded.
-waiting for getByRole('button', { name: /復帰/ })
+waiting for getByRole('button', { name: /休憩終了/ })
 ```
 
 **問題**:
-- ホーム画面に「復帰」ボタンが存在しない
-- 復帰打刻機能が実装されていない
+- ホーム画面に「休憩終了」ボタンが存在しない
+- 休憩終了打刻機能が実装されていない
 
 **実装要件**:
-- [ ] ホーム画面に「復帰」打刻ボタンを追加
+- [ ] ホーム画面に「休憩終了」打刻ボタンを追加
 - [ ] `/api/home/stamps` へ `stampType: "BREAK_END"` をPOST
 - [ ] 成功時にトースト通知を表示
 
@@ -547,7 +547,7 @@ Received: false
 5. **フォームエラーメッセージ表示の実装** (バリデーション4.1 - 4.6)
 
 ### Phase 4: 打刻機能拡張（優先度: 🟠 中-高）
-6. **外出/復帰打刻の実装** (打刻5.1 - 5.2)
+6. **休憩開始/休憩終了打刻の実装** (打刻5.1 - 5.2)
 7. **深夜勤務フラグの実装** (打刻5.3)
 
 ### Phase 5: UX改善（優先度: 🟢 低）
