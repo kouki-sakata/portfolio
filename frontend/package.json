@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:analyze": "VITE_ANALYZE_BUNDLE=true vite build",
     "preview": "vite preview",
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
@@ -23,7 +24,8 @@
     "biome:ci": "biome ci .",
     "generate:api": "npm run generate:api-types && npm run generate:zod-schemas",
     "generate:api-types": "openapi-ts -i ../openapi/openapi.yaml -o src/types -c @hey-api/typescript",
-    "generate:zod-schemas": "openapi-zod-client ../openapi/openapi.yaml -o src/schemas/api.ts --export-schemas --with-docs --strict-objects"
+    "generate:zod-schemas": "openapi-zod-client ../openapi/openapi.yaml -o src/schemas/api.ts --export-schemas --with-docs --strict-objects",
+    "measure:bundle": "npm run build && node ../.kiro/specs/critical-serena-refactoring/scripts/dist/collect-metrics.js"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

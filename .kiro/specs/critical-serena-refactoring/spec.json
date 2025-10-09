@@ -19,5 +19,10 @@
       "approved": false
     }
   },
-  "ready_for_implementation": false
+  "ready_for_implementation": false,
+  "baseline_metrics": {
+    "file": "baseline-metrics.json",
+    "measured_at": "2025-10-09T04:34:41.883Z",
+    "environment": "dev"
+  }
 }
