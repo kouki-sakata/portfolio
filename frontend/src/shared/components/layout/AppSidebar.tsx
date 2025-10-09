@@ -129,15 +129,15 @@ export const AppSidebar = ({
   const isAdmin = user?.admin ?? false;
 
   // 管理者のみに表示するメニュー項目をフィルタリング
-  const filteredNavigationGroups = navigationGroups.map((group) => {
-    if (group.id === "management") {
+  const filteredNavigationGroups = navigationGroups
+    .map((group) => {
       // 管理グループは管理者のみに表示
-      if (!isAdmin) {
+      if (group.id === "management" && !isAdmin) {
         return null;
       }
-    }
-    return group;
-  }).filter(Boolean) as NavigationGroup[];
+      return group;
+    })
+    .filter(Boolean) as NavigationGroup[];
 
   return (
     <>
@@ -159,7 +159,11 @@ export const AppSidebar = ({
       >
         <div className="flex h-full flex-col">
           <div className="flex items-center justify-between px-4 py-4">
-            <NavLink className="flex items-center gap-3" onClick={onClose} to="/">
+            <NavLink
+              className="flex items-center gap-3"
+              onClick={onClose}
+              to="/"
+            >
               <SpriteIcon
                 className="h-5 w-5 text-blue-600"
                 decorative

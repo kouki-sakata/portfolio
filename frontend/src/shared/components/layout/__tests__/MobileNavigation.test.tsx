@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
+
+import { createAdminAuthValue, TestAuthProvider } from "@/test/test-utils";
 
 import { MobileNavigation } from "../MobileNavigation";
 
@@ -39,7 +40,11 @@ const MobileNavigationWrapper = ({
   children,
 }: {
   children: React.ReactNode;
-}) => <BrowserRouter>{children}</BrowserRouter>;
+}) => (
+  <TestAuthProvider authValue={createAdminAuthValue()}>
+    {children}
+  </TestAuthProvider>
+);
 
 describe("MobileNavigation", () => {
   it("初期状態でハンバーガーメニューボタンが表示される", () => {

@@ -233,9 +233,13 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
           warningThreshold: warningBeforeExpiry,
         });
       }
+    } else if (!sessionQuery.data?.authenticated) {
+      // 未認証の場合はセッション情報をクリア
+      setSessionInfo(null);
+      setTimeUntilExpiry(null);
+      setSessionTimeoutWarning(false);
     }
     // Only depend on authenticated flag and employee ID to prevent infinite loops
-    // The employee object reference changes on every query refetch, causing unnecessary re-renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     sessionQuery.data?.authenticated,

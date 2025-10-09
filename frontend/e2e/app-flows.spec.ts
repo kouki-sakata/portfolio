@@ -2,8 +2,8 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
 import type { EmployeeSummary } from "@/features/auth/types";
-import { createAppMockServer } from "./support/mockServer";
 import { waitForToast } from "./support/helpers";
+import { createAppMockServer } from "./support/mockServer";
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "admin.user@example.com";
 const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "AdminPass123!";

@@ -30,7 +30,9 @@ export const waitForToast = async (
   options?: { timeout?: number }
 ) => {
   // 複数マッチする場合は最初の要素を取得
-  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(options);
+  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(
+    options
+  );
 };
 
 /**

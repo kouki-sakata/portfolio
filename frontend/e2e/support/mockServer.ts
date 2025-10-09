@@ -335,7 +335,8 @@ export class AppMockServer {
       );
 
       // Also check against the authenticated user's email
-      const isUserEmail = this.user.email.toLowerCase() === payload.email?.toLowerCase();
+      const isUserEmail =
+        this.user.email.toLowerCase() === payload.email?.toLowerCase();
 
       if (emailExists || isUserEmail) {
         await route.fulfill({

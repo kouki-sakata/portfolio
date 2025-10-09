@@ -1,12 +1,11 @@
 import { expect, test } from "@playwright/test";
-import { createAdminUser, TEST_CREDENTIALS } from "./support/factories";
-import { waitForToast } from "./support/helpers";
+import { createAdminUser } from "./support/factories";
 import { createAppMockServer } from "./support/mockServer";
 
 test.describe("フォームバリデーションの修正版テスト", () => {
   test.beforeEach(async ({ page }) => {
     const adminUser = createAdminUser();
-    const server = await createAppMockServer(page, {
+    const _server = await createAppMockServer(page, {
       user: adminUser,
       initialSessionAuthenticated: true,
       initialEmployees: [],
@@ -28,9 +27,11 @@ test.describe("フォームバリデーションの修正版テスト", () => {
 
     // ページが完全に読み込まれるまで待つ
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
+      {
+        timeout: 15_000,
+      }
+    );
 
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();
@@ -50,7 +51,9 @@ test.describe("フォームバリデーションの修正版テスト", () => {
       await expect(page.getByText("姓は必須です")).toBeVisible();
       await expect(page.getByText("名は必須です")).toBeVisible();
       await expect(page.getByText("メールアドレスは必須です")).toBeVisible();
-      await expect(page.getByText("パスワードは8文字以上で入力してください")).toBeVisible();
+      await expect(
+        page.getByText("パスワードは8文字以上で入力してください")
+      ).toBeVisible();
     });
   });
 

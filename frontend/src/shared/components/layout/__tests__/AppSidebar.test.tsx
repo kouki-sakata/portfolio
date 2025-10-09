@@ -1,6 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
-import { BrowserRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
+
+import { createAdminAuthValue, TestAuthProvider } from "@/test/test-utils";
 
 import { AppSidebar } from "../AppSidebar";
 
@@ -36,7 +37,9 @@ vi.mock("react-router-dom", async () => {
 });
 
 const AppSidebarWrapper = ({ children }: { children: React.ReactNode }) => (
-  <BrowserRouter>{children}</BrowserRouter>
+  <TestAuthProvider authValue={createAdminAuthValue()}>
+    {children}
+  </TestAuthProvider>
 );
 
 describe("AppSidebar", () => {

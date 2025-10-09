@@ -127,10 +127,10 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     const page2 = await context.newPage();
 
     // 両方のページにモックサーバーを設定
-    const server1 = await createAppMockServer(page1, { user: adminUser });
-    const server2 = await createAppMockServer(page2, {
+    const _server1 = await createAppMockServer(page1, { user: adminUser });
+    const _server2 = await createAppMockServer(page2, {
       user: adminUser,
-      initialSessionAuthenticated: true // page2は初期状態で認証済み（セッション共有）
+      initialSessionAuthenticated: true, // page2は初期状態で認証済み（セッション共有）
     });
 
     await test.step("タブ1でログイン", async () => {
@@ -259,7 +259,10 @@ test.describe("認証・セッション管理の包括的テスト", () => {
       await page.waitForFunction(
         () => {
           const button = document.querySelector('button[type="submit"]');
-          return button?.hasAttribute('disabled') || button?.textContent?.includes('サインイン中');
+          return (
+            button?.hasAttribute("disabled") ||
+            button?.textContent?.includes("サインイン中")
+          );
         },
         { timeout: 5000 }
       );
@@ -268,7 +271,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
       await clickPromise;
 
       // ログインが成功してホームページに遷移
-      await expect(page).toHaveURL("/", { timeout: 10000 });
+      await expect(page).toHaveURL("/", { timeout: 10_000 });
     });
   });
 });

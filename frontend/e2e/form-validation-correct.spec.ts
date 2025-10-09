@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { createAdminUser, TEST_CREDENTIALS } from "./support/factories";
+import { createAdminUser } from "./support/factories";
 import { waitForToast } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
@@ -15,9 +15,11 @@ test.describe("フォームバリデーション実装確認テスト", () => {
 
     // ページ読み込み待機
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible({
-      timeout: 15_000,
-    });
+    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
+      {
+        timeout: 15_000,
+      }
+    );
 
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();
@@ -34,7 +36,9 @@ test.describe("フォームバリデーション実装確認テスト", () => {
     await expect(page.getByText("姓は必須です")).toBeVisible();
     await expect(page.getByText("名は必須です")).toBeVisible();
     await expect(page.getByText("メールアドレスは必須です")).toBeVisible();
-    await expect(page.getByText("パスワードは8文字以上で入力してください")).toBeVisible();
+    await expect(
+      page.getByText("パスワードは8文字以上で入力してください")
+    ).toBeVisible();
   });
 
   test("メールアドレス形式が不正な場合、エラーメッセージが表示される", async ({

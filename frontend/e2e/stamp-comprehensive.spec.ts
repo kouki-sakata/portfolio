@@ -35,7 +35,7 @@ test.describe("打刻機能の包括的テスト", () => {
     });
   });
 
-  test.skip("外出打刻が正常に動作する", async ({ page }) => {
+  test("外出打刻が正常に動作する", async ({ page }) => {
     // NOTE: 外出ボタンはまだUIに実装されていないため、このテストはスキップ
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
@@ -60,7 +60,7 @@ test.describe("打刻機能の包括的テスト", () => {
     });
   });
 
-  test.skip("復帰打刻が正常に動作する", async ({ page }) => {
+  test("復帰打刻が正常に動作する", async ({ page }) => {
     // NOTE: 復帰ボタンはまだUIに実装されていないため、このテストはスキップ
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });

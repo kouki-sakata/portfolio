@@ -7,6 +7,7 @@ import {
 } from "@/features/home/repositories/HomeRepository";
 import type { StampRequest, StampResponse } from "@/features/home/types";
 import { toast } from "@/hooks/use-toast";
+import type { HttpClientError } from "@/shared/api/httpClient";
 
 const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
 
@@ -42,8 +43,8 @@ export const useStamp = (
       const isNetworkError =
         !navigator.onLine ||
         error.message === "Network error" ||
-        (error as any).status === 0 ||
-        (error as any).code === "NETWORK_ERROR";
+        (error as HttpClientError).status === 0 ||
+        (error as HttpClientError & { code?: string }).code === "NETWORK_ERROR";
 
       if (isNetworkError) {
         toast({
@@ -51,17 +52,25 @@ export const useStamp = (
           title: "ネットワークエラー",
           description: "通信エラーが発生しました。接続を確認してください。",
         });
-      } else if (error.message?.includes("timeout") || error.message?.includes("Timeout")) {
+      } else if (
+        error.message?.includes("timeout") ||
+        error.message?.includes("Timeout")
+      ) {
         toast({
           variant: "destructive",
           title: "タイムアウト",
-          description: "リクエストがタイムアウトしました。しばらくしてから再度お試しください。",
+          description:
+            "リクエストがタイムアウトしました。しばらくしてから再度お試しください。",
         });
-      } else if (error.message?.includes("500") || error.message?.includes("Server")) {
+      } else if (
+        error.message?.includes("500") ||
+        error.message?.includes("Server")
+      ) {
         toast({
           variant: "destructive",
           title: "サーバーエラー",
-          description: "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
+          description:
+            "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
         });
       } else {
         toast({
