@@ -255,6 +255,12 @@ export class AppMockServer {
       (sim) => normalizedPath.startsWith(sim.endpoint) && sim.method === method
     );
     if (errorSim) {
+      // Handle network errors (status 0) by aborting the request
+      if (errorSim.status === 0) {
+        await route.abort("failed");
+        return;
+      }
+
       await route.fulfill({
         status: errorSim.status,
         ...buildJsonResponse({
@@ -320,6 +326,24 @@ export class AppMockServer {
       );
       if (!payload) {
         await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      // Check for duplicate email
+      const emailExists = this.employees.some(
+        (emp) => emp.email.toLowerCase() === payload.email?.toLowerCase()
+      );
+
+      // Also check against the authenticated user's email
+      const isUserEmail = this.user.email.toLowerCase() === payload.email?.toLowerCase();
+
+      if (emailExists || isUserEmail) {
+        await route.fulfill({
+          status: 409,
+          ...buildJsonResponse({
+            message: "このメールアドレスは既に使用されています",
+          }),
+        });
         return;
       }
 

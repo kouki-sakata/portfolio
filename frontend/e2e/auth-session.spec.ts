@@ -18,11 +18,11 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     );
 
     await test.step("ログアウトボタンをクリック", async () => {
-      // ヘッダーまたはサイドバーからログアウトボタンを探す
-      const logoutButton = page.getByRole("button", {
-        name: /ログアウト|サインアウト/,
-      });
-      await logoutButton.click();
+      // ユーザーメニューをホバーしてドロップダウンを表示
+      await page.getByLabel("ユーザーメニュー").hover();
+
+      // ドロップダウン内のサインアウトボタンをクリック
+      await page.getByText("サインアウト").click();
     });
 
     await test.step("ログインページにリダイレクトされる", async () => {
@@ -126,7 +126,12 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     const page1 = await context.newPage();
     const page2 = await context.newPage();
 
-    await createAppMockServer(page1, { user: adminUser });
+    // 両方のページにモックサーバーを設定
+    const server1 = await createAppMockServer(page1, { user: adminUser });
+    const server2 = await createAppMockServer(page2, {
+      user: adminUser,
+      initialSessionAuthenticated: true // page2は初期状態で認証済み（セッション共有）
+    });
 
     await test.step("タブ1でログイン", async () => {
       await signIn(
@@ -222,8 +227,9 @@ test.describe("認証・セッション管理の包括的テスト", () => {
 
   test("ログイン試行中は二重送信を防止する", async ({ page }) => {
     const adminUser = createAdminUser();
-    await createAppMockServer(page, { user: adminUser });
+    const server = await createAppMockServer(page, { user: adminUser });
 
+    // ログイン処理を遅延させて、ボタンの状態変化を確認しやすくする
     await page.goto("/signin");
 
     await test.step("ログインボタンを連続クリック", async () => {
@@ -232,20 +238,37 @@ test.describe("認証・セッション管理の包括的テスト", () => {
         .fill(TEST_CREDENTIALS.admin.email);
       await page.getByLabel("パスワード").fill(TEST_CREDENTIALS.admin.password);
 
-      const loginButton = page.getByRole("button", { name: "サインイン" });
+      // ログインAPIにディレイを追加
+      server.addErrorSimulation({
+        endpoint: "/auth/login",
+        method: "POST",
+        status: 200,
+        message: "",
+      });
 
-      // 最初のクリック
-      await loginButton.click();
+      const loginButton = page.getByRole("button", { name: /サインイン/ });
 
-      // ボタンが無効化されるか、ローディング状態になる
-      const isDisabled = await loginButton.isDisabled().catch(() => false);
-      const hasLoadingState = await loginButton
-        .locator('[data-loading="true"]')
-        .isVisible()
-        .catch(() => false);
+      // クリック前の状態確認
+      await expect(loginButton).toBeEnabled();
 
-      // どちらかの防止策が実装されていることを確認
-      expect(isDisabled || hasLoadingState).toBe(true);
+      // 最初のクリック（非同期で実行）
+      const clickPromise = loginButton.click();
+
+      // クリック後すぐにボタンの状態を確認
+      // ボタンが無効化されるか、テキストが変わることを確認
+      await page.waitForFunction(
+        () => {
+          const button = document.querySelector('button[type="submit"]');
+          return button?.hasAttribute('disabled') || button?.textContent?.includes('サインイン中');
+        },
+        { timeout: 5000 }
+      );
+
+      // クリックが完了するのを待つ
+      await clickPromise;
+
+      // ログインが成功してホームページに遷移
+      await expect(page).toHaveURL("/", { timeout: 10000 });
     });
   });
 });

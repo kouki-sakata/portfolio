@@ -29,7 +29,8 @@ export const waitForToast = async (
   message: string | RegExp,
   options?: { timeout?: number }
 ) => {
-  await expect(page.getByText(message, { exact: false })).toBeVisible(options);
+  // 複数マッチする場合は最初の要素を取得
+  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(options);
 };
 
 /**

@@ -195,9 +195,13 @@ test.describe("権限制御の包括的テスト", () => {
       message: "Forbidden",
     });
 
+    // まずページに移動してからAPIを呼び出す
+    await page.goto("/");
+
     await test.step("API経由で従業員作成を試行", async () => {
       const response = await page.evaluate(async () => {
-        const res = await fetch("/api/employees", {
+        const baseUrl = window.location.origin;
+        const res = await fetch(`${baseUrl}/api/employees`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

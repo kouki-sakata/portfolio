@@ -93,21 +93,33 @@ export const httpClient = async <T>(
 
   const normalizedMethod = (method ?? "GET").toUpperCase() as HttpMethod;
 
-  const response = await fetch(buildUrl(path), {
-    ...requestInit,
-    method: normalizedMethod,
-    headers: buildHeaders(headers, body),
-    credentials: credentials ?? "include",
-    ...(body !== undefined ? { body } : {}),
-  });
+  try {
+    const response = await fetch(buildUrl(path), {
+      ...requestInit,
+      method: normalizedMethod,
+      headers: buildHeaders(headers, body),
+      credentials: credentials ?? "include",
+      ...(body !== undefined ? { body } : {}),
+    });
 
-  if (!response.ok) {
-    await raiseError(response);
+    if (!response.ok) {
+      await raiseError(response);
+    }
+
+    if (!parseJson) {
+      return undefined as T;
+    }
+
+    return (await response.json()) as T;
+  } catch (error) {
+    // Handle network errors (fetch failures)
+    if (error instanceof TypeError && error.message === "Failed to fetch") {
+      const networkError = new Error("Network error") as HttpClientError;
+      networkError.status = 0;
+      networkError.payload = null;
+      throw networkError;
+    }
+    // Re-throw other errors (including HttpClientError from raiseError)
+    throw error;
   }
-
-  if (!parseJson) {
-    return undefined as T;
-  }
-
-  return (await response.json()) as T;
 };

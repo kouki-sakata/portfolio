@@ -34,6 +34,9 @@ export const createHttpClientAdapter = (): IHttpClient => {
       repoError.details = error.payload;
 
       switch (error.status) {
+        case 0:
+          repoError.code = "NETWORK_ERROR";
+          break;
         case 404:
           repoError.code = "NOT_FOUND";
           break;

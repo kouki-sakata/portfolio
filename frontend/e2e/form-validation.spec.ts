@@ -22,9 +22,6 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     await page.getByRole("button", { name: "新規登録" }).click();
   });
 
-  // TODO: 必須項目バリデーションテストを修正
-  // - フォームのバリデーションメッセージセレクタが正しくない可能性
-  // - エラーメッセージの表示タイミングや条件を再確認する必要がある
   test("必須項目が空の場合、エラーメッセージが表示される", async ({ page }) => {
     await test.step("空のまま送信", async () => {
       await page.getByRole("button", { name: "登録する" }).click();
@@ -32,30 +29,23 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
     await test.step("必須項目エラーを確認", async () => {
       // 姓のエラー
-      await expect(
-        page.locator("text=/姓.*必須|required/i").first()
-      ).toBeVisible({ timeout: 3000 });
+      await expect(page.getByText("姓は必須です")).toBeVisible({
+        timeout: 3000,
+      });
 
       // 名のエラー
-      await expect(
-        page.locator("text=/名.*必須|required/i").first()
-      ).toBeVisible();
+      await expect(page.getByText("名は必須です")).toBeVisible();
 
       // メールアドレスのエラー
-      await expect(
-        page.locator("text=/メールアドレス.*必須|email.*required/i").first()
-      ).toBeVisible();
+      await expect(page.getByText("メールアドレスは必須です")).toBeVisible();
 
       // パスワードのエラー
       await expect(
-        page.locator("text=/パスワード.*必須|password.*required/i").first()
+        page.getByText("パスワードは8文字以上で入力してください")
       ).toBeVisible();
     });
   });
 
-  // TODO: メールアドレス形式バリデーションテストを修正
-  // - フォームのバリデーションメッセージが期待通り表示されない
-  // - エラーメッセージのテキストパターンを見直す必要がある
   test("メールアドレス形式が不正な場合、エラーメッセージが表示される", async ({
     page,
   }) => {
@@ -69,7 +59,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
     await test.step("メール形式エラーを確認", async () => {
       await expect(
-        page.getByText(/メールアドレスの形式|正しいメール|invalid.*email/i)
+        page.getByText("有効なメールアドレスを入力してください")
       ).toBeVisible({ timeout: 3000 });
     });
   });
@@ -87,9 +77,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
     await test.step("パスワード強度エラーを確認", async () => {
       await expect(
-        page.getByText(
-          /パスワードは.*文字以上|password.*characters|強度|strength/i
-        )
+        page.getByText("パスワードは8文字以上で入力してください")
       ).toBeVisible({ timeout: 3000 });
     });
   });
@@ -142,7 +130,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     await test.step("リアルタイムエラーを確認", async () => {
       // フィールド離脱時にエラーが表示される
       await expect(
-        page.getByText(/メールアドレスの形式|invalid.*email/i)
+        page.getByText("有効なメールアドレスを入力してください")
       ).toBeVisible({ timeout: 2000 });
     });
   });
@@ -224,15 +212,16 @@ test.describe("フォームバリデーションの包括的テスト", () => {
 
   test("最大文字数制限が機能する", async ({ page }) => {
     await test.step("最大文字数を超える入力を試行", async () => {
-      const longText = "あ".repeat(256);
+      const longText = "あ".repeat(51);
       await page.getByLabel("姓").fill(longText);
+      await page.getByLabel("姓").blur();
     });
 
-    await test.step("入力が制限される", async () => {
-      const value = await page.getByLabel("姓").inputValue();
-
-      // maxLength属性により入力が制限されているか、エラーが表示される
-      expect(value.length).toBeLessThanOrEqual(255);
+    await test.step("エラーメッセージを確認", async () => {
+      // 50文字を超える場合、エラーが表示される
+      await expect(
+        page.getByText("姓は50文字以内で入力してください")
+      ).toBeVisible({ timeout: 2000 });
     });
   });
 
@@ -244,17 +233,19 @@ test.describe("フォームバリデーションの包括的テスト", () => {
       await page.getByRole("button", { name: "登録する" }).click();
 
       await expect(
-        page.getByText(/メールアドレスの形式|invalid/i)
+        page.getByText("有効なメールアドレスを入力してください")
       ).toBeVisible();
     });
 
     await test.step("フォームを閉じて再度開く", async () => {
-      await page.getByRole("button", { name: /キャンセル|閉じる/ }).click();
+      await page.getByRole("button", { name: "キャンセル" }).click();
       await page.getByRole("button", { name: "新規登録" }).click();
     });
 
     await test.step("エラーメッセージがクリアされている", async () => {
-      const errorMessage = page.getByText(/メールアドレスの形式|invalid/i);
+      const errorMessage = page.getByText(
+        "有効なメールアドレスを入力してください"
+      );
       await expect(errorMessage).not.toBeVisible();
     });
   });
