@@ -53,13 +53,16 @@ describe("AppSidebar", () => {
     // 主要なナビゲーションアイテムが表示されている
     expect(screen.getByText("ホーム")).toBeInTheDocument();
     expect(screen.getByText("勤怠履歴")).toBeInTheDocument();
+    expect(screen.getByText("お知らせ")).toBeInTheDocument();
     expect(screen.getByText("社員管理")).toBeInTheDocument();
-    expect(screen.getByText("通知")).toBeInTheDocument();
-    expect(screen.getByText("レポート")).toBeInTheDocument();
-    expect(screen.getByText("設定")).toBeInTheDocument();
+    expect(screen.getByText("お知らせ管理")).toBeInTheDocument();
+    expect(screen.getByText("操作ログ")).toBeInTheDocument();
 
     // 不要な「出退勤」リンクが表示されていないことを確認
     expect(screen.queryByText("出退勤")).not.toBeInTheDocument();
+    expect(screen.queryByText("通知")).not.toBeInTheDocument();
+    expect(screen.queryByText("レポート")).not.toBeInTheDocument();
+    expect(screen.queryByText("設定")).not.toBeInTheDocument();
   });
 
   it("管理グループのタイトルが表示される", () => {
@@ -72,15 +75,15 @@ describe("AppSidebar", () => {
     expect(screen.getByText("管理")).toBeInTheDocument();
   });
 
-  it("通知アイテムにバッジが表示される", () => {
+  it("通知バッジが表示されない", () => {
     render(
       <AppSidebarWrapper>
         <AppSidebar />
       </AppSidebarWrapper>
     );
 
-    // 通知バッジ（数字の3）が表示されている
-    expect(screen.getByText("3")).toBeInTheDocument();
+    // バッジが表示されないことを確認
+    expect(screen.queryByText("3")).not.toBeInTheDocument();
   });
 
   it("バージョン情報が表示される", () => {

@@ -40,7 +40,16 @@ export const StampCard = memo(
     const [nightWork, setNightWork] = useState(false);
 
     const handleStamp = async (type: "1" | "2") => {
-      await onStamp(type, nightWork);
+      try {
+        await onStamp(type, nightWork);
+      } catch {
+        if (!import.meta.env.PROD) {
+          // biome-ignore lint/suspicious/noConsole: emit diagnostic info in non-production environments
+          console.error(
+            "Stamp action failed. Error already handled by useStamp."
+          );
+        }
+      }
     };
 
     if (isLoading && showSkeleton) {

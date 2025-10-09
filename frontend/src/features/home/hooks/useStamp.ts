@@ -6,6 +6,7 @@ import {
   type IHomeRepository,
 } from "@/features/home/repositories/HomeRepository";
 import type { StampRequest, StampResponse } from "@/features/home/types";
+import { GlobalErrorHandler } from "@/shared/error-handling";
 
 const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
 
@@ -34,18 +35,37 @@ export const useStamp = (
     },
   });
 
+  const emitStampError = useCallback((error: unknown) => {
+    if (!(error instanceof Error)) {
+      return;
+    }
+
+    try {
+      GlobalErrorHandler.getInstance().handle(error);
+    } catch {
+      if (!import.meta.env.PROD) {
+        // biome-ignore lint/suspicious/noConsole: emit diagnostic info in non-production environments
+        console.error("Failed to dispatch error to GlobalErrorHandler", error);
+      }
+    }
+  }, []);
+
   const handleStamp = useCallback(
     async (type: "1" | "2", nightWork: boolean) => {
       setMessage(null);
       const timestamp = new Date().toISOString().slice(0, 19);
 
-      await stampMutation.mutateAsync({
-        stampType: type,
-        stampTime: timestamp,
-        nightWorkFlag: nightWork ? "1" : "0",
-      });
+      try {
+        await stampMutation.mutateAsync({
+          stampType: type,
+          stampTime: timestamp,
+          nightWorkFlag: nightWork ? "1" : "0",
+        });
+      } catch (error) {
+        emitStampError(error);
+      }
     },
-    [stampMutation]
+    [emitStampError, stampMutation]
   );
 
   const clearMessage = useCallback(() => {

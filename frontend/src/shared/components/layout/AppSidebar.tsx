@@ -29,6 +29,12 @@ const navigationGroups: NavigationGroup[] = [
         href: "/stamp-history",
         icon: "history",
       },
+      {
+        id: "news",
+        label: "お知らせ",
+        href: "/news",
+        icon: "bell",
+      },
     ],
   },
   {
@@ -42,28 +48,16 @@ const navigationGroups: NavigationGroup[] = [
         icon: "users",
       },
       {
-        id: "notifications",
-        label: "通知",
-        href: "/notifications",
-        icon: "bell",
-        badge: 3,
-      },
-      {
-        id: "reports",
-        label: "レポート",
-        href: "/reports",
+        id: "admin-news",
+        label: "お知らせ管理",
+        href: "/admin/news",
         icon: "file-text",
       },
-    ],
-  },
-  {
-    id: "settings",
-    items: [
       {
-        id: "settings",
-        label: "設定",
-        href: "/settings",
-        icon: "settings",
+        id: "admin-logs",
+        label: "操作ログ",
+        href: "/admin/logs",
+        icon: "clock",
       },
     ],
   },
