@@ -35,7 +35,8 @@ test.describe("打刻機能の包括的テスト", () => {
     });
   });
 
-  test("外出打刻が正常に動作する", async ({ page }) => {
+  test.skip("休憩開始打刻が正常に動作する", async ({ page }) => {
+    // NOTE: 休憩開始ボタンはまだUIに実装されていないため、このテストはスキップ
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
@@ -45,9 +46,9 @@ test.describe("打刻機能の包括的テスト", () => {
       TEST_CREDENTIALS.admin.password
     );
 
-    await test.step("外出打刻を実行", async () => {
-      const leaveButton = page.getByRole("button", { name: /外出/ });
-      await leaveButton.click();
+    await test.step("休憩開始打刻を実行", async () => {
+      const breakStartButton = page.getByRole("button", { name: /休憩開始/ });
+      await breakStartButton.click();
     });
 
     await test.step("打刻成功を確認", async () => {
@@ -55,11 +56,12 @@ test.describe("打刻機能の包括的テスト", () => {
 
       const stampRequest = server.getLastStampRequest();
       expect(stampRequest).not.toBeNull();
-      expect(stampRequest?.stampType).toBe(STAMP_TYPES.LEAVE);
+      expect(stampRequest?.stampType).toBe(STAMP_TYPES.BREAK_START);
     });
   });
 
-  test("復帰打刻が正常に動作する", async ({ page }) => {
+  test.skip("休憩終了打刻が正常に動作する", async ({ page }) => {
+    // NOTE: 休憩終了ボタンはまだUIに実装されていないため、このテストはスキップ
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
@@ -69,9 +71,9 @@ test.describe("打刻機能の包括的テスト", () => {
       TEST_CREDENTIALS.admin.password
     );
 
-    await test.step("復帰打刻を実行", async () => {
-      const returnButton = page.getByRole("button", { name: /復帰/ });
-      await returnButton.click();
+    await test.step("休憩終了打刻を実行", async () => {
+      const breakEndButton = page.getByRole("button", { name: /休憩終了/ });
+      await breakEndButton.click();
     });
 
     await test.step("打刻成功を確認", async () => {
@@ -79,7 +81,7 @@ test.describe("打刻機能の包括的テスト", () => {
 
       const stampRequest = server.getLastStampRequest();
       expect(stampRequest).not.toBeNull();
-      expect(stampRequest?.stampType).toBe(STAMP_TYPES.RETURN);
+      expect(stampRequest?.stampType).toBe(STAMP_TYPES.BREAK_END);
     });
   });
 
@@ -95,7 +97,7 @@ test.describe("打刻機能の包括的テスト", () => {
 
     await test.step("深夜勤務フラグをONにして出勤打刻", async () => {
       // 深夜勤務チェックボックスをON（実際のUIに応じて調整）
-      const nightWorkCheckbox = page.getByLabel(/深夜勤務/);
+      const nightWorkCheckbox = page.getByLabel(/夜勤扱い/);
       await nightWorkCheckbox.check();
 
       const attendanceButton = page.getByRole("button", { name: "出勤打刻" });

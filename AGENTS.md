@@ -166,16 +166,6 @@ Managed by `/kiro:steering` command. Updates here reflect command changes.
 - **Conditional**: Loaded for specific file patterns (e.g., `"*.test.js"`)
 - **Manual**: Reference with `@filename.md` syntax
 
-## Project Structure & Module Organization
-
-- Backend source lives in `src/main/java/com/example/...`; group new code by
-  feature (attendance, employee, auth).
-- Tests mirror the same tree under `src/test/java` for JUnit + Testcontainers.
-- `frontend/src` contains the Vite SPA (`app/`, `features/`, `shared/`); shared
-  assets stay in `frontend/public`.
-- SQL setup files are `src/main/resources/01_schema.sql` and `02_data.sql`.
-- Dev tooling (Docker compose, workflow script) resides in `docker/`,
-  `docker-compose.yml`, and `scripts/dev-workflow.sh`.
 
 ## Build, Test, and Development Commands
 
@@ -219,14 +209,3 @@ Managed by `/kiro:steering` command. Updates here reflect command changes.
   frontend tests), and UI evidence for visual work.
 - Request reviewers from both Java and frontend maintainers when touching shared
   contracts or DTOs.
-
-## Security & Environment Notes
-
-- Copy `.env.example` to `.env`; supply `DB_*`, `JWT_SECRET`, `ENCRYPTION_KEY`;
-  never commit secrets.
-- SPA dev requires `VITE_API_BASE_URL=http://localhost:8080/api` and the backend
-  running with `dev` profile.
-- CI secrets live in GitHub Actions; production pulls via AWS/ECS managers;
-  reuse headers in `src/main/java/com/example/teamdev/config`.
-- Rotate demo credentials and prune stale Docker volumes (`docker volume prune`)
-  during resets.

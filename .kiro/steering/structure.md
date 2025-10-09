@@ -68,7 +68,7 @@ src/
 │   │   │   ├── SecurityConfig.java
 │   │   │   ├── ShutdownConfig.java
 │   │   │   ├── StartupConfig.java
-│   │   │   └── WebMvcConfig.java      # MVC設定(2025-10-04追加)
+│   │   │   └── WebMvcConfig.java
 │   │   ├── constant/          # 定数クラス
 │   │   │   ├── AppConstants.java
 │   │   │   ├── DisplayName.java
@@ -79,14 +79,14 @@ src/
 │   │   │   ├── api/           # REST APIコントローラー
 │   │   │   │   ├── AuthRestController.java
 │   │   │   │   ├── EmployeeRestController.java
-│   │   │   │   ├── FeatureFlagRestController.java # フィーチャーフラグAPI（2025-10-04追加）
+│   │   │   │   ├── FeatureFlagRestController.java
 │   │   │   │   ├── HomeRestController.java
 │   │   │   │   └── StampHistoryRestController.java
 │   │   │   └── SpaForwardingController.java # SPA単一エントリポイント
 │   │   ├── dto/               # データ転送オブジェクト
 │   │   │   ├── api/           # API用DTO
 │   │   │   │   ├── auth/      # 認証関連
-│   │   │   │   ├── common/    # 共通（FeatureFlagsResponse.java含む、2025-10-04更新）
+│   │   │   │   ├── common/    # 共通（FeatureFlagsResponse含む）
 │   │   │   │   ├── employee/  # 従業員
 │   │   │   │   ├── home/      # ホーム画面
 │   │   │   │   └── stamp/     # 打刻
@@ -124,10 +124,10 @@ src/
 │   │   │   ├── NewsMapper.java
 │   │   │   ├── StampDeleteMapper.java
 │   │   │   └── StampHistoryMapper.java
-│   │   ├── service/           # ビジネスロジック（SOLID原則準拠 - Phase 2）
+│   │   ├── service/           # ビジネスロジック（SOLID原則準拠）
 │   │   │   ├── 【認証系】
 │   │   │   ├── AuthenticationService.java          # 認証処理
-│   │   │   ├── AuthSessionService.java             # セッション管理（Phase 2で分離）
+│   │   │   ├── AuthSessionService.java             # セッション管理
 │   │   │   ├── CustomUserDetailsService.java       # ユーザー詳細取得
 │   │   │   ├── PasswordMigrationService.java       # パスワード移行
 │   │   │   ├── 【従業員管理系 - ファサードパターン】
@@ -138,7 +138,7 @@ src/
 │   │   │   ├── EmployeeCacheService.java           # キャッシュ管理専用
 │   │   │   ├── 【打刻管理系】
 │   │   │   ├── StampService.java                   # 打刻登録
-│   │   │   ├── StampEditService.java               # 打刻編集（サブコンポーネント分離）
+│   │   │   ├── StampEditService.java               # 打刻編集
 │   │   │   ├── StampHistoryService.java            # 履歴管理
 │   │   │   ├── StampDeleteService.java             # 削除処理
 │   │   │   ├── StampOutputService.java             # CSV出力
@@ -152,7 +152,7 @@ src/
 │   │   │   ├── LogHistoryQueryService.java         # 照会専用
 │   │   │   ├── LogHistoryRegistrationService.java  # 登録専用
 │   │   │   ├── 【フィーチャーフラグ系】
-│   │   │   └── FeatureFlagService.java             # Spring Profilesベースフラグ管理(2025-10-04追加)
+│   │   │   └── FeatureFlagService.java             # フラグ管理
 │   │   ├── util/              # ユーティリティクラス
 │   │   │   ├── DateFormatUtil.java
 │   │   │   ├── LogUtil.java
@@ -190,160 +190,124 @@ src/
 ```
 frontend/
 ├── dist/              # ビルド出力
+├── e2e/              # Playwright E2Eテスト
+│   ├── support/      # テストヘルパー
+│   └── *.spec.ts     # E2Eテストファイル
 ├── node_modules/      # Node.js依存関係
-├── performance/       # パフォーマンス予算設定（2025-10-05追加）
-│   └── performance-budgets.json # バンドルサイズ予算定義
+├── performance/       # パフォーマンス設定
+│   └── performance-budgets.json # バンドルサイズ予算
 ├── public/            # 静的アセット
 │   ├── img/          # 画像ファイル
 │   └── vite.svg      # Viteロゴ
 ├── src/
 │   ├── app/          # メインアプリケーション
 │   │   ├── config/       # アプリケーション設定
-│   │   │   ├── enhanced-query-client.ts  # 拡張QueryClient設定
-│   │   │   ├── enhanced-query-client.test.ts
-│   │   │   └── queryClient.ts            # QueryClient基本設定
+│   │   │   ├── enhanced-query-client.ts
+│   │   │   └── queryClient.ts
 │   │   ├── providers/    # コンテキストプロバイダー
-│   │   │   ├── AppProviders.tsx          # アプリケーションプロバイダー統合
-│   │   │   ├── routeLoaders.ts           # ルートローダー定義
-│   │   │   └── __tests__/                # プロバイダーテスト
+│   │   │   ├── AppProviders.tsx
+│   │   │   └── routeLoaders.ts
 │   │   ├── App.css
-│   │   ├── App.test.tsx
 │   │   ├── App.tsx
 │   │   ├── MainLayout.tsx
 │   │   └── routes.tsx
 │   ├── assets/       # アセットファイル
-│   ├── features/     # 機能別モジュール
-│   │   ├── auth/     # 認証機能
-│   │   │   ├── api/      # APIクライアント実装
-│   │   │   │   ├── login.ts     # ログインAPI
-│   │   │   │   ├── logout.ts    # ログアウトAPI
-│   │   │   │   └── session.ts   # セッション確認API
-│   │   │   ├── components/
-│   │   │   │   └── SignInPage.tsx # ログインページ（shadcn/ui化）
-│   │   │   ├── contexts/
-│   │   │   │   └── AuthContext.tsx # 認証コンテキスト
-│   │   │   ├── hooks/
-│   │   │   │   ├── useAuthContext.ts # 認証コンテキストフック
-│   │   │   │   ├── useLogin.ts      # ログインフック
-│   │   │   │   ├── useLogout.ts     # ログアウトフック
-│   │   │   │   └── useSession.ts    # セッション管理フック
-│   │   │   └── types/
-│   │   ├── employees/ # 従業員管理
-│   │   │   ├── api/      # APIクライアント実装
-│   │   │   │   └── index.ts     # 従業員CRUD操作
-│   │   │   ├── components/
-│   │   │   │   ├── EmployeesPage.tsx  # 従業員一覧ページ（TanStack Table）
-│   │   │   │   └── columns.tsx         # DataTable列定義
-│   │   │   ├── hooks/
-│   │   │   │   ├── useEmployees.ts           # 従業員データフック
-│   │   │   │   └── useEmployeeMutations.ts   # 従業員更新操作フック
-│   │   │   └── types/
-│   │   ├── home/     # ホーム画面
-│   │   │   ├── api/      # APIクライアント実装
-│   │   │   │   ├── homeDashboard.ts # ダッシュボード情報取得
-│   │   │   │   └── stamp.ts         # 打刻機能
-│   │   │   ├── components/
-│   │   │   │   ├── HomePage.tsx     # メインダッシュボード
-│   │   │   │   ├── StampCard.tsx    # 打刻カードコンポーネント
-│   │   │   │   └── NewsCard.tsx     # お知らせカードコンポーネント
-│   │   │   └── types/
-│   │   └── stampHistory/    # 打刻履歴
-│   │       ├── api/      # APIクライアント実装
-│   │       │   └── index.ts     # 履歴取得・管理
-│   │       ├── components/
-│   │       │   ├── StampHistoryPage.tsx  # 打刻履歴メインページ
-│   │       │   ├── CalendarView.tsx      # カレンダービュー表示
-│   │       │   ├── MonthlyStatsCard.tsx  # 月次統計カード
-│   │       │   ├── EditStampDialog.tsx   # 打刻編集ダイアログ
-│   │       │   └── DeleteStampDialog.tsx # 打刻削除ダイアログ
-│   │       ├── hooks/
-│   │       │   └── useStampHistoryExport.ts # CSV出力フック
-│   │       ├── routes/
-│   │       │   └── StampHistoryRoute.tsx # ルート定義
-│   │       └── types/
-│   ├── shared/       # 共通コンポーネント
-│   │   ├── api/      # API共通設定
-│   │   │   ├── __tests__/    # API統合テスト（2025-10-04追加）
-│   │   │   │   └── api.integration.msw.test.ts
-│   │   │   ├── errors/    # カスタムエラークラス
-│   │   │   │   ├── AuthenticationError.ts
-│   │   │   │   ├── AuthorizationError.ts
-│   │   │   │   ├── NetworkError.ts
-│   │   │   │   ├── ValidationError.ts
-│   │   │   │   ├── UnexpectedError.ts
-│   │   │   │   ├── error-classifier.ts
-│   │   │   │   └── index.ts
-│   │   │   └── events/    # APIイベント管理
-│   │   │       └── authEvents.ts
-│   │   ├── components/
-│   │   │   └── loading/    # ローディング状態管理
-│   │   │       ├── LoadingSpinner.tsx
-│   │   │       ├── SuspenseWrapper.tsx
-│   │   │       └── skeletons/
-│   │   │           └── SkeletonVariants.tsx
-│   │   ├── contexts/    # グローバルコンテキスト
-│   │   │   ├── FeatureFlagContext.tsx # フィーチャーフラグ管理（2025-10-04追加）
-│   │   │   └── __tests__/
-│   │   │       └── FeatureFlagContext.test.tsx
-│   │   ├── error-handling/ # グローバルエラーハンドリング
-│   │   │   ├── ErrorBoundary.tsx
-│   │   │   ├── ErrorFallback.tsx
-│   │   │   ├── GlobalErrorHandler.ts
-│   │   │   ├── error-logger.ts
-│   │   │   └── index.ts
-│   │   ├── performance/  # パフォーマンス監視（2025-10-05追加）
-│   │   │   └── performanceChecks.ts # Lighthouse/API/バンドル評価関数
-│   │   ├── hooks/
-│   │   ├── types/
-│   │   └── utils/
 │   ├── components/   # shadcn/uiコンポーネント
 │   │   └── ui/       # UIプリミティブ
-│   │       ├── button.tsx      # ボタンコンポーネント
-│   │       ├── data-table.tsx  # DataTableコンポーネント（TanStack Table）
-│   │       ├── form.tsx        # フォームコンポーネント
-│   │       ├── input.tsx       # 入力フィールド
-│   │       ├── label.tsx       # ラベルコンポーネント
-│   │       ├── skeleton.tsx    # スケルトンコンポーネント
-│   │       ├── toast.tsx       # トースト通知
-│   │       ├── toaster.tsx     # トースターコンテナ
-│   │       └── use-toast.ts    # トーストフック
+│   │       ├── button.tsx
+│   │       ├── card.tsx
+│   │       ├── data-table.tsx
+│   │       ├── form.tsx
+│   │       ├── input.tsx
+│   │       ├── label.tsx
+│   │       ├── skeleton.tsx
+│   │       ├── toast.tsx
+│   │       └── toaster.tsx
+│   ├── features/     # 機能別モジュール
+│   │   ├── auth/     # 認証機能
+│   │   │   ├── api/      # APIクライアント
+│   │   │   ├── components/
+│   │   │   ├── context/
+│   │   │   │   ├── AuthProvider.tsx
+│   │   │   │   └── internal/
+│   │   │   │       └── AuthContext.tsx
+│   │   │   ├── hooks/
+│   │   │   ├── services/ # SessionManager等
+│   │   │   └── types/
+│   │   ├── employees/ # 従業員管理
+│   │   │   ├── api/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   └── types/
+│   │   ├── home/     # ホーム画面
+│   │   │   ├── api/
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   └── types/
+│   │   └── stampHistory/    # 打刻履歴
+│   │       ├── api/
+│   │       ├── components/
+│   │       ├── hooks/
+│   │       └── types/
 │   ├── hooks/        # グローバルフック
 │   ├── lib/          # ユーティリティライブラリ
+│   │   └── utils.ts
 │   ├── schemas/      # Zodスキーマ定義
-│   │   └── api.ts    # OpenAPIから生成されたスキーマ
+│   │   └── api.ts    # OpenAPIから生成
+│   ├── shared/       # 共通コンポーネント
+│   │   ├── api/      # API共通設定
+│   │   │   ├── errors/    # エラークラス
+│   │   │   └── events/    # イベント管理
+│   │   ├── components/
+│   │   │   ├── layout/
+│   │   │   │   ├── AppSidebar.tsx
+│   │   │   │   └── MobileNavigation.tsx
+│   │   │   └── loading/
+│   │   │       ├── LoadingSpinner.tsx
+│   │   │       └── skeletons/
+│   │   ├── contexts/
+│   │   ├── error-handling/
+│   │   ├── hooks/
+│   │   ├── performance/
+│   │   ├── types/
+│   │   └── utils/
 │   ├── styles/       # グローバルスタイル
 │   │   └── index.css
 │   ├── test/         # テストユーティリティ
-│   │   ├── msw/     # MSWモックサーバー設定（v2.11.3、2025-10-04追加）
-│   │   │   ├── server.ts           # Node環境用MSWサーバー
-│   │   │   └── handlers/           # APIモックハンドラー
-│   │   └── setup.ts  # Vitest + MSW統合セットアップ
+│   │   ├── msw/     # MSWモックサーバー
+│   │   │   ├── server.ts
+│   │   │   └── handlers/
+│   │   ├── setup.ts
+│   │   └── test-utils.tsx
+│   ├── types/        # 自動生成型定義
 │   ├── main.tsx      # エントリーポイント
 │   └── vite-env.d.ts # Vite型定義
 ├── .biomeignore       # Biome除外設定
 ├── .env.development   # 開発環境変数
 ├── .env.example       # 環境変数テンプレート
-├── .env.local         # ローカル設定（git-ignored）
 ├── .nvmrc             # Node.jsバージョン指定
-├── biome.jsonc        # Biome統合コード品質設定
+├── biome.jsonc        # Biome統合設定
 ├── components.json    # shadcn/ui設定
 ├── index.html         # HTMLテンプレート
-├── lighthouserc.json  # Lighthouse CI設定（2025-10-05追加）
-├── openapi-ts.config.ts # OpenAPI TypeScript生成設定
+├── lighthouserc.json  # Lighthouse CI設定
+├── openapi-ts.config.ts # OpenAPI型生成設定
 ├── package.json       # 依存関係とスクリプト
 ├── package-lock.json  # ロックファイル
 ├── playwright.config.ts # Playwright設定
+├── postcss.config.js  # PostCSS設定
 ├── README.md          # フロントエンドREADME
+├── tailwind.config.js # Tailwind CSS設定
 ├── tsconfig.app.json  # TypeScript設定（アプリ）
 ├── tsconfig.json      # TypeScript設定（メイン）
 ├── tsconfig.node.json # TypeScript設定（Node）
 ├── tsconfig.vitest.json # TypeScript設定（テスト）
-└── vite.config.ts     # Vite設定
+├── vite.config.ts     # Vite設定
+└── vitest.config.ts   # Vitest設定
 ```
 
 ## コード編成パターン
 
-### レイヤードアーキテクチャ（SOLID原則準拠 - Phase 2）
+### レイヤードアーキテクチャ（SOLID原則準拠）
 - **プレゼンテーション層**: Controller（Spring MVC/REST）
 - **ビジネスロジック層**: Service
   - **ファサードパターン**: 複雑性の隠蔽（EmployeeService、NewsManageService等）
@@ -355,26 +319,17 @@ frontend/
 ### フロントエンド構造
 - **機能ベース**: features/配下に機能別モジュール
 - **共通コンポーネント**: shared/に再利用可能なコンポーネント
+- **UIコンポーネント**: components/ui/にshadcn/uiベース
 - **型定義**: 各機能のtypes/に型定義を集約
-- **SOLID原則の適用**:
-  - 単一責任の原則: 各コンポーネント・サービスの責務を明確化
-  - 開放閉鎖原則: 拡張可能な設計パターンの採用
-  - 依存性逆転の原則: インターフェース・抽象化の活用
+- **API統合**: OpenAPI仕様からの自動型生成
 
 ### API設計パターン
 - **RESTful**: リソースベースのAPI設計
 - **DTOパターン**: データ転送用オブジェクトの活用
 - **統一レスポンス**: 一貫性のあるレスポンス形式
-- **OpenAPI駆動開発**: バックエンドのAPI仕様から自動的にTypeScript型を生成
-- **型安全な通信**: フロント/バック間の型の一貫性を自動保証
-- **APIクライアント層**: 各機能モジュールに専用のAPIクライアント実装
-  - React Queryとの統合による効率的なキャッシュ管理
-  - エラーハンドリングの一元化
-  - 型安全なリクエスト/レスポンス処理
-- **Zodスキーマ統合**: OpenAPIからのスキーマ自動生成
-  - ランタイムバリデーションによる型安全性の二重保証
-  - ZodEffects型の適切な処理（z.input/z.output分離）
-  - React Hook Formとのシームレスな統合
+- **OpenAPI駆動開発**: API仕様から型を自動生成
+- **型安全な通信**: フロント/バック間の型一貫性
+- **Zodスキーマ統合**: ランタイムバリデーション
 
 ## ファイル命名規則
 
@@ -430,26 +385,21 @@ import type { User } from '@/shared/types';
 
 ## 主要アーキテクチャ原則
 
-### バックエンド（SOLID原則準拠 - Phase 2適用）
+### バックエンド（SOLID原則準拠）
 - **単一責任の原則（SRP）**: 各サービスが1つの責務のみを持つ
   - 例: EmployeeQueryService（照会のみ）、EmployeeCommandService（更新のみ）
 - **開放閉鎖の原則（OCP）**: ファサードパターンによる拡張性確保
-  - 例: EmployeeServiceが各専門サービスに委譲
-- **依存性逆転の原則（DIP）**: Spring DIコンテナによるインターフェース駆動設計
+- **依存性逆転の原則（DIP）**: Spring DIコンテナによるインターフェース駆動
 - **トランザクション管理**: @Transactionalによる宣言的管理
 - **例外処理**: GlobalExceptionHandlerによる統一処理
 - **セキュリティ**: Spring Securityによる認証・認可
-- **テスト容易性**: 専門サービス分離により85%以上のカバレッジ達成
 
 ### フロントエンド
 - **単一責任の原則**: コンポーネントは一つの責務
 - **状態管理**: React QueryによるサーバーState管理
-- **型安全性**: TypeScript strictモード（exactOptionalPropertyTypes除く）
+- **型安全性**: TypeScript strictモード
 - **再利用性**: 共通コンポーネントの活用
-- **コード品質管理**:
-  - Biome: ESLint/Prettierからの完全移行による統合管理
-  - TypeScript strict mode: 型安全性の強化
-  - 高速な開発フィードバック（Biomeは従来ツールより10倍高速）
+- **コード品質**: Biomeによる統合管理
 
 ## ビルド成果物
 
@@ -479,7 +429,7 @@ frontend/dist/
 - `settings.gradle`: Gradleプロジェクト設定
 - `package.json`: Node.js依存関係
 - `vite.config.ts`: Viteビルド設定
-- `biome.jsonc`: Biome統合コード品質設定（linter + formatter）
+- `biome.jsonc`: Biome統合コード品質設定
 
 ### 開発環境設定
 - `.env.example`: 環境変数テンプレート
@@ -496,36 +446,30 @@ frontend/dist/
 ### Biome設定構造
 - **継承**: Ultracite設定をベースに拡張
 - **プロジェクト固有ルール**:
-  - `noBarrelFile`: バレルファイル（index.ts）パターンを許可
-  - `useNamingConvention`: APIのsnake_case、定数の大文字を許可
-  - `useFilenamingConvention`: kebab-case、PascalCase、camelCase対応
-  - `noExcessiveCognitiveComplexity`: 最大複雑度15（警告レベル）
+  - バレルファイル（index.ts）パターンを許可
+  - APIのsnake_case、定数の大文字を許可
+  - kebab-case、PascalCase、camelCase対応
+  - 最大複雑度15（警告レベル）
 - **オーバーライド設定**:
   - UIコンポーネント: 名前空間インポート許可
   - テストファイル: マジックナンバー・複雑度チェック無効化
   - 認証機能: 非同期処理のvoid許可
-  - 設定ファイル: マジックナンバー許可
   - 自動生成ファイル: リンティング無効化
 
 ## テスト構造
 
 ### バックエンドテスト
 - **単体テスト**: JUnit 5 + Mockito
-- **統合テスト**: Spring Boot Test
+- **統合テスト**: Spring Boot Test + Testcontainers
 - **APIテスト**: @Tag("api")でタグ付け
 - **契約テスト**: OpenAPI仕様準拠（オプション）
+- **カバレッジ**: 85%以上（サービス層）
 
 ### フロントエンドテスト
 - **単体テスト**: Vitest + Testing Library
-- **統合テスト**: MSW (Mock Service Worker) v2.11.3 + Vitest（2025-10-04導入）
-  - APIモックによるリアルな統合テスト
-  - 認証フロー、エラーハンドリング、リトライメカニズムのテスト
-  - ネットワークレベルでのHTTP通信シミュレーション
-- **E2Eテスト**: Playwright v1.49.1（型安全性強化、2025-10-04改善）
-  - 環境変数型定義による型安全なテスト設定
-  - テストヘルパー関数の型推論最適化
-  - ビジュアルリグレッションテスト対応
-- **カバレッジ**: Vitest Coverage v8
+- **統合テスト**: MSW v2.11.3 + Vitest
+- **E2Eテスト**: Playwright v1.49.1
+- **カバレッジ**: 80%以上
 
 ## 開発ワークフロー
 
@@ -544,3 +488,31 @@ frontend/dist/
 - `refactor:` リファクタリング
 - `test:` テスト
 - `chore:` ビルド・設定
+
+## Kiro仕様駆動開発
+
+### 仕様構造
+```
+.kiro/
+├── specs/        # 機能仕様書
+│   └── [feature-name]/
+│       ├── spec.json        # 仕様メタデータ
+│       ├── requirements.md  # 要件定義
+│       ├── design.md        # 技術設計
+│       └── tasks.md         # 実装タスク
+└── steering/     # プロジェクト指針
+    ├── product.md     # 製品概要
+    ├── tech.md        # 技術スタック
+    └── structure.md   # プロジェクト構造
+```
+
+### 開発プロセス
+1. `spec-init`: 仕様初期化
+2. `spec-requirements`: 要件定義
+3. `spec-design`: 技術設計
+4. `spec-tasks`: タスク生成
+5. `spec-impl`: 実装実行
+
+---
+*Last Updated: 2025-01-09*
+*Structure Version: 2.0*

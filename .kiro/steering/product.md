@@ -12,13 +12,14 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 - **セッションベース認証**: Spring Securityによる安全なログイン/ログアウト
 - **CSRF保護**: Cookie + `X-XSRF-TOKEN`ヘッダーによる保護
 - **ロールベースアクセス制御**: 管理者と一般社員の権限管理
+- **セッションタイムアウト管理**: 8時間のセッション有効期限、15分前警告機能
 
 ### 勤怠管理機能
 
 - **Web打刻**: ブラウザベースの出退勤打刻機能
 - **打刻履歴管理**: 従業員の勤怠記録の表示・編集・削除
 - **月次集計**: 勤務時間の自動計算と集計
-- **CSV出力**: 勤怠記録のエクスポート機能
+- **CSV出力**: 勤怠記録のエクスポート機能（Shift-JIS with BOM対応）
 
 ### 従業員管理
 
@@ -72,16 +73,21 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 - **セキュアな設計**: Spring Securityによる堅牢な認証・認可
 - **スケーラビリティ**: PostgreSQL 16 + MyBatisによる効率的なデータ管理
 - **開発効率化**: OpenAPI仕様によるフロント/バックエンドの自動型同期
-- **型安全性**: TypeScript 5 + Zodによるランタイム/コンパイルタイムの二重検証
+- **型安全性**: TypeScript 5.8 + Zodによるランタイム/コンパイルタイムの二重検証
   - satisfies演算子による型制約の保証
   - Branded Typesによる名義的型付け（ID誤用防止）
   - Template Literal Typesによる型安全なAPIパス
   - 型述語関数による実行時型チェック
-- **UIコンポーネント**: shadcn/ui + Tailwind CSS 4によるモダンなデザインシステム
-- **SOLID原則準拠**: Phase 2リファクタリングによる保守性・拡張性の向上
-  - サービス層の責任分離（従業員管理を4つの専門サービスに分割）
-  - ファサードパターンによる複雑性の隠蔽
-  - テストカバレッジ向上（85%以上）
+- **UIコンポーネント**: shadcn/ui@canary + Tailwind CSS 4によるモダンなデザインシステム
+- **コード品質管理**: Biome 2.2によるリンティング・フォーマット統合
+- **パフォーマンス最適化**:
+  - React Query 5によるキャッシング戦略
+  - Vite 7によるビルド最適化とコード分割
+  - Lazy Loadingによる初期読み込み時間短縮
+- **テスト自動化**:
+  - Vitest 3.2によるユニットテスト（500+ tests）
+  - Playwright 1.49によるE2Eテスト
+  - MSW 2.11による統合テスト
 
 ### ビジネス価値
 
@@ -112,180 +118,48 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 - **API応答時間**: 200ms以内（95パーセンタイル）
 - **同時接続**: 1000ユーザー以上のサポート
 - **稼働率**: 99.9%以上
+- **バンドルサイズ**: 300KB以下（JavaScript）
 
 ### ユーザビリティ
 
 - **モバイル対応**: 全機能のモバイル最適化
 - **直感的UI**: 最小限のトレーニングで操作可能
 - **多言語対応**: 日本語環境に最適化
+- **アクセシビリティ**: WCAG 2.1 Level AAへの準拠
 
 ## 実装状況
 
 ### 完了済み機能
 
-- ✅ SPA化（React + TypeScript）
-- ✅ 認証システム（Spring Security）
-- ✅ 従業員管理API
-- ✅ 打刻機能API
-- ✅ PostgreSQL移行
+- ✅ SPA化（React 19 + TypeScript 5.8）
+- ✅ 認証システム（Spring Security + AuthProvider）
+- ✅ 従業員管理API（CRUD完全実装）
+- ✅ 打刻機能API（打刻履歴管理完全実装）
+- ✅ PostgreSQL移行（v16完全対応）
 - ✅ Docker Compose環境構築
 - ✅ CI/CDパイプライン（GitHub Actions）
+- ✅ React Router 7移行完了
+- ✅ shadcn/ui@canary導入（React 19対応）
+- ✅ Tailwind CSS 4移行完了
+- ✅ Biome統合（ESLint/Prettier代替）
+- ✅ TanStack Table統合（v8.21）
+- ✅ OpenAPI型生成パイプライン
+- ✅ React Query統合（v5.90）
+- ✅ MSW統合テスト基盤
+- ✅ セッション管理強化（AuthProvider実装完了）
+- ✅ E2Eテスト基盤（Playwright）
+- ✅ パフォーマンス監視基盤（Lighthouse CI）
 
 ### 開発中/計画中
 
-- ✅ OpenAPI TypeScript型生成パイプライン（完了）
-- ✅ shadcn/uiコンポーネントライブラリ導入（完了）
-- ✅ Tailwind CSS 4への移行（完了）
-- ✅ SOLID原則に基づくフロントエンドリファクタリング（完了）
-- ✅ TypeScript型安全性の向上（完了）
-- ✅ ESLint/PrettierからBiomeへの完全移行（完了 - 2025-09-29）
-  - 統合コード品質管理ツール導入
-  - リンティング・フォーマット処理速度10倍向上
-  - 設定ファイル一元化による保守性向上
-- ✅ React Router 7への移行（完了）
-- ✅ 認証コンテキストの実装（完了）
-- ✅ APIクライアント層の構築（完了 - 2025-09-29）
-  - 各機能モジュールに専用APIクライアント実装
-  - React Queryとの統合による効率的なデータフェッチング
-  - 型安全なAPI呼び出しパターンの確立
-- ✅ SignInPageのshadcn/ui化（完了 - 2025-09-29）
-  - React Hook Form + Zodによるフォームバリデーション
-  - shadcn/uiのFormコンポーネント導入
-  - アクセシビリティとUX改善
-- ✅ React Query認証フックの実装（完了 - 2025-09-29）
-  - セッション管理用カスタムフック（useSession、useLogin、useLogout、useAuthContext）
-  - QueryClient設定の最適化（staleTime、gcTime、retry戦略）
-  - 認証状態の統一管理
-- ✅ HomePageダッシュボードのshadcn/ui化（完了 - 2025-09-29）
-  - StampCard/NewsCardコンポーネントの実装
-  - Tailwind CSS v4によるレスポンシブデザイン
-  - React Query統合によるリアルタイムデータ更新
-  - PageLoaderによる読み込み状態の改善
-- ✅ グローバルエラーハンドリングシステム（完了 - 2025-09-30）
-  - カスタムエラークラス階層の実装（NetworkError、ValidationError、AuthenticationError等）
-  - ErrorBoundaryコンポーネントによるReactエラー捕捉
-  - GlobalErrorHandlerによる一元的エラー処理
-  - エラー分類と自動リトライ戦略の実装
-  - 包括的なテストカバレッジ（単体テスト・統合テスト）
-- ✅ TanStack Table統合（完了 - 2025-09-30）
-  - DataTableコンポーネント実装（v8.21.3）
-  - ソート、フィルタリング、ページネーション機能
-  - Headless UIパターンによる柔軟なカスタマイズ性
-  - 大規模データセットの効率的なレンダリング
-- ✅ 従業員管理機能のモダン化（完了 - 2025-09-30）
-  - ZodスキーマによるAPI型安全性の強化
-  - TanStack Tableを使用した高性能データグリッド
-  - React Query統合による効率的なデータ管理
-  - ZodEffects型の適切な処理と型推論の改善
-- ✅ 打刻履歴表示機能の拡張（完了 - 2025-09-30）
-  - カレンダービュー実装（月間打刻状況の視覚化）
-  - 統計カード表示（月次集計情報）
-  - 打刻履歴の編集・削除ダイアログ
-  - TypeScript型安全性の完全対応
-  - CalendarView.tsxの型エラー修正完了
-- ✅ 打刻履歴のCSVエクスポート機能（完了 - 2025-09-30）
-  - 月次データのCSV形式ダウンロード
-  - 日本語エンコーディング対応（Shift-JIS with BOM）
-  - データ項目: 日付、曜日、出勤時刻、退勤時刻、休憩時間、労働時間、備考
-  - React Hook実装によるファイル生成とダウンロード処理
-- ✅ ローディング状態とスケルトンUIの実装（完了 - 2025-09-30）
-  - LoadingSpinnerコンポーネント（TailwindCSS v4対応）
-  - SkeletonVariantsコンポーネント（Card/Table/Form/Text）実装
-  - React 19 SuspenseWrapperで統合管理を実現
-  - React Queryにsuspenseモード設定を追加
-  - React.lazyによるコード分割でバンドルサイズ最適化
-- ✅ Phase 2 SOLID原則適用とテストカバレッジ改善（完了 - 2025-10-01）
-  - EmployeeServiceを4つの専門サービスに分割
-    - EmployeeQueryService: 従業員情報の照会専用
-    - EmployeeCommandService: 従業員情報の更新専用
-    - EmployeeDataTableService: DataTables統合処理専用
-    - EmployeeCacheService: キャッシュ管理専用
-  - AuthSessionServiceの実装（セッション管理の分離）
-  - 88+の統合テストケース追加（314テスト、309+成功）
-  - テストカバレッジ大幅向上
-    - EmployeeServiceTest: 35/100 → 85/100 (+143%)
-    - TimestampConverter: 54/100 → 90/100 (+67%)
-  - TimestampConverterのゼロパディング不足修正
-  - ファサードパターン完全実装による複雑性の隠蔽
-- ✅ Form Validation統一とUX改善（完了 - 2025-10-01）
-  - TypeScript strict mode型エラー修正の完全対応
-  - Formコンポーネントのアクセシビリティ強化
-    - ARIA属性の適切な実装
-    - スクリーンリーダー対応の改善
-    - フォーカス管理の最適化
-  - エラーメッセージの統一
-    - 一貫性のあるエラー表示パターン
-    - ユーザーフレンドリーなメッセージング
-    - React Hook Form + Zodの統合改善
-- ✅ TypeScript v5型定義リファクタリング（完了 - 2025-10-02）
-  - satisfies演算子による型制約と推論の両立
-  - queryOptions/mutationOptionsパターン導入
-  - Branded Typesによる名義的型付け（エンティティID・トークン）
-  - Template Literal Typesによる型安全なAPI定義
-  - 型述語（Type Predicates）関数の実装
-  - React.FCから関数宣言への移行
-  - グローバル型定義ファイルの作成
-- ✅ React Query Route Loader統合（完了 - 2025-10-03）
-  - ルート遷移時のデータプリフェッチング最適化
-  - QueryClientのprefetchQuery統合
-  - ルートローダーによる事前データ取得
-  - ナビゲーション体験の高速化
-  - テストカバレッジの強化（91件の新規テスト追加）
-- ✅ お知らせ管理・ログ管理APIクライアント実装（完了 - 2025-10-04）
-  - お知らせ管理API（登録・公開管理・削除）のクライアント実装
-  - ログ管理API（履歴照会・検索）のクライアント実装
-  - フロントエンドからのAPI呼び出し対応
-  - 型安全なAPI通信の確立
-- ✅ API統合テスト with MSW（完了 - 2025-10-04）
-  - MSW (Mock Service Worker) v2.11.3の導入
-  - APIモックによるリアルな統合テスト実装
-  - 認証フロー、エラーハンドリング、リトライメカニズムのテストカバレッジ
-  - テストセットアップの改善（Vitest + MSW自動化）
-  - 5つの主要テストシナリオ実装完了
-- ✅ E2E テスト型安全性改善（完了 - 2025-10-04）
-  - Playwrightテストの型安全性強化
-  - 環境変数アクセスの最適化（process.env型定義）
-  - テストヘルパー関数の型推論改善
-  - E2Eテストコードの保守性向上
-- ✅ テーマプロバイダー最適化（完了 - 2025-10-04）
-  - useEffectパフォーマンス最適化
-  - テーマ切り替えロジックの効率化
-  - 不要な再レンダリングの削減
-- ✅ Spring Profiles による段階的 UI 切り替え機能（完了 - 2025-10-04）
-  - FeatureFlagContextによるフィーチャーフラグ管理
-  - Spring Profilesベースのバックエンド制御（`legacy`/`modern`/`default`）
-  - レガシーUI/モダンUIの段階的移行サポート
-  - HTTPヘッダー（`X-UI-Profile`）による動的プロファイル判定
-  - エラーハンドリングとフォールバック機能の実装
-  - 包括的な統合テスト（LegacyUi/ModernUiProfileIntegrationTest）
-- ✅ レガシーUI完全削除リファクタリング（完了 - 2025-10-04、PR #38）
-  - Thymeleaf依存の完全撤廃とMVCコントローラー削除（10ファイル）
-  - React SPAへの完全移行達成
-  - `legacy`プロファイルの削除とアーキテクチャ簡素化
-  - SPA単一構成による技術的負債の解消
-- ✅ パフォーマンス監視基盤の実装（完了 - 2025-10-05、Task 32）
-  - Lighthouse CI統合による自動パフォーマンステスト
-  - パフォーマンス閾値チェック関数の実装（performanceChecks.ts）
-  - パフォーマンス目標設定
-    - Lighthouse Performance Score: 90以上
-    - LCP (Largest Contentful Paint): 1500ms以下
-    - TTI (Time to Interactive): 2000ms以下
-    - バンドルサイズ: 300KB以下（script）、550KB以下（total）
-    - API応答時間: p95=200ms、p99=500ms
-  - TypeScript strict mode型安全性の向上（配列アクセスの型保証）
-  - 13件のテストケース実装によるパフォーマンス監視品質保証
-- ✅ OpenAPI契約テストの安定化（完了 - 2025-10-07、PR #46）
-  - セッションレスポンスのOpenAPI契約修正（null許容フィールド対応）
-  - OpenAPI4j依存関係バージョン固定（v1.0.7、Maven Central互換性確保）
-  - StampResponseの型整合性修正（stampTimeフィールドの適切な型設定）
-  - 契約テストの信頼性向上（フィールド定義の厳密化）
-  - API仕様とレスポンスの一貫性を自動保証
 - 🔄 Playwright E2Eテスト拡充（継続中）
   - コア機能のE2Eテスト追加
   - エッジケースシナリオのカバレッジ向上
 - 📋 管理者向け分析ダッシュボード
 - 📋 勤怠承認ワークフロー
 - 📋 外部システム連携API
+- 📋 プッシュ通知機能
+- 📋 生体認証対応
 
 ## テスト環境
 
@@ -293,10 +167,12 @@ SPAベースの勤怠管理システムです。既存のThymeleaf実装を置�
 
 - **管理者**: `admin.user@example.com` / `AdminPass123!`
 - **一般社員**: `test.user@example.com` / `TestPass123!`
-- **本番環境テスト**: `test@gmail.com` / `testtest`
 
 ### デモ環境
 
-- **URL
-  **: http://my-spring-app-env.eba-kmwuwpfp.ap-northeast-1.elasticbeanstalk.com/
+- **URL**: http://my-spring-app-env.eba-kmwuwpfp.ap-northeast-1.elasticbeanstalk.com/
 - ※本番環境は移行作業中。最新のUIはローカルまたはステージングで確認
+
+---
+*Last Updated: 2025-01-09*
+*Inclusion Mode: Always Included*

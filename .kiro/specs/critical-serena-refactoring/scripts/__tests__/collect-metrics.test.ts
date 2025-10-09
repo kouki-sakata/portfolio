@@ -31,19 +31,34 @@ describe('Metrics Collection', () => {
     it('should collect API response time metrics from Spring Boot Actuator', async () => {
       // Arrange
       const mockActuatorResponse = {
+        name: 'http.server.requests',
         measurements: [
           { statistic: 'VALUE', value: 0.15 }, // p95
-          { statistic: 'VALUE', value: 0.20 }  // p99
+          { statistic: 'MAX', value: 0.20 }    // p99
         ],
         availableTags: [
           { tag: 'uri', values: ['/api/auth/login', '/api/stamp'] }
         ]
       };
 
-      (global.fetch as Mock).mockResolvedValue({
-        ok: true,
-        json: async () => mockActuatorResponse
-      });
+      const mockEndpointResponse = {
+        name: 'http.server.requests',
+        measurements: [
+          { statistic: '0.95', value: 0.15 },
+          { statistic: '0.99', value: 0.20 },
+          { statistic: 'COUNT', value: 1000 }
+        ]
+      };
+
+      (global.fetch as Mock)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => mockActuatorResponse
+        })
+        .mockResolvedValue({
+          ok: true,
+          json: async () => mockEndpointResponse
+        });
 
       // Act
       const metrics = await collectActuatorMetrics('http://localhost:8080');
@@ -247,11 +262,15 @@ describe('Metrics Collection', () => {
       // This is an integration test that would run the complete workflow
       // In a real scenario, this would be run against a running application
 
-      // Arrange - Mock all external dependencies
+      // Arrange - Mock all external dependencies for parallel execution
       (global.fetch as Mock).mockResolvedValue({
         ok: true,
         json: async () => ({
-          measurements: [{ statistic: 'VALUE', value: 0.15 }],
+          name: 'http.server.requests',
+          measurements: [
+            { statistic: 'VALUE', value: 0.15 },
+            { statistic: 'MAX', value: 0.20 }
+          ],
           availableTags: []
         })
       });

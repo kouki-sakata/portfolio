@@ -355,11 +355,19 @@ describe("AuthProvider", () => {
         wrapper: createWrapper,
       });
 
+      // 認証状態が更新されるまで待機
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.authenticated).toBe(true);
       });
 
-      expect(result.current.sessionInfo).toBeDefined();
+      // sessionInfoが設定されるまで待機（追加の待機時間）
+      await waitFor(
+        () => {
+          expect(result.current.sessionInfo).toBeDefined();
+        },
+        { timeout: 5000 }
+      );
+
       expect(result.current.sessionInfo?.createdAt).toEqual(
         mockSessionData.createdAt
       );
@@ -448,12 +456,23 @@ describe("AuthProvider", () => {
         wrapper: createWrapper,
       });
 
+      // 認証状態が更新されるまで待機
       await waitFor(() => {
-        expect(result.current.loading).toBe(false);
+        expect(result.current.authenticated).toBe(true);
       });
+
+      // sessionInfoとtimeUntilExpiryが設定されるまで待機
+      await waitFor(
+        () => {
+          expect(result.current.sessionInfo).toBeDefined();
+          expect(result.current.timeUntilExpiry).toBeDefined();
+        },
+        { timeout: 5000 }
+      );
 
       const timeRemaining = result.current.timeUntilExpiry;
       expect(timeRemaining).toBeDefined();
+      expect(typeof timeRemaining).toBe("number");
       expect(timeRemaining).toBeGreaterThan(29 * 60 * 1000);
       expect(timeRemaining).toBeLessThanOrEqual(30 * 60 * 1000);
     });

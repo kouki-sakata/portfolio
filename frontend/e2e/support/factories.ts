@@ -132,9 +132,9 @@ export const STAMP_TYPES = {
   // biome-ignore lint/style/useNamingConvention: E2E test constant
   DEPARTURE: "2", // 退勤
   // biome-ignore lint/style/useNamingConvention: E2E test constant
-  LEAVE: "3", // 外出
+  BREAK_START: "3", // 休憩開始
   // biome-ignore lint/style/useNamingConvention: E2E test constant
-  RETURN: "4", // 復帰
+  BREAK_END: "4", // 休憩終了
 } as const;
 
 /**

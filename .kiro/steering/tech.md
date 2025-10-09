@@ -5,218 +5,148 @@
 ### システムアーキテクチャ
 - **タイプ**: モノリシックSPAアプリケーション
 - **パターン**: Spring Boot APIバックエンド + React SPAフロントエンド
-- **データベース戦略**: PostgreSQLによるRDBMS
+- **データベース戦略**: PostgreSQL 16によるRDBMS
 - **デプロイメント**: Docker Compose / AWS Elastic Beanstalk
 
 ### アーキテクチャ原則
-- **API設計**: RESTful APIパターン
-- **状態管理**: React Query / サーバー側セッション
-- **セキュリティファースト**: Spring Securityによる認証・認可
+- **API設計**: RESTful APIパターン、OpenAPI 3.0仕様準拠
+- **状態管理**: React Query 5によるサーバー側状態管理
+- **セキュリティファースト**: Spring Security 6.4による認証・認可
 - **関心の分離**: フロントエンド/バックエンド完全分離
+- **型安全性**: TypeScript + Zod + OpenAPI自動生成による端間型安全
 
 ## フロントエンド
 
 ### コアフレームワーク
-- **React 19**: 最新のReactフレームワーク（v19.1.1）
-- **TypeScript 5**: 型安全な開発（v5.8.3、strictモード有効 - exactOptionalPropertyTypes除く）
-  - satisfies演算子による型制約と型推論の両立
-  - const type parametersによるリテラル型推論
-  - Template Literal Typesによる型安全なAPI定義
-  - Branded Typesパターンによる名義的型付け
-  - 型述語（Type Predicates）による実行時型チェック
-- **Vite**: 高速ビルドツール（v7.1.7）
-- **React Router 7**: SPAルーティング（v7.9.2）
+- **React 19.1.1**: 最新のReactフレームワーク
+- **TypeScript 5.8.3**: 型安全な開発（strictモード有効）
+  - satisfies演算子による型制約の保証
+  - Branded Typesによる名義的型付け（ID誤用防止）
+  - Template Literal Typesによる型安全なAPIパス
+  - 型述語関数による実行時型チェック
+- **Vite 7.1.7**: 高速ビルドツール、コード分割最適化
+- **React Router 7.9.2**: SPAルーティング、遅延読み込み対応
 
 ### UIライブラリ
-- **React Query 5**: サーバー状態管理（v5.90.2）
+- **React Query 5.90.2**: サーバー状態管理
   - QueryClient最適化設定（staleTime: 5分、gcTime: 10分）
   - 認証フック統合（useSession、useLogin、useLogout）
   - エラーリトライ戦略（exponential backoff、最大3回）
-  - ダッシュボードデータのリアルタイム同期
   - Suspenseモードサポート（React 19統合）
-  - queryOptions/mutationOptionsパターン採用（TypeScript v5対応）
-  - グローバル型定義によるクエリキー型安全化
-  - **Route Loader統合**（2025-10-03）
-    - ルート遷移前のデータプリフェッチング
-    - 各ルートに特化したローダー関数
-    - QueryClient.prefetchQueryによる効率的なキャッシュ
-    - ナビゲーションのパフォーマンス向上
-- **TanStack Table**: 高性能テーブル/データグリッドライブラリ（v8.21.3）
+  - Route Loader統合によるプリフェッチング
+- **TanStack Table 8.21.3**: 高性能テーブル/データグリッドライブラリ
   - Headless UIパターンによる完全なカスタマイズ性
   - ソート、フィルタリング、ページネーション機能
   - 大規模データセットの仮想化対応
-  - TypeScript完全サポート
-  - 従業員管理画面での実装完了（2025-09-30）
-- **shadcn/ui**: Radix UIベースのコンポーネントライブラリ
-  - Radix UI React Label (v2.1.7)
-  - Radix UI React Slot (v1.2.3)
-  - Radix UI React Toast (v1.2.15)
-  - Button、Form、Input、Label、Toast等の基本UIコンポーネント実装済み
-  - カスタムカードコンポーネント（StampCard、NewsCard）実装済み
-  - DataTableコンポーネント（TanStack Table統合）実装済み
-- **React Hook Form**: フォーム状態管理（v7.63.0）
+- **shadcn/ui@canary**: React 19対応コンポーネントライブラリ
+  - Radix UIベース（v1.1.15〜v2.2.6）
+  - Button、Form、Input、Label、Toast等の基本UIコンポーネント
+  - DataTableコンポーネント（TanStack Table統合）
+- **React Hook Form 7.63.0**: フォーム状態管理
   - Zod統合によるランタイムバリデーション
   - 高パフォーマンスな非制御コンポーネント
-- **Tailwind CSS 4**: ユーティリティファーストCSS（v4.1.13）
-- **Lucide React**: アイコンライブラリ（v0.544.0）
-- **class-variance-authority**: コンポーネントバリアント管理（v0.7.1）
-- **clsx**: 動的クラス名結合（v2.1.1）
-- **tailwind-merge**: Tailwindクラス競合解決（v3.3.1）
-- **レスポンシブデザイン**: モバイルファースト設計
-
-### ローディング状態管理
-- **LoadingSpinner**: カスタマイズ可能なローディングインジケーター
-  - サイズバリアント（sm/md/lg/xl）
-  - スタイルバリアント（primary/secondary/destructive）
-  - フルスクリーン表示オプション
-  - アクセシビリティ対応（ARIA属性）
-- **SkeletonVariants**: コンテンツ別スケルトンUI
-  - SkeletonCard: カードコンテンツのプレースホルダー
-  - SkeletonTable: テーブルコンテンツのプレースホルダー
-  - SkeletonForm: フォームコンテンツのプレースホルダー
-  - SkeletonText: テキストコンテンツのプレースホルダー
-- **SuspenseWrapper**: React 19 Suspense統合
-  - 非同期コンポーネントの統合管理
-  - 遅延表示機能（showDelay）
-  - ErrorBoundary統合
-  - PageSuspenseWrapper/TransitionSuspenseWrapperバリアント
+- **Tailwind CSS 4.1.13**: ユーティリティファーストCSS
+- **Lucide React 0.544.0**: アイコンライブラリ
 
 ### 開発ツール
-- **Biome**: 統合コード品質管理ツール（v2.2.4）
-  - Linter: ESLint互換の高速リンター
-  - Formatter: Prettier互換の高速フォーマッター
-  - 単一の設定ファイル（frontend/biome.jsonc）で管理
-  - Ultracite設定を継承しプロジェクト固有のルールを追加
-- **Vitest**: 単体テストフレームワーク（v3.2.4）
-- **MSW (Mock Service Worker)**: API モックフレームワーク（v2.11.3）
-  - Node環境でのAPIモック実装
-  - 統合テストでの実際のHTTP通信シミュレーション
+- **Biome 2.2.4**: 統合コード品質管理ツール
+  - ESLint/Prettier代替の高速リンター・フォーマッター
+  - 単一設定ファイル（biome.jsonc）で管理
+- **Vitest 3.2.4**: 単体テストフレームワーク（500+ tests）
+- **MSW 2.11.3**: API モックフレームワーク
+  - 統合テストでのHTTP通信シミュレーション
   - エラーハンドリングやリトライメカニズムのテスト
-  - テストセットアップの自動化（setup.ts統合）
-- **Playwright**: E2Eテスト（v1.49.1）
-  - 型安全性強化（環境変数アクセス最適化）
-  - テストヘルパー関数の型推論改善
-  - ブラウザテスト自動化とビジュアルテスト
-- **Testing Library**: React テストユーティリティ
-- **@hey-api/openapi-ts**: OpenAPI仕様からTypeScript型を自動生成（v0.84.3）
-- **openapi-zod-client**: OpenAPIからZodスキーマを生成（v1.18.3）
-- **Zod**: ランタイムスキーマバリデーション（v3.25.76）
-  - OpenAPI仕様からの自動生成（openapi-zod-client）
-  - React Hook Formとの統合によるフォームバリデーション
-  - ZodEffects型の適切な処理（z.infer、z.input、z.output）
-  - API型安全性の強化とランタイムバリデーション
-- **Lighthouse CI**: パフォーマンス監視ツール（@lhci/cli@0.13.x）
-  - 自動化されたパフォーマンステスト
-  - Core Web Vitals測定（LCP、TTI等）
-  - パフォーマンス予算管理
-  - CI/CDパイプライン統合対応
-- **Ultracite**: 統合開発ツール（v5.4.4、グローバルインストール推奨）
+- **Playwright 1.49.1**: E2Eテスト
+  - クロスブラウザテスト自動化
+  - ビジュアルレグレッションテスト
+- **@hey-api/openapi-ts 0.84.3**: TypeScript型自動生成
+- **openapi-zod-client 1.18.3**: Zodスキーマ生成
+- **Lighthouse CI 0.13.x**: パフォーマンス監視
 
 ### ビルド設定
 ```bash
 npm run dev          # 開発サーバー起動
-npm run build        # 本番ビルド
+npm run build        # 本番ビルド（TypeScriptチェック含む）
+npm run build:analyze # バンドル分析
 npm run preview      # ビルドプレビュー
-npm run lint         # Biomeリントチェック（frontend/biome.jsonc使用）
+npm run lint         # Biomeリントチェック
 npm run lint:fix     # Biome自動修正
 npm run typecheck    # TypeScript型チェック
 npm run test         # Vitestテスト実行
 npm run test:watch   # テストウォッチモード
 npm run test:e2e     # Playwright E2Eテスト
+npm run test:e2e:headed # ブラウザUI付きE2E
+npm run test:e2e:ui  # Playwright UI モード
 npm run format       # Biomeフォーマット
-npm run format:check # フォーマットチェック
 npm run biome:ci     # CI用Biomeチェック
-npm run generate:api # OpenAPI仕様からTypeScript型とZodスキーマを生成
-npm run generate:api-types    # TypeScript型のみ生成
-npm run generate:zod-schemas   # Zodスキーマのみ生成
-npm run perf:lhci    # Lighthouse CI パフォーマンステスト実行
+npm run generate:api # OpenAPI仕様から型生成
+npm run perf:verify  # パフォーマンステスト
+npm run perf:lhci    # Lighthouse CI実行
+npm run measure:bundle # バンドルサイズ測定
 ```
 
 ### APIクライアント層
 - **アーキテクチャパターン**: 機能別モジュール化されたAPIクライアント
-- **型生成**: OpenAPI仕様からの自動生成（@hey-api/openapi-ts v0.84.3）
+- **型生成**: OpenAPI仕様からの自動生成
 - **API実装構造**:
-  - `auth/api/`: ログイン、ログアウト、セッション管理
-  - `employees/api/`: 従業員管理API
-  - `home/api/`: ダッシュボード、打刻機能
+  - `auth/api/`: 認証・セッション管理
+  - `employees/api/`: 従業員CRUD操作
+  - `home/api/`: ダッシュボード・打刻機能
   - `stampHistory/api/`: 打刻履歴管理
 - **React Query統合**:
-  - 各APIクライアントがuseQuery/useMutationと連携
-  - カスタムフック実装（useSession、useLogin、useLogout、useAuthContext）
-  - 最適化されたキャッシュ戦略（staleTime、gcTime設定）
-  - EnhancedQueryClientによるグローバルエラーハンドリング
+  - カスタムフック実装（useAuth、useEmployees等）
+  - 最適化されたキャッシュ戦略
+  - グローバルエラーハンドリング
 - **エラーハンドリング**:
-  - カスタムエラークラス階層（NetworkError、ValidationError、AuthenticationError、AuthorizationError、UnexpectedError）
-  - エラー分類システムによる適切なエラータイプの自動判定
+  - カスタムエラークラス階層
   - エラー重要度とリトライ可能性の評価
-  - GlobalErrorHandlerによる一元的エラー処理とロギング
-  - ErrorBoundaryによるReactコンポーネントレベルのエラー捕捉
-- **型安全性**: OpenAPIスキーマによる完全な型保証
+  - ErrorBoundaryによるコンポーネントレベルエラー捕捉
 
 ## バックエンド
 
 ### 主要技術スタック
 - **Java 21**: Eclipse Temurin（LTS版）
 - **Spring Boot 3.4.3**: エンタープライズJavaフレームワーク
-- **Spring Security**: 認証・認可フレームワーク
+- **Spring Security 6.4**: 認証・認可フレームワーク
 - **MyBatis 3.0.4**: SQLマッパーフレームワーク
 
-### サービス層アーキテクチャ（SOLID原則準拠 - Phase 2）
+### サービス層アーキテクチャ（SOLID原則準拠）
 - **ファサードパターン**: 複雑性の隠蔽と統一インターフェース提供
 - **単一責任の原則**: 各サービスが明確な責務を持つ
 - **専門サービス分離**:
-  - **従業員管理系**:
-    - `EmployeeService`: ファサードとして機能、各専門サービスに委譲
-    - `EmployeeQueryService`: 従業員情報の照会専用
-    - `EmployeeCommandService`: 従業員情報の作成・更新・削除専用
-    - `EmployeeDataTableService`: DataTables統合処理専用
-    - `EmployeeCacheService`: キャッシュ管理専用
-  - **認証系**:
-    - `AuthenticationService`: 認証処理
-    - `AuthSessionService`: セッション管理（Phase 2で分離）
-  - **打刻系**:
-    - `StampService`: 打刻登録
-    - `StampEditService`: 打刻編集（サブコンポーネント分離）
-    - `StampHistoryService`: 履歴管理
-    - `StampDeleteService`: 削除処理
-    - `StampOutputService`: CSV出力
-  - **お知らせ管理系**:
-    - `NewsManageService`: ファサード
-    - `NewsManageRegistrationService`: 登録専用
-    - `NewsManageReleaseService`: 公開管理専用
-    - `NewsManageDeletionService`: 削除専用
-    - `HomeNewsService`: ホーム画面向け取得
-  - **フィーチャーフラグ系**:
-    - `FeatureFlagService`: Spring Profilesベースのフィーチャーフラグ管理（2025-10-04追加）
+  - **従業員管理系**: Query/Command分離（CQRS）
+  - **認証系**: AuthenticationService、AuthSessionService
+  - **打刻系**: 登録・編集・履歴・削除・出力の分離
+  - **お知らせ管理系**: 登録・公開・削除の分離
 
 ### データベース
 - **PostgreSQL 16**: プライマリデータベース
-- **HikariCP**: コネクションプーリング
-- **データベース初期化**: `01_schema.sql` / `02_data.sql`
+- **HikariCP**: コネクションプーリング（デフォルト設定）
+- **データベース初期化**: SQLスクリプト自動実行
+  - `01_schema.sql`: スキーマ定義
+  - `02_data.sql`: 初期データ
 
 ### 認証・セキュリティ
-- **セッションベース認証**: Spring Session
-- **CSRF保護**: Spring Security CSRF トークン
+- **セッションベース認証**: Spring Session（8時間有効）
+- **CSRF保護**: Cookie + X-XSRF-TOKENヘッダー
 - **ロールベースアクセス制御**: 管理者/一般ユーザー
-- **セッション管理**: AuthSessionServiceによる集中管理
+- **BCrypt**: パスワードハッシング
 
 ### APIドキュメント
-- **Swagger/OpenAPI**: Springdoc OpenAPI（v2.6.0）
+- **Springdoc OpenAPI 2.6.0**: API仕様生成
 - **Swagger UI**: http://localhost:8080/swagger-ui/index.html（devプロファイル）
-- **OpenAPI契約テスト**: OpenAPI4j v1.0.7（バージョン固定、Maven Central互換性確保）
-  - セッションレスポンスのnull許容フィールド対応（2025-10-07）
-  - StampResponse型整合性の修正完了（2025-10-07）
+- **OpenAPI契約テスト**: OpenAPI4j 1.0.7
 
 ### ビルドツール
 - **Gradle 8.14.2**: ビルド自動化
 - **Node-Gradle Plugin**: フロントエンドビルド統合
-- **タスク設定**:
+- **主要タスク**:
 ```bash
-./gradlew build                    # フルビルド（フロントエンド含む）
-./gradlew test                      # 全テスト実行（Testcontainers使用）
-./gradlew apiTest                   # API特化テスト（@Tag("api")）
-./gradlew contractTest -PenableOpenApiContract  # OpenAPI契約テスト
-./gradlew bootRun                   # Spring Boot起動
+./gradlew build      # フルビルド（フロントエンド含む）
+./gradlew test       # 全テスト実行（Testcontainers使用）
+./gradlew apiTest    # API特化テスト
+./gradlew contractTest -PenableOpenApiContract  # 契約テスト
+./gradlew bootRun    # Spring Boot起動
 ```
 
 ## 開発環境
@@ -236,32 +166,7 @@ npm run perf:lhci    # Lighthouse CI パフォーマンステスト実行
   - Spring Boot Extension Pack
   - Biome (VS Code)
   - GitLens
-
-## 共通コマンド
-
-### Docker Compose
-```bash
-docker-compose up -d      # コンテナ起動
-docker-compose down       # コンテナ停止
-docker-compose logs -f    # ログ表示
-docker-compose restart    # 再起動
-```
-
-### 開発ワークフロー
-```bash
-# バックエンド起動
-SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
-
-# フロントエンド開発（別ターミナル）
-npm run dev --prefix frontend
-
-# テスト実行
-./gradlew test
-npm run test --prefix frontend
-
-# 開発ワークフロースクリプト
-./scripts/dev-workflow.sh --quick
-```
+  - Playwright Test for VSCode
 
 ## 環境変数
 
@@ -280,12 +185,10 @@ SPRING_PROFILES_ACTIVE=dev
 
 # セキュリティ
 JWT_SECRET=<secret-key>
-ENCRYPTION_KEY=<encryption-key>
 
 # ログレベル
 LOG_LEVEL_ROOT=INFO
 LOG_LEVEL_WEB=DEBUG
-LOG_LEVEL_HIBERNATE=ERROR
 ```
 
 ### フロントエンド環境変数
@@ -295,12 +198,10 @@ VITE_API_BASE_URL=http://localhost:8080/api
 
 # 開発設定
 VITE_DEBUG_MODE=true
-```
 
-### 環境ファイル
-- `.env.example`: テンプレート
-- `.env`: ローカル開発（git-ignored）
-- `frontend/.env.local`: フロントエンド開発設定
+# パフォーマンス分析
+VITE_ANALYZE_BUNDLE=true
+```
 
 ## ポート設定
 
@@ -308,7 +209,7 @@ VITE_DEBUG_MODE=true
 - **8080**: Spring Boot APIサーバー
 - **5173**: Vite開発サーバー
 - **5432**: PostgreSQL（ローカル）
-- **15432**: PostgreSQL（Docker内部）
+- **15432**: PostgreSQL（Docker）
 
 ### テストポート
 - **Random**: Testcontainersが動的に割り当て
@@ -317,118 +218,107 @@ VITE_DEBUG_MODE=true
 
 ### GitHub Actions
 - **ci.yml**: メインCIパイプライン
-  - Node/npm セットアップ
-  - フロントエンドlint/test
-  - バックエンドテスト（PostgreSQLサービス使用）
+  - フロントエンドlint/test/build
+  - バックエンドテスト（PostgreSQL）
   - Dockerビルド
   - SonarCloud分析
 
 - **feature.yml**: フィーチャーブランチ検証
-  - ブランチ命名規則チェック
+  - 命名規則チェック
+  - セキュリティスキャン（OWASP）
   - クイックテスト
-  - セキュリティチェック（OWASP）
-  - Dockerビルド検証
 
 ### テスト戦略
-1. **単体テスト**: JUnit 5 + Mockito / Vitest
-2. **統合テスト**: Spring Boot Test + Testcontainers / MSW + Vitest
-   - MSWによるAPIモック統合テスト（v2.11.3、2025-10-04導入）
-   - 認証フロー、エラーハンドリング、リトライメカニズムのテスト
-3. **APIテスト**: @Tag("api") による分離実行
-4. **E2Eテスト**: Playwright（型安全性強化、2025-10-04改善）
-   - 環境変数型定義による型安全なテスト設定
-   - テストヘルパー関数の型推論最適化
-   - ブラウザ操作の自動化とスクリーンショット比較
-5. **契約テスト**: OpenAPI4j v1.0.7による仕様準拠検証（オプション、2025-10-07安定化）
-   - `-PenableOpenApiContract`フラグで有効化
-   - セッションレスポンスのnull許容フィールド対応完了
-   - StampResponse型整合性の修正完了
+1. **単体テスト**: JUnit 5 / Vitest（カバレッジ80%+）
+2. **統合テスト**: Spring Boot Test + Testcontainers / MSW
+3. **E2Eテスト**: Playwright（主要フロー）
+4. **契約テスト**: OpenAPI4j（API仕様準拠）
+5. **パフォーマンステスト**: Lighthouse CI
 
-### テストカバレッジ目標（Phase 2で大幅向上）
-- **全体**: 314+テスト、309+成功（98.4%成功率）
-- **サービス層**: 85%以上のカバレッジ達成
-  - EmployeeServiceTest: 35/100 → 85/100 (+143%)
-  - TimestampConverter: 54/100 → 90/100 (+67%)
-- **認証系**: AuthSessionServiceTest（14ケース、100%カバレッジ）
-- **打刻編集系**: StampEditService関連（80+ケース）
+### テストカバレッジ目標
+- **全体**: 500+ テスト、98%+ 成功率
+- **バックエンド**: 85%以上
+- **フロントエンド**: 80%以上
+- **E2E**: 主要ユーザーフローの100%カバー
 
 ## セキュリティ考慮事項
 
 ### アプリケーションセキュリティ
 - **HTTPS強制**: 本番環境でのTLS必須
 - **CSRF保護**: トークンベースの保護
-- **セッション管理**: セキュアクッキー設定
-- **入力検証**: Bean Validationによる検証
+- **セッション管理**: HttpOnly、Secureクッキー
+- **入力検証**: Bean Validation + Zod
 - **SQLインジェクション対策**: MyBatisパラメータバインディング
+- **XSS対策**: React自動エスケープ
 
 ### 依存関係管理
 - **OWASP Dependency Check**: 脆弱性スキャン
 - **Dependabot**: 自動更新提案
-- **定期的な更新**: セキュリティパッチの適用
+- **npm audit**: フロントエンド脆弱性チェック
 
 ## パフォーマンス目標
 
 ### フロントエンド
-- **初回表示**: 1.5秒以内
+- **初回表示（LCP）**: 1.5秒以内
+- **インタラクティブ（TTI）**: 2秒以内
 - **ページ遷移**: 500ms以内
-- **APIレスポンス表示**: 200ms以内
+- **バンドルサイズ**: JavaScript 300KB以下
 
 ### バックエンド
-- **APIレスポンス**: 200ms以内（p95）
-- **データベースクエリ**: 50ms以内（p95）
+- **APIレスポンス**: p95 200ms以内
+- **データベースクエリ**: p95 50ms以内
 - **同時接続数**: 1000ユーザー以上
+- **稼働率**: 99.9%以上
 
 ## モニタリング
 
 ### ヘルスチェック
 - **Actuator**: http://localhost:8080/actuator/health
 - **メトリクス**: Spring Boot Actuator経由
+- **カスタムメトリクス**: Micrometer統合
 
 ### ログ管理
 - **アプリケーションログ**: SLF4J + Logback
 - **アクセスログ**: Spring Boot組み込み
-- **エラー追跡**: ログファイル出力
+- **エラー追跡**: ログレベル別出力
 
-### パフォーマンス監視（2025-10-05追加）
-- **Lighthouse CI**: 自動化されたパフォーマンステスト
-  - 設定ファイル: `frontend/lighthouserc.json`
-  - 実行コマンド: `npm run perf:lhci --prefix frontend`
-  - デスクトッププリセット（1366x768、CPU制限なし）
-  - 3回の測定実行による平均値算出
-- **パフォーマンス目標**:
-  - Lighthouse Performance Score: 90以上
-  - LCP (Largest Contentful Paint): 1500ms以下
-  - TTI (Time to Interactive): 2000ms以下
-- **バンドルサイズ予算**:
-  - JavaScript: 300KB以下
-  - 総リソースサイズ: 550KB以下
-  - サードパーティリソース: 25個以下
-- **API応答時間目標**:
-  - p95パーセンタイル: 200ms以下
-  - p99パーセンタイル: 500ms以下
-- **パフォーマンス評価関数**: `frontend/src/shared/performance/performanceChecks.ts`
-  - `evaluateLighthouseMetrics()`: Core Web Vitals評価
-  - `evaluateBundleBudget()`: バンドルサイズチェック
-  - `evaluateApiPerformance()`: API応答時間評価
-  - `calculatePercentile()`: パーセンタイル計算
+### パフォーマンス監視
+- **Lighthouse CI**: 自動パフォーマンステスト
+- **Core Web Vitals**: LCP、TTI、CLS測定
+- **バンドル分析**: Vite bundle analyzer
+- **API監視**: Spring Boot Actuator metrics
 
 ## プロファイル管理
 
 ### Spring Profiles
-- **dev**: 開発環境（Swagger有効、詳細ログ）
-- **test**: テスト環境（Testcontainers）
-- **prod**: 本番環境（最適化、Swagger無効）
-
-### ~~UI切り替え機能（2025-10-04追加、PR #38で削除）~~
-- ~~**legacy**: レガシーUI専用プロファイル（Thymeleafベース）~~ [DEPRECATED - 2025-10-04削除]
-- **modern**: モダンUI（React SPA） - デフォルト設定に統一
-- **フィーチャーフラグ基盤**: 将来の機能フラグ用にFeatureFlagServiceは保持
-  - `/api/feature-flags`エンドポイント（拡張可能な設計）
-  - FeatureFlagContextによるReactフロントエンド統合
-  - TypeScript型安全性の完全サポート
-
-**移行完了**: Thymeleafレガシーコードを完全削除し、React SPA単一構成に移行（2025-10-04、PR #38）
+- **dev**: 開発環境（Swagger有効、詳細ログ、ホットリロード）
+- **test**: テスト環境（Testcontainers、最小ログ）
+- **prod**: 本番環境（最適化、Swagger無効、セキュリティ強化）
 
 ### ビルドプロファイル
 - **開発ビルド**: ソースマップ付き、最適化なし
-- **本番ビルド**: 最小化、Tree Shaking、最適化
+- **本番ビルド**: 最小化、Tree Shaking、コード分割
+
+## 技術選定理由
+
+### フロントエンド選定
+- **React 19**: 最新機能（Suspense、Concurrent Features）活用
+- **TypeScript**: 型安全性によるバグ削減、開発効率向上
+- **React Query**: サーバー状態管理の簡素化、キャッシュ最適化
+- **Vite**: 高速な開発体験、最適化されたビルド
+- **shadcn/ui**: カスタマイズ可能、React 19対応
+
+### バックエンド選定
+- **Java 21**: LTSサポート、仮想スレッド、パターンマッチング
+- **Spring Boot 3.4**: エンタープライズグレード、豊富なエコシステム
+- **PostgreSQL**: ACID準拠、高性能、豊富な機能
+- **MyBatis**: 柔軟なSQL制御、既存SQLの活用
+
+### 開発ツール選定
+- **Biome**: ESLint/Prettier統合、高速実行
+- **Playwright**: クロスブラウザE2E、ビジュアルテスト
+- **Docker**: 環境統一、簡単なセットアップ
+
+---
+*Last Updated: 2025-01-09*
+*Tech Stack Version: 2.0*

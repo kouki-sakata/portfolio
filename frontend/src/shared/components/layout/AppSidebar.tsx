@@ -1,5 +1,6 @@
 import type React from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import type {
   NavigationGroup,
@@ -123,63 +124,83 @@ export const AppSidebar = ({
   isOpen = true,
   onClose,
   className,
-}: AppSidebarProps) => (
-  <>
-    {isOpen ? (
-      <div
-        aria-hidden="true"
-        className="fixed inset-0 z-30 bg-neutral-950/40 backdrop-blur-sm transition-opacity lg:hidden"
-        data-testid="sidebar-overlay"
-        onClick={() => onClose?.()}
-      />
-    ) : null}
-    <aside
-      className={cn(
-        "app-sidebar fixed inset-y-0 left-0 z-40 w-64 border-r bg-white shadow-sm transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
-        !isOpen && "-translate-x-full lg:translate-x-0",
-        className
-      )}
-      data-testid="app-sidebar"
-    >
-      <div className="flex h-full flex-col">
-        <div className="flex items-center justify-between px-4 py-4">
-          <NavLink className="flex items-center gap-3" onClick={onClose} to="/">
-            <SpriteIcon
-              className="h-5 w-5 text-blue-600"
-              decorative
-              name="home"
-            />
-            <span className="flex flex-col leading-tight">
-              <span className="font-bold leading-none">TeamDevelop</span>
-              <span className="text-muted-foreground text-xs leading-tight">
-                Bravo
+}: AppSidebarProps) => {
+  const { user } = useAuth();
+  const isAdmin = user?.admin ?? false;
+
+  // 管理者のみに表示するメニュー項目をフィルタリング
+  const filteredNavigationGroups = navigationGroups
+    .map((group) => {
+      // 管理グループは管理者のみに表示
+      if (group.id === "management" && !isAdmin) {
+        return null;
+      }
+      return group;
+    })
+    .filter(Boolean) as NavigationGroup[];
+
+  return (
+    <>
+      {isOpen ? (
+        <div
+          aria-hidden="true"
+          className="fixed inset-0 z-30 bg-neutral-950/40 backdrop-blur-sm transition-opacity lg:hidden"
+          data-testid="sidebar-overlay"
+          onClick={() => onClose?.()}
+        />
+      ) : null}
+      <aside
+        className={cn(
+          "app-sidebar fixed inset-y-0 left-0 z-40 w-64 border-r bg-white shadow-sm transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
+          !isOpen && "-translate-x-full lg:translate-x-0",
+          className
+        )}
+        data-testid="app-sidebar"
+      >
+        <div className="flex h-full flex-col">
+          <div className="flex items-center justify-between px-4 py-4">
+            <NavLink
+              className="flex items-center gap-3"
+              onClick={onClose}
+              to="/"
+            >
+              <SpriteIcon
+                className="h-5 w-5 text-blue-600"
+                decorative
+                name="home"
+              />
+              <span className="flex flex-col leading-tight">
+                <span className="font-bold leading-none">TeamDevelop</span>
+                <span className="text-muted-foreground text-xs leading-tight">
+                  Bravo
+                </span>
               </span>
-            </span>
-          </NavLink>
-          <button
-            aria-label="サイドバーを閉じる"
-            className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 lg:hidden"
-            onClick={() => onClose?.()}
-            type="button"
-          >
-            <SpriteIcon className="h-4 w-4" decorative name="x" />
-          </button>
-        </div>
+            </NavLink>
+            <button
+              aria-label="サイドバーを閉じる"
+              className="rounded-md p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 lg:hidden"
+              onClick={() => onClose?.()}
+              type="button"
+            >
+              <SpriteIcon className="h-4 w-4" decorative name="x" />
+            </button>
+          </div>
 
-        <div className="flex-1 space-y-6 overflow-y-auto px-4 pb-6">
-          {navigationGroups.map((group) => (
-            <NavigationGroupComponent
-              group={group}
-              key={group.id}
-              onItemClick={onClose}
-            />
-          ))}
-        </div>
+          <div className="flex-1 space-y-6 overflow-y-auto px-4 pb-6">
+            {filteredNavigationGroups.map((group) => (
+              <NavigationGroupComponent
+                group={group}
+                key={group.id}
+                onItemClick={onClose}
+              />
+            ))}
+          </div>
 
-        <footer className="mt-auto px-4 pb-4 text-muted-foreground text-xs">
-          v1.0.0
-        </footer>
-      </div>
-    </aside>
-  </>
-);
+          <footer className="mt-auto px-4 pb-4 text-muted-foreground text-xs">
+            v1.0.0
+          </footer>
+        </div>
+      </aside>
+    </>
+  );
+};

@@ -2,6 +2,7 @@ import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
 import type { EmployeeSummary } from "@/features/auth/types";
+import { waitForToast } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "admin.user@example.com";
@@ -86,9 +87,7 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
     });
 
     await test.step("成功メッセージとリクエスト内容を確認", async () => {
-      await expect(
-        page.getByText("打刻が完了しました", { exact: false })
-      ).toBeVisible();
+      await waitForToast(page, /打刻が完了/);
 
       const stampRequest = server.getLastStampRequest();
       expect(stampRequest).not.toBeNull();
