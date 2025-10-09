@@ -63,7 +63,7 @@ describe("stampApi", () => {
 
     const result = await fetchStampHistory({ year: "2024", month: "04" });
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/stamp-history", {
+    expect(mockedApi.get).toHaveBeenCalledWith("/stamp-history", {
       params: { year: "2024", month: "04" },
     });
     expect(result.selectedYear).toBe("2024");
@@ -107,10 +107,10 @@ describe("stampApi", () => {
     ]);
 
     expect(mockedApi.put).toHaveBeenCalledTimes(2);
-    expect(mockedApi.put).toHaveBeenNthCalledWith(1, "/api/stamp/1", {
+    expect(mockedApi.put).toHaveBeenNthCalledWith(1, "/stamp/1", {
       data: { inTime: "09:00", outTime: "18:00" },
     });
-    expect(mockedApi.put).toHaveBeenNthCalledWith(2, "/api/stamp/2", {
+    expect(mockedApi.put).toHaveBeenNthCalledWith(2, "/stamp/2", {
       data: { inTime: "10:00" },
     });
   });
@@ -121,8 +121,8 @@ describe("stampApi", () => {
     await deleteStampsBatch([3, 4, 5]);
 
     expect(mockedApi.delete).toHaveBeenCalledTimes(3);
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(1, "/api/stamp/3");
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(2, "/api/stamp/4");
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(3, "/api/stamp/5");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(1, "/stamp/3");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(2, "/stamp/4");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(3, "/stamp/5");
   });
 });

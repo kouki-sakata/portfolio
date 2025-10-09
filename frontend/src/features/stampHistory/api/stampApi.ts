@@ -77,7 +77,7 @@ export const fetchStampHistory = async (
 ): Promise<StampHistoryResponse> => {
   try {
     const response = await api.get<StampHistoryApiResponse>(
-      "/api/stamp-history",
+      "/stamp-history",
       query ? { params: query } : undefined
     );
     return mapResponse(response);
@@ -100,7 +100,7 @@ export const updateStamp = async (
   }
 
   try {
-    await api.put<void>(`/api/stamp/${id}`, { data });
+    await api.put<void>(`/stamp/${id}`, { data });
   } catch (error) {
     return handleApiError(error);
   }
@@ -110,7 +110,7 @@ export const deleteStamp = async (
   payload: DeleteStampRequest
 ): Promise<void> => {
   try {
-    await api.delete<void>(`/api/stamp/${payload.id}`);
+    await api.delete<void>(`/stamp/${payload.id}`);
   } catch (error) {
     return handleApiError(error);
   }

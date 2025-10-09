@@ -59,11 +59,11 @@ export const fetchNewsList = (
 ): Promise<NewsListResponse> => {
   const params = buildListParams(filters);
   const config = params ? { params } : undefined;
-  return api.get<NewsListResponse>("/api/news", config);
+  return api.get<NewsListResponse>("/news", config);
 };
 
 export const createNews = async (payload: CreateNewsInput): Promise<NewsItem> =>
-  api.post<NewsItem>("/api/news", {
+  api.post<NewsItem>("/news", {
     data: payload,
   });
 
@@ -71,18 +71,18 @@ export const updateNews = async (
   id: number,
   payload: UpdateNewsInput
 ): Promise<NewsItem> =>
-  api.put<NewsItem>(`/api/news/${id}`, {
+  api.put<NewsItem>(`/news/${id}`, {
     data: payload,
   });
 
 export const deleteNews = async (id: number): Promise<void> =>
-  api.delete<void>(`/api/news/${id}`);
+  api.delete<void>(`/news/${id}`);
 
 export const setNewsPublicationStatus = async (
   id: number,
   published: boolean
 ): Promise<void> =>
-  api.patch<void>(`/api/news/${id}/status`, {
+  api.patch<void>(`/news/${id}/status`, {
     data: { published },
   });
 
