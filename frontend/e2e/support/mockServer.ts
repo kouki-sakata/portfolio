@@ -236,6 +236,21 @@ export class AppMockServer {
     this.errorSimulations = [];
   }
 
+  /**
+   * 特定のエンドポイントにリクエスト遅延を設定
+   * @param endpoint APIエンドポイント (例: "/auth/login")
+   * @param delayMs 遅延時間（ミリ秒）
+   */
+  setRequestDelay(endpoint: string, delayMs: number) {
+    // 既存のルートをオーバーライドして遅延を追加
+    this.page.route(`**/api${endpoint}`, async (route) => {
+      // 指定された時間だけ遅延
+      await new Promise(resolve => setTimeout(resolve, delayMs));
+      // 元のハンドラーに処理を委譲
+      await this.handleRoute(route);
+    });
+  }
+
   private async handleRoute(route: Route) {
     const request = route.request();
     const url = new URL(request.url());

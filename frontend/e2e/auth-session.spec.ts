@@ -229,7 +229,6 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 
-    // ログイン処理を遅延させて、ボタンの状態変化を確認しやすくする
     await page.goto("/signin");
 
     await test.step("ログインボタンを連続クリック", async () => {
@@ -238,36 +237,30 @@ test.describe("認証・セッション管理の包括的テスト", () => {
         .fill(TEST_CREDENTIALS.admin.email);
       await page.getByLabel("パスワード").fill(TEST_CREDENTIALS.admin.password);
 
-      // ログインAPIにディレイを追加
-      server.addErrorSimulation({
-        endpoint: "/auth/login",
-        method: "POST",
-        status: 200,
-        message: "",
-      });
+      // ログインAPIに2秒の遅延を追加（実際のネットワーク遅延をシミュレート）
+      server.setRequestDelay("/auth/login", 2000);
 
       const loginButton = page.getByRole("button", { name: /サインイン/ });
 
       // クリック前の状態確認
       await expect(loginButton).toBeEnabled();
+      await expect(loginButton).toHaveText("サインイン");
 
       // 最初のクリック（非同期で実行）
       const clickPromise = loginButton.click();
 
-      // クリック後すぐにボタンの状態を確認
-      // ボタンが無効化されるか、テキストが変わることを確認
-      await page.waitForFunction(
-        () => {
-          const button = document.querySelector('button[type="submit"]');
-          return (
-            button?.hasAttribute("disabled") ||
-            button?.textContent?.includes("サインイン中")
-          );
-        },
-        { timeout: 5000 }
-      );
+      // React QueryのuseMutationがisPendingになるのを待つ
+      // Playwrightのロケーターベースの待機を使用（より堅牢）
+      await expect(loginButton).toBeDisabled({ timeout: 3000 });
+      await expect(loginButton).toHaveText("サインイン中…", { timeout: 3000 });
 
-      // クリックが完了するのを待つ
+      // 二重クリックを試みる（無効化されているため効果なし）
+      await loginButton.click({ force: true }).catch(() => {
+        // 無効化されているため失敗することが正しい動作
+        // エラーをキャッチして処理を続ける
+      });
+
+      // 最初のクリックが完了するのを待つ
       await clickPromise;
 
       // ログインが成功してホームページに遷移
