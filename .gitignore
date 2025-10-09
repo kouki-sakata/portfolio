@@ -38,7 +38,7 @@ release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
 .mvn/timing.properties
-# Maven Wrapperのjarは含めても良い（プロジェクト方針による）
+# Maven Wrapperのjarは含めても良い(プロジェクト方針による)
 # .mvn/wrapper/maven-wrapper.jar
 
 # IDE: IntelliJ IDEA
@@ -66,7 +66,7 @@ bin/
 /.nb-gradle/
 
 # IDE: VS Code
-# チームで共有する設定（launch.jsonなど）がなければ無視してOK
+# チームで共有する設定(launch.jsonなど)がなければ無視してOK
 .vscode/
 
 # OS generated files
@@ -85,12 +85,12 @@ Thumbs.db
 *.swo
 *~
 
-# 個人用の設定ファイルなど（こちらを推奨）
+# 個人用の設定ファイルなど(こちらを推奨)
 application-local.properties
 application-dev.properties
 local.properties
 
-# 環境変数設定ファイル（機密情報を含むため）
+# 環境変数設定ファイル(機密情報を含むため)
 .env
 .env.local
 .env.production
@@ -121,3 +121,6 @@ frontend/.playwright/
 
 # Claude Code settings
 .claude/settings.local.json
+
+# Test seed files
+seed.spec.ts

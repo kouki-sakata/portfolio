@@ -9,6 +9,7 @@ envFlags.VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS = "true";
 
 export default defineConfig({
   testDir: "./e2e",
+  testMatch: /.*\.spec\.ts$/,
   timeout: 30_000,
   expect: {
     // CI での遅延に備えて若干長めにする
