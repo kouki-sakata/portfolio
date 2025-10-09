@@ -91,6 +91,10 @@
             // Vitestのvi.spyOnでモック化するためのnamespace importを許可
             "useTopLevelRegex": "off"
             // テストファイルでは正規表現の定数化を不要とする
+          },
+          "suspicious": {
+            "noSkippedTests": "off"
+            // 未実装機能のテストはスキップを許可
           }
         }
       }

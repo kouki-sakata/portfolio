@@ -240,7 +240,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
   // TODO: フォーム送信中のローディング状態表示テストを実装
   // - 現在の実装にはローディングインジケーターがない
   // - isPending状態を利用したボタン無効化/ローディング表示の実装が必要
-  test.skip("フォーム送信中のローディング状態が表示される", async ({ page }) => {
+  test.skip("フォーム送信中のローディング状態が表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,
