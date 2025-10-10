@@ -15,11 +15,11 @@ test.describe("フォームバリデーション実装確認テスト", () => {
 
     // ページ読み込み待機
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { name: /^.*従業員管理.*$/ })).toBeVisible(
-      {
-        timeout: 15_000,
-      }
-    );
+    await expect(
+      page.getByRole("heading", { name: /^.*従業員管理.*$/ })
+    ).toBeVisible({
+      timeout: 15_000,
+    });
 
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();
