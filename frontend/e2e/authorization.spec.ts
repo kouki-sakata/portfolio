@@ -48,7 +48,7 @@ test.describe("権限制御の包括的テスト", () => {
     await test.step("管理者で従業員管理ページにアクセス", async () => {
       await page.goto("/admin/employees");
       await expect(
-        page.getByRole("heading", { name: "従業員管理" })
+        page.getByRole("heading", { name: /^.*従業員管理.*$/ })
       ).toBeVisible({
         timeout: 10_000,
       });
@@ -242,7 +242,7 @@ test.describe("権限制御の包括的テスト", () => {
     await test.step("従業員管理ページに遷移", async () => {
       await page.goto("/admin/employees");
       await expect(
-        page.getByRole("heading", { name: "従業員管理" })
+        page.getByRole("heading", { name: /^.*従業員管理.*$/ })
       ).toBeVisible();
     });
 

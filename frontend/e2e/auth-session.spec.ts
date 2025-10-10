@@ -28,7 +28,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     await test.step("ログインページにリダイレクトされる", async () => {
       await expect(page).toHaveURL(/\/signin/, { timeout: 5000 });
       await expect(
-        page.getByRole("heading", { name: /サインイン/ })
+        page.getByRole("heading", { name: /^.*サインイン.*$/ })
       ).toBeVisible();
     });
 
