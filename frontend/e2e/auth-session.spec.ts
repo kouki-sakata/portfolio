@@ -5,9 +5,9 @@ import { createAppMockServer } from "./support/mockServer";
 
 test.describe("認証・セッション管理の包括的テスト", () => {
   // TODO: ログアウト機能のテストを修正
-  // - ログアウトボタンのセレクタが見つからない可能性
+  // - ログアウトボタンそもそもない設計のためサインアウトボタンにログアウト機能を実装
   // - ログアウト後のリダイレクト処理のタイミング調整が必要
-  test("ログアウト機能が正常に動作する", async ({ page }) => {
+  test("サインアウト機能が正常に動作する", async ({ page }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
 
@@ -17,7 +17,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
       TEST_CREDENTIALS.admin.password
     );
 
-    await test.step("ログアウトボタンをクリック", async () => {
+    await test.step("サインアウトボタンをクリック", async () => {
       // ユーザーメニューをホバーしてドロップダウンを表示
       await page.getByLabel("ユーザーメニュー").hover();
 
@@ -32,7 +32,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
       ).toBeVisible();
     });
 
-    await test.step("ログアウト後、保護されたページにアクセスできない", async () => {
+    await test.step("サインアウト後、保護されたページにアクセスできない", async () => {
       await page.goto("/");
       // 再度ログインページにリダイレクトされる
       await expect(page).toHaveURL(/\/signin/);
