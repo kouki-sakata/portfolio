@@ -245,7 +245,7 @@ export class AppMockServer {
     // 既存のルートをオーバーライドして遅延を追加
     this.page.route(`**/api${endpoint}`, async (route) => {
       // 指定された時間だけ遅延
-      await new Promise(resolve => setTimeout(resolve, delayMs));
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
       // 元のハンドラーに処理を委譲
       await this.handleRoute(route);
     });

@@ -11,11 +11,11 @@ test.describe("バリデーション動作確認", () => {
     });
 
     await page.goto("/admin/employees");
-    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
-      {
-        timeout: 10_000,
-      }
-    );
+    await expect(
+      page.getByRole("heading", { name: /^.*従業員管理.*$/ })
+    ).toBeVisible({
+      timeout: 10_000,
+    });
 
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();

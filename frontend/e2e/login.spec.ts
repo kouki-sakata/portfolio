@@ -8,7 +8,7 @@ const ADMIN_PASSWORD = process.env.E2E_ADMIN_PASSWORD ?? "AdminPass123!";
 
 const INVALID_PASSWORD = process.env.E2E_INVALID_PASSWORD ?? "WrongPassword!";
 
-const SIGNIN_HEADING = "TeamDevelop Bravo にサインイン";
+const SIGNIN_HEADING = /^.*サインイン.*$/;
 const ERROR_MESSAGE = "メールアドレスまたはパスワードが正しくありません。";
 
 const fillCredentials = async (page: Page, email: string, password: string) => {

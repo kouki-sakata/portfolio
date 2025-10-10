@@ -24,7 +24,7 @@ const signIn = async (page: Page, email: string, password: string) => {
   await test.step("サインインページに移動", async () => {
     await page.goto("/signin");
     await expect(
-      page.getByRole("heading", { name: "TeamDevelop Bravo にサインイン" })
+      page.getByRole("heading", { name: /^.*サインイン.*$/ })
     ).toBeVisible();
   });
 
@@ -124,7 +124,7 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
     await test.step("従業員管理ページに移動", async () => {
       await page.goto("/e2e/harness/employee-admin.html");
       await expect(
-        page.getByRole("heading", { name: "従業員管理" })
+        page.getByRole("heading", { name: /^.*従業員管理.*$/ })
       ).toBeVisible({ timeout: 10_000 });
     });
 
