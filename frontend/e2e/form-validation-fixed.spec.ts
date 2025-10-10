@@ -27,7 +27,7 @@ test.describe("フォームバリデーションの修正版テスト", () => {
 
     // ページが完全に読み込まれるまで待つ
     await page.waitForLoadState("networkidle");
-    await expect(page.getByRole("heading", { name: /従業員管理/ })).toBeVisible(
+    await expect(page.getByRole("heading", { name: /^.*従業員管理.*$/ })).toBeVisible(
       {
         timeout: 15_000,
       }

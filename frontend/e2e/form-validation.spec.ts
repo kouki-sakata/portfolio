@@ -12,7 +12,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     });
 
     await page.goto("/admin/employees");
-    await expect(page.getByRole("heading", { name: /従業員管理/ })).toBeVisible(
+    await expect(page.getByRole("heading", { name: /^.*従業員管理.*$/ })).toBeVisible(
       {
         timeout: 10_000,
       }
