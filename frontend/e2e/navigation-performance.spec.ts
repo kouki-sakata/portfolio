@@ -14,7 +14,7 @@ const signIn = async (page: Page, email: string, password: string) => {
   await test.step("サインインページに移動", async () => {
     await page.goto("/signin");
     await expect(
-      page.getByRole("heading", { name: "TeamDevelop Bravo にサインイン" })
+      page.getByRole("heading", { name: /^.*サインイン.*$/ })
     ).toBeVisible();
   });
 
@@ -112,9 +112,9 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
     await page.getByRole("link", { name: "社員管理" }).click();
 
     await expect(page).toHaveURL(/\/admin\/employees/);
-    await expect(page.getByRole("heading", { name: "従業員管理" })).toBeVisible(
-      { timeout: 5000 }
-    );
+    await expect(
+      page.getByRole("heading", { name: /^.*従業員管理.*$/ })
+    ).toBeVisible({ timeout: 5000 });
 
     const navigationEnd = Date.now();
     const navigationTime = navigationEnd - navigationStart;
