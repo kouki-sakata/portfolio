@@ -12,7 +12,9 @@ test.describe("エラーハンドリングの包括的テスト", () => {
   // - mockServerのsetErrorSimulationが正しく動作していない可能性
   // - トースト通知の表示タイミングや条件を再確認する必要がある
   // NOTE: トースト通知はまだUIに実装されていないため、このテストはスキップ
-  test.skip("ネットワークエラー時にトースト通知が表示される", async ({ page }) => {
+  test.skip("ネットワークエラー時にトースト通知が表示される", async ({
+    page,
+  }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });
 

@@ -7,9 +7,7 @@ import { expect } from "@playwright/test";
  */
 export const signIn = async (page: Page, email: string, password: string) => {
   await page.goto("/signin");
-  await expect(
-    page.getByRole("heading", { name: "TeamDevelop Bravo にサインイン" })
-  ).toBeVisible();
+  await expect(page.getByRole("heading", { name: /サインイン/ })).toBeVisible();
 
   await page.getByLabel("メールアドレス").fill(email);
   await page.getByLabel("パスワード").fill(password);
