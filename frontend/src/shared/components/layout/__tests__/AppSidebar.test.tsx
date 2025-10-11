@@ -178,8 +178,8 @@ describe("AppSidebar", () => {
     const closeButton = screen.getAllByLabelText("サイドバーを閉じる")[0];
     expect(closeButton).toBeInTheDocument();
 
-    // オーバーレイのaria-hidden
+    // オーバーレイボタンが適切にラベル付けされていることを確認
     const overlay = screen.getByTestId("sidebar-overlay");
-    expect(overlay).toHaveAttribute("aria-hidden", "true");
+    expect(overlay).toHaveAttribute("aria-label", "サイドバーを閉じる");
   });
 });
