@@ -57,7 +57,9 @@ describe("DataTable", () => {
     );
 
     // デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用
-    expect(screen.getAllByText("データが見つかりません")[0]).toBeInTheDocument();
+    expect(
+      screen.getAllByText("データが見つかりません")[0]
+    ).toBeInTheDocument();
   });
 
   it("グローバルフィルターが機能する", async () => {
