@@ -19,6 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { cn } from "@/shared/utils/cn";
 import { DataTablePagination } from "./DataTablePagination";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import type { DataTableProps, DataTableState } from "./types";
@@ -149,12 +150,12 @@ export function DataTable<TData, TValue = unknown>({
   return (
     <div className="w-full space-y-4">
       {/* ツールバー */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center space-x-2">
           {enableGlobalFilter && (
             <Input
               aria-label="テーブル内容を検索"
-              className="h-8 w-[150px] lg:w-[250px]"
+              className="h-9 w-full sm:w-[200px] lg:w-[250px]"
               onChange={(event) => table.setGlobalFilter(event.target.value)}
               placeholder="検索..."
               value={state.globalFilter ?? ""}
@@ -164,10 +165,10 @@ export function DataTable<TData, TValue = unknown>({
         {enableColumnVisibility && <DataTableViewOptions table={table} />}
       </div>
 
-      {/* テーブル本体 */}
+      {/* テーブル本体 - デスクトップビュー (md以上) */}
       <section
         aria-label="データテーブル"
-        className="relative w-full overflow-auto rounded-md border"
+        className="relative hidden w-full overflow-auto rounded-md border md:block"
         style={fixedHeight ? { height: fixedHeight } : undefined}
       >
         <Table>
@@ -176,7 +177,7 @@ export function DataTable<TData, TValue = unknown>({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead
-                    className="whitespace-nowrap px-2 sm:px-3 md:px-4"
+                    className="whitespace-nowrap px-3 md:px-4"
                     key={header.id}
                     scope="col"
                   >
@@ -215,7 +216,7 @@ export function DataTable<TData, TValue = unknown>({
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell
-                      className="whitespace-nowrap px-2 py-2 text-xs sm:px-3 sm:py-3 sm:text-sm md:px-4 md:py-4"
+                      className="whitespace-nowrap px-3 py-3 text-sm md:px-4 md:py-4"
                       key={cell.id}
                     >
                       {flexRender(
@@ -248,6 +249,100 @@ export function DataTable<TData, TValue = unknown>({
             className="absolute inset-0 flex items-center justify-center bg-background/50"
           >
             <div className="text-muted-foreground text-sm">読み込み中...</div>
+          </div>
+        )}
+      </section>
+
+      {/* モバイルカードビュー (md未満) */}
+      <section
+        aria-label="データリスト"
+        className="space-y-3 md:hidden"
+        style={
+          fixedHeight ? { height: fixedHeight, overflowY: "auto" } : undefined
+        }
+      >
+        {table.getRowModel().rows?.length ? (
+          table.getRowModel().rows.map((row) => {
+            // ヘッダーテキストを取得するヘルパー
+            const getHeaderText = (header: unknown): string => {
+              if (typeof header === "string") {
+                return header;
+              }
+              return "";
+            };
+
+            const CardContent = (
+              <div className="space-y-2">
+                {row.getVisibleCells().map((cell) => {
+                  const header = cell.column.columnDef.header;
+                  const headerText = getHeaderText(header);
+
+                  return (
+                    <div className="flex justify-between gap-4" key={cell.id}>
+                      <div className="font-medium text-gray-700 text-sm">
+                        {headerText || cell.column.id}
+                      </div>
+                      <div className="text-right text-gray-900 text-sm">
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+
+            // クリック可能な場合はbuttonとしてレンダリング
+            if (onRowClick) {
+              return (
+                <button
+                  className={cn(
+                    "w-full rounded-lg border bg-white p-4 text-left shadow-sm transition-shadow",
+                    row.getIsSelected() && "border-blue-500 bg-blue-50",
+                    "hover:shadow-md active:shadow-sm"
+                  )}
+                  data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
+                  onClick={() => onRowClick(row.original)}
+                  type="button"
+                >
+                  {CardContent}
+                </button>
+              );
+            }
+
+            // クリック不可の場合は通常のdivとしてレンダリング
+            return (
+              <div
+                className={cn(
+                  "rounded-lg border bg-white p-4 shadow-sm",
+                  row.getIsSelected() && "border-blue-500 bg-blue-50"
+                )}
+                data-state={row.getIsSelected() && "selected"}
+                key={row.id}
+              >
+                {CardContent}
+              </div>
+            );
+          })
+        ) : (
+          <output
+            aria-live="polite"
+            className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-gray-50 text-center text-gray-500"
+          >
+            {emptyMessage}
+          </output>
+        )}
+
+        {/* モバイルローディングオーバーレイ */}
+        {loading && data.length > 0 && (
+          <div
+            aria-live="polite"
+            className="flex items-center justify-center py-8 text-muted-foreground text-sm"
+          >
+            読み込み中...
           </div>
         )}
       </section>

@@ -9,9 +9,10 @@ const BRAND_IMAGE_SRC = "/img/logo-small80_0.png";
 
 type AppHeaderProps = {
   className?: string;
+  onMenuClick?: () => void;
 };
 
-export const AppHeader = ({ className }: AppHeaderProps) => {
+export const AppHeader = ({ className, onMenuClick }: AppHeaderProps) => {
   const navigate = useNavigate();
   const { user, authenticated, logout } = useAuth();
 
@@ -52,6 +53,16 @@ export const AppHeader = ({ className }: AppHeaderProps) => {
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         <div className="flex items-center gap-3">
+          {/* モバイルメニューボタン */}
+          <button
+            aria-label="メニューを開く"
+            className="rounded-lg p-2 text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 lg:hidden"
+            onClick={onMenuClick}
+            type="button"
+          >
+            <SpriteIcon className="h-6 w-6" decorative name="menu" />
+          </button>
+
           <NavLink
             aria-label="TeamDevelop home"
             className="flex items-center gap-2 font-bold text-gray-900 text-xl transition-colors hover:text-blue-600 lg:ml-0"
