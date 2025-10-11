@@ -141,18 +141,24 @@ export const AppSidebar = ({
 
   return (
     <>
+      {/* モバイルオーバーレイ - lg未満でのみ表示 */}
       {isOpen ? (
-        <div
-          aria-hidden="true"
+        <button
+          aria-label="サイドバーを閉じる"
           className="fixed inset-0 z-30 bg-neutral-950/40 backdrop-blur-sm transition-opacity lg:hidden"
           data-testid="sidebar-overlay"
           onClick={() => onClose?.()}
+          type="button"
         />
       ) : null}
       <aside
+        aria-label="メインナビゲーション"
         className={cn(
-          "app-sidebar fixed inset-y-0 left-0 z-40 w-64 border-r bg-white shadow-sm transition-transform duration-200 ease-in-out lg:static lg:translate-x-0",
-          !isOpen && "-translate-x-full lg:translate-x-0",
+          "app-sidebar fixed inset-y-0 left-0 z-40 w-64 border-r bg-white shadow-sm transition-transform duration-200 ease-in-out",
+          // lg未満: 固定位置、開閉でtranslate制御
+          !isOpen && "-translate-x-full",
+          // lg以上: 常に表示、translateなし
+          "lg:static lg:translate-x-0",
           className
         )}
         data-testid="app-sidebar"

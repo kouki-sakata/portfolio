@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -10,6 +11,7 @@ import { PageLoader } from "@/shared/components/layout/PageLoader";
 export const AppLayout = () => {
   const location = useLocation();
   const { authenticated, loading } = useAuth();
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   if (loading) {
     return (
@@ -34,12 +36,15 @@ export const AppLayout = () => {
   return (
     <AppShell>
       <NavigationProgress />
-      {/* デスクトップ用サイドバー */}
-      <AppSidebar className="hidden lg:block" />
+      {/* モバイル・デスクトップ両対応サイドバー */}
+      <AppSidebar
+        isOpen={isMobileSidebarOpen}
+        onClose={() => setIsMobileSidebarOpen(false)}
+      />
 
       {/* メインコンテンツエリア */}
       <div className="flex min-h-screen flex-col lg:min-h-0">
-        <AppHeader />
+        <AppHeader onMenuClick={() => setIsMobileSidebarOpen(true)} />
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
           <Outlet />
         </main>

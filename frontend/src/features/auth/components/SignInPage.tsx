@@ -12,6 +12,7 @@ import {
 } from "@/features/auth/schemas/loginSchema";
 import type { HttpClientError } from "@/shared/api/httpClient";
 import { EnhancedFormField } from "@/shared/components/enhanced-form-field";
+import { logger } from "@/shared/utils/logger";
 
 export const SignInPage = () => {
   const navigate = useNavigate();
@@ -37,10 +38,7 @@ export const SignInPage = () => {
       // CI/E2E 環境の差異（401/403/その他）にも頑健
       setError("メールアドレスまたはパスワードが正しくありません。");
       // 開発者向けにデバッグ用途でコンソールへは詳細を出す
-      if (!import.meta.env.PROD) {
-        // biome-ignore lint/suspicious/noConsole: emit diagnostic info in non-production environments
-        console.debug("Login failed:", err as HttpClientError);
-      }
+      logger.debug("Login failed:", err as HttpClientError);
     }
   };
 

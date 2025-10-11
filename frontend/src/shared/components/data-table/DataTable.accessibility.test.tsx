@@ -76,8 +76,8 @@ describe("DataTable Accessibility", () => {
     await user.type(searchInput, "田中");
     await user.keyboard("{Enter}");
 
-    // フィルタリング結果が表示されることを確認
-    expect(screen.getByText("田中太郎")).toBeInTheDocument();
+    // フィルタリング結果が表示されることを確認（デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用）
+    expect(screen.getAllByText("田中太郎")[0]).toBeInTheDocument();
     expect(screen.queryByText("佐藤花子")).not.toBeInTheDocument();
   });
 
@@ -110,8 +110,9 @@ describe("DataTable Accessibility", () => {
     render(<DataTable columns={columns} data={mockData} />);
 
     // テキストが表示されることを確認（コントラストは CSS で保証）
-    expect(screen.getByText("田中太郎")).toBeVisible();
-    expect(screen.getByText("ID")).toBeVisible();
+    // デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用
+    expect(screen.getAllByText("田中太郎")[0]).toBeVisible();
+    expect(screen.getAllByText("ID")[0]).toBeVisible();
   });
 
   it("should announce changes to screen readers", async () => {
@@ -126,7 +127,8 @@ describe("DataTable Accessibility", () => {
 
     // フィルタリング結果が通知されることを確認
     // （実際の実装では aria-live="polite" を使用）
-    expect(screen.getByText("田中太郎")).toBeInTheDocument();
+    // デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用
+    expect(screen.getAllByText("田中太郎")[0]).toBeInTheDocument();
   });
 
   it("should have focus indicators", async () => {
@@ -177,12 +179,12 @@ describe("DataTable Accessibility", () => {
       />
     );
 
-    // エラーメッセージが適切に表示されることを確認
-    const emptyMessage = screen.getByText("データが見つかりません");
+    // エラーメッセージが適切に表示されることを確認（デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用）
+    const emptyMessage = screen.getAllByText("データが見つかりません")[0];
     expect(emptyMessage).toBeInTheDocument();
 
     // role="status" と aria-live="polite" が設定されていることを確認
-    const messageContainer = emptyMessage.closest("td");
+    const messageContainer = emptyMessage?.closest("td");
     expect(messageContainer).toHaveAttribute("role", "status");
     expect(messageContainer).toHaveAttribute("aria-live", "polite");
   });

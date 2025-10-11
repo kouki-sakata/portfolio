@@ -24,8 +24,9 @@ export function DataTablePagination<TData>({
   const pageSize = table.getState().pagination.pageSize;
 
   return (
-    <div className="flex items-center justify-between px-2">
-      <div className="flex-1 text-muted-foreground text-sm">
+    <div className="flex flex-col gap-4 px-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* 選択状態表示 */}
+      <div className="flex-1 text-center text-muted-foreground text-sm sm:text-left">
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
           <span>
             {table.getFilteredSelectedRowModel().rows.length} /{" "}
@@ -33,16 +34,20 @@ export function DataTablePagination<TData>({
           </span>
         )}
       </div>
-      <div className="flex items-center space-x-6 lg:space-x-8">
+
+      {/* ページネーションコントロール */}
+      <div className="flex flex-col items-center gap-4 sm:flex-row sm:space-x-6 lg:space-x-8">
+        {/* 表示件数選択 */}
         <div className="flex items-center space-x-2">
-          <p className="font-medium text-sm">表示件数</p>
+          <p className="hidden font-medium text-sm sm:block">表示件数</p>
+          <p className="font-medium text-sm sm:hidden">件数</p>
           <Select
             onValueChange={(value) => {
               table.setPageSize(Number(value));
             }}
             value={`${pageSize}`}
           >
-            <SelectTrigger className="h-8 w-[70px]">
+            <SelectTrigger className="h-9 w-[70px]">
               <SelectValue placeholder={pageSize} />
             </SelectTrigger>
             <SelectContent side="top">
@@ -54,12 +59,17 @@ export function DataTablePagination<TData>({
             </SelectContent>
           </Select>
         </div>
-        <div className="flex w-[100px] items-center justify-center font-medium text-sm">
+
+        {/* ページ情報 */}
+        <div className="flex min-w-[100px] items-center justify-center font-medium text-sm">
           {currentPage} / {pageCount} ページ
         </div>
+
+        {/* ページ送りボタン */}
         <div className="flex items-center space-x-2">
           <Button
-            className="hidden size-8 p-0 lg:flex"
+            aria-label="最初のページへ"
+            className="hidden size-9 p-0 lg:flex"
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.setPageIndex(0)}
             variant="outline"
@@ -68,7 +78,8 @@ export function DataTablePagination<TData>({
             <SpriteIcon className="size-4" decorative name="chevrons-left" />
           </Button>
           <Button
-            className="size-8 p-0"
+            aria-label="前のページへ"
+            className="size-9 p-0"
             disabled={!table.getCanPreviousPage()}
             onClick={() => table.previousPage()}
             variant="outline"
@@ -77,7 +88,8 @@ export function DataTablePagination<TData>({
             <SpriteIcon className="size-4" decorative name="chevron-left" />
           </Button>
           <Button
-            className="size-8 p-0"
+            aria-label="次のページへ"
+            className="size-9 p-0"
             disabled={!table.getCanNextPage()}
             onClick={() => table.nextPage()}
             variant="outline"
@@ -86,7 +98,8 @@ export function DataTablePagination<TData>({
             <SpriteIcon className="size-4" decorative name="chevron-right" />
           </Button>
           <Button
-            className="hidden size-8 p-0 lg:flex"
+            aria-label="最後のページへ"
+            className="hidden size-9 p-0 lg:flex"
             disabled={!table.getCanNextPage()}
             onClick={() => table.setPageIndex(table.getPageCount() - 1)}
             variant="outline"
