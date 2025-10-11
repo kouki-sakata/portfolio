@@ -136,7 +136,9 @@ describe("AppSidebar", () => {
     const closeButtons = screen.getAllByLabelText("サイドバーを閉じる");
     expect(closeButtons.length).toBeGreaterThan(0);
     const closeButton = closeButtons[0];
-    if (!closeButton) return;
+    if (!closeButton) {
+      return;
+    }
 
     fireEvent.click(closeButton);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
