@@ -184,7 +184,7 @@ describe("DataTable Accessibility", () => {
     expect(emptyMessage).toBeInTheDocument();
 
     // role="status" と aria-live="polite" が設定されていることを確認
-    const messageContainer = emptyMessage.closest("td");
+    const messageContainer = emptyMessage?.closest("td");
     expect(messageContainer).toHaveAttribute("role", "status");
     expect(messageContainer).toHaveAttribute("aria-live", "polite");
   });

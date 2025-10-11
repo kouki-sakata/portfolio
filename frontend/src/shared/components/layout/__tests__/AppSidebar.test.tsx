@@ -134,6 +134,7 @@ describe("AppSidebar", () => {
 
     // 閉じるボタンをクリック（オーバーレイと閉じるボタンの両方に同じaria-labelがあるため、getAllByLabelText()を使用）
     const closeButton = screen.getAllByLabelText("サイドバーを閉じる")[0];
+    expect(closeButton).toBeDefined();
     fireEvent.click(closeButton);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
