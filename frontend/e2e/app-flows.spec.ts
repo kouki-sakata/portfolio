@@ -166,7 +166,26 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
     });
 
     await test.step("従業員を一括削除", async () => {
-      await page.getByLabel("行を選択").last().check({ force: true });
+      // デスクトップビューを確保するため、ビューポートサイズを明示的に設定
+      await page.setViewportSize({ width: 1280, height: 800 });
+
+      // 少し待機してレイアウトが安定するのを待つ
+      await page.waitForTimeout(500);
+
+      // デスクトップビューのテーブルセクション内のチェックボックスを直接取得
+      const desktopTableSection = page.locator(
+        'section[aria-label="データテーブル"]'
+      );
+      await desktopTableSection.waitFor({ state: 'visible', timeout: 5000 });
+
+      // テーブルセクション内の最後の「行を選択」チェックボックスを取得
+      const lastCheckbox = desktopTableSection
+        .getByLabel("行を選択")
+        .last();
+
+      // スクロールして表示されるようにする
+      await lastCheckbox.scrollIntoViewIfNeeded();
+      await lastCheckbox.check({ force: false });
 
       const deleteButton = page.getByRole("button", {
         name: /選択した\d+名を削除/,
