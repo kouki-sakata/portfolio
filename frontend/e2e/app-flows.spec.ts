@@ -176,12 +176,10 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
       const desktopTableSection = page.locator(
         'section[aria-label="データテーブル"]'
       );
-      await desktopTableSection.waitFor({ state: 'visible', timeout: 5000 });
+      await desktopTableSection.waitFor({ state: "visible", timeout: 5000 });
 
       // テーブルセクション内の最後の「行を選択」チェックボックスを取得
-      const lastCheckbox = desktopTableSection
-        .getByLabel("行を選択")
-        .last();
+      const lastCheckbox = desktopTableSection.getByLabel("行を選択").last();
 
       // スクロールして表示されるようにする
       await lastCheckbox.scrollIntoViewIfNeeded();
