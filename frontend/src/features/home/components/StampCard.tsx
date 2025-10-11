@@ -40,13 +40,7 @@ export const StampCard = memo(
     const [nightWork, setNightWork] = useState(false);
 
     const handleStamp = async (type: "1" | "2") => {
-      try {
-        await onStamp(type, nightWork);
-      } catch (error) {
-        // エラーは親コンポーネントでハンドリングされる
-        // ここではエラーを再スローして呼び出し元に伝播
-        throw error;
-      }
+      await onStamp(type, nightWork);
     };
 
     if (isLoading && showSkeleton) {

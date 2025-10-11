@@ -24,6 +24,18 @@ import { DataTablePagination } from "./DataTablePagination";
 import { DataTableViewOptions } from "./DataTableViewOptions";
 import type { DataTableProps, DataTableState } from "./types";
 
+/**
+ * ヘッダーテキストを安全に取得するヘルパー関数
+ * @param header - カラム定義のheaderプロパティ（string | function | ReactNode）
+ * @returns ヘッダーのテキスト表現
+ */
+function extractHeaderText(header: unknown): string {
+  if (typeof header === "string") {
+    return header;
+  }
+  return "";
+}
+
 export function DataTable<TData, TValue = unknown>({
   columns,
   data,
@@ -263,36 +275,11 @@ export function DataTable<TData, TValue = unknown>({
       >
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => {
-            /**
-             * ヘッダーテキストを安全に取得するヘルパー関数
-             * @param header - カラム定義のheaderプロパティ（string | function | ReactNode）
-             * @returns ヘッダーのテキスト表現
-             */
-            const getHeaderText = (header: unknown): string => {
-              // 文字列の場合はそのまま返す
-              if (typeof header === "string") {
-                return header;
-              }
-              // 関数の場合は実行結果を取得
-              if (typeof header === "function") {
-                try {
-                  const result = header({ table, column: {} } as never);
-                  if (typeof result === "string") {
-                    return result;
-                  }
-                } catch {
-                  // 関数実行エラーは無視して空文字を返す
-                }
-              }
-              // その他（ReactNodeなど）の場合は空文字
-              return "";
-            };
-
             const CardContent = (
               <div className="space-y-2">
                 {row.getVisibleCells().map((cell) => {
                   const header = cell.column.columnDef.header;
-                  const headerText = getHeaderText(header);
+                  const headerText = extractHeaderText(header);
 
                   return (
                     <div className="flex justify-between gap-4" key={cell.id}>
@@ -345,13 +332,12 @@ export function DataTable<TData, TValue = unknown>({
             );
           })
         ) : (
-          <div
+          <output
             aria-live="polite"
             className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-gray-50 text-center text-gray-500"
-            role="status"
           >
             {emptyMessage}
-          </div>
+          </output>
         )}
 
         {/* モバイルローディングオーバーレイ */}
