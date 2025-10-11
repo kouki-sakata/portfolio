@@ -132,8 +132,8 @@ describe("AppSidebar", () => {
       </AppSidebarWrapper>
     );
 
-    // 閉じるボタンをクリック
-    const closeButton = screen.getByLabelText("サイドバーを閉じる");
+    // 閉じるボタンをクリック（オーバーレイと閉じるボタンの両方に同じaria-labelがあるため、getAllByLabelText()を使用）
+    const closeButton = screen.getAllByLabelText("サイドバーを閉じる")[0];
     fireEvent.click(closeButton);
     expect(onCloseMock).toHaveBeenCalledTimes(1);
   });
@@ -174,8 +174,8 @@ describe("AppSidebar", () => {
       </AppSidebarWrapper>
     );
 
-    // 閉じるボタンのaria-label
-    const closeButton = screen.getByLabelText("サイドバーを閉じる");
+    // 閉じるボタンのaria-label（オーバーレイと閉じるボタンの両方に同じaria-labelがあるため、getAllByLabelText()を使用）
+    const closeButton = screen.getAllByLabelText("サイドバーを閉じる")[0];
     expect(closeButton).toBeInTheDocument();
 
     // オーバーレイのaria-hidden

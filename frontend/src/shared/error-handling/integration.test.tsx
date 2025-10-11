@@ -20,13 +20,19 @@ import { ErrorBoundary } from "./ErrorBoundary";
 import { ErrorFallback } from "./ErrorFallback";
 import { GlobalErrorHandler } from "./index";
 
-// Mock console.error to suppress React ErrorBoundary warnings in tests
+// Mock console methods to suppress error logs during tests
 const originalError = console.error;
+const originalWarn = console.warn;
+const originalLog = console.log;
 beforeEach(() => {
   console.error = vi.fn();
+  console.warn = vi.fn();
+  console.log = vi.fn();
 });
 afterEach(() => {
   console.error = originalError;
+  console.warn = originalWarn;
+  console.log = originalLog;
 });
 
 describe("Error Handling System Integration", () => {

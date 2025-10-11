@@ -37,7 +37,7 @@ export const SignInPage = () => {
       // CI/E2E 環境の差異（401/403/その他）にも頑健
       setError("メールアドレスまたはパスワードが正しくありません。");
       // 開発者向けにデバッグ用途でコンソールへは詳細を出す
-      if (!import.meta.env.PROD) {
+      if (!import.meta.env.PROD && import.meta.env.MODE !== "test") {
         // biome-ignore lint/suspicious/noConsole: emit diagnostic info in non-production environments
         console.debug("Login failed:", err as HttpClientError);
       }

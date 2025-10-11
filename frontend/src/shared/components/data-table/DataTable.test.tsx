@@ -41,10 +41,10 @@ describe("DataTable", () => {
   it("データを正しく表示する", () => {
     render(<DataTable columns={columns} data={mockData} />);
 
-    // データが表示されることを確認
-    expect(screen.getByText("田中太郎")).toBeInTheDocument();
-    expect(screen.getByText("佐藤花子")).toBeInTheDocument();
-    expect(screen.getByText("鈴木一郎")).toBeInTheDocument();
+    // データが表示されることを確認（デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用）
+    expect(screen.getAllByText("田中太郎")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("佐藤花子")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("鈴木一郎")[0]).toBeInTheDocument();
   });
 
   it("空データ時にメッセージを表示する", () => {
@@ -56,7 +56,8 @@ describe("DataTable", () => {
       />
     );
 
-    expect(screen.getByText("データが見つかりません")).toBeInTheDocument();
+    // デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用
+    expect(screen.getAllByText("データが見つかりません")[0]).toBeInTheDocument();
   });
 
   it("グローバルフィルターが機能する", async () => {
@@ -67,8 +68,8 @@ describe("DataTable", () => {
     const searchInput = screen.getByPlaceholderText("検索...");
     await user.type(searchInput, "田中");
 
-    // フィルタリング結果を確認
-    expect(screen.getByText("田中太郎")).toBeInTheDocument();
+    // フィルタリング結果を確認（デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用）
+    expect(screen.getAllByText("田中太郎")[0]).toBeInTheDocument();
     expect(screen.queryByText("佐藤花子")).not.toBeInTheDocument();
     expect(screen.queryByText("鈴木一郎")).not.toBeInTheDocument();
   });
@@ -93,13 +94,13 @@ describe("DataTable", () => {
 
     render(<DataTable columns={columns} data={largeData} />);
 
-    // デフォルトで最初の10件が表示される
-    expect(screen.getByText("User 1")).toBeInTheDocument();
-    expect(screen.getByText("User 10")).toBeInTheDocument();
+    // デフォルトで最初の10件が表示される（デスクトップとモバイルビューの両方に表示されるため、getAllByText()を使用）
+    expect(screen.getAllByText("User 1")[0]).toBeInTheDocument();
+    expect(screen.getAllByText("User 10")[0]).toBeInTheDocument();
     expect(screen.queryByText("User 11")).not.toBeInTheDocument();
 
     // ページネーション情報が表示される
-    expect(screen.getByText(/1 \/ \d+ ページ/)).toBeInTheDocument();
+    expect(screen.getAllByText(/1 \/ \d+ ページ/)[0]).toBeInTheDocument();
   });
 
   it("行選択が機能する", async () => {
