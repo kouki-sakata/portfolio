@@ -169,8 +169,8 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
       // デスクトップビューを確保するため、ビューポートサイズを明示的に設定
       await page.setViewportSize({ width: 1280, height: 800 });
 
-      // 少し待機してレイアウトが安定するのを待つ
-      await page.waitForTimeout(500);
+      // レイアウトの安定を待つ（ネットワークアイドル状態まで待機）
+      await page.waitForLoadState("networkidle");
 
       // デスクトップビューのテーブルセクション内のチェックボックスを直接取得
       const desktopTableSection = page.locator(

@@ -83,11 +83,11 @@ export const useStamp = (
   });
 
   const handleStamp = useCallback(
-    (type: "1" | "2", nightWork: boolean) => {
+    async (type: "1" | "2", nightWork: boolean) => {
       setMessage(null);
       const timestamp = new Date().toISOString().slice(0, 19);
 
-      stampMutation.mutate({
+      await stampMutation.mutateAsync({
         stampType: type,
         stampTime: timestamp,
         nightWorkFlag: nightWork ? "1" : "0",

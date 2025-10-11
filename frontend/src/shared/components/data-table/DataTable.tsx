@@ -263,11 +263,28 @@ export function DataTable<TData, TValue = unknown>({
       >
         {table.getRowModel().rows?.length ? (
           table.getRowModel().rows.map((row) => {
-            // ヘッダーテキストを取得するヘルパー
+            /**
+             * ヘッダーテキストを安全に取得するヘルパー関数
+             * @param header - カラム定義のheaderプロパティ（string | function | ReactNode）
+             * @returns ヘッダーのテキスト表現
+             */
             const getHeaderText = (header: unknown): string => {
+              // 文字列の場合はそのまま返す
               if (typeof header === "string") {
                 return header;
               }
+              // 関数の場合は実行結果を取得
+              if (typeof header === "function") {
+                try {
+                  const result = header({ table, column: {} } as never);
+                  if (typeof result === "string") {
+                    return result;
+                  }
+                } catch {
+                  // 関数実行エラーは無視して空文字を返す
+                }
+              }
+              // その他（ReactNodeなど）の場合は空文字
               return "";
             };
 
@@ -328,12 +345,13 @@ export function DataTable<TData, TValue = unknown>({
             );
           })
         ) : (
-          <output
+          <div
             aria-live="polite"
             className="flex h-40 items-center justify-center rounded-lg border border-dashed bg-gray-50 text-center text-gray-500"
+            role="status"
           >
             {emptyMessage}
-          </output>
+          </div>
         )}
 
         {/* モバイルローディングオーバーレイ */}

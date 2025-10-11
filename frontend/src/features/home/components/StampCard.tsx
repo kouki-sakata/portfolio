@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
  * Interface Segregation: 必要最小限のプロパティ
  */
 export type StampCardProps = {
-  onStamp: (type: "1" | "2", nightWork: boolean) => void;
+  onStamp: (type: "1" | "2", nightWork: boolean) => Promise<void>;
   isLoading?: boolean;
   message?: string | null;
   className?: string;
@@ -39,8 +39,14 @@ export const StampCard = memo(
   }: StampCardProps) => {
     const [nightWork, setNightWork] = useState(false);
 
-    const handleStamp = (type: "1" | "2") => {
-      onStamp(type, nightWork);
+    const handleStamp = async (type: "1" | "2") => {
+      try {
+        await onStamp(type, nightWork);
+      } catch (error) {
+        // エラーは親コンポーネントでハンドリングされる
+        // ここではエラーを再スローして呼び出し元に伝播
+        throw error;
+      }
     };
 
     if (isLoading && showSkeleton) {
