@@ -17,7 +17,6 @@ import {
   homeRouteLoader,
   stampHistoryRouteLoader,
 } from "@/app/providers/routeLoaders";
-import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionTimeoutNotification } from "@/features/auth/components/SessionTimeoutNotification";
 import { AuthProvider } from "@/features/auth/context/AuthProvider";
@@ -172,16 +171,14 @@ const router = createBrowserRouter([
 export const AppProviders = () => (
   <StrictMode>
     <IconSpriteSheet />
-    <ThemeProvider defaultTheme="system" disablePersistence>
-      <QueryClientProvider client={queryClient}>
-        <Suspense fallback={<PageLoader label="画面を読み込み中" />}>
-          <RouterProvider router={router} />
-        </Suspense>
-        {import.meta.env.DEV &&
-        import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
-          <ReactQueryDevtools initialIsOpen={false} />
-        ) : null}
-      </QueryClientProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <Suspense fallback={<PageLoader label="画面を読み込み中" />}>
+        <RouterProvider router={router} />
+      </Suspense>
+      {import.meta.env.DEV &&
+      import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
+        <ReactQueryDevtools initialIsOpen={false} />
+      ) : null}
+    </QueryClientProvider>
   </StrictMode>
 );

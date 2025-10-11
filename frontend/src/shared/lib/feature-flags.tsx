@@ -8,8 +8,6 @@ export type FeatureFlags = {
   // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   NEW_UI_DESIGN: boolean;
   // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
-  DARK_MODE: boolean;
-  // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   ANALYTICS: boolean;
   // biome-ignore lint/style/useNamingConvention: Feature flags use UPPER_CASE by convention
   BETA_FEATURES: boolean;
@@ -19,8 +17,6 @@ export type FeatureFlags = {
 const DEFAULT_FEATURE_FLAGS: FeatureFlags = {
   // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   NEW_UI_DESIGN: false,
-  // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
-  DARK_MODE: true,
   // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
   ANALYTICS: true,
   // biome-ignore lint/style/useNamingConvention: Feature flag naming convention
