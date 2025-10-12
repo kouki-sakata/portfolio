@@ -54,9 +54,7 @@ export const SessionTimeoutWarning = ({
       aria-live={isUrgent ? "assertive" : "polite"}
       className={cn(
         "fixed right-4 bottom-4 z-50 max-w-md shadow-lg",
-        isUrgent
-          ? "border-red-500 bg-red-50 dark:bg-red-950"
-          : "border-yellow-500 bg-yellow-50 dark:bg-yellow-950"
+        isUrgent ? "border-red-500 bg-red-50" : "border-yellow-500 bg-yellow-50"
       )}
       role="alert"
     >
@@ -64,9 +62,7 @@ export const SessionTimeoutWarning = ({
         <SpriteIcon
           className={cn(
             "h-5 w-5 flex-shrink-0",
-            isUrgent
-              ? "text-red-600 dark:text-red-400"
-              : "text-yellow-600 dark:text-yellow-400"
+            isUrgent ? "text-red-600" : "text-yellow-600"
           )}
           decorative
           name="alert-triangle"

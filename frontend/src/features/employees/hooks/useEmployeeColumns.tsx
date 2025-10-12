@@ -58,13 +58,13 @@ export function useEmployeeColumns({
           return (
             <div className="flex space-x-2">
               <span className="max-w-[200px] truncate font-medium">
-                {employee.lastName} {employee.firstName}
+                {employee.firstName} {employee.lastName}
               </span>
             </div>
           );
         },
         filterFn: (row, _id, value) => {
-          const fullName = `${row.original.lastName} ${row.original.firstName}`;
+          const fullName = `${row.original.firstName} ${row.original.lastName}`;
           return fullName.toLowerCase().includes(value.toLowerCase());
         },
       },
@@ -96,8 +96,8 @@ export function useEmployeeColumns({
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-semibold text-xs ${
                   isAdmin
-                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                    : "bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200"
+                    ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-800"
                 }`}
               >
                 {isAdmin ? "管理者" : "一般"}

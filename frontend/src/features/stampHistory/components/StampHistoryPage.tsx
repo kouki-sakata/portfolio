@@ -183,16 +183,8 @@ export const StampHistoryPage = () => {
         <MonthlyStatsCard entries={data.entries} summary={data.summary} />
       </SuspenseWrapper>
 
-      <Tabs
-        onValueChange={(value) => setViewMode(value as "list" | "calendar")}
-        value={viewMode}
-      >
-        <TabsList>
-          <TabsTrigger value="list">リスト表示</TabsTrigger>
-          <TabsTrigger value="calendar">カレンダー表示</TabsTrigger>
-        </TabsList>
-
-        <TabsContent className="mt-6" value="list">
+      
+        <div className="mt-6">
           <div className="rounded-md border">
             <div className="overflow-x-auto">
               <table className="w-full">
@@ -280,18 +272,7 @@ export const StampHistoryPage = () => {
               </table>
             </div>
           </div>
-        </TabsContent>
-
-        <TabsContent className="mt-6" value="calendar">
-          <SuspenseWrapper fallbackType="skeleton-card">
-            <CalendarView
-              entries={data.entries}
-              selectedMonth={selectedMonth}
-              selectedYear={selectedYear}
-            />
-          </SuspenseWrapper>
-        </TabsContent>
-      </Tabs>
+        </div>
 
       <EditStampDialog
         entry={selectedEntry}
