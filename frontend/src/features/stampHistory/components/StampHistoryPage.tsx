@@ -174,7 +174,6 @@ export const StampHistoryPage = () => {
         <MonthlyStatsCard entries={data.entries} summary={data.summary} />
       </SuspenseWrapper>
 
-      
         <div className="mt-6">
           <div className="rounded-md border">
             <div className="overflow-x-auto">
