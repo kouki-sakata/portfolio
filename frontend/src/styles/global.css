@@ -1,5 +1,44 @@
 @import "tailwindcss";
 
+@theme {
+  /* Background colors */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+
+  /* Card colors */
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+
+  /* Popover colors */
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+
+  /* Muted colors */
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+
+  /* Accent colors */
+  --color-accent: #f1f5f9;
+  --color-accent-foreground: #0f172a;
+
+  /* Border and input colors */
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #3b82f6;
+
+  /* Primary colors */
+  --color-primary: #1d4ed8;
+  --color-primary-foreground: #ffffff;
+
+  /* Secondary colors */
+  --color-secondary: #f1f5f9;
+  --color-secondary-foreground: #0f172a;
+
+  /* Destructive colors */
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
+}
+
 :root {
   color-scheme: light;
   font-family:
