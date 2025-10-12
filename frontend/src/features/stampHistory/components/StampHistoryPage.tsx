@@ -12,7 +12,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
@@ -31,13 +30,6 @@ import {
 } from "@/shared/components/loading/skeletons/SkeletonVariants";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
-// Lazy load heavy components for code splitting
-const CalendarView = lazy(() =>
-  import("@/features/stampHistory/components/CalendarView").then((module) => ({
-    default: module.CalendarView,
-  }))
-);
-
 const MonthlyStatsCard = lazy(() =>
   import("@/features/stampHistory/components/MonthlyStatsCard").then(
     (module) => ({
@@ -53,7 +45,6 @@ export const StampHistoryPage = () => {
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "calendar">("list");
 
   const activeFilters = useMemo(() => {
     const normalized: { year?: string; month?: string } = {};
