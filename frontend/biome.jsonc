@@ -180,6 +180,17 @@
       "assist": {
         "enabled": false
       }
+    },
+    {
+      "includes": ["**/*.css"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noUnknownAtRules": "off"
+            // Tailwind CSS v4の@themeディレクティブを許可
+          }
+        }
+      }
     }
   ]
 }

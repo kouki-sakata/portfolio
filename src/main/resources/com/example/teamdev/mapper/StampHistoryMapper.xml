@@ -19,13 +19,13 @@
                 WHEN 4 THEN '木'
                 WHEN 5 THEN '金'
                 WHEN 6 THEN '土'
-            END AS day_of_week,
-            #{employeeId} AS employee_id,
-            concat_ws(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employee_name,
-            concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS update_employee_name,
-            to_char(sh.in_time, 'HH24:MI') AS in_time,
-            to_char(sh.out_time, 'HH24:MI') AS out_time,
-            to_char(sh.update_date, 'YYYY/MM/DD HH24:MI') AS update_date
+            END AS "dayOfWeek",
+            #{employeeId} AS "employeeId",
+            concat_ws(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS "employeeName",
+            concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS "updateEmployeeName",
+            to_char(sh.in_time, 'HH24:MI') AS "inTime",
+            to_char(sh.out_time, 'HH24:MI') AS "outTime",
+            to_char(sh.update_date, 'YYYY/MM/DD HH24:MI') AS "updateDate"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
                 SELECT CAST(#{date} AS DATE) AS date

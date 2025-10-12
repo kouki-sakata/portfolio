@@ -29,31 +29,31 @@ public class StampHistoryDisplay {
 	/**
 	 * 曜日
 	 */
-	private String day_of_week;
+	private String dayOfWeek;
 	/**
 	 * 従業員ID
 	 */
-	private Integer employee_id;
+	private Integer employeeId;
 	/**
 	 * 従業員氏名
 	 */
-	private String employee_name;
+	private String employeeName;
 	/**
 	 * 更新者氏名
 	 */
-	private String update_employee_name;
+	private String updateEmployeeName;
 	/**
 	 * 出勤時刻
 	 */
-	private String in_time;
+	private String inTime;
 	/**
 	 * 退勤時刻
 	 */
-	private String out_time;
+	private String outTime;
 	/**
 	 * 更新日時
 	 */
-	private String update_date;
+	private String updateDate;
 
 	/**
 	 * CSV出力処理用
@@ -68,13 +68,13 @@ public class StampHistoryDisplay {
 		csvBuilder.append("\"").append(year != null ? year : "").append("\",");
 		csvBuilder.append("\"").append(month != null ? month : "").append("\",");
 		csvBuilder.append("\"").append(day != null ? day : "").append("\",");
-		csvBuilder.append("\"").append(day_of_week != null ? day_of_week : "").append("\",");
-		csvBuilder.append(employee_id != null ? employee_id : "").append(",");
-		csvBuilder.append("\"").append(employee_name != null ? employee_name : "").append("\",");
-		csvBuilder.append("\"").append(update_employee_name != null ? update_employee_name : "").append("\",");
-		csvBuilder.append("\"").append(in_time != null ? in_time : "").append("\",");
-		csvBuilder.append("\"").append(out_time != null ? out_time : "").append("\",");
-		csvBuilder.append("\"").append(update_date != null ? update_date : "").append("\",");
+		csvBuilder.append("\"").append(dayOfWeek != null ? dayOfWeek : "").append("\",");
+		csvBuilder.append(employeeId != null ? employeeId : "").append(",");
+		csvBuilder.append("\"").append(employeeName != null ? employeeName : "").append("\",");
+		csvBuilder.append("\"").append(updateEmployeeName != null ? updateEmployeeName : "").append("\",");
+		csvBuilder.append("\"").append(inTime != null ? inTime : "").append("\",");
+		csvBuilder.append("\"").append(outTime != null ? outTime : "").append("\",");
+		csvBuilder.append("\"").append(updateDate != null ? updateDate : "").append("\",");
 
 		// 最後のカンマを削除して改行を追加
 		csvBuilder.deleteCharAt(csvBuilder.length() - 1).append("\n");

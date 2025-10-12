@@ -61,18 +61,19 @@ jobs:
     runs-on: ubuntu-latest
 
     services:
-      mysql:
-        image: mysql:8.0
+      postgres:
+        image: postgres:16
         env:
-          MYSQL_ROOT_PASSWORD: test_password
-          MYSQL_DATABASE: teamdev_test_db
+          POSTGRES_DB: teamdev_test_db
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_password
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h localhost"
+          --health-cmd="pg_isready -U test_user -d teamdev_test_db"
           --health-interval=10s
           --health-timeout=5s
-          --health-retries=3
+          --health-retries=5
 
     steps:
     - name: Checkout code
@@ -97,29 +98,39 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Wait for MySQL
+    - name: Install PostgreSQL client
+      run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+    - name: Wait for PostgreSQL
+      env:
+        PGPASSWORD: test_password
       run: |
         for i in {1..30}; do
-          if mysqladmin ping -h 127.0.0.1 -P 3306 -u root -ptest_password --silent; then
+          if pg_isready -h 127.0.0.1 -p 5432 -d teamdev_test_db -U test_user; then
+            echo "PostgreSQL is ready"
             break
           fi
+          echo "Waiting for PostgreSQL..."
           sleep 2
         done
 
     - name: Set up test database
+      env:
+        PGPASSWORD: test_password
       run: |
-        mysql -h 127.0.0.1 -P 3306 -u root -ptest_password -e "CREATE DATABASE IF NOT EXISTS teamdev_test_db;"
-        mysql -h 127.0.0.1 -P 3306 -u root -ptest_password teamdev_test_db < src/main/resources/01_schema.sql
+        psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/01_schema.sql
+        psql -h 127.0.0.1 -p 5432 -U test_user -d teamdev_test_db -f src/main/resources/02_data.sql
 
     - name: Run tests
       run: ./gradlew test
       env:
         DB_HOST: 127.0.0.1
-        DB_PORT: 3306
+        DB_PORT: 5432
         DB_NAME: teamdev_test_db
-        DB_USERNAME: root
+        DB_USERNAME: test_user
         DB_PASSWORD: test_password
         SPRING_PROFILES_ACTIVE: test
+        LOG_LEVEL_ROOT: WARN
 
     - name: Build JAR
       run: ./gradlew bootJar

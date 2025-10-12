@@ -82,7 +82,7 @@ type HomeHeroProps = {
 const HomeHero = ({ firstName, lastName }: HomeHeroProps) => (
   <header className="home-hero mb-8">
     <h1 className="home-hero__title mb-2 font-bold text-2xl text-gray-900 md:text-3xl">
-      おはようございます、{firstName} {lastName} さん
+      おはようございます、{lastName} {firstName} さん
     </h1>
     <p className="home-hero__subtitle text-gray-600">
       今日も素敵な一日を過ごしましょう。

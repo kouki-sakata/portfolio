@@ -171,7 +171,7 @@ export const StampHistoryPage = () => {
             <SelectContent>
               {months.map((monthOption) => (
                 <SelectItem key={monthOption} value={monthOption}>
-                  {monthOption}
+                  {Number.parseInt(monthOption, 10)}月
                 </SelectItem>
               ))}
             </SelectContent>

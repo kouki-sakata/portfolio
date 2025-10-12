@@ -62,13 +62,13 @@ public class StampHistoryRestController {
             asString(source.get("year")),
             asString(source.get("month")),
             asString(source.get("day")),
-            asString(source.get("day_of_week")),
-            asInteger(source.get("employee_id")),
-            asString(source.get("employee_name")),
-            asString(source.get("update_employee_name")),
-            asString(source.get("in_time")),
-            asString(source.get("out_time")),
-            asString(source.get("update_date"))
+            asString(source.get("dayOfWeek")),
+            asInteger(source.get("employeeId")),
+            asString(source.get("employeeName")),
+            asString(source.get("updateEmployeeName")),
+            asString(source.get("inTime")),
+            asString(source.get("outTime")),
+            asString(source.get("updateDate"))
         );
     }
 

@@ -20,7 +20,7 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
 
     await test.step("当月の年月が表示される", async () => {
       const currentYear = new Date().getFullYear().toString();
-      const currentMonth = (new Date().getMonth() + 1).toString();
+      const currentMonth = `${new Date().getMonth() + 1}月`;
 
       // 年のドロップダウンで現在年が選択されている（値が設定されるまで待機）
       const yearTrigger = page.locator("#year");
@@ -64,10 +64,10 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
       await page.locator("#month").click();
 
       // 1月のオプションをクリック (exact: trueで完全一致)
-      await page.getByRole("option", { name: "1", exact: true }).click();
+      await page.getByRole("option", { name: "1月", exact: true }).click();
 
       // 選択が反映されることを確認
-      await expect(page.locator("#month")).toContainText("1");
+      await expect(page.locator("#month")).toContainText("1月");
     });
   });
 
@@ -138,13 +138,13 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
 
       // いくつかの月のオプションが表示されていることを確認 (exact: trueで完全一致)
       await expect(
-        page.getByRole("option", { name: "1", exact: true })
+        page.getByRole("option", { name: "1月", exact: true })
       ).toBeVisible();
       await expect(
-        page.getByRole("option", { name: "6", exact: true })
+        page.getByRole("option", { name: "6月", exact: true })
       ).toBeVisible();
       await expect(
-        page.getByRole("option", { name: "12", exact: true })
+        page.getByRole("option", { name: "12月", exact: true })
       ).toBeVisible();
 
       // セレクトを閉じる
