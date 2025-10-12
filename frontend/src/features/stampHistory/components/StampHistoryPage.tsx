@@ -3,7 +3,6 @@ import { type FormEvent, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -100,8 +99,24 @@ export const StampHistoryPage = () => {
     summary: { ...emptyMonthlySummary },
   };
 
-  const selectedYear: string = filters.year ?? data.selectedYear;
-  const selectedMonth: string = filters.month ?? data.selectedMonth;
+  // 履歴データの最初のエントリから年月を取得
+  const firstEntry = data.entries[0];
+  const selectedYear: string | undefined =
+    filters.year ?? firstEntry?.year ?? undefined;
+  const selectedMonth: string | undefined =
+    filters.month ?? firstEntry?.month ?? undefined;
+
+  // 選択された値が選択肢に含まれることを保証
+  const years =
+    selectedYear && selectedYear !== "" && !data.years.includes(selectedYear)
+      ? [selectedYear, ...data.years]
+      : data.years;
+  const months =
+    selectedMonth &&
+    selectedMonth !== "" &&
+    !data.months.includes(selectedMonth)
+      ? [selectedMonth, ...data.months]
+      : data.months;
 
   return (
     <div className="container mx-auto space-y-6 py-8">
@@ -116,7 +131,7 @@ export const StampHistoryPage = () => {
       </header>
 
       <form
-        className="flex flex-wrap items-end gap-4"
+        className="flex flex-wrap gap-4"
         onSubmit={(event) => {
           handleSubmit(event).catch(() => {
             // エラーハンドリングは handleSubmit 内で処理済み
@@ -124,7 +139,6 @@ export const StampHistoryPage = () => {
         }}
       >
         <div className="space-y-2">
-          <Label htmlFor="year">年</Label>
           <Select
             onValueChange={(value) => {
               setFilters((prev) => ({ ...prev, year: value }));
@@ -132,10 +146,10 @@ export const StampHistoryPage = () => {
             value={selectedYear}
           >
             <SelectTrigger className="w-[120px]" id="year">
-              <SelectValue />
+              <SelectValue placeholder="年を選択" />
             </SelectTrigger>
             <SelectContent>
-              {data.years.map((yearOption) => (
+              {years.map((yearOption) => (
                 <SelectItem key={yearOption} value={yearOption}>
                   {yearOption}
                 </SelectItem>
@@ -145,7 +159,6 @@ export const StampHistoryPage = () => {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="month">月</Label>
           <Select
             onValueChange={(value) => {
               setFilters((prev) => ({ ...prev, month: value }));
@@ -153,10 +166,10 @@ export const StampHistoryPage = () => {
             value={selectedMonth}
           >
             <SelectTrigger className="w-[120px]" id="month">
-              <SelectValue />
+              <SelectValue placeholder="月を選択" />
             </SelectTrigger>
             <SelectContent>
-              {data.months.map((monthOption) => (
+              {months.map((monthOption) => (
                 <SelectItem key={monthOption} value={monthOption}>
                   {monthOption}
                 </SelectItem>
@@ -174,95 +187,95 @@ export const StampHistoryPage = () => {
         <MonthlyStatsCard entries={data.entries} summary={data.summary} />
       </SuspenseWrapper>
 
-        <div className="mt-6">
-          <div className="rounded-md border">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-muted">
+      <div className="mt-6">
+        <div className="rounded-md border">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-muted">
+                <tr>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    日付
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    曜日
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    出勤時刻
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    退勤時刻
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    更新日時
+                  </th>
+                  <th className="px-4 py-3 text-left font-medium text-sm">
+                    操作
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y">
+                {data.entries.length === 0 ? (
                   <tr>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      日付
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      曜日
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      出勤時刻
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      退勤時刻
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      更新日時
-                    </th>
-                    <th className="px-4 py-3 text-left font-medium text-sm">
-                      操作
-                    </th>
+                    <td
+                      className="px-4 py-8 text-center text-muted-foreground"
+                      colSpan={6}
+                    >
+                      対象期間の打刻はありません。
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {data.entries.length === 0 ? (
-                    <tr>
-                      <td
-                        className="px-4 py-8 text-center text-muted-foreground"
-                        colSpan={6}
-                      >
-                        対象期間の打刻はありません。
+                ) : (
+                  data.entries.map((entry) => (
+                    <tr
+                      className="hover:bg-muted/50"
+                      key={`${entry.year}-${entry.month}-${entry.day}`}
+                    >
+                      <td className="px-4 py-3">
+                        {entry.year}/{entry.month}/{entry.day}
+                      </td>
+                      <td className="px-4 py-3">{entry.dayOfWeek}</td>
+                      <td className="px-4 py-3">{entry.inTime ?? "-"}</td>
+                      <td className="px-4 py-3">{entry.outTime ?? "-"}</td>
+                      <td className="px-4 py-3 text-muted-foreground text-sm">
+                        {entry.updateDate ?? "-"}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex gap-2">
+                          <Button
+                            disabled={!entry.id}
+                            onClick={() => handleEdit(entry)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <SpriteIcon
+                              className="h-4 w-4"
+                              decorative
+                              name="edit"
+                            />
+                            <span className="sr-only">編集</span>
+                          </Button>
+                          <Button
+                            disabled={!entry.id}
+                            onClick={() => handleDelete(entry)}
+                            size="sm"
+                            variant="ghost"
+                          >
+                            <SpriteIcon
+                              className="h-4 w-4"
+                              decorative
+                              name="trash-2"
+                            />
+                            <span className="sr-only">削除</span>
+                          </Button>
+                        </div>
                       </td>
                     </tr>
-                  ) : (
-                    data.entries.map((entry) => (
-                      <tr
-                        className="hover:bg-muted/50"
-                        key={`${entry.year}-${entry.month}-${entry.day}`}
-                      >
-                        <td className="px-4 py-3">
-                          {entry.year}/{entry.month}/{entry.day}
-                        </td>
-                        <td className="px-4 py-3">{entry.dayOfWeek}</td>
-                        <td className="px-4 py-3">{entry.inTime ?? "-"}</td>
-                        <td className="px-4 py-3">{entry.outTime ?? "-"}</td>
-                        <td className="px-4 py-3 text-muted-foreground text-sm">
-                          {entry.updateDate ?? "-"}
-                        </td>
-                        <td className="px-4 py-3">
-                          <div className="flex gap-2">
-                            <Button
-                              disabled={!entry.id}
-                              onClick={() => handleEdit(entry)}
-                              size="sm"
-                              variant="ghost"
-                            >
-                              <SpriteIcon
-                                className="h-4 w-4"
-                                decorative
-                                name="edit"
-                              />
-                              <span className="sr-only">編集</span>
-                            </Button>
-                            <Button
-                              disabled={!entry.id}
-                              onClick={() => handleDelete(entry)}
-                              size="sm"
-                              variant="ghost"
-                            >
-                              <SpriteIcon
-                                className="h-4 w-4"
-                                decorative
-                                name="trash-2"
-                              />
-                              <span className="sr-only">削除</span>
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
 
       <EditStampDialog
         entry={selectedEntry}
