@@ -156,7 +156,7 @@ export const AppSidebar = ({
         className={cn(
           "app-sidebar fixed inset-y-0 left-0 z-40 w-64 border-r bg-white shadow-sm transition-transform duration-200 ease-in-out",
           // lg未満: 固定位置、開閉でtranslate制御
-          !isOpen && "-translate-x-full",
+          !isOpen && "max-lg:-translate-x-full",
           // lg以上: 常に表示、translateなし
           "lg:static lg:translate-x-0",
           className
