@@ -28,7 +28,6 @@ const VENDOR_MANUAL_CHUNKS = {
   ],
   "data-vendor": ["@tanstack/react-query", "@tanstack/react-table"],
   "form-vendor": ["react-hook-form", "zod", "@hookform/resolvers"],
-  "date-vendor": ["date-fns", "react-day-picker"],
   "icons-vendor": ["lucide-react"],
 } satisfies Record<string, string[]>;
 

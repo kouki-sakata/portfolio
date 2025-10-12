@@ -4,23 +4,12 @@ import { lazy, type ReactNode, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
-vi.mock("./CalendarView", () => ({
-  // biome-ignore lint/style/useNamingConvention: mocking named export
-  CalendarView: () => <h2>カレンダー表示</h2>,
-}));
-
 vi.mock("./MonthlyStatsCard", () => ({
   // biome-ignore lint/style/useNamingConvention: mocking named export
   MonthlyStatsCard: () => <h2>月次統計</h2>,
 }));
 
 // Lazy load the components to test code splitting
-const LazyCalendarView = lazy(() =>
-  import("./CalendarView").then((module) => ({
-    default: module.CalendarView,
-  }))
-);
-
 const LazyMonthlyStatsCard = lazy(() =>
   import("./MonthlyStatsCard").then((module) => ({
     default: module.MonthlyStatsCard,
@@ -75,74 +64,6 @@ const TestWrapper = ({ children }: { children: ReactNode }) => {
 };
 
 describe("StampHistoryPage Component Lazy Loading", () => {
-  describe("CalendarView Lazy Loading", () => {
-    it("should render fallback while loading lazy CalendarView component", async () => {
-      const { getByTestId } = render(
-        <TestWrapper>
-          <Suspense
-            fallback={
-              <div data-testid="calendar-loading">Loading calendar...</div>
-            }
-          >
-            <LazyCalendarView
-              entries={mockStampHistoryData.entries}
-              selectedMonth="10"
-              selectedYear="2025"
-            />
-          </Suspense>
-        </TestWrapper>
-      );
-
-      // Fallback should be visible immediately after render
-      expect(getByTestId("calendar-loading")).toBeInTheDocument();
-
-      // Flush lazy resolution within act to avoid warnings
-      await act(async () => {
-        await Promise.resolve();
-      });
-    });
-
-    it("should render CalendarView after lazy loading completes", async () => {
-      await act(async () => {
-        render(
-          <TestWrapper>
-            <Suspense
-              fallback={
-                <div data-testid="calendar-loading">Loading calendar...</div>
-              }
-            >
-              <LazyCalendarView
-                entries={mockStampHistoryData.entries}
-                selectedMonth="10"
-                selectedYear="2025"
-              />
-            </Suspense>
-          </TestWrapper>
-        );
-        await Promise.resolve();
-      });
-
-      const heading = await screen.findByText(
-        "カレンダー表示",
-        {},
-        { timeout: 5000 }
-      );
-      expect(heading).toBeInTheDocument();
-      expect(screen.queryByTestId("calendar-loading")).not.toBeInTheDocument();
-    }, 10_000);
-
-    it("should properly code-split CalendarView component", async () => {
-      // Verify that lazy loading returns a promise
-      const lazyPromise = import("./CalendarView");
-      expect(lazyPromise).toBeInstanceOf(Promise);
-
-      // Verify that the module exports the expected component
-      const module = await lazyPromise;
-      expect(module.CalendarView).toBeDefined();
-      expect(typeof module.CalendarView).toBe("function");
-    });
-  });
-
   describe("MonthlyStatsCard Lazy Loading", () => {
     it("should render fallback while loading lazy MonthlyStatsCard component", async () => {
       const { getByTestId } = render(
