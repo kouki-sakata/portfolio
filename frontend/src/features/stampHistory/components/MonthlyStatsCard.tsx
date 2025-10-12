@@ -24,14 +24,14 @@ export const MonthlyStatsCard = ({
       <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <div className="flex flex-col gap-2">
           <span className="text-muted-foreground text-sm">総日数</span>
-          <Badge className="justify-center py-2" variant="outline">
+          <Badge className="justify-center py-2" variant="secondary">
             {stats.totalWorkingDays}日
           </Badge>
         </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-muted-foreground text-sm">出勤日数</span>
-          <Badge className="justify-center py-2" variant="default">
+          <Badge className="justify-center py-2" variant="secondary">
             {stats.presentDays}日
           </Badge>
         </div>
@@ -45,14 +45,14 @@ export const MonthlyStatsCard = ({
 
         <div className="flex flex-col gap-2">
           <span className="text-muted-foreground text-sm">総勤務時間</span>
-          <Badge className="justify-center py-2" variant="default">
+          <Badge className="justify-center py-2" variant="secondary">
             {stats.totalWorkingHours}h
           </Badge>
         </div>
 
         <div className="flex flex-col gap-2">
           <span className="text-muted-foreground text-sm">平均勤務時間</span>
-          <Badge className="justify-center py-2" variant="outline">
+          <Badge className="justify-center py-2" variant="secondary">
             {stats.averageWorkingHours}h
           </Badge>
         </div>
