@@ -10,12 +10,12 @@ import { z } from "zod";
 const baseEmployeeSchema = z.object({
   firstName: z
     .string()
-    .min(1, { message: "姓は必須です" })
-    .max(50, { message: "姓は50文字以内で入力してください" }),
-  lastName: z
-    .string()
     .min(1, { message: "名は必須です" })
     .max(50, { message: "名は50文字以内で入力してください" }),
+  lastName: z
+    .string()
+    .min(1, { message: "姓は必須です" })
+    .max(50, { message: "姓は50文字以内で入力してください" }),
   email: z
     .string()
     .min(1, { message: "メールアドレスは必須です" })

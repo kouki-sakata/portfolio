@@ -16,8 +16,8 @@ const NEW_EMPLOYEE = {
 };
 
 const UPDATED_EMPLOYEE = {
-  firstName: "高橋",
-  lastName: "太郎",
+  firstName: "太郎",
+  lastName: "高橋",
 };
 
 const signIn = async (page: Page, email: string, password: string) => {
@@ -150,8 +150,8 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
       const originalRow = page.locator("tr", { hasText: "中村 太郎" }).first();
       await originalRow.getByRole("button", { name: "編集" }).click();
 
-      await page.getByLabel("姓").fill(UPDATED_EMPLOYEE.firstName);
-      await page.getByLabel("名").fill(UPDATED_EMPLOYEE.lastName);
+      await page.getByLabel("名").fill(UPDATED_EMPLOYEE.firstName);
+      await page.getByLabel("姓").fill(UPDATED_EMPLOYEE.lastName);
       await page.getByRole("button", { name: "更新する" }).click();
 
       await expect(
