@@ -60,7 +60,7 @@ public class SecurityConfig {
                     "/assets/**"
                 ).permitAll()
                 .requestMatchers("/signin", "/signin/**").permitAll()
-                .requestMatchers("/api/auth/login", "/api/auth/session", "/api/public/**").permitAll()
+                .requestMatchers("/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",

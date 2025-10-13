@@ -201,6 +201,14 @@ tasks.named('check') {
 	dependsOn 'npmTest'
 }
 
+// Docker build task (skips tests for faster builds)
+tasks.register('dockerBuild') {
+	description = 'Build for Docker (skips tests)'
+	group = 'build'
+	dependsOn 'npmBuild'
+	dependsOn 'bootJar'
+}
+
 tasks.named('clean') {
 	delete file("${frontendDir}/dist")
 }

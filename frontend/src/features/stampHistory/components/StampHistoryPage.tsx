@@ -99,12 +99,11 @@ export const StampHistoryPage = () => {
     summary: { ...emptyMonthlySummary },
   };
 
-  // 履歴データの最初のエントリから年月を取得
-  const firstEntry = data.entries[0];
+  // API レスポンスから選択された年月を取得
   const selectedYear: string | undefined =
-    filters.year ?? firstEntry?.year ?? undefined;
+    filters.year ?? data.selectedYear ?? undefined;
   const selectedMonth: string | undefined =
-    filters.month ?? firstEntry?.month ?? undefined;
+    filters.month ?? data.selectedMonth ?? undefined;
 
   // 選択された値が選択肢に含まれることを保証
   const years =
