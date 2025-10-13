@@ -18,7 +18,9 @@ export const AppHeader = ({ className, onMenuClick }: AppHeaderProps) => {
 
   const handleSignOut = async () => {
     await logout();
-    navigate("/signin");
+    // ログアウト完了後、確実にログイン画面へリダイレクト
+    // replace: trueで履歴を置き換え、戻るボタンでホーム画面に戻れないようにする
+    navigate("/signin", { replace: true });
   };
 
   if (!authenticated) {
