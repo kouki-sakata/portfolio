@@ -18,7 +18,7 @@ COPY --chown=gradle:gradle src/ src/
 COPY --chown=gradle:gradle frontend/ frontend/
 
 # Build application
-RUN ./gradlew clean build -x test --no-daemon
+RUN ./gradlew dockerBuild --no-daemon
 
 # Stage 2: Run the application
 FROM eclipse-temurin:21-jre-alpine

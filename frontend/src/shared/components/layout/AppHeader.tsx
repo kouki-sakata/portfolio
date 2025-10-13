@@ -96,12 +96,12 @@ export const AppHeader = ({ className, onMenuClick }: AppHeaderProps) => {
             >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 font-medium text-sm text-white">
                 {user
-                  ? `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`
+                  ? `${user.lastName.charAt(0)}${user.firstName.charAt(0)}`
                   : "U"}
               </div>
 
               <span className="hidden font-medium text-sm sm:block">
-                {user ? `${user.firstName} ${user.lastName}` : "ユーザー"}
+                {user ? `${user.lastName} ${user.firstName}` : "ユーザー"}
               </span>
 
               <SpriteIcon className="h-4 w-4" decorative name="chevron-down" />
@@ -111,7 +111,7 @@ export const AppHeader = ({ className, onMenuClick }: AppHeaderProps) => {
               <div className="py-2">
                 <div className="border-gray-100 border-b px-4 py-2">
                   <p className="font-medium text-gray-900 text-sm">
-                    {user ? `${user.firstName} ${user.lastName}` : "ユーザー"}
+                    {user ? `${user.lastName} ${user.firstName}` : "ユーザー"}
                   </p>
                   <p className="text-gray-500 text-xs">
                     {user?.admin ? "管理者" : "一般ユーザー"}

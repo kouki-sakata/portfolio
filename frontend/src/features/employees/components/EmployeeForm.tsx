@@ -101,30 +101,30 @@ export function EmployeeForm({
   return (
     <Form {...form}>
       <form className="space-y-4" onSubmit={handleFormSubmit}>
-        {/* 姓 */}
+        {/* 名 */}
         <FormField
           control={form.control}
           name="firstName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>姓</FormLabel>
+              <FormLabel>名</FormLabel>
               <FormControl>
-                <Input placeholder="山田" {...field} disabled={isSubmitting} />
+                <Input placeholder="太郎" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        {/* 名 */}
+        {/* 姓 */}
         <FormField
           control={form.control}
           name="lastName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>名</FormLabel>
+              <FormLabel>姓</FormLabel>
               <FormControl>
-                <Input placeholder="太郎" {...field} disabled={isSubmitting} />
+                <Input placeholder="山田" {...field} disabled={isSubmitting} />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -18,11 +18,11 @@ public class Employee {
 	 */
 	private Integer id;
 	/**
-	 * 姓
+	 * 名（given name）
 	 */
 	private String first_name;
 	/**
-	 * 名
+	 * 姓（family name）
 	 */
 	private String last_name;
 	/**

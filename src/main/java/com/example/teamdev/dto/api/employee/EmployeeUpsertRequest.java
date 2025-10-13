@@ -6,9 +6,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 public record EmployeeUpsertRequest(
-    @Schema(description = "名", example = "太郎")
+    @Schema(description = "名（given name）", example = "太郎")
     @NotBlank String firstName,
-    @Schema(description = "姓", example = "山田")
+    @Schema(description = "姓（family name）", example = "山田")
     @NotBlank String lastName,
     @Schema(description = "メールアドレス", example = "yamada.taro@example.com")
     @NotBlank @Email String email,

@@ -58,13 +58,13 @@ export function useEmployeeColumns({
           return (
             <div className="flex space-x-2">
               <span className="max-w-[200px] truncate font-medium">
-                {employee.firstName} {employee.lastName}
+                {employee.lastName} {employee.firstName}
               </span>
             </div>
           );
         },
         filterFn: (row, _id, value) => {
-          const fullName = `${row.original.firstName} ${row.original.lastName}`;
+          const fullName = `${row.original.lastName} ${row.original.firstName}`;
           return fullName.toLowerCase().includes(value.toLowerCase());
         },
       },
