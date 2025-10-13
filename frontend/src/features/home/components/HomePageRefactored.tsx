@@ -79,7 +79,7 @@ type HomeHeroProps = {
   lastName: string;
 };
 
-const HomeHero = ({ firstName, lastName }: HomeHeroProps) => (
+const HomeHero = ({ lastName, firstName }: HomeHeroProps) => (
   <header className="home-hero mb-8">
     <h1 className="home-hero__title mb-2 font-bold text-2xl text-gray-900 md:text-3xl">
       おはようございます、{lastName} {firstName} さん
