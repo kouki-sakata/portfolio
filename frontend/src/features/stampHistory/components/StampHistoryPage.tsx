@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Loader2, Search } from "lucide-react";
 import { type FormEvent, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
@@ -38,7 +39,29 @@ const MonthlyStatsCard = lazy(() =>
 );
 
 export const StampHistoryPage = () => {
-  const [filters, setFilters] = useState<{ year?: string; month?: string }>({});
+  // 選択中の年月（ローカル状態）
+  const [filters, setFilters] = useState<{ year?: string; month?: string }>(
+    () => {
+      const now = new Date();
+      return {
+        year: now.getFullYear().toString(),
+        month: (now.getMonth() + 1).toString().padStart(2, "0"),
+      };
+    }
+  );
+
+  // 確定済みの年月（API呼び出しに使用）
+  const [confirmedFilters, setConfirmedFilters] = useState<{
+    year?: string;
+    month?: string;
+  }>(() => {
+    const now = new Date();
+    return {
+      year: now.getFullYear().toString(),
+      month: (now.getMonth() + 1).toString().padStart(2, "0"),
+    };
+  });
+
   const [selectedEntry, setSelectedEntry] = useState<StampHistoryEntry | null>(
     null
   );
@@ -47,14 +70,14 @@ export const StampHistoryPage = () => {
 
   const activeFilters = useMemo(() => {
     const normalized: { year?: string; month?: string } = {};
-    if (filters.year) {
-      normalized.year = filters.year;
+    if (confirmedFilters.year) {
+      normalized.year = confirmedFilters.year;
     }
-    if (filters.month) {
-      normalized.month = filters.month;
+    if (confirmedFilters.month) {
+      normalized.month = confirmedFilters.month;
     }
     return normalized;
-  }, [filters.month, filters.year]);
+  }, [confirmedFilters.month, confirmedFilters.year]);
 
   const query = useQuery<StampHistoryResponse>({
     queryKey: queryKeys.stampHistory.list(activeFilters),
@@ -63,9 +86,9 @@ export const StampHistoryPage = () => {
     gcTime: QUERY_CONFIG.stampHistory.gcTime,
   });
 
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    await query.refetch();
+    setConfirmedFilters(filters);
   };
 
   const handleEdit = (entry: StampHistoryEntry) => {
@@ -91,19 +114,17 @@ export const StampHistoryPage = () => {
   }
 
   const data: StampHistoryResponse = query.data ?? {
-    selectedYear: filters.year ?? "",
-    selectedMonth: filters.month ?? "",
+    selectedYear: confirmedFilters.year ?? "",
+    selectedMonth: confirmedFilters.month ?? "",
     years: [],
     months: [],
     entries: [],
     summary: { ...emptyMonthlySummary },
   };
 
-  // API レスポンスから選択された年月を取得
-  const selectedYear: string | undefined =
-    filters.year ?? data.selectedYear ?? undefined;
-  const selectedMonth: string | undefined =
-    filters.month ?? data.selectedMonth ?? undefined;
+  // 現在選択中の年月（確定前）を表示
+  const selectedYear: string | undefined = filters.year;
+  const selectedMonth: string | undefined = filters.month;
 
   // 選択された値が選択肢に含まれることを保証
   const years =
@@ -129,14 +150,7 @@ export const StampHistoryPage = () => {
         <ExportDialog disabled={query.isLoading} entries={data.entries} />
       </header>
 
-      <form
-        className="flex flex-wrap gap-4"
-        onSubmit={(event) => {
-          handleSubmit(event).catch(() => {
-            // エラーハンドリングは handleSubmit 内で処理済み
-          });
-        }}
-      >
+      <form className="flex flex-wrap gap-4" onSubmit={handleSubmit}>
         <div className="space-y-2">
           <Select
             onValueChange={(value) => {
@@ -177,8 +191,22 @@ export const StampHistoryPage = () => {
           </Select>
         </div>
 
-        <Button disabled={query.isRefetching} type="submit">
-          {query.isRefetching ? "更新中…" : "検索"}
+        <Button
+          className="min-w-[100px]"
+          disabled={query.isRefetching}
+          type="submit"
+        >
+          {query.isRefetching ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              更新中…
+            </>
+          ) : (
+            <>
+              <Search className="mr-2 h-4 w-4" />
+              検索
+            </>
+          )}
         </Button>
       </form>
 
@@ -189,7 +217,7 @@ export const StampHistoryPage = () => {
       <div className="mt-6">
         <div className="rounded-md border">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full border-separate">
               <thead className="bg-muted">
                 <tr>
                   <th className="px-4 py-3 text-left font-medium text-sm">
