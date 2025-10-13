@@ -64,14 +64,12 @@ describe("StampHistoryPage", () => {
       });
     });
 
-    const cachedQuery = queryClient
-      .getQueryCache()
-      .find({
-        queryKey: queryKeys.stampHistory.list({
-          year: expectedYear,
-          month: expectedMonth,
-        }),
-      });
+    const cachedQuery = queryClient.getQueryCache().find({
+      queryKey: queryKeys.stampHistory.list({
+        year: expectedYear,
+        month: expectedMonth,
+      }),
+    });
 
     const cachedOptions = cachedQuery?.options as
       | {

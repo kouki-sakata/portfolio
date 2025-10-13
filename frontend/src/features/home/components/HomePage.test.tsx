@@ -301,7 +301,9 @@ describe("HomePage", () => {
       // console.errorをモック化してstderr警告を抑制（期待されたエラーハンドリング動作）
       const consoleErrorSpy = vi
         .spyOn(console, "error")
-        .mockImplementation(() => {});
+        .mockImplementation(() => {
+          // Intentionally suppress console.error output during test
+        });
 
       mswServer.use(
         http.post("http://localhost/api/home/stamps", () =>
