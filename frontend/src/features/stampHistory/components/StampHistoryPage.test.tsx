@@ -46,6 +46,11 @@ describe("StampHistoryPage", () => {
   });
 
   it("applies stamp history cache configuration", async () => {
+    // 現在の年月を取得（StampHistoryPageのデフォルト値と一致させる）
+    const now = new Date();
+    const expectedYear = now.getFullYear().toString();
+    const expectedMonth = (now.getMonth() + 1).toString().padStart(2, "0");
+
     render(
       <QueryClientProvider client={queryClient}>
         <StampHistoryPage />
@@ -53,12 +58,18 @@ describe("StampHistoryPage", () => {
     );
 
     await waitFor(() => {
-      expect(fetchStampHistory).toHaveBeenCalledWith({});
+      expect(fetchStampHistory).toHaveBeenCalledWith({
+        year: expectedYear,
+        month: expectedMonth,
+      });
     });
 
-    const cachedQuery = queryClient
-      .getQueryCache()
-      .find({ queryKey: queryKeys.stampHistory.list() });
+    const cachedQuery = queryClient.getQueryCache().find({
+      queryKey: queryKeys.stampHistory.list({
+        year: expectedYear,
+        month: expectedMonth,
+      }),
+    });
 
     const cachedOptions = cachedQuery?.options as
       | {

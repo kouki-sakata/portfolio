@@ -91,7 +91,7 @@ export const StampCard = memo(
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
-              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100 focus-visible:ring-slate-300 disabled:translate-y-0"
+              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100/50 focus-visible:ring-slate-300 disabled:translate-y-0"
               disabled={isLoading}
               onClick={() => handleStamp("1")}
               size="lg"
@@ -100,7 +100,7 @@ export const StampCard = memo(
               出勤打刻
             </Button>
             <Button
-              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100 focus-visible:ring-slate-300 disabled:translate-y-0"
+              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100/50 focus-visible:ring-slate-300 disabled:translate-y-0"
               disabled={isLoading}
               onClick={() => handleStamp("2")}
               size="lg"

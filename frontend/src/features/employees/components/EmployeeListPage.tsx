@@ -16,7 +16,7 @@ import {
 } from "../hooks/useEmployeeMutations";
 import { useEmployees } from "../hooks/useEmployees";
 import type { EmployeeFormValues } from "../schemas/employeeSchema";
-import { EmployeeForm } from "./EmployeeForm";
+import { EmployeeFormDialog } from "./EmployeeFormDialog";
 import { EmployeeTable } from "./EmployeeTable";
 
 type FormMode = "create" | "update" | null;
@@ -213,22 +213,6 @@ export function EmployeeListPage() {
         </div>
       </div>
 
-      {/* フォーム表示エリア */}
-      {formMode && (
-        <div className="rounded-lg border bg-card p-6 shadow-sm">
-          <h2 className="mb-4 font-semibold text-xl">
-            {formMode === "create" ? "新規登録" : "従業員情報の編集"}
-          </h2>
-          <EmployeeForm
-            defaultValues={editingEmployee ?? undefined}
-            isSubmitting={createMutation.isPending || updateMutation.isPending}
-            mode={formMode}
-            onCancel={handleCancelForm}
-            onSubmit={handleSubmit}
-          />
-        </div>
-      )}
-
       {/* テーブル */}
       <EmployeeTable
         data={data.employees}
@@ -236,6 +220,20 @@ export function EmployeeListPage() {
         onDelete={handleDelete}
         onEdit={handleEdit}
         onSelectionChange={setSelectedEmployeeIds}
+      />
+
+      {/* フォームダイアログ */}
+      <EmployeeFormDialog
+        employee={editingEmployee}
+        isSubmitting={createMutation.isPending || updateMutation.isPending}
+        mode={formMode}
+        onOpenChange={(open) => {
+          if (!open) {
+            handleCancelForm();
+          }
+        }}
+        onSubmit={handleSubmit}
+        open={formMode !== null}
       />
     </div>
   );
