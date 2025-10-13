@@ -2,7 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   HomeDashboardResponse,
@@ -298,6 +298,13 @@ describe("HomePage", () => {
     });
 
     it("打刻失敗時にエラーメッセージが表示される", async () => {
+      // console.errorをモック化してstderr警告を抑制（期待されたエラーハンドリング動作）
+      const consoleErrorSpy = vi
+        .spyOn(console, "error")
+        .mockImplementation(() => {
+          // Intentionally suppress console.error output during test
+        });
+
       mswServer.use(
         http.post("http://localhost/api/home/stamps", () =>
           HttpResponse.json(
@@ -318,6 +325,9 @@ describe("HomePage", () => {
           screen.getByText("打刻に失敗しました。再度お試しください。")
         ).toBeInTheDocument();
       });
+
+      // モックをリストア
+      consoleErrorSpy.mockRestore();
     });
 
     it("打刻処理中はボタンが無効化される", async () => {
