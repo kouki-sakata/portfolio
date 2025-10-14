@@ -2,8 +2,8 @@ package com.example.teamdev.service.stamp;
 
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 
 /**
  * 退勤時刻の調整に特化したコンポーネント。
@@ -22,7 +22,7 @@ public class OutTimeAdjuster {
      * @param outTime 退勤時刻
      * @return 調整後の退勤時刻（調整不要またはいずれかがnullの場合は元の値）
      */
-    public Timestamp adjustOutTimeIfNeeded(Timestamp inTime, Timestamp outTime) {
+    public OffsetDateTime adjustOutTimeIfNeeded(OffsetDateTime inTime, OffsetDateTime outTime) {
         // 入力値の検証
         if (!needsAdjustment(inTime, outTime)) {
             return outTime;
@@ -43,7 +43,7 @@ public class OutTimeAdjuster {
      * @param outTime 退勤時刻
      * @return 両方の時刻が設定されている場合true
      */
-    private boolean needsAdjustment(Timestamp inTime, Timestamp outTime) {
+    private boolean needsAdjustment(OffsetDateTime inTime, OffsetDateTime outTime) {
         return inTime != null && outTime != null;
     }
 
@@ -54,7 +54,7 @@ public class OutTimeAdjuster {
      * @param outTime 退勤時刻（null不可）
      * @return 出勤時刻が退勤時刻より後の場合true
      */
-    private boolean isInTimeAfterOutTime(Timestamp inTime, Timestamp outTime) {
+    private boolean isInTimeAfterOutTime(OffsetDateTime inTime, OffsetDateTime outTime) {
         // compareToメソッド：
         // inTimeがoutTimeより前: 負の値
         // inTimeがoutTimeと同じ: 0
@@ -63,15 +63,13 @@ public class OutTimeAdjuster {
     }
 
     /**
-     * タイムスタンプを翌日の同時刻に調整します。
+     * OffsetDateTimeを翌日の同時刻に調整します。
      *
-     * @param timestamp 調整対象のタイムスタンプ
-     * @return 翌日に調整されたタイムスタンプ
+     * @param dateTime 調整対象のOffsetDateTime
+     * @return 翌日に調整されたOffsetDateTime
      */
-    private Timestamp adjustToNextDay(Timestamp timestamp) {
-        LocalDateTime localDateTime = timestamp.toLocalDateTime();
-        LocalDateTime nextDay = localDateTime.plusDays(1);
-        return Timestamp.valueOf(nextDay);
+    private OffsetDateTime adjustToNextDay(OffsetDateTime dateTime) {
+        return dateTime.plusDays(1);
     }
 
     /**
@@ -82,16 +80,15 @@ public class OutTimeAdjuster {
      * @param outTime 退勤時刻（調整済み）
      * @return 勤務時間（分単位）、計算できない場合は0
      */
-    public long calculateWorkingMinutes(Timestamp inTime, Timestamp outTime) {
+    public long calculateWorkingMinutes(OffsetDateTime inTime, OffsetDateTime outTime) {
         if (inTime == null || outTime == null) {
             return 0;
         }
 
         // 退勤時刻を必要に応じて調整
-        Timestamp adjustedOutTime = adjustOutTimeIfNeeded(inTime, outTime);
+        OffsetDateTime adjustedOutTime = adjustOutTimeIfNeeded(inTime, outTime);
 
-        // ミリ秒差を分に変換
-        long diffInMillis = adjustedOutTime.getTime() - inTime.getTime();
-        return diffInMillis / (60 * 1000);
+        // 分単位で時間差を計算
+        return ChronoUnit.MINUTES.between(inTime, adjustedOutTime);
     }
 }

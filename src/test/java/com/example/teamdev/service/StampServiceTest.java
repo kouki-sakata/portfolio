@@ -15,6 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,7 +46,8 @@ public class StampServiceTest {
         employeeId = 1;
         now = LocalDateTime.of(2025, 7, 10, 10, 30, 0); // 固定の日時を設定
         homeForm = new HomeForm();
-        homeForm.setStampTime(now.format(DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME)));
+        // StampService expects ISO_OFFSET_DATE_TIME format with timezone
+        homeForm.setStampTime(now.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
     }
 
     @Test
@@ -111,7 +114,8 @@ public class StampServiceTest {
     void execute_shouldHandleNightWorkLeaveStamp() {
         // 翌日午前2時の退勤を想定
         LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 7, 11, 2, 0, 0);
-        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME)));
+        // StampService expects ISO_OFFSET_DATE_TIME format with timezone
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
         homeForm.setStampType(StampType.DEPARTURE); // 退勤
         homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON); // 夜勤
 
@@ -128,7 +132,9 @@ public class StampServiceTest {
         assertEquals(employeeId, capturedStamp.getEmployeeId());
         assertNull(capturedStamp.getInTime());
         assertNotNull(capturedStamp.getOutTime());
-        assertEquals(Timestamp.valueOf(nightLeaveTime), capturedStamp.getOutTime()); // 時刻自体は変わらない
+        // Convert LocalDateTime to OffsetDateTime for comparison
+        OffsetDateTime expectedOutTime = nightLeaveTime.atOffset(ZoneOffset.ofHours(9));
+        assertEquals(expectedOutTime, capturedStamp.getOutTime()); // 時刻自体は変わらない
         assertEquals(employeeId, capturedStamp.getUpdateEmployeeId());
         assertNotNull(capturedStamp.getUpdateDate());
 
