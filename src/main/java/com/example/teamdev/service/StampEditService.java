@@ -104,8 +104,14 @@ public class StampEditService {
         // Step 3: 退勤時刻調整
         Timestamp adjustedOutTime = outTimeAdjuster.adjustOutTimeIfNeeded(inTime, outTime);
 
-        // Step 4: データ永続化
-        return stampPersistence.saveOrUpdate(data, inTime, adjustedOutTime, updateEmployeeId);
+        // Step 4: Timestamp を OffsetDateTime に変換
+        java.time.OffsetDateTime inTimeOffset = inTime != null ?
+            java.time.OffsetDateTime.ofInstant(inTime.toInstant(), java.time.ZoneId.systemDefault()) : null;
+        java.time.OffsetDateTime adjustedOutTimeOffset = adjustedOutTime != null ?
+            java.time.OffsetDateTime.ofInstant(adjustedOutTime.toInstant(), java.time.ZoneId.systemDefault()) : null;
+
+        // Step 5: データ永続化
+        return stampPersistence.saveOrUpdate(data, inTimeOffset, adjustedOutTimeOffset, updateEmployeeId);
     }
 
     /**

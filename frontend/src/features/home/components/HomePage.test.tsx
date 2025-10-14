@@ -180,7 +180,6 @@ describe("HomePage", () => {
     it("出勤打刻ボタンをクリックすると打刻APIが呼ばれる", async () => {
       const mockResponse: StampResponse = {
         message: "出勤打刻が完了しました",
-        success: true,
       };
 
       let capturedRequest: Request | null = null;
@@ -208,12 +207,13 @@ describe("HomePage", () => {
         stampType: "1",
         nightWorkFlag: "0",
       });
+      // stampTimeがISO 8601形式（タイムゾーンオフセット付き）で送信されることを確認
+      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
     });
 
     it("退勤打刻ボタンをクリックすると打刻APIが呼ばれる", async () => {
       const mockResponse: StampResponse = {
         message: "退勤打刻が完了しました",
-        success: true,
       };
 
       let capturedRequest: Request | null = null;
@@ -241,12 +241,13 @@ describe("HomePage", () => {
         stampType: "2",
         nightWorkFlag: "0",
       });
+      // stampTimeがISO 8601形式（タイムゾーンオフセット付き）で送信されることを確認
+      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
     });
 
     it("夜勤チェックボックスをチェックして打刻すると夜勤フラグが設定される", async () => {
       const mockResponse: StampResponse = {
         message: "出勤打刻が完了しました",
-        success: true,
       };
 
       let capturedRequest: Request | null = null;
@@ -280,7 +281,6 @@ describe("HomePage", () => {
     it("打刻成功時にメッセージが表示される", async () => {
       const mockResponse: StampResponse = {
         message: "出勤打刻が完了しました",
-        success: true,
       };
 
       mswServer.use(
@@ -310,7 +310,6 @@ describe("HomePage", () => {
           HttpResponse.json(
             {
               message: "エラー",
-              success: false,
             },
             { status: 500 }
           )
@@ -333,7 +332,6 @@ describe("HomePage", () => {
     it("打刻処理中はボタンが無効化される", async () => {
       const mockResponse: StampResponse = {
         message: "打刻が完了しました",
-        success: true,
       };
 
       mswServer.use(
@@ -352,6 +350,49 @@ describe("HomePage", () => {
       // ボタンが無効化されているか確認
       expect(stampButton).toBeDisabled();
       expect(quitButton).toBeDisabled();
+    });
+
+    it("打刻時にJST固定のタイムスタンプが送信される", async () => {
+      const mockResponse: StampResponse = {
+        message: "出勤打刻が完了しました",
+      };
+
+      let capturedRequest: Request | null = null;
+
+      mswServer.use(
+        http.post("http://localhost/api/home/stamps", ({ request }) => {
+          capturedRequest = request.clone();
+          return HttpResponse.json(mockResponse);
+        })
+      );
+
+      const user = userEvent.setup();
+      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+
+      await waitFor(() => {
+        expect(capturedRequest).not.toBeNull();
+      });
+
+      if (!capturedRequest) {
+        throw new Error("Request was not captured");
+      }
+
+      const body = await (capturedRequest as Request).json();
+      // stampTimeフィールドの存在を確認
+      expect(body).toHaveProperty("stampTime");
+      // フォーマットを確認（ISO 8601形式: YYYY-MM-DDTHH:mm:ss+09:00）
+      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      // タイムスタンプが妥当な値であることを確認（過去でも未来でもない）
+      const timestamp = new Date(body.stampTime);
+      const now = new Date();
+      const fiveMinutesAgo = new Date(now.getTime() - 5 * 60 * 1000);
+      const fiveMinutesLater = new Date(now.getTime() + 5 * 60 * 1000);
+      expect(timestamp.getTime()).toBeGreaterThanOrEqual(
+        fiveMinutesAgo.getTime()
+      );
+      expect(timestamp.getTime()).toBeLessThanOrEqual(
+        fiveMinutesLater.getTime()
+      );
     });
   });
 

@@ -33,7 +33,6 @@ const HomeDashboardResponseSchema = z.object({
 
 const StampResponseSchema = z.object({
   message: z.string(),
-  success: z.boolean(),
 });
 
 /**

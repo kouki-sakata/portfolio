@@ -41,6 +41,13 @@
 - **思考**: 英語で思考
 - **応答**: 日本語でユーザーに応答
 
+### タイムゾーン
+- **JST固定**: 打刻機能は**日本標準時（Asia/Tokyo）に固定**
+  - フロントエンド: Day.js の timezone plugin で `Asia/Tokyo` に固定
+  - バックエンド: `ZoneId.of("Asia/Tokyo")` で明示的にJSTとして解釈
+  - ブラウザのタイムゾーンに関係なく、常にJSTで時刻を記録
+- **制約事項**: 海外拠点での運用には適さない（JST以外の時刻を記録できない）
+
 ## ✨ 主な改善ポイント
 
 - **SPA 化**: React + TypeScript + React Query によるシングルページ構成。Spring MVC 側は API と SPA フォワーダーのみを提供

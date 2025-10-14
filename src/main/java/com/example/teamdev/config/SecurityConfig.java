@@ -1,6 +1,7 @@
 package com.example.teamdev.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -26,6 +27,24 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
 
+    @Value("${app.environment:prod}")
+    private String environment;
+
+    /**
+     * CSRF Token Repository を環境に応じて設定
+     * 開発環境・テスト環境では Secure フラグを無効化し、HTTP でも Cookie が動作するようにする
+     */
+    private CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+
+        // 開発環境とテスト環境では Secure flag を無効化
+        if ("dev".equals(environment) || "test".equals(environment)) {
+            repository.setCookieCustomizer(cookie -> cookie.secure(false));
+        }
+
+        return repository;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -45,11 +64,15 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        // ケースインセンシティブな CSRF トークンハンドラー
+        CaseInsensitiveCsrfTokenRequestHandler csrfRequestHandler = new CaseInsensitiveCsrfTokenRequestHandler();
+
         http
             .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                // Allow health endpoints, login, and logout endpoints without CSRF to ease SPA auth flow and E2E tests
-                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout")
+                .csrfTokenRepository(csrfTokenRepository())  // カスタムリポジトリを使用
+                .csrfTokenRequestHandler(csrfRequestHandler)  // ケースインセンシティブハンドラーを使用
+                // Allow health endpoints, login, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(

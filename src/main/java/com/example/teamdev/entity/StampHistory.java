@@ -1,6 +1,6 @@
 package com.example.teamdev.entity;
 
-import java.sql.Timestamp;
+import java.time.OffsetDateTime;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 /**
  * 打刻記録テーブル
+ *
+ * Note: TIMESTAMP WITH TIME ZONE (TIMESTAMPTZ) を使用
+ * データベースには UTC で保存され、Java 側では OffsetDateTime で扱う
  */
 @Data
 @NoArgsConstructor
@@ -35,19 +38,19 @@ public class StampHistory {
 	 */
 	private Integer employeeId;  //←employee_id→employeeId修正
 	/**
-	 * 出勤時刻
+	 * 出勤時刻（タイムゾーン情報付き）
 	 */
-	private Timestamp inTime;  //←in_time→inTime修正
+	private OffsetDateTime inTime;  //←in_time→inTime修正
 	/**
-	 * 退勤時刻
+	 * 退勤時刻（タイムゾーン情報付き）
 	 */
-	private Timestamp outTime;  //←out_time→outTime修正
+	private OffsetDateTime outTime;  //←out_time→outTime修正
 	/**
 	 * 更新従業員ID
 	 */
 	private Integer updateEmployeeId;  //←update_employee_id→updateEmployeeId修正
 	/**
-	 * 更新日時
+	 * 更新日時（タイムゾーン情報付き）
 	 */
-	private Timestamp updateDate;  //←update_date→updateDate修正
+	private OffsetDateTime updateDate;  //←update_date→updateDate修正
 }

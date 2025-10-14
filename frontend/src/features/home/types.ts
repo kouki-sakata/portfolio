@@ -20,5 +20,4 @@ export type StampRequest = {
 
 export type StampResponse = {
   message: string;
-  success: boolean;
 };

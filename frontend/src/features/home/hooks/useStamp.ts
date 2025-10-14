@@ -8,6 +8,7 @@ import {
 import type { StampRequest, StampResponse } from "@/features/home/types";
 import { toast } from "@/hooks/use-toast";
 import type { HttpClientError } from "@/shared/api/httpClient";
+import { formatLocalTimestamp } from "@/shared/utils/date";
 
 const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
 
@@ -85,7 +86,8 @@ export const useStamp = (
   const handleStamp = useCallback(
     async (type: "1" | "2", nightWork: boolean) => {
       setMessage(null);
-      const timestamp = new Date().toISOString().slice(0, 19);
+      // JST固定で時刻を送信（海外アクセスでも正しい時刻を保証）
+      const timestamp = formatLocalTimestamp();
 
       await stampMutation.mutateAsync({
         stampType: type,

@@ -1,7 +1,8 @@
 package com.example.teamdev.service;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,31 +35,22 @@ public class StampService {
         }
         int nightWorkFlag = Integer.parseInt(homeForm.getNightWorkFlag());
 
-        //打刻時刻をTimestamp型に変換
-        //homeForm.getStampTime(): yyyy-MM-ddTHH:mm:ss
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse(homeForm.getStampTime(), formatter);
-        Timestamp stampTime = Timestamp.valueOf(dateTime);
+        //打刻時刻をOffsetDateTime型に変換
+        //homeForm.getStampTime(): yyyy-MM-ddTHH:mm:ss+09:00 (ISO 8601形式、フロントエンドからタイムゾーン情報付きで送信)
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+        OffsetDateTime stampTime = OffsetDateTime.parse(homeForm.getStampTime(), formatter);
+        // PostgreSQL TIMESTAMPTZ が自動的に UTC で保存
 
         //DBに登録するため、年月日分割
-        Timestamp targetStampDate = stampTime;
+        LocalDate targetDate = stampTime.toLocalDate();
         //退勤かつ夜勤打刻チェックがある場合は日を前日とする
         if (stampType == StampType.DEPARTURE && nightWorkFlag == 1) {
-            // stampTimeからLocalDateTimeを取得
-            LocalDateTime localDateTime = stampTime.toLocalDateTime();
             // 前日の日付を計算
-            LocalDateTime previousDay = localDateTime.minusDays(1);
-            targetStampDate = Timestamp.valueOf(previousDay);
+            targetDate = targetDate.minusDays(1);
         }
-        String targetTime = targetStampDate.toString();
-        // targetTime: yyyy-MM-dd　HH:mm:ss
-        // 空白文字を区切り文字として文字列を分割
-        String[] parts = targetTime.split("\\s+");
-        // 日付部分を "-" で分割して、年月日を取得
-        String[] dateParts = parts[0].split("-");
-        String year = dateParts[0];
-        String month = dateParts[1];
-        String day = dateParts[2];
+        String year = String.format("%04d", targetDate.getYear());
+        String month = String.format("%02d", targetDate.getMonthValue());
+        String day = String.format("%02d", targetDate.getDayOfMonth());
 
         StampHistory entity = new StampHistory();
         entity.setYear(year);
@@ -73,7 +65,7 @@ public class StampService {
         }
 
         entity.setUpdateEmployeeId(employeeId);
-        Timestamp date = Timestamp.valueOf(LocalDateTime.now());
+        OffsetDateTime date = OffsetDateTime.now(ZoneOffset.UTC);
         entity.setUpdateDate(date);
 
         // Upsert behavior portable across DBs:
@@ -82,16 +74,12 @@ public class StampService {
         StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
         if (existing != null) {
             entity.setId(existing.getId());
+            // 出勤打刻時: 新しい in_time をセット、既存の out_time を保持
+            // 退勤打刻時: 新しい out_time をセット、既存の in_time を保持
             if (entity.getInTime() == null) {
-                entity.setInTime(existing.getInTime());
-            } else if (existing.getInTime() != null) {
-                // Keep existing inTime if already set
                 entity.setInTime(existing.getInTime());
             }
             if (entity.getOutTime() == null) {
-                entity.setOutTime(existing.getOutTime());
-            } else if (existing.getOutTime() != null) {
-                // Keep existing outTime if already set
                 entity.setOutTime(existing.getOutTime());
             }
             mapper.update(entity);
@@ -99,13 +87,17 @@ public class StampService {
             mapper.save(entity);
         }
 
+        // LogHistory は Timestamp を使用するため変換
+        java.sql.Timestamp stampTimeForLog = java.sql.Timestamp.from(stampTime.toInstant());
+        java.sql.Timestamp dateForLog = java.sql.Timestamp.from(date.toInstant());
+
         logHistoryService.execute(
             AppConstants.LogHistory.FUNCTION_STAMP,
             stampType.getLogHistoryOperationType(),
-            stampTime,
+            stampTimeForLog,
             employeeId,
             employeeId,
-            date
+            dateForLog
         );
     }
 }

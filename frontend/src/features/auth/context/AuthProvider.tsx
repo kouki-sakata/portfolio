@@ -195,9 +195,7 @@ export const AuthProvider = ({ children, config }: AuthProviderProps) => {
 
   // グローバル401エラーハンドラーの設定
   useEffect(() => {
-    // ESLintのno-misused-promisesルールを回避
     // handleLogoutは非同期関数だが、エラーハンドラー内で適切に処理される
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
     configureQueryClientErrorHandler(handleLogout, navigate, loginPath);
   }, [navigate, handleLogout, loginPath]);
 

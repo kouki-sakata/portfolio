@@ -76,7 +76,7 @@ class StampEditServiceTest {
             when(timestampConverter.convertInTime("2025", "10", "1", "09:00")).thenReturn(testInTime);
             when(timestampConverter.convertOutTime("2025", "10", "1", "18:00")).thenReturn(testOutTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(testInTime, testOutTime)).thenReturn(testOutTime);
-            when(stampPersistence.saveOrUpdate(extractedData, testInTime, testOutTime, UPDATE_EMPLOYEE_ID))
+            when(stampPersistence.saveOrUpdate(eq(extractedData), any(), any(), eq(UPDATE_EMPLOYEE_ID)))
                 .thenReturn(true);
 
             // Act
@@ -87,7 +87,7 @@ class StampEditServiceTest {
             verify(timestampConverter).convertInTime("2025", "10", "1", "09:00");
             verify(timestampConverter).convertOutTime("2025", "10", "1", "18:00");
             verify(outTimeAdjuster).adjustOutTimeIfNeeded(testInTime, testOutTime);
-            verify(stampPersistence).saveOrUpdate(extractedData, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(extractedData), any(), any(), eq(UPDATE_EMPLOYEE_ID));
             verify(logHistoryService).execute(eq(4), eq(3), isNull(), eq(100), eq(UPDATE_EMPLOYEE_ID), any());
         }
 
@@ -188,7 +188,7 @@ class StampEditServiceTest {
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(timestampConverter.convertInTime("2025", "10", "1", "09:00")).thenReturn(testInTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(testInTime, null)).thenReturn(null);
-            when(stampPersistence.saveOrUpdate(data, testInTime, null, UPDATE_EMPLOYEE_ID)).thenReturn(true);
+            when(stampPersistence.saveOrUpdate(eq(data), any(), isNull(), eq(UPDATE_EMPLOYEE_ID))).thenReturn(true);
 
             // Act
             stampEditService.execute(stampEditList, UPDATE_EMPLOYEE_ID);
@@ -196,7 +196,7 @@ class StampEditServiceTest {
             // Assert
             verify(timestampConverter).convertInTime("2025", "10", "1", "09:00");
             verify(timestampConverter, never()).convertOutTime(anyString(), anyString(), anyString(), anyString());
-            verify(stampPersistence).saveOrUpdate(data, testInTime, null, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), any(), isNull(), eq(UPDATE_EMPLOYEE_ID));
         }
 
         @Test
@@ -211,7 +211,7 @@ class StampEditServiceTest {
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(timestampConverter.convertOutTime("2025", "10", "2", "18:00")).thenReturn(testOutTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(null, testOutTime)).thenReturn(testOutTime);
-            when(stampPersistence.saveOrUpdate(data, null, testOutTime, UPDATE_EMPLOYEE_ID)).thenReturn(true);
+            when(stampPersistence.saveOrUpdate(eq(data), isNull(), any(), eq(UPDATE_EMPLOYEE_ID))).thenReturn(true);
 
             // Act
             stampEditService.execute(stampEditList, UPDATE_EMPLOYEE_ID);
@@ -219,7 +219,7 @@ class StampEditServiceTest {
             // Assert
             verify(timestampConverter, never()).convertInTime(anyString(), anyString(), anyString(), anyString());
             verify(timestampConverter).convertOutTime("2025", "10", "2", "18:00");
-            verify(stampPersistence).saveOrUpdate(data, null, testOutTime, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), isNull(), any(), eq(UPDATE_EMPLOYEE_ID));
         }
 
         @Test
@@ -233,7 +233,7 @@ class StampEditServiceTest {
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(null, null)).thenReturn(null);
-            when(stampPersistence.saveOrUpdate(data, null, null, UPDATE_EMPLOYEE_ID)).thenReturn(true);
+            when(stampPersistence.saveOrUpdate(eq(data), isNull(), isNull(), eq(UPDATE_EMPLOYEE_ID))).thenReturn(true);
 
             // Act
             stampEditService.execute(stampEditList, UPDATE_EMPLOYEE_ID);
@@ -241,7 +241,7 @@ class StampEditServiceTest {
             // Assert
             verify(timestampConverter, never()).convertInTime(anyString(), anyString(), anyString(), anyString());
             verify(timestampConverter, never()).convertOutTime(anyString(), anyString(), anyString(), anyString());
-            verify(stampPersistence).saveOrUpdate(data, null, null, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), isNull(), isNull(), eq(UPDATE_EMPLOYEE_ID));
         }
     }
 
@@ -265,7 +265,7 @@ class StampEditServiceTest {
             when(timestampConverter.convertInTime("2025", "10", "1", "22:00")).thenReturn(nightInTime);
             when(timestampConverter.convertOutTime("2025", "10", "1", "06:00")).thenReturn(nightOutTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(nightInTime, nightOutTime)).thenReturn(adjustedOutTime);
-            when(stampPersistence.saveOrUpdate(data, nightInTime, adjustedOutTime, UPDATE_EMPLOYEE_ID))
+            when(stampPersistence.saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID)))
                 .thenReturn(true);
 
             // Act
@@ -273,7 +273,7 @@ class StampEditServiceTest {
 
             // Assert
             verify(outTimeAdjuster).adjustOutTimeIfNeeded(nightInTime, nightOutTime);
-            verify(stampPersistence).saveOrUpdate(data, nightInTime, adjustedOutTime, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID));
         }
 
         @Test
@@ -289,7 +289,7 @@ class StampEditServiceTest {
             when(timestampConverter.convertInTime("2025", "10", "5", "09:00")).thenReturn(testInTime);
             when(timestampConverter.convertOutTime("2025", "10", "5", "18:00")).thenReturn(testOutTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(testInTime, testOutTime)).thenReturn(testOutTime);
-            when(stampPersistence.saveOrUpdate(data, testInTime, testOutTime, UPDATE_EMPLOYEE_ID))
+            when(stampPersistence.saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID)))
                 .thenReturn(true);
 
             // Act
@@ -297,7 +297,7 @@ class StampEditServiceTest {
 
             // Assert
             verify(outTimeAdjuster).adjustOutTimeIfNeeded(testInTime, testOutTime);
-            verify(stampPersistence).saveOrUpdate(data, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID));
         }
     }
 
@@ -318,14 +318,14 @@ class StampEditServiceTest {
             when(timestampConverter.convertInTime("2025", "10", "1", "09:30")).thenReturn(testInTime);
             when(timestampConverter.convertOutTime("2025", "10", "1", "18:30")).thenReturn(testOutTime);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(testInTime, testOutTime)).thenReturn(testOutTime);
-            when(stampPersistence.saveOrUpdate(data, testInTime, testOutTime, UPDATE_EMPLOYEE_ID))
+            when(stampPersistence.saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID)))
                 .thenReturn(true);
 
             // Act
             stampEditService.execute(stampEditList, UPDATE_EMPLOYEE_ID);
 
             // Assert
-            verify(stampPersistence).saveOrUpdate(data, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);
+            verify(stampPersistence).saveOrUpdate(eq(data), any(), any(), eq(UPDATE_EMPLOYEE_ID));
             verify(logHistoryService).execute(eq(4), eq(3), isNull(), eq(100), eq(UPDATE_EMPLOYEE_ID), any());
         }
     }

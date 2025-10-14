@@ -47,6 +47,19 @@ export default defineConfig(({ command, mode }) => {
           target: "http://localhost:8080",
           changeOrigin: true,
           secure: false,
+          // Cookie を正しく転送
+          cookieDomainRewrite: "localhost",
+          cookiePathRewrite: "/",
+          // カスタムヘッダーを保持
+          configure: (proxy, _options) => {
+            proxy.on("proxyReq", (proxyReq, req, _res) => {
+              // CSRF Token ヘッダーを明示的に転送
+              const csrfToken = req.headers["x-xsrf-token"];
+              if (csrfToken) {
+                proxyReq.setHeader("X-XSRF-TOKEN", csrfToken);
+              }
+            });
+          },
         },
       },
     },

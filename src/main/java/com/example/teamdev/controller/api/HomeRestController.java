@@ -26,7 +26,8 @@ import org.springframework.web.server.ResponseStatusException;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
 
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
@@ -36,7 +37,7 @@ import java.util.Map;
 @Tag(name = "Home", description = "ホーム ダッシュボード/打刻 API")
 public class HomeRestController {
 
-    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ofPattern(AppConstants.DateFormat.ISO_LOCAL_DATE_TIME);
+    private static final DateTimeFormatter INPUT_FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
     private static final DateTimeFormatter OUTPUT_FORMATTER = DateTimeFormatter.ofPattern(AppConstants.DateFormat.DISPLAY_DATE_TIME);
 
     private final HomeNewsService homeNewsService;
@@ -74,8 +75,10 @@ public class HomeRestController {
         HomeForm form = new HomeForm(request.stampTime(), request.stampType(), request.nightWorkFlag());
         stampService.execute(form, employeeId);
 
-        LocalDateTime dateTime = LocalDateTime.parse(request.stampTime(), INPUT_FORMATTER);
-        String formattedDateTime = dateTime.format(OUTPUT_FORMATTER);
+        OffsetDateTime dateTime = OffsetDateTime.parse(request.stampTime(), INPUT_FORMATTER);
+        // 日本時間に変換してフォーマット
+        String formattedDateTime = dateTime.atZoneSameInstant(ZoneId.of("Asia/Tokyo"))
+            .format(OUTPUT_FORMATTER);
         String messageKey = request.stampType() == StampType.ATTENDANCE ?
             "stamp.attendance.success" : "stamp.departure.success";
         String message = MessageUtil.getMessage(messageKey, new Object[]{formattedDateTime});
