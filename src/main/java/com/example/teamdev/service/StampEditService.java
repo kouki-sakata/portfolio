@@ -138,7 +138,8 @@ public class StampEditService {
     private void recordLogHistory(List<Map<String, Object>> stampEditList,
             int updateEmployeeId) {
         // 最初のエントリから従業員IDを取得
-        // TODO: この実装は改善の余地あり - 各エントリごとにログを記録すべき
+        // NOTE: 現在は全エントリで同じ従業員IDを想定している
+        // マルチテナント対応時には各エントリごとにログを記録する必要がある
         String firstEmployeeIdStr = stampEditList.get(0).get("employeeId").toString();
         if (firstEmployeeIdStr.contains(",")) {
             firstEmployeeIdStr = firstEmployeeIdStr.split(",")[0];
