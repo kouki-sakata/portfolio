@@ -12,7 +12,9 @@ describe("date utilities", () => {
   describe("formatLocalTimestamp", () => {
     it("returns timestamp in ISO 8601 format with timezone offset", () => {
       const timestamp = formatLocalTimestamp();
-      expect(timestamp).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      expect(timestamp).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/
+      );
     });
 
     it("returns JST timestamp with +09:00 offset regardless of system timezone", () => {

@@ -208,7 +208,9 @@ describe("HomePage", () => {
         nightWorkFlag: "0",
       });
       // stampTimeがISO 8601形式（タイムゾーンオフセット付き）で送信されることを確認
-      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      expect(body.stampTime).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/
+      );
     });
 
     it("退勤打刻ボタンをクリックすると打刻APIが呼ばれる", async () => {
@@ -242,7 +244,9 @@ describe("HomePage", () => {
         nightWorkFlag: "0",
       });
       // stampTimeがISO 8601形式（タイムゾーンオフセット付き）で送信されることを確認
-      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      expect(body.stampTime).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/
+      );
     });
 
     it("夜勤チェックボックスをチェックして打刻すると夜勤フラグが設定される", async () => {
@@ -381,7 +385,9 @@ describe("HomePage", () => {
       // stampTimeフィールドの存在を確認
       expect(body).toHaveProperty("stampTime");
       // フォーマットを確認（ISO 8601形式: YYYY-MM-DDTHH:mm:ss+09:00）
-      expect(body.stampTime).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/);
+      expect(body.stampTime).toMatch(
+        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/
+      );
       // タイムスタンプが妥当な値であることを確認（過去でも未来でもない）
       const timestamp = new Date(body.stampTime);
       const now = new Date();
