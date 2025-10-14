@@ -12,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.StampHistory;
+import com.example.teamdev.exception.DuplicateStampException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
 
@@ -74,14 +75,24 @@ public class StampService {
         StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
         if (existing != null) {
             entity.setId(existing.getId());
-            // 出勤打刻時: 新しい in_time をセット、既存の out_time を保持
-            // 退勤打刻時: 新しい out_time をセット、既存の in_time を保持
-            if (entity.getInTime() == null) {
-                entity.setInTime(existing.getInTime());
-            }
-            if (entity.getOutTime() == null) {
+
+            // 出勤打刻時: 既存の inTime が設定済みなら上書き拒否
+            if (stampType == StampType.ATTENDANCE) {
+                if (existing.getInTime() != null) {
+                    throw new DuplicateStampException("出勤", existing.getInTime().toString());
+                }
+                // 既存の outTime を保持
                 entity.setOutTime(existing.getOutTime());
             }
+            // 退勤打刻時: 既存の outTime が設定済みなら上書き拒否
+            else if (stampType == StampType.DEPARTURE) {
+                if (existing.getOutTime() != null) {
+                    throw new DuplicateStampException("退勤", existing.getOutTime().toString());
+                }
+                // 既存の inTime を保持
+                entity.setInTime(existing.getInTime());
+            }
+
             mapper.update(entity);
         } else {
             mapper.save(entity);

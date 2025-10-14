@@ -8,6 +8,7 @@ import com.example.teamdev.dto.api.home.StampRequest;
 import com.example.teamdev.dto.api.home.StampResponse;
 import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.Employee;
+import com.example.teamdev.exception.DuplicateStampException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.service.HomeNewsService;
 import com.example.teamdev.service.StampService;
@@ -73,7 +74,13 @@ public class HomeRestController {
         }
 
         HomeForm form = new HomeForm(request.stampTime(), request.stampType(), request.nightWorkFlag());
-        stampService.execute(form, employeeId);
+
+        try {
+            stampService.execute(form, employeeId);
+        } catch (DuplicateStampException e) {
+            // 409 Conflict でクライアントに通知
+            throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        }
 
         OffsetDateTime dateTime = OffsetDateTime.parse(request.stampTime(), INPUT_FORMATTER);
         // 日本時間に変換してフォーマット
