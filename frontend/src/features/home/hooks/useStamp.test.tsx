@@ -2,10 +2,9 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
+import { useStamp } from "@/features/home/hooks/useStamp";
 import type { IHomeRepository } from "@/features/home/repositories/HomeRepository";
 import type { StampResponse } from "@/features/home/types";
-import { useStamp } from "@/features/home/hooks/useStamp";
 import type { HttpClientError } from "@/shared/api/httpClient";
 
 // toast関数をモック
@@ -38,7 +37,9 @@ describe("useStamp", () => {
     };
     vi.clearAllMocks();
     // formatLocalTimestampを固定値でモック
-    vi.mocked(formatLocalTimestamp).mockReturnValue("2025-10-15T09:00:00+09:00");
+    vi.mocked(formatLocalTimestamp).mockReturnValue(
+      "2025-10-15T09:00:00+09:00"
+    );
   });
 
   afterEach(() => {
@@ -221,7 +222,7 @@ describe("useStamp", () => {
 
       vi.mocked(mockRepository.submitStamp).mockResolvedValue(mockResponse);
 
-      const startTime = 1000000000000;
+      const startTime = 1_000_000_000_000;
       const dateSpy = vi.spyOn(Date, "now");
 
       const { result } = renderHook(() => useStamp(mockRepository), {
@@ -248,7 +249,8 @@ describe("useStamp", () => {
       expect(toast).toHaveBeenCalledWith({
         variant: "destructive",
         title: "二重送信防止",
-        description: "短時間での連続出勤打刻はできません。あと1秒お待ちください。",
+        description:
+          "短時間での連続出勤打刻はできません。あと1秒お待ちください。",
       });
 
       // submitStampは1回しか呼ばれていないことを確認
@@ -264,7 +266,7 @@ describe("useStamp", () => {
 
       vi.mocked(mockRepository.submitStamp).mockResolvedValue(mockResponse);
 
-      const startTime = 1000000000000;
+      const startTime = 1_000_000_000_000;
       const dateSpy = vi.spyOn(Date, "now");
 
       const { result } = renderHook(() => useStamp(mockRepository), {
@@ -291,7 +293,8 @@ describe("useStamp", () => {
       expect(toast).toHaveBeenCalledWith({
         variant: "destructive",
         title: "二重送信防止",
-        description: "短時間での連続退勤打刻はできません。あと2秒お待ちください。",
+        description:
+          "短時間での連続退勤打刻はできません。あと2秒お待ちください。",
       });
 
       // submitStampは1回しか呼ばれていないことを確認
@@ -307,7 +310,7 @@ describe("useStamp", () => {
 
       vi.mocked(mockRepository.submitStamp).mockResolvedValue(mockResponse);
 
-      const startTime = 1000000000000;
+      const startTime = 1_000_000_000_000;
       const dateSpy = vi.spyOn(Date, "now");
 
       const { result } = renderHook(() => useStamp(mockRepository), {
@@ -345,7 +348,7 @@ describe("useStamp", () => {
 
       vi.mocked(mockRepository.submitStamp).mockResolvedValue(mockResponse);
 
-      const startTime = 1000000000000;
+      const startTime = 1_000_000_000_000;
       const dateSpy = vi.spyOn(Date, "now");
 
       const { result } = renderHook(() => useStamp(mockRepository), {

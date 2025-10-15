@@ -133,9 +133,7 @@ test.describe("打刻の二重送信防止と重複検証", () => {
   });
 
   test.describe("サーバー側重複打刻エラー（409 Conflict）", () => {
-    test("既に登録済みの打刻時刻で409エラーが返される", async ({
-      page,
-    }) => {
+    test("既に登録済みの打刻時刻で409エラーが返される", async ({ page }) => {
       const adminUser = createAdminUser();
       const server = await createAppMockServer(page, { user: adminUser });
 
@@ -307,9 +305,7 @@ test.describe("打刻の二重送信防止と重複検証", () => {
       });
     });
 
-    test("ネットワークエラー発生時もデバウンスは機能する", async ({
-      page,
-    }) => {
+    test("ネットワークエラー発生時もデバウンスは機能する", async ({ page }) => {
       const adminUser = createAdminUser();
       const server = await createAppMockServer(page, { user: adminUser });
 
