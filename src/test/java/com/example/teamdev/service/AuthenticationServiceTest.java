@@ -2,6 +2,7 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,7 +15,9 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -25,6 +28,9 @@ class AuthenticationServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private AuthenticationService authenticationService;
@@ -50,6 +56,9 @@ class AuthenticationServiceTest {
     void execute_shouldReturnEmployeeInfo_whenCredentialsAreValid() {
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
         when(passwordEncoder.matches(formEmployee.getPassword(), dbEmployee.getPassword())).thenReturn(true);
+        when(objectMapper.convertValue(any(), eq(Map.class))).thenReturn(
+            Map.of("id", 1, "first_name", "太郎", "last_name", "田中", "email", "test@example.com", "password", "hashedPassword")
+        );
 
         Map<String, Object> result = authenticationService.execute(formEmployee);
 

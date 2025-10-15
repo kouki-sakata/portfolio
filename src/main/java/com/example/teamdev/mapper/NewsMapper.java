@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
@@ -45,7 +46,7 @@ public interface NewsMapper {
 	 *
 	 * @return 公開お知らせリスト
 	 */
-	@Results(id = "newsResultMapList")
+	@ResultMap("newsResultMap")
 	@Select("SELECT * FROM news WHERE release_flag = TRUE ORDER BY news_date DESC")
 	List<News> getNewsByReleaseFlagTrue();
 
@@ -55,7 +56,7 @@ public interface NewsMapper {
 	 * @param limit 取得件数
 	 * @return 公開お知らせリスト（上限件数）
 	 */
-	@Results(id = "newsResultMapLimitList")
+	@ResultMap("newsResultMap")
 	@Select("SELECT * FROM news WHERE release_flag = TRUE ORDER BY news_date DESC LIMIT #{limit}")
 	List<News> getNewsByReleaseFlagTrueWithLimit(@Param("limit") int limit);
 
@@ -64,7 +65,7 @@ public interface NewsMapper {
 	 *
 	 * @return お知らせリスト
 	 */
-	@Results(id = "newsResultMapAllList")
+	@ResultMap("newsResultMap")
 	@Select("SELECT * FROM news ORDER BY news_date DESC")
 	List<News> getNewsOrderByNewsDateDesc();
 

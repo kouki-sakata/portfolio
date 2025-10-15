@@ -35,6 +35,8 @@ public class StampOutputService {
     StampHistoryMapper mapper;
     @Autowired
     LogHistoryRegistrationService logHistoryService;
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public void execute(HttpServletResponse response, StampOutputForm stampOutputForm,
             Integer updateEmployeeId) throws IOException {
@@ -74,7 +76,7 @@ public class StampOutputService {
                 if (!stampHistoryList.isEmpty()) {
                     StampHistoryDisplay stampHistory = stampHistoryList
                             .get(0);
-                    Map<String, Object> stampHistoryMap = new ObjectMapper()
+                    Map<String, Object> stampHistoryMap = objectMapper
                             .convertValue(stampHistory, Map.class);
                     String employeeName = stampHistoryMap
                             .get("employee_name").toString();

@@ -25,6 +25,9 @@ public class NewsManageService{
 	@Autowired
 	NewsMapper mapper;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	public List<Map<String,Object>> execute() {
 
 		List<Map<String,Object>>newsMapList = new ArrayList<Map<String,Object>>();
@@ -34,7 +37,7 @@ public class NewsManageService{
 		List<News> newsList =  mapper.getNewsOrderByNewsDateDesc();
 		for (News news : newsList) {
 			//お知らせ情報をmapに詰め替え
-			newsMap = new ObjectMapper().convertValue(news, Map.class);
+			newsMap = objectMapper.convertValue(news, Map.class);
 
 			// Newsオブジェクトから日付を取得し、
 			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）

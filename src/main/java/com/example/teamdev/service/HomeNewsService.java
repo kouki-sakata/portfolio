@@ -23,6 +23,9 @@ public class HomeNewsService{
 	@Autowired
 	private NewsMapper mapper;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 
 	public List<Map<String,Object>> execute() {
 
@@ -33,7 +36,7 @@ public class HomeNewsService{
 		List<News> newsList =  mapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT);
 		for (News news : newsList) {
 			//お知らせ情報をmapに詰め替え
-			newsMap = new ObjectMapper().convertValue(news, Map.class);
+			newsMap = objectMapper.convertValue(news, Map.class);
 
 			// Newsオブジェクトから日付を取得し、
 			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
