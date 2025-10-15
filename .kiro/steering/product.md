@@ -54,6 +54,7 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ✅ React Query、MSW統合テスト、Playwright E2E
 - ✅ パフォーマンス監視（Lighthouse CI）
 - ✅ お知らせ管理機能スキーマ移行完了（2025-10-15）
+- ✅ お知らせ管理REST APIとOpenAPI型同期の実装（2025-10-15）
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
@@ -61,4 +62,4 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - 📋 外部システム連携API、プッシュ通知、生体認証
 
 ---
-*Last Updated: 2025-10-15*
+*Last Updated: 2025-10-15 (News REST API統合)*

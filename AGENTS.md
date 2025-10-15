@@ -1,211 +1,89 @@
-# Repository Guidelines
+# AI-DLC and Spec-Driven Development
 
-## Technology Stack Details
+Kiro-style Spec Driven Development implementation on AI-DLC (AI Development Life Cycle)
 
-### Backend Technologies
+## Project Memory
+Project memory keeps persistent guidance (steering, specs notes, component docs) so Codex honors your standards each run. Treat it as the long-lived source of truth for patterns, conventions, and decisions.
 
-- **Java 21** (Eclipse Temurin JDK)
-- **Spring Boot 3.4.3** - Core framework
-- **Spring Security** - Session-based authentication with CSRF protection
-- **MyBatis 3.0.4** - SQL mapper framework for database operations
-- **PostgreSQL 16** - Primary database (all environments)
-- **Lombok** - Boilerplate code reduction
-- **SpringDoc OpenAPI 2.6.0** - Swagger UI and API documentation
-- **HikariCP** - Connection pooling (included in Spring Boot)
-- **Gradle 8.14.2** - Build automation
-
-### Frontend Technologies
-
-- **React 19.1.1** - UI framework
-- **TypeScript 5.8.3** - Type safety
-- **Vite 7.1.7** - Build tool and dev server
-- **React Router 7.9.2** - Client-side routing
-- **React Query (TanStack Query) 5.90.2** - Server state management
-- **React Hook Form 7.63.0** - Form management with Zod validation
-- **Tailwind CSS 4.1.13** - Utility-first CSS framework
-- **shadcn-ui@canary** - Component library built on Radix UI (use canary version
-  for latest features)
-- **Radix UI** - Unstyled, accessible UI components (base for shadcn-ui)
-- **Lucide React** - Icon library
-- **Axios 1.12.2** - HTTP client
-- **date-fns 4.1.0** - Date utilities
-- **Biome** - Linting and formatting (replacing ESLint/Prettier)
-
-### Testing Infrastructure
-
-- **Backend:**
-    - JUnit 5 with Spring Boot Test
-    - Testcontainers (PostgreSQL) - Integration testing with real database
-    - Mockito - Unit test mocking
-    - REST Assured (via Spring Test) - API testing
-    - OpenAPI4j - Contract validation (optional with `-PenableOpenApiContract`)
-    - JaCoCo - Code coverage
-
-- **Frontend:**
-    - Vitest 3.2.4 - Unit testing framework
-    - Testing Library (React) - Component testing
-    - Playwright 1.49.1 - E2E testing
-    - jsdom - DOM simulation for Vitest
-    - Axios Mock Adapter - API mocking
-
-### Development Tools
-
-- **Docker & Docker Compose** - Containerization
-- **Node.js 22.12.0 / npm 10.9.2** - Frontend toolchain (version specified in
-  `frontend/.nvmrc`)
-- **GitHub Actions** - CI/CD pipeline
-- **SonarCloud** - Code quality analysis
-- **OWASP Dependency Check** - Security vulnerability scanning
-- **Ultracite** - Development automation tool
-
-## AI-DLC and Spec-Driven Development
-
-Kiro-style Spec Driven Development implementation using claude code slash
-commands, hooks and agents.
-
-### Adhere to each best practice
-
-When implementing code, always refer to context7 and proceed with
-implementation. Before you start coding, please get the latest documentation
-using context7 (MCP server).
+- Use `.kiro/steering/` for project-wide policies: architecture principles, naming schemes, security constraints, tech stack decisions, api standards, etc.
+- Use local `AGENTS.md` files for feature or library context (e.g. `src/lib/payments/AGENTS.md`): describe domain assumptions, API contracts, or testing conventions specific to that folder. Codex auto-loads these when working in the matching path.
+- Specs notes stay with each spec (under `.kiro/specs/`) to guide specification-level workflows.
 
 ## Project Context
 
-### Important Notes
-
-- Never use `any` or `unknown` types in TypeScript (per global CLAUDE.md)
-- Always check for existing libraries before adding dependencies
-- Frontend build output is integrated into Spring Boot static resources
-- Profiles: `dev` (Swagger enabled), `test` (Testcontainers), `prod` (optimized)
-- **shadcn-ui Components**: Always use `@canary` version for latest features and
-  compatibility with React 19
-- **Component Imports**: Import UI components from `@/components/ui/*` not from
-  external packages
-- **Styling**: Components use Tailwind CSS with CSS variables defined in
-  `src/index.css`
-
 ### Paths
-
 - Steering: `.kiro/steering/`
 - Specs: `.kiro/specs/`
-- Commands: `.claude/commands/`
 
 ### Steering vs Specification
 
 **Steering** (`.kiro/steering/`) - Guide AI with project-wide rules and context
-**Specs** (`.kiro/specs/`) - Formalize development process for individual
-features
+**Specs** (`.kiro/specs/`) - Formalize development process for individual features
 
 ### Active Specifications
-
 - Check `.kiro/specs/` for active specifications
-- Use `/kiro:spec-status [feature-name]` to check progress
+- Use `/prompts:kiro-spec-status [feature-name]` to check progress
 
 ## Development Guidelines
+- Think in English, but generate responses in Japanese (思考は英語、回答の生成は日本語で行うように)
 
-- Think in English, but generate responses in Japanese (
-  思考は英語、回答の生成は日本語で行うように)
-
-## Workflow
-
-### Phase 0: Steering (Optional)
-
-`/kiro:steering` - Create/update steering documents
-`/kiro:steering-custom` - Create custom steering for specialized contexts
-
-**Note**: Optional for new features or small additions. Can proceed directly to
-spec-init.
-
-### Phase 1: Specification Creation
-
-1. `/kiro:spec-init [detailed description]` - Initialize spec with detailed
-   project description
-2. `/kiro:spec-requirements [feature]` - Generate requirements document
-3. `/kiro:spec-design [feature]` - Interactive: "
-   requirements.mdをレビューしましたか？ [y/N]"
-4. `/kiro:spec-tasks [feature]` - Interactive: Confirms both requirements and
-   design review
-
-### Phase 2: Progress Tracking
-
-`/kiro:spec-status [feature]` - Check current progress and phases
+## Minimal Workflow
+- Phase 0 (optional): `/prompts:kiro-steering`, `/prompts:kiro-steering-custom`
+- Phase 1 (Specification):
+  - `/prompts:kiro-spec-init "description"`
+  - `/prompts:kiro-spec-requirements {feature}`
+  - `/prompts:kiro-validate-gap {feature}` (optional: for existing codebase)
+  - `/prompts:kiro-spec-design {feature} [-y]`
+  - `/prompts:kiro-validate-design {feature}` (optional: design review)
+  - `/prompts:kiro-spec-tasks {feature} [-y]`
+- Phase 2 (Implementation): `/prompts:kiro-spec-impl {feature} [tasks]`
+  - `/prompts:kiro-validate-impl {feature}` (optional: after implementation)
+- Progress check: `/prompts:kiro-spec-status {feature}` (use anytime)
 
 ## Development Rules
-
-1. **Consider steering**: Run `/kiro:steering` before major development (
-   optional for new features)
-2. **Follow 3-phase approval workflow**: Requirements → Design → Tasks →
-   Implementation
-3. **Approval required**: Each phase requires human review (interactive prompt
-   or manual)
-4. **No skipping phases**: Design requires approved requirements; Tasks require
-   approved design
-5. **Update task status**: Mark tasks as completed when working on them
-6. **Keep steering current**: Run `/kiro:steering` after significant changes
-7. **Check spec compliance**: Use `/kiro:spec-status` to verify alignment
+- 3-phase approval workflow: Requirements → Design → Tasks → Implementation
+- Human review required each phase; use `-y` only for intentional fast-track
+- Keep steering current and verify alignment with `/prompts:kiro-spec-status`
 
 ## Steering Configuration
+- Load entire `.kiro/steering/` as project memory
+- Default files: `product.md`, `tech.md`, `structure.md`
+- Custom files are supported (managed via `/prompts:kiro-steering-custom`)
 
-### Current Steering Files
 
-Managed by `/kiro:steering` command. Updates here reflect command changes.
+# Repository Guidelines
 
-### Active Steering Files
-
-- `product.md`: Always included - Product context and business objectives
-- `tech.md`: Always included - Technology stack and architectural decisions
-- `structure.md`: Always included - File organization and code patterns
-
-### Custom Steering Files
-
-<!-- Added by /kiro:steering-custom command -->
-
-### Inclusion Modes
-
-- **Always**: Loaded in every interaction (default)
-- **Conditional**: Loaded for specific file patterns (e.g., `"*.test.js"`)
-- **Manual**: Reference with `@filename.md` syntax
-
+## Project Structure & Module Organization
+- Backend code lives in `src/main/java`; configuration and MyBatis mappers stay in `src/main/resources` under `mapper`.
+- Frontend sources are in `frontend/src`; UI components belong to `frontend/src/components`, shared utilities to `frontend/src/lib` and `frontend/src/shared`.
+- Backend tests sit in `src/test/java`; frontend unit tests and mocks reside in `frontend/src/__tests__` and `frontend/src/__mocks__`; Playwright E2E suites use `frontend/tests/e2e`.
+- Steering and specifications for agents are tracked in `.kiro/steering` and `.kiro/specs`; review them before planning work.
 
 ## Build, Test, and Development Commands
-
-- `./gradlew bootRun` (with `SPRING_PROFILES_ACTIVE=dev`) starts the API
-  locally.
-- `npm run dev --prefix frontend` runs Vite on http://localhost:5173.
-- `./gradlew build` packages backend plus SPA output in `build/libs/`.
-- `./gradlew check` runs Java tests, Biome lint, TS typecheck, and Vitest.
-- `docker-compose up -d` spins up app + PostgreSQL; shut down with
-  `docker-compose down`.
+- `./gradlew bootRun` with `SPRING_PROFILES_ACTIVE=dev` starts the Spring Boot API against PostgreSQL.
+- `npm run dev --prefix frontend` launches the Vite dev server at http://localhost:5173 with hot reload for React 19.
+- `./gradlew build` bundles the backend and the compiled SPA into `build/libs/`.
+- `./gradlew check` runs JUnit, Mockito, Testcontainers, Biome, Vitest, and TypeScript checks in one pass.
+- `docker-compose up -d` provisions the app plus PostgreSQL; stop with `docker-compose down` when finished.
 
 ## Coding Style & Naming Conventions
-
-- Java: 4-space indent, Lombok, feature packages; PascalCase types, camelCase
-  members, tests `*Test.java`.
-- SQL migrations follow `0N_description.sql`; keep DDL in `01_` and data in
-  `02_`.
-- TypeScript: Strict mode enabled, no `any` or `unknown` types
-- Frontend lint/format via Biome; run `npm run lint --prefix frontend` or
-  `npm run lint:fix --prefix frontend` before pushing.
-- Components in PascalCase files, hooks camelCase, shared helpers under
-  `frontend/src/shared` or `lib`.
+- Java uses 4-space indents; classes in PascalCase, fields and methods in camelCase; test classes end with `Test.java`.
+- TypeScript stays in strict mode—do not use `any` or `unknown`; components use PascalCase filenames, hooks use camelCase.
+- SQL migrations follow `01_` for schema and `02_` for seed data; prefer incremental, descriptive filenames.
+- Biome handles linting and formatting; run `npm run lint --prefix frontend` before committing, `npm run lint:fix --prefix frontend` for autofixes.
 
 ## Testing Guidelines
-
-- `./gradlew test` covers unit + integration; place specs near implementation.
-- Mark API suites `@Tag("api")` to run with `./gradlew apiTest`.
-- Generate coverage with `./gradlew jacocoTestReport`; optional
-  `jacocoCoverageVerification` enforces ≥25% line coverage.
-- Frontend unit tests: `npm run lint:fix --prefix frontend`; Playwright E2E:
-  `npm run test:e2e --prefix frontend`; TypeScript type checks:
-  `npm run typecheck --prefix frontend`.
-- Reseed Postgres using `01_schema.sql` and `02_data.sql` when data drifts.
+- `./gradlew test` covers unit and integration suites; scope API-only runs with `./gradlew apiTest` and `@Tag("api")`.
+- Frontend checks rely on `npm run typecheck --prefix frontend`, `npm run test --prefix frontend`, and `npm run test:e2e --prefix frontend`.
+- Review coverage using `./gradlew jacocoTestReport`; adjust `jacocoCoverageVerification` if thresholds change.
 
 ## Commit & Pull Request Guidelines
+- Follow Conventional Commits (e.g., `feat: add attendance summary API`); call out OpenAPI or schema changes explicitly in the body.
+- Pull requests must describe purpose, link issues, document local verification (`./gradlew check` plus relevant npm scripts), and attach screenshots for UI updates.
+- Request reviewers from both Java and frontend maintainers whenever a change touches shared contracts or DTOs.
 
-- Follow Conventional Commits (`feat:`, `fix:`, `refactor:`, etc.) like the
-  existing history.
-- Keep commits focused and mention OpenAPI or schema changes explicitly.
-- PRs must include purpose, linked issue, local verification (`./gradlew check`,
-  frontend tests), and UI evidence for visual work.
-- Request reviewers from both Java and frontend maintainers when touching shared
-  contracts or DTOs.
+## Agent Workflow Notes
+- Always run `/init kiro` before implementation to sync the latest steering context.
+- Progress through `/kiro:spec-init`, `/kiro:spec-requirements`, `/kiro:spec-design`, and `/kiro:spec-tasks` sequentially; do not skip approval stages.
+- Fetch current library documentation through Context7 prior to coding, then confirm assumptions inside the spec tasks.
+- Conduct internal reasoning in English but deliver repository communications in Japanese, matching the project convention.

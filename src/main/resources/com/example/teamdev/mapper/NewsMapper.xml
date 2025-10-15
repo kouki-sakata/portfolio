@@ -3,7 +3,7 @@
 <mapper namespace="com.example.teamdev.mapper.NewsMapper">
 
 	<!-- お知らせを挿入 -->
-	<insert id="save" parameterType="com.example.teamdev.entity.News">
+	<insert id="save" parameterType="com.example.teamdev.entity.News" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
 		INSERT INTO news (
 			news_date,
 			content,
@@ -21,6 +21,7 @@
 	<update id="upDate" parameterType="com.example.teamdev.entity.News">
 		UPDATE news
 		SET
+			news_date = #{newsDate},
 			content = #{content},
 			release_flag = #{releaseFlag},
 			update_date = #{updateDate}

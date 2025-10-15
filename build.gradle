@@ -26,7 +26,16 @@ configurations {
 }
 
 repositories {
-	mavenCentral()
+	// Maven Central - 主要なJavaライブラリリポジトリ
+	maven {
+		url = uri("https://repo.maven.apache.org/maven2/")
+		name = "MavenCentral"
+	}
+	// フォールバック用のMaven Centralミラー
+	maven {
+		url = uri("https://repo1.maven.org/maven2/")
+		name = "MavenCentralMirror"
+	}
 }
 
 dependencies {

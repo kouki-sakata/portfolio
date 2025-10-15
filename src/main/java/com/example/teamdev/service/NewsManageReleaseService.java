@@ -30,7 +30,7 @@ public class NewsManageReleaseService{
 
 	@Transactional
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
-		logger.info("NewsManageReleaseService.execute started - updateEmployeeId: {}", updateEmployeeId);
+		logger.debug("NewsManageReleaseService.execute started - updateEmployeeId: {}", updateEmployeeId);
 		
 		try {
 			if (listForm == null || listForm.getEditList() == null) {
@@ -38,9 +38,9 @@ public class NewsManageReleaseService{
 				throw new IllegalArgumentException("ListForm or EditList cannot be null");
 			}
 			
-			logger.info("Processing {} items for release", listForm.getEditList().size());
+			logger.debug("Processing {} items for release", listForm.getEditList().size());
 
-			boolean release = false;
+			int updatedCount = 0;
 			for (Map<String,String> editMap : listForm.getEditList()) {
 				try {
 					String idString = editMap.get("id");
@@ -58,7 +58,7 @@ public class NewsManageReleaseService{
 					    releaseFlag = false;
 					}
 					
-					logger.info("Processing news ID: {}, releaseFlag: {}", id, releaseFlag);
+					logger.debug("Processing news ID: {}, releaseFlag: {}", id, releaseFlag);
 					
 					News entity =  mapper.getById(id).orElse(null);
 					if (entity != null) {
@@ -67,8 +67,8 @@ public class NewsManageReleaseService{
 						Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
 						entity.setUpdateDate(timestamp);
 						mapper.upDate(entity);
-						release = true;
-						logger.info("Successfully updated news ID: {} with releaseFlag: {}", id, releaseFlag);
+						updatedCount++;
+						logger.debug("Successfully updated news ID: {} with releaseFlag: {}", id, releaseFlag);
 					} else {
 						logger.warn("News entity not found for ID: {}", id);
 					}
@@ -81,13 +81,16 @@ public class NewsManageReleaseService{
 				}
 			}
 			
-			if(release) {
+			if(updatedCount > 0) {
 				// 履歴記録
-				logger.info("Recording log history for release operation");
+				logger.info("Updated release flag for {} news item(s)", updatedCount);
+				logger.debug("Recording log history for release operation");
 				logHistoryService.execute(2, 5, null, null, updateEmployeeId , Timestamp.valueOf(LocalDateTime.now()));
+			} else {
+				logger.debug("No news items updated during release toggle");
 			}
 			
-			logger.info("NewsManageReleaseService.execute completed successfully");
+			logger.debug("NewsManageReleaseService.execute completed successfully");
 		} catch (Exception e) {
 			logger.error("Error in NewsManageReleaseService.execute", e);
 			throw e;

@@ -28,7 +28,7 @@ TeamDevelopBravo-main/
 │   ├── 打刻: StampService、EditService、HistoryService
 │   └── お知らせ: NewsManageService（ファサード）、各専門サービス
 ├── mapper/           # MyBatisマッパー
-├── dto/api/          # API用DTO（auth、employee、home、stamp）
+├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
 ├── entity/           # エンティティ（Employee、News、StampHistory等）
 ├── exception/        # カスタム例外
 └── util/             # ユーティリティ
@@ -46,7 +46,8 @@ TeamDevelopBravo-main/
 │   ├── auth/         # 認証（AuthProvider、hooks、api）
 │   ├── employees/    # 従業員管理
 │   ├── home/         # ダッシュボード
-│   └── stampHistory/ # 打刻履歴
+│   ├── logManagement/ # 監査ログ・操作履歴
+│   └── news/         # お知らせ管理（APIクライアント、hooks、UI）
 ├── shared/           # 共通コンポーネント
 │   ├── api/          # API共通設定、エラークラス
 │   ├── components/   # layout、loading
@@ -59,7 +60,7 @@ TeamDevelopBravo-main/
 ## レイヤードアーキテクチャ
 
 ### バックエンド（SOLID原則）
-- **Controller**: REST API（Spring MVC）
+- **Controller**: REST API（Spring MVC）。`NewsRestController`のようにBean Validation付きrecord DTOを受け取り、Service層と`ListForm`/`NewsManageForm`で橋渡しする。
 - **Service**: ビジネスロジック
   - ファサードパターン（複雑性の隠蔽）
   - Query/Command分離（CQRS）
@@ -95,4 +96,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-15*
+*Last Updated: 2025-10-15 (News REST API統合)*

@@ -25,17 +25,19 @@ public class NewsManageRegistrationService{
 	@Autowired
 	LogHistoryRegistrationService logHistoryService;
 
-	public void execute(NewsManageForm newsManageForm, Integer updateEmployeeId) {
+	public News execute(NewsManageForm newsManageForm, Integer updateEmployeeId) {
 
 		//更新か新規登録か判断するためInteger型の変数にidを格納する（nullの場合は新規登録）
-		Integer id = !newsManageForm.getId().isEmpty() ? Integer.parseInt(newsManageForm.getId()) : null;
+		Integer id = newsManageForm.getId() != null && !newsManageForm.getId().isEmpty()
+			? Integer.parseInt(newsManageForm.getId())
+			: null;
 
 		// フォームから日付を取得（LocalDate型）
 		LocalDate newsDate = LocalDate.parse(newsManageForm.getNewsDate());
 
 		//idが格納されている場合は更新
 		if (id != null) {
-			News entity =  mapper.getById(id).orElse(null);
+			News entity =  mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
 			entity.setNewsDate(newsDate);
 			entity.setContent(newsManageForm.getContent());
 			Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
@@ -43,6 +45,7 @@ public class NewsManageRegistrationService{
 			mapper.upDate(entity);
 			//履歴記録
 			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
+			return entity;
 		} else {
 			//idが格納されていない場合は新規登録
 			News entity = new News();
@@ -55,6 +58,7 @@ public class NewsManageRegistrationService{
 			mapper.save(entity);
 			//履歴記録
 			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
+			return entity;
 		}
 	}
 }

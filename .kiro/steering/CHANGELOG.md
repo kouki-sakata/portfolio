@@ -1,5 +1,25 @@
 # Steering Documents Changelog
 
+## 2025-10-15 (Update 23)
+
+### Updated Documents
+- `product.md` - お知らせ管理REST API完了ステータスを追記
+- `tech.md` - Controller層の実装パターンとOpenAPI同期手順を明文化
+- `structure.md` - DTOサブパッケージとfeatures/news構成を反映
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- NewsRestControllerの役割と`ListForm`/`NewsManageForm`連携パターンを技術指針に追加
+- features/news・logManagementディレクトリの存在と役割を構造指針に明記
+- お知らせ管理REST APIとOpenAPI型生成が完了済みであることを製品概要に反映
+
+### Impact
+- Controller実装時の権限制御・DTO設計が指針化され、再実装時の迷いを削減
+- 新規/既存モジュールの所在が明文化され、機能拡張タスク時の探索コストを低減
+- OpenAPI駆動の型同期手順が共有され、フロント/バックの型乖離リスクを軽減
+
+---
+
 ## 2025-10-15 (Update 22)
 
 ### Updated Documents

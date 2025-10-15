@@ -52,6 +52,11 @@ npm run generate:api # OpenAPI型生成
   - 打刻: StampService、EditService、HistoryService、DeleteService
   - お知らせ: RegistrationService、ReleaseService、DeletionService
 
+### API層の実装パターン
+- `NewsRestController`に代表されるREST層はrecord DTO + Bean Validationで入力を確定させ、`SecurityUtil#getCurrentEmployeeId()`で操作者IDを取得してService層へ委譲する。
+- 変更系エンドポイントは`@PreAuthorize("hasRole('ADMIN')")`で保護し、公開切り替えは`ListForm`/`NewsManageForm`を経由して既存サービスのドメインロジックを再利用する。
+- レスポンスはエンティティ→DTO変換ヘルパーでcamelCaseへ正規化し、OpenAPI 3.0スキーマと`npm run generate:api`で生成されるTypeScript型と突き合わせる。
+
 ### セキュリティ
 - セッションベース認証（8時間）、CSRF保護（Cookie + X-XSRF-TOKEN）
 - BCryptパスワードハッシング、MyBatisパラメータバインディング
@@ -88,4 +93,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-15*
+*Last Updated: 2025-10-15 (News REST API統合)*
