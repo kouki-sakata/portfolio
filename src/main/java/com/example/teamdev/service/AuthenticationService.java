@@ -72,7 +72,7 @@ public class AuthenticationService {
                     map.putAll(employeeAsMap); // マッピングされた従業員情報をそのまま追加
 
                     String employeeName = targetEmployee.getFirst_name() +
-                            "　" + targetEmployee.getLast_name();
+                            " " + targetEmployee.getLast_name();
                     map.put("employeeName", employeeName); // 表示用の従業員名
                     map.put("signInTime", LocalDateTime.now()); // サインイン時刻
                     map.remove("password"); // セキュリティのためパスワード情報は削除

@@ -59,7 +59,7 @@ public class HomeService03Test {
         // Assert
         assertNotNull(result);
         assertTrue(result.containsKey("employeeName"));
-        assertEquals("Test　User", result.get("employeeName"));
+        assertEquals("Test User", result.get("employeeName"));
         assertTrue(result.containsKey("signInTime"));
         assertFalse(result.containsKey("password"));
         assertEquals(1, result.get("id"));
