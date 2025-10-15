@@ -67,7 +67,7 @@ class AuthenticationServiceTest {
         assertEquals("太郎", result.get("first_name"));
         assertEquals("田中", result.get("last_name"));
         assertEquals("test@example.com", result.get("email"));
-        assertEquals("太郎　田中", result.get("employeeName"));
+        assertEquals("太郎 田中", result.get("employeeName"));
         assertNotNull(result.get("signInTime"));
         assertTrue(result.get("signInTime") instanceof LocalDateTime);
         assertNull(result.get("password")); // パスワードが除去されていることを確認

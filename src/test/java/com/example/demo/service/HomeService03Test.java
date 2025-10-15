@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.AuthenticationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -11,9 +12,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -24,6 +28,9 @@ public class HomeService03Test {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @InjectMocks
     private AuthenticationService homeService03;
@@ -50,8 +57,17 @@ public class HomeService03Test {
     @Test
     void execute_shouldReturnEmployeeMap_whenLoginIsSuccessful() {
         // Arrange
+        Map<String, Object> employeeMap = new HashMap<>();
+        employeeMap.put("id", 1);
+        employeeMap.put("email", "test@example.com");
+        employeeMap.put("first_name", "Test");
+        employeeMap.put("last_name", "User");
+        employeeMap.put("password", "$2a$10$hashedpassword");
+        employeeMap.put("admin_flag", 0);
+
         when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
         when(passwordEncoder.matches("plainPassword123", "$2a$10$hashedpassword")).thenReturn(true);
+        when(objectMapper.convertValue(any(Employee.class), eq(Map.class))).thenReturn(employeeMap);
 
         // Act
         Map<String, Object> result = homeService03.execute(employeeFrom);
