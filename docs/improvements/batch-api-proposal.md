@@ -403,9 +403,3 @@ async function processBatchEdits(editList: StampEditData[]): Promise<void> {
 - [REST API Design: Batch Operations](https://restfulapi.net/rest-api-design-best-practices/)
 - [Spring Boot Batch Processing](https://spring.io/guides/gs/batch-processing/)
 - [HTTP Status Code 207 (Multi-Status)](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/207)
-
-## 変更履歴
-
-| 日付 | 変更者 | 変更内容 |
-|------|--------|----------|
-| 2025-10-14 | Claude | 初版作成 |
