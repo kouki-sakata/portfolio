@@ -36,7 +36,8 @@ public class HomeNewsService{
 		List<News> newsList =  mapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT);
 		for (News news : newsList) {
 			//お知らせ情報をmapに詰め替え
-			newsMap = objectMapper.convertValue(news, Map.class);
+                        newsMap = objectMapper.convertValue(news, Map.class);
+                        newsMap.put("release_flag", news.getReleaseFlag());
 
 			// Newsオブジェクトから日付を取得し、
 			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
