@@ -12,12 +12,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -29,10 +26,9 @@ public class HomeService03Test {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @Mock
+    // 実物のObjectMapperを使用（モックではなく実際の変換ロジックをテスト）
     private ObjectMapper objectMapper;
 
-    @InjectMocks
     private AuthenticationService homeService03;
 
     private Employee employeeFrom;
@@ -40,6 +36,12 @@ public class HomeService03Test {
 
     @BeforeEach
     void setUp() {
+        // ObjectMapperの実物インスタンスを作成
+        objectMapper = new ObjectMapper();
+
+        // AuthenticationServiceを手動で構築（実物のObjectMapperを注入）
+        homeService03 = new AuthenticationService(employeeMapper, passwordEncoder, objectMapper);
+
         employeeFrom = new Employee();
         employeeFrom.setEmail("test@example.com");
         employeeFrom.setPassword("plainPassword123");
@@ -57,17 +59,9 @@ public class HomeService03Test {
     @Test
     void execute_shouldReturnEmployeeMap_whenLoginIsSuccessful() {
         // Arrange
-        Map<String, Object> employeeMap = new HashMap<>();
-        employeeMap.put("id", 1);
-        employeeMap.put("email", "test@example.com");
-        employeeMap.put("first_name", "Test");
-        employeeMap.put("last_name", "User");
-        employeeMap.put("password", "$2a$10$hashedpassword");
-        employeeMap.put("admin_flag", 0);
-
         when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
         when(passwordEncoder.matches("plainPassword123", "$2a$10$hashedpassword")).thenReturn(true);
-        when(objectMapper.convertValue(any(Employee.class), eq(Map.class))).thenReturn(employeeMap);
+        // ObjectMapperは実物を使用 - 実際の変換ロジックがテストされる
 
         // Act
         Map<String, Object> result = homeService03.execute(employeeFrom);
@@ -79,6 +73,11 @@ public class HomeService03Test {
         assertTrue(result.containsKey("signInTime"));
         assertFalse(result.containsKey("password"));
         assertEquals(1, result.get("id"));
+        // 実際のJackson変換により、すべてのフィールドが正しく変換されることを検証
+        assertEquals("test@example.com", result.get("email"));
+        assertEquals("Test", result.get("first_name"));
+        assertEquals("User", result.get("last_name"));
+        assertEquals(0, result.get("admin_flag"));
     }
 
     @Test
