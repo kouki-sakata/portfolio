@@ -39,9 +39,9 @@ CREATE TABLE stamp_history (
     month VARCHAR(2),
     day VARCHAR(2),
     employee_id INTEGER REFERENCES employee(id),
-    in_time TIMESTAMP WITHOUT TIME ZONE,
-    out_time TIMESTAMP WITHOUT TIME ZONE,
+    in_time TIMESTAMP WITH TIME ZONE,
+    out_time TIMESTAMP WITH TIME ZONE,
     update_employee_id INTEGER,
-    update_date TIMESTAMP WITHOUT TIME ZONE,
+    update_date TIMESTAMP WITH TIME ZONE NOT NULL,
     CONSTRAINT uk_employee_date UNIQUE (employee_id, year, month, day)
 );

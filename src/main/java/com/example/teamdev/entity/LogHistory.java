@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 
 /**
  * 履歴記録テーブル
+ *
+ * Note: TIMESTAMP WITHOUT TIME ZONE を使用（stamp_time, update_date）
+ * 既存のスキーマとの互換性維持のため Timestamp を使用
  */
 @Data
 @NoArgsConstructor

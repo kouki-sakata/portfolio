@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 /**
@@ -41,8 +41,8 @@ public class StampHistoryPersistence {
      * @return 保存または更新が行われた場合true
      */
     @Transactional
-    public boolean saveOrUpdate(StampEditData data, Timestamp inTime,
-            Timestamp adjustedOutTime, int updateEmployeeId) {
+    public boolean saveOrUpdate(StampEditData data, OffsetDateTime inTime,
+            OffsetDateTime adjustedOutTime, int updateEmployeeId) {
 
         if (data.isNewEntry()) {
             return createNewStampHistory(data, inTime, adjustedOutTime, updateEmployeeId);
@@ -60,8 +60,8 @@ public class StampHistoryPersistence {
      * @param updateEmployeeId 更新者の従業員ID
      * @return 常にtrue（保存成功）
      */
-    private boolean createNewStampHistory(StampEditData data, Timestamp inTime,
-            Timestamp outTime, int updateEmployeeId) {
+    private boolean createNewStampHistory(StampEditData data, OffsetDateTime inTime,
+            OffsetDateTime outTime, int updateEmployeeId) {
 
         StampHistory entity = new StampHistory();
 
@@ -94,8 +94,8 @@ public class StampHistoryPersistence {
      * @param updateEmployeeId 更新者の従業員ID
      * @return 更新が行われた場合true、エンティティが見つからない場合false
      */
-    private boolean updateExistingStampHistory(StampEditData data, Timestamp inTime,
-            Timestamp outTime, int updateEmployeeId) {
+    private boolean updateExistingStampHistory(StampEditData data, OffsetDateTime inTime,
+            OffsetDateTime outTime, int updateEmployeeId) {
 
         // 既存エンティティの取得
         Optional<StampHistory> optionalEntity = stampHistoryMapper.getById(data.getId());
@@ -119,20 +119,16 @@ public class StampHistoryPersistence {
         // データベースを更新
         stampHistoryMapper.update(entity);
 
-        // 既存コードとの互換性のため、saveも呼び出す
-        // TODO: 将来的にはupdateのみに統一すべき
-        stampHistoryMapper.save(entity);
-
         return true;
     }
 
     /**
      * 現在のタイムスタンプを取得します。
      *
-     * @return 現在時刻のTimestamp
+     * @return 現在時刻のOffsetDateTime (UTC)
      */
-    private Timestamp getCurrentTimestamp() {
-        return Timestamp.valueOf(LocalDateTime.now());
+    private OffsetDateTime getCurrentTimestamp() {
+        return OffsetDateTime.now(ZoneOffset.UTC);
     }
 
     /**

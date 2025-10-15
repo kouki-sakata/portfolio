@@ -1,6 +1,7 @@
 package com.example.teamdev.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -19,12 +20,50 @@ import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 public class SecurityConfig {
+
+    private static final String ENV_TEST = "test";
+    private static final String ENV_DEV = "dev";
+
+    @Value("${app.environment:prod}")
+    private String environment;
+
+    /**
+     * CSRF Token Repository を環境に応じて設定
+     * 開発環境・テスト環境では Secure フラグを無効化し、HTTP でも Cookie が動作するようにする
+     */
+    private CookieCsrfTokenRepository csrfTokenRepository() {
+        CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
+
+        // 開発環境とテスト環境では Secure flag を無効化
+        if (ENV_DEV.equals(environment) || ENV_TEST.equals(environment)) {
+            repository.setCookieCustomizer(cookie -> cookie.secure(false));
+        }
+
+        return repository;
+    }
+
+    /**
+     * 環境に応じた CSRF トークンハンドラーを作成
+     * テスト環境では Spring Security Test との互換性を保つため標準ハンドラーを使用
+     * それ以外の環境では BREACH 攻撃対策を含むカスタムハンドラーを使用 (デフォルト)
+     *
+     * @return 環境に応じた CsrfTokenRequestHandler
+     */
+    private CsrfTokenRequestHandler createCsrfTokenRequestHandler() {
+        if (ENV_TEST.equals(environment)) {
+            return new CsrfTokenRequestAttributeHandler();
+        }
+        // デフォルトは本番環境用 (セキュア)
+        return new CaseInsensitiveCsrfTokenRequestHandler();
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -47,9 +86,10 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf
-                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-                // Allow health endpoints, login, and logout endpoints without CSRF to ease SPA auth flow and E2E tests
-                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout")
+                .csrfTokenRepository(csrfTokenRepository())
+                .csrfTokenRequestHandler(createCsrfTokenRequestHandler())
+                // Allow health endpoints, login, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
             .authorizeHttpRequests(authz -> authz
                 .requestMatchers(

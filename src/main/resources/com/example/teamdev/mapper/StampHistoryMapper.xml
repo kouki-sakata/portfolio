@@ -23,9 +23,9 @@
             #{employeeId} AS "employeeId",
             concat_ws(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS "employeeName",
             concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS "updateEmployeeName",
-            to_char(sh.in_time, 'HH24:MI') AS "inTime",
-            to_char(sh.out_time, 'HH24:MI') AS "outTime",
-            to_char(sh.update_date, 'YYYY/MM/DD HH24:MI') AS "updateDate"
+            to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "inTime",
+            to_char(sh.out_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "outTime",
+            to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
                 SELECT CAST(#{date} AS DATE) AS date
@@ -54,16 +54,21 @@
         )
     </insert>
     <!--更新の追記-->
+    <!--動的SQL: in_time/out_time が null の場合は既存値を保持-->
     <update id="update" parameterType="com.example.teamdev.entity.StampHistory">
         UPDATE stamp_history
         SET
-        year = #{year},
-        month = #{month},
-        day = #{day},
-        in_time = #{inTime},
-        out_time = #{outTime},
-        update_employee_id = #{updateEmployeeId},
-        update_date = #{updateDate}
+            year = #{year},
+            month = #{month},
+            day = #{day},
+            <if test="inTime != null">
+                in_time = #{inTime},
+            </if>
+            <if test="outTime != null">
+                out_time = #{outTime},
+            </if>
+            update_employee_id = #{updateEmployeeId},
+            update_date = #{updateDate}
         WHERE id = #{id}
     </update>
 </mapper>

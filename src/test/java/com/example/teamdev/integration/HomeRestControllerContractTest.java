@@ -56,7 +56,7 @@ class HomeRestControllerContractTest extends ApiTestSupport {
     void stamps_schema_and_positive() throws Exception {
         String body = "{" +
             "\"stampType\":\"1\"," +
-            "\"stampTime\":\"2025-01-01T09:00:00\"," +
+            "\"stampTime\":\"2025-01-01T09:00:00+09:00\"," +
             "\"nightWorkFlag\":\"0\"" +
         "}";
 

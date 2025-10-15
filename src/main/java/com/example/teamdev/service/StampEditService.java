@@ -21,7 +21,6 @@ import java.util.Map;
 public class StampEditService {
 
     private final StampFormDataExtractor dataExtractor;
-    private final TimestampConverter timestampConverter;
     private final OutTimeAdjuster outTimeAdjuster;
     private final StampHistoryPersistence stampPersistence;
     private final LogHistoryRegistrationService logHistoryService;
@@ -30,7 +29,6 @@ public class StampEditService {
      * StampEditServiceのコンストラクタ。
      *
      * @param dataExtractor      フォームデータ抽出器
-     * @param timestampConverter タイムスタンプ変換器
      * @param outTimeAdjuster    退勤時刻調整器
      * @param stampPersistence   打刻履歴永続化
      * @param logHistoryService  ログ履歴サービス
@@ -38,12 +36,10 @@ public class StampEditService {
     @Autowired
     public StampEditService(
             StampFormDataExtractor dataExtractor,
-            TimestampConverter timestampConverter,
             OutTimeAdjuster outTimeAdjuster,
             StampHistoryPersistence stampPersistence,
             LogHistoryRegistrationService logHistoryService) {
         this.dataExtractor = dataExtractor;
-        this.timestampConverter = timestampConverter;
         this.outTimeAdjuster = outTimeAdjuster;
         this.stampPersistence = stampPersistence;
         this.logHistoryService = logHistoryService;
@@ -97,43 +93,40 @@ public class StampEditService {
         // Step 1: データ抽出
         StampEditData data = dataExtractor.extractFromMap(stampEdit);
 
-        // Step 2: 時刻変換
-        Timestamp inTime = convertInTime(data);
-        Timestamp outTime = convertOutTime(data);
+        // Step 2: 時刻を直接OffsetDateTimeに変換
+        java.time.OffsetDateTime inTime = parseToOffsetDateTime(
+            data.getYear(), data.getMonth(), data.getDay(), data.getInTime());
+        java.time.OffsetDateTime outTime = parseToOffsetDateTime(
+            data.getYear(), data.getMonth(), data.getDay(), data.getOutTime());
 
         // Step 3: 退勤時刻調整
-        Timestamp adjustedOutTime = outTimeAdjuster.adjustOutTimeIfNeeded(inTime, outTime);
+        java.time.OffsetDateTime adjustedOutTime = outTimeAdjuster.adjustOutTimeIfNeeded(inTime, outTime);
 
         // Step 4: データ永続化
         return stampPersistence.saveOrUpdate(data, inTime, adjustedOutTime, updateEmployeeId);
     }
 
     /**
-     * 出勤時刻をTimestampに変換します。
+     * 日付と時刻文字列を直接OffsetDateTimeに変換します。
+     * 中間のTimestamp変換を排除し、パフォーマンスを改善します。
      *
-     * @param data 打刻編集データ
-     * @return 出勤時刻のTimestamp（未設定の場合null）
+     * @param year  年（YYYY）
+     * @param month 月（MM）
+     * @param day   日（DD）
+     * @param time  時刻（HH:mm）
+     * @return JST（+09:00）のOffsetDateTime
      */
-    private Timestamp convertInTime(StampEditData data) {
-        if (!data.hasInTime()) {
+    private java.time.OffsetDateTime parseToOffsetDateTime(String year, String month,
+                                                             String day, String time) {
+        if (time == null || time.isEmpty()) {
             return null;
         }
-        return timestampConverter.convertInTime(
-                data.getYear(), data.getMonth(), data.getDay(), data.getInTime());
-    }
-
-    /**
-     * 退勤時刻をTimestampに変換します。
-     *
-     * @param data 打刻編集データ
-     * @return 退勤時刻のTimestamp（未設定の場合null）
-     */
-    private Timestamp convertOutTime(StampEditData data) {
-        if (!data.hasOutTime()) {
-            return null;
-        }
-        return timestampConverter.convertOutTime(
-                data.getYear(), data.getMonth(), data.getDay(), data.getOutTime());
+        // Zero-pad month and day to ensure ISO 8601 compliance
+        String paddedMonth = String.format("%02d", Integer.parseInt(month));
+        String paddedDay = String.format("%02d", Integer.parseInt(day));
+        String isoString = String.format("%s-%s-%sT%s:00+09:00",
+                                          year, paddedMonth, paddedDay, time);
+        return java.time.OffsetDateTime.parse(isoString, java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 
     /**
@@ -145,7 +138,8 @@ public class StampEditService {
     private void recordLogHistory(List<Map<String, Object>> stampEditList,
             int updateEmployeeId) {
         // 最初のエントリから従業員IDを取得
-        // TODO: この実装は改善の余地あり - 各エントリごとにログを記録すべき
+        // NOTE: 現在は全エントリで同じ従業員IDを想定している
+        // マルチテナント対応時には各エントリごとにログを記録する必要がある
         String firstEmployeeIdStr = stampEditList.get(0).get("employeeId").toString();
         if (firstEmployeeIdStr.contains(",")) {
             firstEmployeeIdStr = firstEmployeeIdStr.split(",")[0];

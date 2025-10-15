@@ -13,8 +13,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,14 +35,14 @@ class StampHistoryPersistenceTest {
     @InjectMocks
     private StampHistoryPersistence persistence;
 
-    private Timestamp testInTime;
-    private Timestamp testOutTime;
+    private OffsetDateTime testInTime;
+    private OffsetDateTime testOutTime;
     private static final int UPDATE_EMPLOYEE_ID = 100;
 
     @BeforeEach
     void setUp() {
-        testInTime = Timestamp.valueOf(LocalDateTime.of(2025, 10, 1, 9, 0));
-        testOutTime = Timestamp.valueOf(LocalDateTime.of(2025, 10, 1, 18, 0));
+        testInTime = OffsetDateTime.of(2025, 10, 1, 9, 0, 0, 0, ZoneOffset.ofHours(9));
+        testOutTime = OffsetDateTime.of(2025, 10, 1, 18, 0, 0, 0, ZoneOffset.ofHours(9));
     }
 
     @Nested
@@ -208,7 +208,6 @@ class StampHistoryPersistenceTest {
             when(stampHistoryMapper.getById(999)).thenReturn(Optional.of(existingEntity));
 
             ArgumentCaptor<StampHistory> updateCaptor = ArgumentCaptor.forClass(StampHistory.class);
-            ArgumentCaptor<StampHistory> saveCaptor = ArgumentCaptor.forClass(StampHistory.class);
 
             // Act
             boolean result = persistence.saveOrUpdate(data, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);
@@ -217,7 +216,6 @@ class StampHistoryPersistenceTest {
             assertTrue(result, "更新成功");
             verify(stampHistoryMapper).getById(999);
             verify(stampHistoryMapper).update(updateCaptor.capture());
-            verify(stampHistoryMapper).save(saveCaptor.capture());
 
             StampHistory updated = updateCaptor.getValue();
             assertAll(

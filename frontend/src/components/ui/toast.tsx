@@ -12,6 +12,7 @@ const ToastViewport = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
+    aria-label="通知"
     className={cn(
       "fixed top-0 z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:top-auto sm:right-0 sm:bottom-0 sm:flex-col md:max-w-[420px]",
       className
@@ -44,8 +45,11 @@ const Toast = React.forwardRef<
     VariantProps<typeof toastVariants>
 >(({ className, variant, ...props }, ref) => (
   <ToastPrimitives.Root
+    aria-atomic="true"
+    aria-live={variant === "destructive" ? "assertive" : "polite"}
     className={cn(toastVariants({ variant }), className)}
     ref={ref}
+    role={variant === "destructive" ? "alert" : "status"}
     {...props}
   />
 ));

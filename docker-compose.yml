@@ -10,6 +10,8 @@ services:
       db:
         condition: service_healthy
     environment:
+      SPRING_PROFILES_ACTIVE: dev
+      APP_ENVIRONMENT: dev
       DB_HOST: db
       DB_PORT: 5432
       DB_NAME: ${DOCKER_DB_NAME:-teamdev_db}
