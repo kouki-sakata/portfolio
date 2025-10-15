@@ -99,13 +99,65 @@ export type HomeNewsItem = {
      */
     content: string;
     /**
-     * お知らせ日付
+     * お知らせ日付（YYYY-MM-DD形式）
      */
     newsDate: string;
     /**
      * 公開フラグ
      */
     releaseFlag: boolean;
+};
+
+export type NewsResponse = {
+    /**
+     * お知らせID
+     */
+    id: number;
+    /**
+     * お知らせ日付（YYYY-MM-DD形式）
+     */
+    newsDate: string;
+    /**
+     * お知らせ内容（最大1000文字）
+     */
+    content: string;
+    /**
+     * 公開フラグ（true:公開, false:非公開）
+     */
+    releaseFlag: boolean;
+    /**
+     * 更新日時（ISO 8601形式）
+     */
+    updateDate: string;
+};
+
+export type NewsListResponse = {
+    /**
+     * お知らせリスト
+     */
+    news: Array<NewsResponse>;
+};
+
+export type NewsCreateRequest = {
+    /**
+     * お知らせ日付（YYYY-MM-DD形式）
+     */
+    newsDate: string;
+    /**
+     * お知らせ内容（1-1000文字）
+     */
+    content: string;
+};
+
+export type NewsUpdateRequest = {
+    /**
+     * お知らせ日付（YYYY-MM-DD形式）
+     */
+    newsDate: string;
+    /**
+     * お知らせ内容（1-1000文字）
+     */
+    content: string;
 };
 
 export type StampRequest = {
@@ -447,3 +499,170 @@ export type GetStampHistoryResponses = {
 };
 
 export type GetStampHistoryResponse = GetStampHistoryResponses[keyof GetStampHistoryResponses];
+
+export type GetAllNewsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/news';
+};
+
+export type GetAllNewsErrors = {
+    /**
+     * 認証が必要です
+     */
+    401: ErrorResponse;
+};
+
+export type GetAllNewsError = GetAllNewsErrors[keyof GetAllNewsErrors];
+
+export type GetAllNewsResponses = {
+    /**
+     * お知らせ一覧
+     */
+    200: NewsListResponse;
+};
+
+export type GetAllNewsResponse = GetAllNewsResponses[keyof GetAllNewsResponses];
+
+export type CreateNewsData = {
+    body: NewsCreateRequest;
+    path?: never;
+    query?: never;
+    url: '/api/news';
+};
+
+export type CreateNewsErrors = {
+    /**
+     * バリデーションエラー
+     */
+    400: ErrorResponse;
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+};
+
+export type CreateNewsError = CreateNewsErrors[keyof CreateNewsErrors];
+
+export type CreateNewsResponses = {
+    /**
+     * 作成成功
+     */
+    201: NewsResponse;
+};
+
+export type CreateNewsResponse = CreateNewsResponses[keyof CreateNewsResponses];
+
+export type GetPublishedNewsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/news/published';
+};
+
+export type GetPublishedNewsResponses = {
+    /**
+     * 公開お知らせ一覧
+     */
+    200: NewsListResponse;
+};
+
+export type GetPublishedNewsResponse = GetPublishedNewsResponses[keyof GetPublishedNewsResponses];
+
+export type DeleteNewsData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/news/{id}';
+};
+
+export type DeleteNewsErrors = {
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+    /**
+     * お知らせが見つかりません
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteNewsError = DeleteNewsErrors[keyof DeleteNewsErrors];
+
+export type DeleteNewsResponses = {
+    /**
+     * 削除成功
+     */
+    204: void;
+};
+
+export type DeleteNewsResponse = DeleteNewsResponses[keyof DeleteNewsResponses];
+
+export type UpdateNewsData = {
+    body: NewsUpdateRequest;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/news/{id}';
+};
+
+export type UpdateNewsErrors = {
+    /**
+     * バリデーションエラー
+     */
+    400: ErrorResponse;
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+    /**
+     * お知らせが見つかりません
+     */
+    404: ErrorResponse;
+};
+
+export type UpdateNewsError = UpdateNewsErrors[keyof UpdateNewsErrors];
+
+export type UpdateNewsResponses = {
+    /**
+     * 更新成功
+     */
+    200: NewsResponse;
+};
+
+export type UpdateNewsResponse = UpdateNewsResponses[keyof UpdateNewsResponses];
+
+export type ToggleNewsPublishData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/news/{id}/publish';
+};
+
+export type ToggleNewsPublishErrors = {
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+    /**
+     * お知らせが見つかりません
+     */
+    404: ErrorResponse;
+};
+
+export type ToggleNewsPublishError = ToggleNewsPublishErrors[keyof ToggleNewsPublishErrors];
+
+export type ToggleNewsPublishResponses = {
+    /**
+     * 切り替え成功
+     */
+    204: void;
+};
+
+export type ToggleNewsPublishResponse = ToggleNewsPublishResponses[keyof ToggleNewsPublishResponses];

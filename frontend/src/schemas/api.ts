@@ -100,6 +100,28 @@ const StampHistoryResponse = z
   })
   .strict()
   .passthrough();
+const NewsResponse = z
+  .object({
+    id: z.number().int(),
+    newsDate: z.string(),
+    content: z.string().max(1000),
+    releaseFlag: z.boolean(),
+    updateDate: z.string().datetime({ offset: true }),
+  })
+  .strict()
+  .passthrough();
+const NewsListResponse = z
+  .object({ news: z.array(NewsResponse) })
+  .strict()
+  .passthrough();
+const NewsCreateRequest = z
+  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
+  .strict()
+  .passthrough();
+const NewsUpdateRequest = z
+  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
+  .strict()
+  .passthrough();
 
 export const schemas = {
   LoginRequest,
@@ -116,6 +138,10 @@ export const schemas = {
   StampResponse,
   StampHistoryEntryResponse,
   StampHistoryResponse,
+  NewsResponse,
+  NewsListResponse,
+  NewsCreateRequest,
+  NewsUpdateRequest,
 };
 
 const endpoints = makeApi([
@@ -282,6 +308,147 @@ const endpoints = makeApi([
         schema: ErrorResponse,
       },
     ],
+  },
+  {
+    method: "get",
+    path: "/api/news",
+    alias: "getAllNews",
+    description: `すべてのお知らせを日付降順で取得（管理者向け）`,
+    requestFormat: "json",
+    response: NewsListResponse,
+    errors: [
+      {
+        status: 401,
+        description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/news",
+    alias: "createNews",
+    description: `新規お知らせを作成（ADMIN権限が必要）`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: NewsCreateRequest,
+      },
+    ],
+    response: NewsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `バリデーションエラー`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/news/:id",
+    alias: "updateNews",
+    description: `既存お知らせを更新（ADMIN権限が必要）`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: NewsUpdateRequest,
+      },
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: NewsResponse,
+    errors: [
+      {
+        status: 400,
+        description: `バリデーションエラー`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 404,
+        description: `お知らせが見つかりません`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/news/:id",
+    alias: "deleteNews",
+    description: `指定IDのお知らせを削除（ADMIN権限が必要）`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 404,
+        description: `お知らせが見つかりません`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "patch",
+    path: "/api/news/:id/publish",
+    alias: "toggleNewsPublish",
+    description: `公開/非公開フラグをトグル（ADMIN権限が必要）`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 404,
+        description: `お知らせが見つかりません`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "get",
+    path: "/api/news/published",
+    alias: "getPublishedNews",
+    description: `公開フラグがtrueのお知らせを日付降順で取得（認証不要）`,
+    requestFormat: "json",
+    response: NewsListResponse,
   },
   {
     method: "get",

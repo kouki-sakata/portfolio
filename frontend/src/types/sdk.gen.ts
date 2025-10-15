@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, DeleteEmployeesData, DeleteEmployeesResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses } from './types.gen';
+import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -186,6 +186,115 @@ export const getStampHistory = <ThrowOnError extends boolean = false>(options?: 
             }
         ],
         url: '/api/stamp-history',
+        ...options
+    });
+};
+
+/**
+ * お知らせ一覧取得
+ * すべてのお知らせを日付降順で取得（管理者向け）
+ */
+export const getAllNews = <ThrowOnError extends boolean = false>(options?: Options<GetAllNewsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetAllNewsResponses, GetAllNewsErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/news',
+        ...options
+    });
+};
+
+/**
+ * お知らせ作成
+ * 新規お知らせを作成（ADMIN権限が必要）
+ */
+export const createNews = <ThrowOnError extends boolean = false>(options: Options<CreateNewsData, ThrowOnError>) => {
+    return (options.client ?? client).post<CreateNewsResponses, CreateNewsErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/news',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * 公開お知らせ一覧取得
+ * 公開フラグがtrueのお知らせを日付降順で取得（認証不要）
+ */
+export const getPublishedNews = <ThrowOnError extends boolean = false>(options?: Options<GetPublishedNewsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetPublishedNewsResponses, unknown, ThrowOnError>({
+        url: '/api/news/published',
+        ...options
+    });
+};
+
+/**
+ * お知らせ削除
+ * 指定IDのお知らせを削除（ADMIN権限が必要）
+ */
+export const deleteNews = <ThrowOnError extends boolean = false>(options: Options<DeleteNewsData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteNewsResponses, DeleteNewsErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/news/{id}',
+        ...options
+    });
+};
+
+/**
+ * お知らせ更新
+ * 既存お知らせを更新（ADMIN権限が必要）
+ */
+export const updateNews = <ThrowOnError extends boolean = false>(options: Options<UpdateNewsData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateNewsResponses, UpdateNewsErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/news/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * お知らせ公開切り替え
+ * 公開/非公開フラグをトグル（ADMIN権限が必要）
+ */
+export const toggleNewsPublish = <ThrowOnError extends boolean = false>(options: Options<ToggleNewsPublishData, ThrowOnError>) => {
+    return (options.client ?? client).patch<ToggleNewsPublishResponses, ToggleNewsPublishErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/news/{id}/publish',
         ...options
     });
 };
