@@ -1,75 +1,33 @@
 package com.example.teamdev.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.example.teamdev.dto.DataTablesRequest;
-import com.example.teamdev.dto.DataTablesResponse;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.mapper.NewsMapper;
-import com.example.teamdev.util.DateFormatUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * お知らせ管理
- * 画面情報取得処理
+ * お知らせ管理サービス（REST層から利用）。
+ * DataTables向けのレガシー処理は廃止し、公開API向けの取得ロジックのみを提供する。
  */
 @Service
-public class NewsManageService{
+public class NewsManageService {
 
-	@Autowired
-	NewsMapper mapper;
+    @Autowired
+    NewsMapper mapper;
 
-	public List<Map<String,Object>> execute() {
+    public List<News> getAllNews() {
+        return mapper.getNewsOrderByNewsDateDesc();
+    }
 
-		List<Map<String,Object>>newsMapList = new ArrayList<Map<String,Object>>();
-		Map<String, Object> newsMap = new HashMap<String, Object>();
+    public List<News> getPublishedNews() {
+        return mapper.getNewsByReleaseFlagTrue();
+    }
 
-		//お知らせ情報をお知らせ日付の降順で表示する
-		List<News> newsList =  mapper.getNewsOrderByNewsDateDesc();
-		for (News news : newsList) {
-			//お知らせ情報をmapに詰め替え
-			newsMap = new ObjectMapper().convertValue(news, Map.class);
-
-			// Newsオブジェクトから日付を取得し、
-			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
-			String formattedDate = DateFormatUtil.formatDate(news.getNews_date());
-			newsMap.put("news_date", formattedDate);  // Mapにセット
-
-			//Listに追加
-			newsMapList.add(newsMap);
-			}
-		return newsMapList;
-	}
-
-	public DataTablesResponse<Map<String, Object>> getNewsForDataTables(DataTablesRequest request) {
-		// すべてのお知らせ情報を取得
-		List<News> allNews = mapper.getNewsOrderByNewsDateDesc();
-		
-		// レスポンス用のデータリストを作成
-		List<Map<String, Object>> newsDataList = new ArrayList<>();
-		
-		for (News news : allNews) {
-			Map<String, Object> newsData = new HashMap<>();
-			newsData.put("id", news.getId());
-			newsData.put("news_date", DateFormatUtil.formatDate(news.getNews_date()));
-			newsData.put("content", news.getContent());
-			newsData.put("release_flag", news.isRelease_flag());
-			newsDataList.add(newsData);
-		}
-		
-		// DataTablesResponse を作成
-		DataTablesResponse<Map<String, Object>> response = new DataTablesResponse<>();
-		response.setDraw(request.getDraw());
-		response.setRecordsTotal(newsDataList.size());
-		response.setRecordsFiltered(newsDataList.size());
-		response.setData(newsDataList);
-		
-		return response;
-	}
+    public Optional<News> getById(Integer id) {
+        return mapper.getById(id);
+    }
 }

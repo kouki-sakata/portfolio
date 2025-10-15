@@ -24,8 +24,8 @@ public class LogHistoryQueryService{
 	@Autowired
 	LogHistoryMapper mapper;
 
-	// ObjectMapperのインスタンスを再利用（スレッドセーフ）
-	private final ObjectMapper objectMapper = new ObjectMapper();
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	public List<Map<String,Object>> execute(String year, String month) {
 		//更新日時がパラメータ年月と一致するレコードを更新日時降順で取得

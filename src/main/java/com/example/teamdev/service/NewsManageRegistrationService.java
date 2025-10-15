@@ -1,6 +1,7 @@
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.form.NewsManageForm;
 import com.example.teamdev.mapper.NewsMapper;
-import com.example.teamdev.util.DateFormatUtil;
 
 /**
  * お知らせ管理
@@ -25,36 +25,40 @@ public class NewsManageRegistrationService{
 	@Autowired
 	LogHistoryRegistrationService logHistoryService;
 
-	public void execute(NewsManageForm newsManageForm, Integer updateEmployeeId) {
+	public News execute(NewsManageForm newsManageForm, Integer updateEmployeeId) {
 
 		//更新か新規登録か判断するためInteger型の変数にidを格納する（nullの場合は新規登録）
-		Integer id = !newsManageForm.getId().isEmpty() ? Integer.parseInt(newsManageForm.getId()) : null;
+		Integer id = newsManageForm.getId() != null && !newsManageForm.getId().isEmpty()
+			? Integer.parseInt(newsManageForm.getId())
+			: null;
 
-		// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
-		String formattedDate = DateFormatUtil.formatDate(newsManageForm.getNewsDate());
+		// フォームから日付を取得（LocalDate型）
+		LocalDate newsDate = LocalDate.parse(newsManageForm.getNewsDate());
 
 		//idが格納されている場合は更新
 		if (id != null) {
-			News entity =  mapper.getById(id).orElse(null);
-			entity.setNews_date(formattedDate);
+			News entity =  mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
+			entity.setNewsDate(newsDate);
 			entity.setContent(newsManageForm.getContent());
 			Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-			entity.setUpdate_date(timestamp);
+			entity.setUpdateDate(timestamp);
 			mapper.upDate(entity);
 			//履歴記録
 			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
+			return entity;
 		} else {
 			//idが格納されていない場合は新規登録
 			News entity = new News();
-			entity.setNews_date(formattedDate);
+			entity.setNewsDate(newsDate);
 			entity.setContent(newsManageForm.getContent());
 			boolean releaseFlag = false;
-			entity.setRelease_flag(releaseFlag);
+			entity.setReleaseFlag(releaseFlag);
 			Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-			entity.setUpdate_date(timestamp);
+			entity.setUpdateDate(timestamp);
 			mapper.save(entity);
 			//履歴記録
 			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
+			return entity;
 		}
 	}
 }

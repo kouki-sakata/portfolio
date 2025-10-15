@@ -107,6 +107,7 @@ public class SecurityConfig {
                     "/v3/api-docs",
                     "/v3/api-docs/**"
                 ).permitAll()
+                .requestMatchers("/api/news/published").permitAll()
                 .requestMatchers("/employeemanage/**", "/newsmanage/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()

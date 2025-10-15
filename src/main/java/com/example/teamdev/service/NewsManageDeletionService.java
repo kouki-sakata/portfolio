@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.NewsMapper;
@@ -14,6 +15,7 @@ import com.example.teamdev.mapper.NewsMapper;
  * 削除処理
  */
 @Service
+@Transactional
 public class NewsManageDeletionService{
 
 	@Autowired

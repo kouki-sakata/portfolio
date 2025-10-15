@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.AuthenticationService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,7 +26,9 @@ public class HomeService03Test {
     @Mock
     private PasswordEncoder passwordEncoder;
 
-    @InjectMocks
+    // 実物のObjectMapperを使用（モックではなく実際の変換ロジックをテスト）
+    private ObjectMapper objectMapper;
+
     private AuthenticationService homeService03;
 
     private Employee employeeFrom;
@@ -33,6 +36,12 @@ public class HomeService03Test {
 
     @BeforeEach
     void setUp() {
+        // ObjectMapperの実物インスタンスを作成
+        objectMapper = new ObjectMapper();
+
+        // AuthenticationServiceを手動で構築（実物のObjectMapperを注入）
+        homeService03 = new AuthenticationService(employeeMapper, passwordEncoder, objectMapper);
+
         employeeFrom = new Employee();
         employeeFrom.setEmail("test@example.com");
         employeeFrom.setPassword("plainPassword123");
@@ -52,6 +61,7 @@ public class HomeService03Test {
         // Arrange
         when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(storedEmployee);
         when(passwordEncoder.matches("plainPassword123", "$2a$10$hashedpassword")).thenReturn(true);
+        // ObjectMapperは実物を使用 - 実際の変換ロジックがテストされる
 
         // Act
         Map<String, Object> result = homeService03.execute(employeeFrom);
@@ -59,10 +69,15 @@ public class HomeService03Test {
         // Assert
         assertNotNull(result);
         assertTrue(result.containsKey("employeeName"));
-        assertEquals("Test　User", result.get("employeeName"));
+        assertEquals("Test User", result.get("employeeName"));
         assertTrue(result.containsKey("signInTime"));
         assertFalse(result.containsKey("password"));
         assertEquals(1, result.get("id"));
+        // 実際のJackson変換により、すべてのフィールドが正しく変換されることを検証
+        assertEquals("test@example.com", result.get("email"));
+        assertEquals("Test", result.get("first_name"));
+        assertEquals("User", result.get("last_name"));
+        assertEquals(0, result.get("admin_flag"));
     }
 
     @Test

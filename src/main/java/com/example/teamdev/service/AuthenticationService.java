@@ -26,6 +26,7 @@ public class AuthenticationService {
     
     private final EmployeeMapper mapper;
     private final PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
 
     /**
      * AuthenticationServiceのコンストラクタ。
@@ -33,11 +34,13 @@ public class AuthenticationService {
      *
      * @param mapper 従業員マッパー
      * @param passwordEncoder パスワードエンコーダー
+     * @param objectMapper JSONマッパー
      */
     @Autowired
-    public AuthenticationService(EmployeeMapper mapper, PasswordEncoder passwordEncoder) {
+    public AuthenticationService(EmployeeMapper mapper, PasswordEncoder passwordEncoder, ObjectMapper objectMapper) {
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -64,12 +67,12 @@ public class AuthenticationService {
                 if (passwordEncoder.matches(rawPassword, targetEmployee.getPassword())) {
                     // パスワードが一致
                     @SuppressWarnings("unchecked") // ObjectMapperによるMap変換のキャスト警告を抑制
-                    Map<String, Object> employeeAsMap = new ObjectMapper().convertValue(
+                    Map<String, Object> employeeAsMap = objectMapper.convertValue(
                             targetEmployee, Map.class);
                     map.putAll(employeeAsMap); // マッピングされた従業員情報をそのまま追加
 
                     String employeeName = targetEmployee.getFirst_name() +
-                            "　" + targetEmployee.getLast_name();
+                            " " + targetEmployee.getLast_name();
                     map.put("employeeName", employeeName); // 表示用の従業員名
                     map.put("signInTime", LocalDateTime.now()); // サインイン時刻
                     map.remove("password"); // セキュリティのためパスワード情報は削除

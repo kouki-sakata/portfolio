@@ -21,6 +21,25 @@ public class DateFormatUtil {
     private static final DateTimeFormatter OUTPUT_FORMAT = DateTimeFormatter.ofPattern(
             "yyyy/MM/dd");
 
+    /**
+     * LocalDate型から yyyy/MM/dd 形式の文字列に変換
+     *
+     * @param date LocalDate型の日付
+     * @return yyyy/MM/dd形式の日付文字列
+     */
+    public static String formatDate(LocalDate date) {
+        if (date == null) {
+            return null;
+        }
+        return date.format(OUTPUT_FORMAT);
+    }
+
+    /**
+     * 文字列型の日付を yyyy/MM/dd 形式に変換
+     *
+     * @param dateStr yyyy-MM-dd または yyyy/MM/dd 形式の日付文字列
+     * @return yyyy/MM/dd形式の日付文字列
+     */
     public static String formatDate(String dateStr) {
         // すでにスラッシュ形式ならそのまま返す
         if (dateStr.matches("\\d{4}/\\d{2}/\\d{2}")) {

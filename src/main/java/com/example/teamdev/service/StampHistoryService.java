@@ -23,6 +23,9 @@ public class StampHistoryService{
 	@Autowired
 	StampHistoryMapper mapper;
 
+	@Autowired
+	private ObjectMapper objectMapper;
+
 	//打刻記録取得
 	public List<Map<String,Object>> execute(String year, String month, int employeeId) {
 
@@ -43,7 +46,7 @@ public class StampHistoryService{
 				mapper.getStampHistoryByYearMonthEmployeeId(year, month, employeeId, datesInMonth);
 		for (StampHistoryDisplay stampHistory : stampHistoryList) {
 			//取得した打刻記録をmapに詰め替え
-			stampHistoryMap = new ObjectMapper().convertValue(stampHistory, Map.class);
+			stampHistoryMap = objectMapper.convertValue(stampHistory, Map.class);
 			//Listに追加
 			stampHistoryMapList.add(stampHistoryMap);
         }

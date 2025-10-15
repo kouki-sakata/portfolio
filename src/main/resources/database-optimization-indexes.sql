@@ -59,28 +59,33 @@ ON stamp_history (update_date DESC);
 -- 4. newsテーブルの最適化
 -- ==============================
 
--- 公開フラグでの絞り込み最適化
-CREATE INDEX idx_news_release_flag 
-ON news (release_flag);
-
--- 日付での検索・ソート最適化
-CREATE INDEX idx_news_date_sort 
-ON news (news_date DESC);
+-- newsテーブルのインデックスは01_schema.sqlで既に作成済み:
+-- - idx_news_date (news_date DESC)
+-- - idx_news_release_date (release_flag, news_date DESC)
+-- - idx_news_published (news_date DESC) WHERE release_flag = TRUE
+--
+-- 追加のインデックスは不要です。
 
 -- ==============================
--- 実行統計確認用クエリ
+-- 実行統計確認用クエリ（PostgreSQL版）
 -- ==============================
 
 -- インデックス使用状況確認
--- SHOW INDEX FROM log_history;
--- SHOW INDEX FROM employee;
--- SHOW INDEX FROM stamp_history;
--- SHOW INDEX FROM news;
+-- SELECT
+--   schemaname,
+--   tablename,
+--   indexname,
+--   idx_scan AS index_scans
+-- FROM pg_stat_user_indexes
+-- ORDER BY idx_scan;
 
 -- テーブルサイズ確認
--- SELECT 
---   table_name,
---   table_rows,
---   round(((data_length + index_length) / 1024 / 1024), 2) AS 'Size (MB)'
--- FROM information_schema.tables 
--- WHERE table_schema = 'timemanagerdb';
+-- SELECT
+--   schemaname AS schema_name,
+--   tablename AS table_name,
+--   pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS total_size,
+--   pg_size_pretty(pg_relation_size(schemaname||'.'||tablename)) AS table_size,
+--   pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename) - pg_relation_size(schemaname||'.'||tablename)) AS indexes_size
+-- FROM pg_tables
+-- WHERE schemaname = 'public'
+-- ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;

@@ -23,6 +23,8 @@ tags:
     description: ホーム ダッシュボード/打刻 API
   - name: Stamp History
     description: 打刻履歴 API
+  - name: News Management
+    description: お知らせ管理 API
 paths:
   /api/auth/login:
     post:
@@ -271,6 +273,180 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/news:
+    get:
+      tags:
+        - News Management
+      summary: お知らせ一覧取得
+      description: すべてのお知らせを日付降順で取得（管理者向け）
+      operationId: getAllNews
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: お知らせ一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsListResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      tags:
+        - News Management
+      summary: お知らせ作成
+      description: 新規お知らせを作成（ADMIN権限が必要）
+      operationId: createNews
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsCreateRequest'
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/news/published:
+    get:
+      tags:
+        - News Management
+      summary: 公開お知らせ一覧取得
+      description: 公開フラグがtrueのお知らせを日付降順で取得（認証不要）
+      operationId: getPublishedNews
+      responses:
+        '200':
+          description: 公開お知らせ一覧
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsListResponse'
+  /api/news/{id}:
+    put:
+      tags:
+        - News Management
+      summary: お知らせ更新
+      description: 既存お知らせを更新（ADMIN権限が必要）
+      operationId: updateNews
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsUpdateRequest'
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NewsResponse'
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: お知らせが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - News Management
+      summary: お知らせ削除
+      description: 指定IDのお知らせを削除（ADMIN権限が必要）
+      operationId: deleteNews
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: お知らせが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/news/{id}/publish:
+    patch:
+      tags:
+        - News Management
+      summary: お知らせ公開切り替え
+      description: 公開/非公開フラグをトグル（ADMIN権限が必要）
+      operationId: toggleNewsPublish
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 切り替え成功
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: お知らせが見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     LoginRequest:
@@ -403,10 +579,82 @@ components:
           description: お知らせ内容
         newsDate:
           type: string
-          description: お知らせ日付
+          format: date
+          description: お知らせ日付（YYYY-MM-DD形式）
         releaseFlag:
           type: boolean
           description: 公開フラグ
+    NewsResponse:
+      type: object
+      required:
+        - id
+        - newsDate
+        - content
+        - releaseFlag
+        - updateDate
+      properties:
+        id:
+          type: integer
+          description: お知らせID
+        newsDate:
+          type: string
+          format: date
+          description: お知らせ日付（YYYY-MM-DD形式）
+          example: "2025-10-15"
+        content:
+          type: string
+          maxLength: 1000
+          description: お知らせ内容（最大1000文字）
+        releaseFlag:
+          type: boolean
+          description: 公開フラグ（true:公開, false:非公開）
+        updateDate:
+          type: string
+          format: date-time
+          description: 更新日時（ISO 8601形式）
+          example: "2025-10-15T12:34:56Z"
+    NewsListResponse:
+      type: object
+      required:
+        - news
+      properties:
+        news:
+          type: array
+          items:
+            $ref: '#/components/schemas/NewsResponse'
+          description: お知らせリスト
+    NewsCreateRequest:
+      type: object
+      required:
+        - newsDate
+        - content
+      properties:
+        newsDate:
+          type: string
+          format: date
+          description: お知らせ日付（YYYY-MM-DD形式）
+          example: "2025-10-15"
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: お知らせ内容（1-1000文字）
+    NewsUpdateRequest:
+      type: object
+      required:
+        - newsDate
+        - content
+      properties:
+        newsDate:
+          type: string
+          format: date
+          description: お知らせ日付（YYYY-MM-DD形式）
+          example: "2025-10-15"
+        content:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          description: お知らせ内容（1-1000文字）
     StampRequest:
       type: object
       required:

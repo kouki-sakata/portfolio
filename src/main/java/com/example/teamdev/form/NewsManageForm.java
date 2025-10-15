@@ -29,6 +29,6 @@ public class NewsManageForm {
      * 内容
      */
     @NotBlank
-    @Size(min = 1, max = 75)
+    @Size(min = 1, max = 1000)
     private String content;
 }

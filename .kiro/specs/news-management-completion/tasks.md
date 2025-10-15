@@ -23,13 +23,13 @@
 
 ## 実装タスク
 
-- [ ] 1. Backend REST API実装とOpenAPI型定義統合
+- [x] 1. Backend REST API実装とOpenAPI型定義統合
   - Backend EntityとFrontend型定義を完全統一
   - OpenAPI仕様からの自動型生成パイプライン確立
   - 既存Service層を活用したREST APIエンドポイント実装
   - _Requirements: 1.1-1.8, 2.1-2.5_
 
-- [ ] 1.1 OpenAPI仕様定義とTypeScript型自動生成
+- [x] 1.1 OpenAPI仕様定義とTypeScript型自動生成
   - openapi/openapi.yamlにお知らせ管理APIの仕様定義を追加
   - NewsResponse、NewsCreateRequest、NewsUpdateRequest、NewsListResponseのスキーマ定義
   - Backend Entityのsnake_caseフィールドをcamelCaseに変換する型マッピング
@@ -37,7 +37,7 @@
   - 生成された型がfrontend/src/types/に配置されることを検証
   - _Requirements: 1.8, 2.1, 2.2, 2.4, 2.5_
 
-- [ ] 1.2 Backend Request/Response DTO実装
+- [x] 1.2 Backend Request/Response DTO実装
   - dto/api/news/パッケージ作成
   - NewsCreateRequest: newsDate（String）、content（String）フィールド定義
   - NewsUpdateRequest: newsDate（String）、content（String）フィールド定義
@@ -46,7 +46,7 @@
   - Bean Validationアノテーション追加（@NotBlank、@Size、@Pattern等）
   - _Requirements: 1.1-1.8_
 
-- [ ] 1.3 NewsRestController実装（CRUD + 公開切り替え）
+- [x] 1.3 NewsRestController実装（CRUD + 公開切り替え）
   - controller/api/NewsRestController.java作成
   - @RestController、@RequestMapping("/api/news")アノテーション設定
   - 既存Service層（NewsManageService、NewsManageRegistrationService、NewsManageDeletionService、NewsManageReleaseService）を注入
@@ -60,7 +60,7 @@
   - エラーハンドリング統合（GlobalExceptionHandler活用）
   - _Requirements: 1.1-1.7_
 
-- [ ] 1.4 Backend単体テスト実装
+- [x] 1.4 Backend単体テスト実装
   - NewsRestControllerTest.java作成
   - @SpringBootTest、@AutoConfigureMockMvc、@ActiveProfiles("test")設定
   - Service層をモック化（@MockBean）
