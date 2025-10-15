@@ -63,9 +63,9 @@ public class NewsManageReleaseService{
 					News entity =  mapper.getById(id).orElse(null);
 					if (entity != null) {
 					    // エンティティが見つかった場合の処理
-						entity.setRelease_flag(releaseFlag);
+						entity.setReleaseFlag(releaseFlag);
 						Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-						entity.setUpdate_date(timestamp);
+						entity.setUpdateDate(timestamp);
 						mapper.upDate(entity);
 						release = true;
 						logger.info("Successfully updated news ID: {} with releaseFlag: {}", id, releaseFlag);

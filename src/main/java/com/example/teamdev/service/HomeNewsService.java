@@ -36,8 +36,8 @@ public class HomeNewsService{
 			newsMap = new ObjectMapper().convertValue(news, Map.class);
 
 			// Newsオブジェクトから日付を取得し、
-			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）山本変更 2025/5/14
-			String formattedDate = DateFormatUtil.formatDate(news.getNews_date());
+			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
+			String formattedDate = DateFormatUtil.formatDate(news.getNewsDate());
 			newsMap.put("news_date", formattedDate);  // Mapにセット
 			//Listに追加
 

@@ -38,7 +38,7 @@ public class NewsManageService{
 
 			// Newsオブジェクトから日付を取得し、
 			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
-			String formattedDate = DateFormatUtil.formatDate(news.getNews_date());
+			String formattedDate = DateFormatUtil.formatDate(news.getNewsDate());
 			newsMap.put("news_date", formattedDate);  // Mapにセット
 
 			//Listに追加
@@ -57,9 +57,9 @@ public class NewsManageService{
 		for (News news : allNews) {
 			Map<String, Object> newsData = new HashMap<>();
 			newsData.put("id", news.getId());
-			newsData.put("news_date", DateFormatUtil.formatDate(news.getNews_date()));
+			newsData.put("news_date", DateFormatUtil.formatDate(news.getNewsDate()));
 			newsData.put("content", news.getContent());
-			newsData.put("release_flag", news.isRelease_flag());
+			newsData.put("release_flag", news.getReleaseFlag());
 			newsDataList.add(newsData);
 		}
 		
