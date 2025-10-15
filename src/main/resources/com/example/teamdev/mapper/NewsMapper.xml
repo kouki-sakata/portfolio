@@ -2,15 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.teamdev.mapper.NewsMapper">
 
-	<!-- ResultMap定義: snake_case (DB) → camelCase (Java Entity) -->
-	<resultMap id="newsResultMap" type="com.example.teamdev.entity.News">
-		<id property="id" column="id"/>
-		<result property="newsDate" column="news_date"/>
-		<result property="content" column="content"/>
-		<result property="releaseFlag" column="release_flag"/>
-		<result property="updateDate" column="update_date"/>
-	</resultMap>
-
 	<!-- お知らせを挿入 -->
 	<insert id="save" parameterType="com.example.teamdev.entity.News">
 		INSERT INTO news (
