@@ -110,14 +110,14 @@ describe("newsApi", () => {
   });
 
   it("公開状態を切り替える", async () => {
-    const toggled = sampleNews({ releaseFlag: false });
-    mockedApi.patch.mockResolvedValue(toggled);
+    // Backend returns 204 No Content, so api.patch returns undefined
+    mockedApi.patch.mockResolvedValue(undefined);
 
     const result = await toggleNewsPublish(3, false);
 
     expect(mockedApi.patch).toHaveBeenCalledWith("/news/3/publish", {
       releaseFlag: false,
     });
-    expect(result).toBe(toggled);
+    expect(result).toBeUndefined();
   });
 });

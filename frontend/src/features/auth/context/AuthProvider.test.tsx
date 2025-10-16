@@ -408,7 +408,7 @@ describe("AuthProvider", () => {
           expect(result.current.isSessionExpiring).toBe(true);
           expect(result.current.sessionTimeoutWarning).toBe(true);
         },
-        { timeout: 15000 }
+        { timeout: 15_000 }
       );
     });
 

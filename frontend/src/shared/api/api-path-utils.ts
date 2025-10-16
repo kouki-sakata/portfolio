@@ -3,6 +3,10 @@
  * Prevents common issues like duplicate /api prefixes
  */
 
+// Regex patterns defined at module level for performance
+const API_PREFIX_PATTERN = /^\/api\//;
+const API_PREFIX_SIMPLE_PATTERN = /^\/api/;
+
 /**
  * Ensures a path is relative (no leading /api)
  * Since axiosClient already has baseURL="/api", endpoints should be relative
@@ -14,7 +18,7 @@
  */
 export const ensureRelativePath = (path: string): string => {
   // Remove leading /api if present
-  const withoutApiPrefix = path.replace(/^\/api\//, "/");
+  const withoutApiPrefix = path.replace(API_PREFIX_PATTERN, "/");
 
   // Ensure path starts with /
   return withoutApiPrefix.startsWith("/")
@@ -34,7 +38,7 @@ export const validateApiPath = (path: string): string => {
   if (import.meta.env.DEV && path.startsWith("/api/")) {
     throw new Error(
       `API path "${path}" contains /api prefix. ` +
-        `Since axiosClient has baseURL="/api", use relative path "${path.replace(/^\/api/, "")}" instead.`
+        `Since axiosClient has baseURL="/api", use relative path "${path.replace(API_PREFIX_SIMPLE_PATTERN, "")}" instead.`
     );
   }
   return path;

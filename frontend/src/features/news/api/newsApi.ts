@@ -27,5 +27,4 @@ export const deleteNews = (id: number): Promise<void> =>
 export const toggleNewsPublish = (
   id: number,
   releaseFlag: boolean
-): Promise<NewsResponse> =>
-  api.patch<NewsResponse>(`/news/${id}/publish`, { releaseFlag });
+): Promise<void> => api.patch<void>(`/news/${id}/publish`, { releaseFlag });

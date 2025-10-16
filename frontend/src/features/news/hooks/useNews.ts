@@ -22,11 +22,29 @@ import {
 
 const NEWS_QUERY_KEY = ["news"] as const;
 
-const toErrorMessage = (error: unknown): string => {
+/**
+ * Safely extracts error message from unknown error
+ * @param error - The caught error
+ * @param fallback - Fallback message if extraction fails
+ * @returns Human-readable error message
+ */
+const toErrorMessage = (
+  error: unknown,
+  fallback = "操作に失敗しました"
+): string => {
   if (error instanceof Error) {
     return error.message;
   }
-  return "操作に失敗しました";
+  if (typeof error === "string") {
+    return error;
+  }
+  if (error && typeof error === "object" && "message" in error) {
+    const message = (error as { message: unknown }).message;
+    if (typeof message === "string") {
+      return message;
+    }
+  }
+  return fallback;
 };
 
 export const useNewsQuery = (): UseQueryResult<NewsResponse[]> =>
@@ -114,7 +132,7 @@ export const useDeleteNewsMutation = (): UseMutationResult<
 };
 
 export const useTogglePublishMutation = (): UseMutationResult<
-  NewsResponse,
+  void,
   unknown,
   { id: number; releaseFlag: boolean }
 > => {
@@ -122,7 +140,7 @@ export const useTogglePublishMutation = (): UseMutationResult<
   const { toast } = useToast();
 
   return useMutation<
-    NewsResponse,
+    void,
     unknown,
     { id: number; releaseFlag: boolean },
     { previousNews?: NewsResponse[] }
@@ -153,9 +171,9 @@ export const useTogglePublishMutation = (): UseMutationResult<
         variant: "destructive",
       });
     },
-    onSuccess: ({ releaseFlag }) => {
+    onSuccess: (_data, variables) => {
       toast({
-        title: releaseFlag ? "公開しました" : "下書きに変更しました",
+        title: variables.releaseFlag ? "公開しました" : "下書きに変更しました",
       });
     },
     onSettled: () => {

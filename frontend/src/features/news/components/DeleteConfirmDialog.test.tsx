@@ -40,14 +40,16 @@ describe("DeleteConfirmDialog", () => {
       if (!element || element.tagName !== "P") {
         return false;
       }
-      return element.textContent?.includes(
-        "この操作は取り消せません。削除すると復元できません。"
+      return Boolean(
+        element.textContent?.includes(
+          "この操作は取り消せません。削除すると復元できません。"
+        )
       );
     });
 
     const text = description.textContent ?? "";
     const [preview] = text.split("この操作は取り消せません");
-    const normalizedPreview = preview.trim();
+    const normalizedPreview = (preview ?? "").trim();
 
     expect(normalizedPreview.length).toBeLessThanOrEqual(101);
     expect(normalizedPreview.endsWith("…")).toBe(true);
