@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
 import { usePublishedNewsQuery } from "@/features/news/hooks/useNews";
+import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
@@ -91,8 +91,8 @@ export const HomePageRefactored = () => {
         <NewsCard
           className="home-card"
           isLoading={publishedNewsQuery.isLoading}
-          newsItems={publishedNews}
           manageHref={data.employee.admin ? "/news-management" : undefined}
+          newsItems={publishedNews}
         />
       </div>
     </section>

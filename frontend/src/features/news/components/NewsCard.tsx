@@ -2,7 +2,6 @@ import type { CheckedState } from "@radix-ui/react-checkbox";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -10,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useTogglePublishMutation } from "@/features/news/hooks/useNews";
 import { cn } from "@/lib/utils";
 import type { NewsResponse } from "@/types";

@@ -9,8 +9,8 @@ import type {
 
 import type {
   NewsBulkDeleteRequest,
-  NewsBulkPublishRequest,
   NewsBulkOperationResponse,
+  NewsBulkPublishRequest,
   NewsPublishItem,
 } from "../types/bulk";
 
@@ -45,9 +45,15 @@ export const toggleNewsPublish = (
  * @param ids 削除対象のお知らせIDリスト（最大100件）
  * @returns バルク操作結果
  */
-export const bulkDeleteNews = (ids: number[]): Promise<NewsBulkOperationResponse> => {
+export const bulkDeleteNews = (
+  ids: number[]
+): Promise<NewsBulkOperationResponse> => {
   const request: NewsBulkDeleteRequest = { ids };
-  return api.post<NewsBulkOperationResponse>(`${NEWS_ENDPOINT}/bulk/delete`, request, undefined);
+  return api.post<NewsBulkOperationResponse>(
+    `${NEWS_ENDPOINT}/bulk/delete`,
+    request,
+    undefined
+  );
 };
 
 /**
@@ -55,7 +61,13 @@ export const bulkDeleteNews = (ids: number[]): Promise<NewsBulkOperationResponse
  * @param items 更新対象のお知らせと公開フラグのリスト（最大100件）
  * @returns バルク操作結果
  */
-export const bulkPublishNews = (items: NewsPublishItem[]): Promise<NewsBulkOperationResponse> => {
+export const bulkPublishNews = (
+  items: NewsPublishItem[]
+): Promise<NewsBulkOperationResponse> => {
   const request: NewsBulkPublishRequest = { items };
-  return api.patch<NewsBulkOperationResponse>(`${NEWS_ENDPOINT}/bulk/publish`, request, undefined);
+  return api.patch<NewsBulkOperationResponse>(
+    `${NEWS_ENDPOINT}/bulk/publish`,
+    request,
+    undefined
+  );
 };

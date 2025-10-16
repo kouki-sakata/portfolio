@@ -221,7 +221,11 @@ describe("NewsManagementPage", () => {
     });
 
     expect(itemCheckboxes).toHaveLength(2);
-    expect(itemCheckboxes.every((checkbox) => checkbox instanceof HTMLInputElement && checkbox.checked)).toBe(true);
+    expect(
+      itemCheckboxes.every(
+        (checkbox) => checkbox instanceof HTMLInputElement && checkbox.checked
+      )
+    ).toBe(true);
 
     expect(screen.getByText("選択中: 2件")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "一括公開" })).toBeEnabled();
@@ -257,9 +261,11 @@ describe("NewsManagementPage", () => {
 
     expect(await screen.findByText("選択中: 1件")).toBeInTheDocument();
 
-    const remaining = screen.getAllByRole("checkbox", {
-      name: /を選択$/,
-    }).filter((checkbox) => (checkbox as HTMLInputElement).checked);
+    const remaining = screen
+      .getAllByRole("checkbox", {
+        name: /を選択$/,
+      })
+      .filter((checkbox) => (checkbox as HTMLInputElement).checked);
 
     expect(remaining).toHaveLength(1);
   });
@@ -278,7 +284,10 @@ describe("NewsManagementPage", () => {
       refetch: vi.fn(),
     });
 
-    mocks.bulkDeleteMutate.mockResolvedValue({ successIds: [301], failedIds: [] });
+    mocks.bulkDeleteMutate.mockResolvedValue({
+      successIds: [301],
+      failedIds: [],
+    });
 
     render(<NewsManagementPage />);
 

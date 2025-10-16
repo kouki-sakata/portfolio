@@ -113,9 +113,9 @@ describe("NewsCard", () => {
       <NewsCard
         news={news}
         onEdit={vi.fn()}
+        onSelectionChange={handleSelection}
         selectable
         selected={false}
-        onSelectionChange={handleSelection}
       />
     );
 

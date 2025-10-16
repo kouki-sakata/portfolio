@@ -2,17 +2,17 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter } from "react-router-dom";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type {
   HomeDashboardResponse,
   StampResponse,
 } from "@/features/home/types";
-import type { NewsListResponse } from "@/types";
-import { mswServer } from "@/test/msw/server";
-import { HomePageRefactored as HomePage } from "./HomePageRefactored";
 import { newsQueryKeys } from "@/features/news/hooks/useNews";
+import { mswServer } from "@/test/msw/server";
+import type { NewsListResponse } from "@/types";
+import { HomePageRefactored as HomePage } from "./HomePageRefactored";
 
 describe("HomePage", () => {
   let queryClient: QueryClient;
@@ -85,8 +85,7 @@ describe("HomePage", () => {
       id: overrides?.id ?? 1,
       newsDate: overrides?.newsDate ?? "2025-10-01",
       content:
-        overrides?.content ??
-        "本日18時よりシステムメンテナンスを実施します。",
+        overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
       releaseFlag: overrides?.releaseFlag ?? true,
       updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
     };
@@ -553,7 +552,9 @@ describe("HomePage", () => {
       expect(listItems[1]).toHaveTextContent("四番目のお知らせ");
       expect(listItems[4]).toHaveTextContent("2025-09-30");
       expect(listItems[4]).toHaveTextContent("古いお知らせ");
-      expect(screen.queryByText("表示されないお知らせ")).not.toBeInTheDocument();
+      expect(
+        screen.queryByText("表示されないお知らせ")
+      ).not.toBeInTheDocument();
     });
 
     it("ニュースがない場合は空の状態メッセージが表示される", async () => {

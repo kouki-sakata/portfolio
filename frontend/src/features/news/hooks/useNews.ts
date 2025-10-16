@@ -1,20 +1,20 @@
 import {
+  type UseQueryOptions,
   useMutation,
   useQuery,
   useQueryClient,
-  type UseQueryOptions,
 } from "@tanstack/react-query";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import {
+  bulkDeleteNews,
+  bulkPublishNews,
   createNews,
   deleteNews,
   fetchNewsList,
   fetchPublishedNews,
   toggleNewsPublish,
   updateNews,
-  bulkDeleteNews,
-  bulkPublishNews,
 } from "@/features/news/api/newsApi";
 import { toast } from "@/hooks/use-toast";
 import { queryKeys } from "@/shared/utils/queryUtils";
@@ -25,10 +25,7 @@ import type {
   NewsUpdateRequest,
 } from "@/types";
 
-import type {
-  NewsBulkOperationResponse,
-  NewsPublishItem,
-} from "../types/bulk";
+import type { NewsBulkOperationResponse, NewsPublishItem } from "../types/bulk";
 
 export const newsQueryKeys = {
   all: queryKeys.news.all,
@@ -50,9 +47,7 @@ type PublishedNewsQueryOptions = Omit<
   "queryKey" | "queryFn" | "staleTime" | "gcTime"
 >;
 
-export const usePublishedNewsQuery = (
-  options?: PublishedNewsQueryOptions
-) =>
+export const usePublishedNewsQuery = (options?: PublishedNewsQueryOptions) =>
   useQuery<NewsListResponse>({
     queryKey: newsQueryKeys.published(),
     queryFn: fetchPublishedNews,
@@ -294,9 +289,11 @@ export const useTogglePublishMutation = () => {
 /**
  * バルクAPIレスポンスをBulkMutationResultに変換
  */
-const toBulkMutationResult = (response: NewsBulkOperationResponse): BulkMutationResult => ({
-  successIds: response.results.filter(r => r.success).map(r => r.id),
-  failedIds: response.results.filter(r => !r.success).map(r => r.id),
+const toBulkMutationResult = (
+  response: NewsBulkOperationResponse
+): BulkMutationResult => ({
+  successIds: response.results.filter((r) => r.success).map((r) => r.id),
+  failedIds: response.results.filter((r) => !r.success).map((r) => r.id),
 });
 
 const invalidateNewsQueries = async (
@@ -315,7 +312,10 @@ export const useBulkPublishMutation = () => {
 
   return useMutation<BulkMutationResult, unknown, BulkOperationVariables>({
     mutationFn: async ({ ids }) => {
-      const items: NewsPublishItem[] = ids.map(id => ({ id, releaseFlag: true }));
+      const items: NewsPublishItem[] = ids.map((id) => ({
+        id,
+        releaseFlag: true,
+      }));
       const response = await bulkPublishNews(items);
       return toBulkMutationResult(response);
     },
@@ -352,7 +352,10 @@ export const useBulkUnpublishMutation = () => {
 
   return useMutation<BulkMutationResult, unknown, BulkOperationVariables>({
     mutationFn: async ({ ids }) => {
-      const items: NewsPublishItem[] = ids.map(id => ({ id, releaseFlag: false }));
+      const items: NewsPublishItem[] = ids.map((id) => ({
+        id,
+        releaseFlag: false,
+      }));
       const response = await bulkPublishNews(items);
       return toBulkMutationResult(response);
     },

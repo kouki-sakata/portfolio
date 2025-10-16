@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import { Link } from "react-router-dom";
-
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { HomeNewsItem } from "@/features/home/types";
 import { cn } from "@/lib/utils";

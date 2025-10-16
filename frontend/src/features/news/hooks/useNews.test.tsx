@@ -16,13 +16,13 @@ import type {
 } from "@/types";
 import {
   newsQueryKeys,
+  useBulkDeleteMutation,
+  useBulkPublishMutation,
+  useBulkUnpublishMutation,
   useCreateNewsMutation,
   useDeleteNewsMutation,
   useNewsQuery,
   usePublishedNewsQuery,
-  useBulkDeleteMutation,
-  useBulkPublishMutation,
-  useBulkUnpublishMutation,
   useTogglePublishMutation,
   useUpdateNewsMutation,
 } from "./useNews";
@@ -452,9 +452,7 @@ describe("useBulkUnpublishMutation", () => {
       .mockResolvedValue({
         successCount: 1,
         failureCount: 0,
-        results: [
-          { id: 5, success: true, errorMessage: undefined },
-        ],
+        results: [{ id: 5, success: true, errorMessage: undefined }],
       });
 
     const { wrapper, queryClient } = createWrapper();

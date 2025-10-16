@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
 import type { CheckedState } from "@radix-ui/react-checkbox";
+import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,8 +10,8 @@ import {
   useBulkPublishMutation,
   useBulkUnpublishMutation,
   useNewsQuery,
-  type BulkMutationResult,
 } from "@/features/news/hooks/useNews";
+import { useNewsSelection } from "@/features/news/hooks/useNewsSelection";
 import type { NewsResponse } from "@/types";
 
 import { NewsCard } from "./NewsCard";
@@ -42,6 +42,20 @@ const NewsListSkeleton = () => (
   </div>
 );
 
+// チェックボックスの状態を決定するヘルパー関数
+const getCheckboxState = (
+  isAllSelected: boolean,
+  isIndeterminate: boolean
+): CheckedState => {
+  if (isAllSelected) {
+    return true;
+  }
+  if (isIndeterminate) {
+    return "indeterminate";
+  }
+  return false;
+};
+
 export const NewsManagementPage = () => {
   const newsQuery = useNewsQuery();
   const bulkPublishMutation = useBulkPublishMutation();
@@ -50,36 +64,22 @@ export const NewsManagementPage = () => {
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
-  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
-  const activeSelectedIds = useMemo(
-    () => newsItems.filter((item) => selectedIds.has(item.id)).map((item) => item.id),
-    [newsItems, selectedIds]
-  );
 
-  useEffect(() => {
-    setSelectedIds((current) => {
-      if (current.size === 0) {
-        return current;
-      }
-      const next = new Set(
-        newsItems.filter((item) => current.has(item.id)).map((item) => item.id)
-      );
-      if (next.size === current.size) {
-        let isSame = true;
-        current.forEach((id) => {
-          if (!next.has(id)) {
-            isSame = false;
-          }
-        });
-        if (isSame) {
-          return current;
-        }
-      }
-      return next;
-    });
-  }, [newsItems]);
+  // カスタムフックを使用して選択状態を管理
+  const {
+    selectedIds,
+    activeSelectedIds,
+    selectedCount,
+    isAllSelected,
+    isIndeterminate,
+    hasSelection,
+    handleSelectToggle,
+    handleToggleAll,
+    clearSelection,
+    syncSelectionAfterBulk,
+  } = useNewsSelection(newsItems);
 
   const handleOpenCreate = () => {
     setSelectedNews(undefined);
@@ -96,37 +96,6 @@ export const NewsManagementPage = () => {
   const handleCloseForm = () => {
     setFormOpen(false);
     setSelectedNews(undefined);
-  };
-
-  const handleSelectToggle = (news: NewsResponse, next: boolean) => {
-    setSelectedIds((current) => {
-      const nextSet = new Set(current);
-      if (next) {
-        nextSet.add(news.id);
-      } else {
-        nextSet.delete(news.id);
-      }
-      return nextSet;
-    });
-  };
-
-  const handleToggleAll = (state: CheckedState) => {
-    if (state === true) {
-      setSelectedIds(new Set(newsItems.map((item) => item.id)));
-      return;
-    }
-    if (state === "indeterminate") {
-      return;
-    }
-    setSelectedIds(new Set());
-  };
-
-  const syncSelectionAfterBulk = (result: BulkMutationResult) => {
-    if (result.failedIds.length === 0) {
-      setSelectedIds(new Set());
-      return;
-    }
-    setSelectedIds(new Set(result.failedIds));
   };
 
   const executeBulkPublish = async () => {
@@ -159,17 +128,10 @@ export const NewsManagementPage = () => {
     syncSelectionAfterBulk(result);
   };
 
-  const clearSelection = () => {
-    setSelectedIds(new Set());
-  };
-
-  const selectedCount = activeSelectedIds.length;
   const totalCount = newsItems.length;
-  const isAllSelected = totalCount > 0 && selectedCount === totalCount;
-  const isIndeterminate = selectedCount > 0 && !isAllSelected;
-  const hasSelection = selectedCount > 0;
   const bulkPublishDisabled = !hasSelection || bulkPublishMutation.isPending;
-  const bulkUnpublishDisabled = !hasSelection || bulkUnpublishMutation.isPending;
+  const bulkUnpublishDisabled =
+    !hasSelection || bulkUnpublishMutation.isPending;
   const bulkDeleteDisabled = !hasSelection || bulkDeleteMutation.isPending;
 
   if (newsQuery.isLoading) {
@@ -206,12 +168,17 @@ export const NewsManagementPage = () => {
             <div className="flex items-center gap-2">
               <Checkbox
                 aria-label="全選択"
-                checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                checked={getCheckboxState(isAllSelected, isIndeterminate)}
                 onCheckedChange={handleToggleAll}
               />
-              <span className="text-sm text-muted-foreground">全選択</span>
+              <span className="text-muted-foreground text-sm">全選択</span>
               {hasSelection ? (
-                <Button onClick={clearSelection} size="sm" type="button" variant="ghost">
+                <Button
+                  onClick={clearSelection}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
                   選択解除
                 </Button>
               ) : null}
@@ -277,9 +244,9 @@ export const NewsManagementPage = () => {
               key={item.id}
               news={item}
               onEdit={handleEdit}
+              onSelectionChange={handleSelectToggle}
               selectable
               selected={selectedIds.has(item.id)}
-              onSelectionChange={handleSelectToggle}
             />
           ))}
         </div>
