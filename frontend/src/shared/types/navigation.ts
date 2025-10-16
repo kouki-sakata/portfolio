@@ -18,6 +18,8 @@ export type NavigationItem = {
   active?: boolean;
   /** 無効化されているかどうか */
   disabled?: boolean;
+  /** 管理者のみ表示する場合に指定 */
+  requiresAdmin?: boolean;
 };
 
 /**

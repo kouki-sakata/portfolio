@@ -37,23 +37,25 @@ const navigationGroups: NavigationGroup[] = [
     title: "管理",
     items: [
       {
+        id: "news-management",
+        label: "お知らせ管理",
+        href: "/news-management",
+        icon: "bell",
+        requiresAdmin: true,
+      },
+      {
         id: "employees",
         label: "社員管理",
         href: "/admin/employees",
         icon: "users",
-      },
-      {
-        id: "notifications",
-        label: "通知",
-        href: "/notifications",
-        icon: "bell",
-        badge: 3,
+        requiresAdmin: true,
       },
       {
         id: "reports",
         label: "レポート",
         href: "/reports",
         icon: "file-text",
+        requiresAdmin: true,
       },
     ],
   },
@@ -129,15 +131,28 @@ export const AppSidebar = ({
   const isAdmin = user?.admin ?? false;
 
   // 管理者のみに表示するメニュー項目をフィルタリング
-  const filteredNavigationGroups = navigationGroups
-    .map((group) => {
-      // 管理グループは管理者のみに表示
-      if (group.id === "management" && !isAdmin) {
-        return null;
+  const filteredNavigationGroups = navigationGroups.reduce<NavigationGroup[]>(
+    (acc, group) => {
+      const visibleItems = group.items.filter((item) => {
+        if (item.requiresAdmin && !isAdmin) {
+          return false;
+        }
+        return true;
+      });
+
+      if (visibleItems.length === 0) {
+        return acc;
       }
-      return group;
-    })
-    .filter(Boolean) as NavigationGroup[];
+
+      acc.push({
+        ...group,
+        items: visibleItems,
+      });
+
+      return acc;
+    },
+    []
+  );
 
   return (
     <>

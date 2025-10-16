@@ -16,7 +16,7 @@ class AuthEventEmitter extends EventEmitter {
     const payload: AuthEventPayload = {
       type: "unauthorized",
       message: message ?? "Unauthorized access detected",
-      redirectUrl: "/login",
+      redirectUrl: "/signin",
     };
     this.emit("auth-event", payload);
     this.emit("unauthorized", payload);
@@ -41,7 +41,7 @@ class AuthEventEmitter extends EventEmitter {
     const payload: AuthEventPayload = {
       type: "sessionExpired",
       message: message ?? "Your session has expired",
-      redirectUrl: "/login",
+      redirectUrl: "/signin",
     };
     this.emit("auth-event", payload);
     this.emit("sessionExpired", payload);
