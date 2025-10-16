@@ -58,8 +58,6 @@ class StampEditServiceTest {
         testInTime = OffsetDateTime.of(2025, 10, 1, 9, 0, 0, 0, ZoneOffset.ofHours(9));
         testOutTime = OffsetDateTime.of(2025, 10, 1, 18, 0, 0, 0, ZoneOffset.ofHours(9));
         adjustedOutTime = OffsetDateTime.of(2025, 10, 2, 6, 0, 0, 0, ZoneOffset.ofHours(9));
-
-        when(clock.instant()).thenReturn(testInTime.toInstant());
     }
 
     @Nested
@@ -70,6 +68,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 単一の打刻データが正しく処理される")
         void execute_withSingleStampData_shouldProcessCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -94,6 +93,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 複数の打刻データが順次処理される")
         void execute_withMultipleStampData_shouldProcessSequentially() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stamp1 = createStampEditMap("100", "2025", "10", "1", "09:00", "18:00", null);
             Map<String, Object> stamp2 = createStampEditMap("100", "2025", "10", "2", "10:00", "19:00", null);
             List<Map<String, Object>> stampEditList = List.of(stamp1, stamp2);
@@ -120,6 +120,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 保存が行われた場合のみログ履歴が記録される")
         void execute_withSaveSuccess_shouldRecordLogHistory() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("200", "2025", "10", "5", "08:00", "17:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -165,6 +166,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 出勤時刻のみのデータが正しく処理される")
         void execute_withInTimeOnly_shouldProcessCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "09:00", null, null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -185,6 +187,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 退勤時刻のみのデータが正しく処理される")
         void execute_withOutTimeOnly_shouldProcessCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("150", "2025", "10", "2", null, "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -205,6 +208,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 時刻が両方nullのデータが正しく処理される")
         void execute_withBothTimesNull_shouldProcessCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("200", "2025", "10", "3", null, null, null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -230,6 +234,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 夜勤シフトで退勤時刻が翌日に調整される")
         void execute_withNightShift_shouldAdjustOutTime() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "22:00", "06:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -252,6 +257,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 通常勤務では退勤時刻が調整されない")
         void execute_withNormalShift_shouldNotAdjustOutTime() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "5", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -279,6 +285,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 既存データの更新が正しく処理される")
         void execute_withExistingData_shouldUpdateCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "09:30", "18:30", "500");
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -322,6 +329,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: employeeIdにカンマが含まれる場合も正しく処理される")
         void execute_withCommaInEmployeeId_shouldProcessCorrectly() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stampEdit = createStampEditMap("100,200,300", "2025", "10", "1", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
@@ -342,6 +350,7 @@ class StampEditServiceTest {
         @DisplayName("正常系: 複数データの一部が失敗してもログ履歴は記録される")
         void execute_withPartialFailure_shouldRecordLogHistory() {
             // Arrange
+            when(clock.instant()).thenReturn(testInTime.toInstant());
             Map<String, Object> stamp1 = createStampEditMap("100", "2025", "10", "1", "09:00", "18:00", null);
             Map<String, Object> stamp2 = createStampEditMap("100", "2025", "10", "2", "10:00", "19:00", "999");
             List<Map<String, Object>> stampEditList = List.of(stamp1, stamp2);

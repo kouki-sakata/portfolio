@@ -2,6 +2,7 @@ package com.example.teamdev.controller.api;
 
 import com.example.teamdev.dto.api.news.NewsCreateRequest;
 import com.example.teamdev.dto.api.news.NewsListResponse;
+import com.example.teamdev.dto.api.news.NewsPublishRequest;
 import com.example.teamdev.dto.api.news.NewsResponse;
 import com.example.teamdev.dto.api.news.NewsUpdateRequest;
 import com.example.teamdev.entity.News;
@@ -110,16 +111,18 @@ public class NewsRestController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "お知らせ公開切り替え", description = "公開/非公開フラグをトグル（ADMIN権限が必要）")
+    @Operation(summary = "お知らせ公開切り替え", description = "公開/非公開フラグを明示的に設定（ADMIN権限が必要）")
     @PatchMapping("/{id}/publish")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> togglePublish(@PathVariable Integer id) {
-        News news = requireExistingNews(id);
+    public ResponseEntity<Void> togglePublish(
+        @PathVariable Integer id,
+        @Valid @RequestBody NewsPublishRequest request
+    ) {
+        requireExistingNews(id);
         Integer operatorId = requireCurrentEmployeeId();
-        boolean nextFlag = !Boolean.TRUE.equals(news.getReleaseFlag());
         Map<String, String> edit = Map.of(
             "id", String.valueOf(id),
-            "releaseFlag", Boolean.toString(nextFlag)
+            "releaseFlag", Boolean.toString(request.releaseFlag())
         );
         ListForm listForm = new ListForm(List.of(String.valueOf(id)), List.of(edit));
         releaseService.execute(listForm, operatorId);

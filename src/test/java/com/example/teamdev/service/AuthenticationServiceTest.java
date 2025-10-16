@@ -56,13 +56,12 @@ class AuthenticationServiceTest {
         dbEmployee.setLast_name("田中");
         dbEmployee.setEmail("test@example.com");
         dbEmployee.setPassword("$2a$10$hashedPassword");
-
-        when(clock.instant()).thenReturn(Instant.parse("2025-10-01T00:00:00Z"));
-        when(clock.getZone()).thenReturn(ZoneId.of("Asia/Tokyo"));
     }
 
     @Test
     void execute_shouldReturnEmployeeInfo_whenCredentialsAreValid() {
+        when(clock.instant()).thenReturn(Instant.parse("2025-10-01T00:00:00Z"));
+        when(clock.getZone()).thenReturn(ZoneId.of("Asia/Tokyo"));
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
         when(passwordEncoder.matches(formEmployee.getPassword(), dbEmployee.getPassword())).thenReturn(true);
         when(objectMapper.convertValue(any(), eq(Map.class))).thenReturn(
@@ -114,12 +113,11 @@ class AuthenticationServiceTest {
     void execute_shouldHandleNullPassword() {
         formEmployee.setPassword(null);
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
-        when(passwordEncoder.matches(null, dbEmployee.getPassword())).thenReturn(false);
 
         Map<String, Object> result = authenticationService.execute(formEmployee);
 
         assertTrue(result.isEmpty());
-        
+
         verify(employeeMapper, times(1)).getEmployeeByEmail(formEmployee.getEmail());
         verify(passwordEncoder, times(1)).matches(null, dbEmployee.getPassword());
     }

@@ -246,7 +246,9 @@ class NewsRestControllerTest {
         when(newsManageService.getById(newsId)).thenReturn(Optional.of(existing));
 
         mockMvc.perform(patch("/api/news/{id}/publish", newsId)
-                .with(csrf()))
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"releaseFlag\": true}"))
             .andExpect(status().isNoContent());
 
         verify(releaseService).execute(
