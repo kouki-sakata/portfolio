@@ -10,30 +10,31 @@ vi.mock("@/shared/api/axiosClient", () => ({
   },
 }));
 
-import type { NewsItem, NewsListResponse } from "@/features/news/types";
 import { api } from "@/shared/api/axiosClient";
+import type {
+  NewsCreateRequest,
+  NewsListResponse,
+  NewsResponse,
+  NewsUpdateRequest,
+} from "@/types/types.gen";
 
 import {
   createNews,
-  createNewsPoller,
   deleteNews,
   fetchNewsList,
-  setNewsPublicationStatus,
+  fetchPublishedNewsList,
+  toggleNewsPublish,
   updateNews,
 } from "./newsApi";
 
 const mockedApi = vi.mocked(api);
 
-const sampleNews = (overrides?: Partial<NewsItem>): NewsItem => ({
+const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
   id: 1,
-  title: "System maintenance",
-  content: "We will perform maintenance tonight.",
-  category: "maintenance",
-  published: true,
-  publishedAt: "2025-01-01T00:00:00Z",
-  createdAt: "2024-12-31T10:00:00Z",
-  updatedAt: "2024-12-31T12:00:00Z",
-  authorId: 42,
+  newsDate: "2025-10-10",
+  content: "メンテナンスのお知らせ",
+  releaseFlag: true,
+  updateDate: "2025-10-10T12:00:00Z",
   ...overrides,
 });
 
@@ -46,175 +47,77 @@ describe("newsApi", () => {
     mockedApi.delete.mockReset();
   });
 
-  it("fetches news list with filters", async () => {
+  it("全お知らせ一覧を取得する", async () => {
     const response: NewsListResponse = {
-      items: [sampleNews()],
-      page: 2,
-      pageSize: 50,
-      total: 120,
+      news: [sampleNews()],
     };
 
     mockedApi.get.mockResolvedValue(response);
 
-    const result = await fetchNewsList({
-      category: "maintenance",
-      status: "published",
-      search: "system",
-      page: 2,
-      pageSize: 50,
-    });
+    const result = await fetchNewsList();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/news", {
-      params: {
-        category: "maintenance",
-        published: true,
-        search: "system",
-        page: 2,
-        size: 50,
-      },
-    });
+    expect(mockedApi.get).toHaveBeenCalledWith("/api/news");
     expect(result).toStrictEqual(response);
   });
 
-  it("creates a news entry", async () => {
-    const payload = {
-      title: "Outage notice",
-      content: "Service will be unavailable.",
-      category: "maintenance",
-      publishAt: "2025-02-01T01:00:00Z",
+  it("公開済みお知らせ一覧を取得する", async () => {
+    const response: NewsListResponse = {
+      news: [sampleNews({ id: 2 })],
     };
-    const created = sampleNews({ id: 99, title: payload.title });
+
+    mockedApi.get.mockResolvedValue(response);
+
+    const result = await fetchPublishedNewsList();
+
+    expect(mockedApi.get).toHaveBeenCalledWith("/api/news/published");
+    expect(result).toStrictEqual(response);
+  });
+
+  it("新規お知らせを作成する", async () => {
+    const payload: NewsCreateRequest = {
+      newsDate: "2025-11-01",
+      content: "新機能をリリースしました",
+    };
+    const created = sampleNews({ id: 10, ...payload });
     mockedApi.post.mockResolvedValue(created);
 
     const result = await createNews(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/news", {
-      data: payload,
-    });
+    expect(mockedApi.post).toHaveBeenCalledWith("/api/news", payload);
     expect(result).toBe(created);
   });
 
-  it("updates an existing news entry", async () => {
-    const updated = sampleNews({
-      id: 7,
-      title: "Updated title",
-      content: "Updated content",
-    });
+  it("既存お知らせを更新する", async () => {
+    const payload: NewsUpdateRequest = {
+      newsDate: "2025-11-02",
+      content: "内容を更新しました",
+    };
+    const updated = sampleNews({ id: 7, ...payload });
     mockedApi.put.mockResolvedValue(updated);
 
-    const result = await updateNews(7, {
-      title: updated.title,
-      content: updated.content,
-      category: updated.category,
-      publishAt: updated.publishedAt,
-    });
+    const result = await updateNews(7, payload);
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/news/7", {
-      data: {
-        title: updated.title,
-        content: updated.content,
-        category: updated.category,
-        publishAt: updated.publishedAt,
-      },
-    });
+    expect(mockedApi.put).toHaveBeenCalledWith("/api/news/7", payload);
     expect(result).toBe(updated);
   });
 
-  it("deletes a news entry", async () => {
+  it("お知らせを削除する", async () => {
     mockedApi.delete.mockResolvedValue(undefined);
 
-    await deleteNews(8);
+    await deleteNews(5);
 
-    expect(mockedApi.delete).toHaveBeenCalledWith("/news/8");
+    expect(mockedApi.delete).toHaveBeenCalledWith("/api/news/5");
   });
 
-  it("updates publication status", async () => {
-    mockedApi.patch.mockResolvedValue(undefined);
+  it("公開状態を切り替える", async () => {
+    const toggled = sampleNews({ releaseFlag: false });
+    mockedApi.patch.mockResolvedValue(toggled);
 
-    await setNewsPublicationStatus(5, true);
-    expect(mockedApi.patch).toHaveBeenCalledWith("/news/5/status", {
-      data: { published: true },
+    const result = await toggleNewsPublish(3, false);
+
+    expect(mockedApi.patch).toHaveBeenCalledWith("/api/news/3/publish", {
+      releaseFlag: false,
     });
-
-    mockedApi.patch.mockClear();
-
-    await setNewsPublicationStatus(5, false);
-    expect(mockedApi.patch).toHaveBeenCalledWith("/news/5/status", {
-      data: { published: false },
-    });
-  });
-
-  it("polls news updates at the configured interval", async () => {
-    vi.useFakeTimers();
-
-    const firstResponse: NewsListResponse = {
-      items: [sampleNews({ id: 1 })],
-      page: 1,
-      pageSize: 20,
-      total: 1,
-    };
-    const secondResponse: NewsListResponse = {
-      items: [sampleNews({ id: 2 })],
-      page: 1,
-      pageSize: 20,
-      total: 1,
-    };
-
-    mockedApi.get.mockResolvedValueOnce(firstResponse);
-    mockedApi.get.mockResolvedValueOnce(secondResponse);
-
-    const onUpdate = vi.fn();
-    const poller = createNewsPoller({
-      intervalMs: 1000,
-      onUpdate,
-      filters: { category: "maintenance" },
-    });
-
-    await vi.advanceTimersByTimeAsync(0);
-    expect(onUpdate).toHaveBeenCalledTimes(1);
-    expect(onUpdate).toHaveBeenLastCalledWith(firstResponse);
-
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(onUpdate).toHaveBeenCalledTimes(2);
-    expect(onUpdate).toHaveBeenLastCalledWith(secondResponse);
-
-    poller.stop();
-
-    await vi.advanceTimersByTimeAsync(2000);
-    expect(onUpdate).toHaveBeenCalledTimes(2);
-
-    vi.useRealTimers();
-  });
-
-  it("notifies via onError when polling fails", async () => {
-    vi.useFakeTimers();
-
-    const pollingError = new Error("fetch failed");
-    const recoveryResponse: NewsListResponse = {
-      items: [sampleNews({ id: 3 })],
-      page: 1,
-      pageSize: 20,
-      total: 1,
-    };
-
-    mockedApi.get.mockRejectedValueOnce(pollingError);
-    mockedApi.get.mockResolvedValueOnce(recoveryResponse);
-
-    const onUpdate = vi.fn();
-    const onError = vi.fn();
-
-    createNewsPoller({
-      intervalMs: 1000,
-      onUpdate,
-      onError,
-    });
-
-    await vi.advanceTimersByTimeAsync(0);
-    expect(onError).toHaveBeenCalledWith(pollingError);
-
-    await vi.advanceTimersByTimeAsync(1000);
-    expect(onUpdate).toHaveBeenCalledWith(recoveryResponse);
-
-    vi.useRealTimers();
+    expect(result).toBe(toggled);
   });
 });

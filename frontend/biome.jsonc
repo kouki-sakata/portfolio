@@ -102,6 +102,7 @@
     {
       "includes": [
         "**/features/auth/**/*",
+        "**/features/news/**/*",
         "**/app/config/error-interceptor.ts",
         "**/app/config/queryClient.ts"
       ],
@@ -109,7 +110,11 @@
         "rules": {
           "complexity": {
             "noVoid": "off"
-            // 認証関連では非同期処理のvoidを許可
+            // 認証・ニュース関連では非同期処理のvoidを許可
+          },
+          "suspicious": {
+            "noConsole": "off"
+            // デバッグ用のconsole.errorを許可
           }
         }
       }

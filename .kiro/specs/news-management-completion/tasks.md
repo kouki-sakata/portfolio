@@ -123,13 +123,13 @@
   - useDeleteNewsMutationのエラーハンドリングテスト
   - _Requirements: 3.1-3.7_
 
-- [ ] 3. 管理者向けお知らせ管理画面実装（MVP）
+- [x] 3. 管理者向けお知らせ管理画面実装（MVP）
   - カード型一覧、モーダル型フォーム、削除確認、公開切り替えを実装
   - 既存のshadcn-uiコンポーネントを活用
   - React Hook Form + Zodによるバリデーション
   - _Requirements: 4.1-4.9, 5.1-5.10, 6.1-6.6, 7.1-7.5_
 
-- [ ] 3.1 NewsManagementPageコンポーネント実装
+- [x] 3.1 NewsManagementPageコンポーネント実装
   - features/news/components/NewsManagementPage.tsx作成
   - useNewsQueryでお知らせ一覧取得
   - ローディング状態表示（NewsSkeleton）
@@ -140,7 +140,7 @@
   - レスポンシブグリッドレイアウト（grid-cols-1 md:grid-cols-2 lg:grid-cols-3）
   - _Requirements: 4.1-4.9_
 
-- [ ] 3.2 NewsCardコンポーネント実装
+- [x] 3.2 NewsCardコンポーネント実装
   - features/news/components/NewsCard.tsx作成
   - shadcn-ui Cardコンポーネント活用
   - お知らせ日付、内容、公開状態バッジ表示
@@ -151,7 +151,7 @@
   - AlertDialogによる削除確認ダイアログ統合
   - _Requirements: 4.2-4.7, 7.1-7.5_
 
-- [ ] 3.3 NewsFormModalコンポーネント実装
+- [x] 3.3 NewsFormModalコンポーネント実装
   - features/news/components/NewsFormModal.tsx作成
   - shadcn-ui Dialogコンポーネント活用
   - React Hook Form統合（useForm）
@@ -164,7 +164,7 @@
   - キャンセルボタンまたはESCキーで閉じる
   - _Requirements: 5.1-5.10_
 
-- [ ] 3.4 削除確認ダイアログ実装
+- [x] 3.4 削除確認ダイアログ実装
   - features/news/components/DeleteConfirmDialog.tsx作成
   - shadcn-ui AlertDialogコンポーネント活用
   - お知らせ内容プレビュー表示（最大100文字）
@@ -173,7 +173,7 @@
   - キャンセルボタンでダイアログ閉じる
   - _Requirements: 6.1-6.6_
 
-- [ ] 3.5 UIコンポーネントテスト実装
+- [x] 3.5 UIコンポーネントテスト実装
   - NewsCard.test.tsx: お知らせ情報表示、編集ボタンクリック、公開バッジ表示テスト
   - NewsFormModal.test.tsx: フォーム入力、バリデーションエラー、保存処理テスト
   - DeleteConfirmDialog.test.tsx: プレビュー表示、削除実行、キャンセル処理テスト
