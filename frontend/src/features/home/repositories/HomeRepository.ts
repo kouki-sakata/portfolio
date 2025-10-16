@@ -15,7 +15,7 @@ const NewsItemSchema = z.object({
   id: z.number(),
   newsDate: z.string(),
   content: z.string(),
-  released: z.boolean(),
+  releaseFlag: z.boolean(),
 });
 
 const EmployeeSchema = z.object({

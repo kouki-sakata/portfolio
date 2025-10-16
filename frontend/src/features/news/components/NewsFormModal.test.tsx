@@ -3,7 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { NewsResponse } from "@/types/types.gen";
+import type { NewsResponse } from "@/types";
 import { NewsFormModal } from "./NewsFormModal";
 
 const mocks = vi.hoisted(() => ({

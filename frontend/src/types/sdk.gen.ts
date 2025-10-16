@@ -282,8 +282,8 @@ export const updateNews = <ThrowOnError extends boolean = false>(options: Option
 };
 
 /**
- * お知らせ公開切り替え
- * 公開/非公開フラグをトグル（ADMIN権限が必要）
+ * お知らせ公開状態設定
+ * 公開/非公開フラグを明示的に設定（ADMIN権限が必要）
  */
 export const toggleNewsPublish = <ThrowOnError extends boolean = false>(options: Options<ToggleNewsPublishData, ThrowOnError>) => {
     return (options.client ?? client).patch<ToggleNewsPublishResponses, ToggleNewsPublishErrors, ThrowOnError>({
@@ -295,6 +295,10 @@ export const toggleNewsPublish = <ThrowOnError extends boolean = false>(options:
             }
         ],
         url: '/api/news/{id}/publish',
-        ...options
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
     });
 };

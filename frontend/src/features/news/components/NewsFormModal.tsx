@@ -18,7 +18,7 @@ import {
   useCreateNewsMutation,
   useUpdateNewsMutation,
 } from "@/features/news/hooks/useNews";
-import type { NewsResponse } from "@/types/types.gen";
+import type { NewsResponse } from "@/types";
 
 const newsFormSchema = z.object({
   newsDate: z

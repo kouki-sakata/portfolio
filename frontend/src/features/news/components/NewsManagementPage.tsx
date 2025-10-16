@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useNewsQuery } from "@/features/news/hooks/useNews";
-import type { NewsResponse } from "@/types/types.gen";
+import type { NewsResponse } from "@/types";
 
 import { NewsCard } from "./NewsCard";
 import { NewsFormModal } from "./NewsFormModal";

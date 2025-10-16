@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { useDeleteNewsMutation } from "@/features/news/hooks/useNews";
-import type { NewsResponse } from "@/types/types.gen";
+import type { NewsResponse } from "@/types";
 
 type DeleteConfirmDialogProps = {
   news: NewsResponse;

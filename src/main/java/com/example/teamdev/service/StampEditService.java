@@ -2,12 +2,11 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.dto.StampEditData;
 import com.example.teamdev.service.stamp.*;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
@@ -24,6 +23,7 @@ public class StampEditService {
     private final OutTimeAdjuster outTimeAdjuster;
     private final StampHistoryPersistence stampPersistence;
     private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
 
     /**
      * StampEditServiceのコンストラクタ。
@@ -33,16 +33,17 @@ public class StampEditService {
      * @param stampPersistence   打刻履歴永続化
      * @param logHistoryService  ログ履歴サービス
      */
-    @Autowired
     public StampEditService(
             StampFormDataExtractor dataExtractor,
             OutTimeAdjuster outTimeAdjuster,
             StampHistoryPersistence stampPersistence,
-            LogHistoryRegistrationService logHistoryService) {
+            LogHistoryRegistrationService logHistoryService,
+            Clock clock) {
         this.dataExtractor = dataExtractor;
         this.outTimeAdjuster = outTimeAdjuster;
         this.stampPersistence = stampPersistence;
         this.logHistoryService = logHistoryService;
+        this.clock = clock;
     }
 
     /**
@@ -146,7 +147,8 @@ public class StampEditService {
         }
         int targetEmployeeId = Integer.parseInt(firstEmployeeIdStr);
 
+        Timestamp timestamp = Timestamp.from(clock.instant());
         logHistoryService.execute(4, 3, null, targetEmployeeId,
-                updateEmployeeId, Timestamp.valueOf(LocalDateTime.now()));
+                updateEmployeeId, timestamp);
     }
 }

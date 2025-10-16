@@ -3,20 +3,28 @@ package com.example.teamdev.service;
 import com.example.teamdev.entity.StampDelete;
 import com.example.teamdev.form.StampDeleteForm;
 import com.example.teamdev.mapper.StampDeleteMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 
 @Service
 public class StampDeleteService {
 
-    @Autowired
-    private StampDeleteMapper stampDeleteMapper;
-    @Autowired
-    private LogHistoryRegistrationService logHistoryService;
+    private final StampDeleteMapper stampDeleteMapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public StampDeleteService(
+        StampDeleteMapper stampDeleteMapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.stampDeleteMapper = stampDeleteMapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
 
     /**
      * 年と月を分解し打刻記録を取得
@@ -35,8 +43,8 @@ public class StampDeleteService {
                 stampDeleteEntity);
         
         // 削除が成功した場合のみ履歴に登録
-        logHistoryService.execute(5, 4, null, null, updateEmployeeId,
-                Timestamp.valueOf(LocalDateTime.now()));
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(5, 4, null, null, updateEmployeeId, timestamp);
 
         return deletedCount;
     }

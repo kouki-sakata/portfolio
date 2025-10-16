@@ -11,7 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,6 +34,9 @@ class AuthenticationServiceTest {
 
     @Mock
     private ObjectMapper objectMapper;
+
+    @Mock
+    private Clock clock;
 
     @InjectMocks
     private AuthenticationService authenticationService;
@@ -54,6 +60,8 @@ class AuthenticationServiceTest {
 
     @Test
     void execute_shouldReturnEmployeeInfo_whenCredentialsAreValid() {
+        when(clock.instant()).thenReturn(Instant.parse("2025-10-01T00:00:00Z"));
+        when(clock.getZone()).thenReturn(ZoneId.of("Asia/Tokyo"));
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
         when(passwordEncoder.matches(formEmployee.getPassword(), dbEmployee.getPassword())).thenReturn(true);
         when(objectMapper.convertValue(any(), eq(Map.class))).thenReturn(
@@ -105,12 +113,11 @@ class AuthenticationServiceTest {
     void execute_shouldHandleNullPassword() {
         formEmployee.setPassword(null);
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
-        when(passwordEncoder.matches(null, dbEmployee.getPassword())).thenReturn(false);
 
         Map<String, Object> result = authenticationService.execute(formEmployee);
 
         assertTrue(result.isEmpty());
-        
+
         verify(employeeMapper, times(1)).getEmployeeByEmail(formEmployee.getEmail());
         verify(passwordEncoder, times(1)).matches(null, dbEmployee.getPassword());
     }

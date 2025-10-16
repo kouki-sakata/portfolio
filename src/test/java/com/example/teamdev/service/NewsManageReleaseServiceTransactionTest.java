@@ -94,25 +94,34 @@ class NewsManageReleaseServiceTransactionTest {
     void testDependencyConfiguration() {
         try {
             Class<?> serviceClass = NewsManageReleaseService.class;
-            
+
             // NewsMapperフィールドの存在確認
             java.lang.reflect.Field newsMapperField = serviceClass.getDeclaredField("mapper");
-            org.springframework.beans.factory.annotation.Autowired newsMapperAutowired = 
-                newsMapperField.getAnnotation(org.springframework.beans.factory.annotation.Autowired.class);
-            assertNotNull(newsMapperAutowired, "NewsMapperに@Autowiredが設定されている");
+            assertNotNull(newsMapperField, "NewsMapperフィールドが存在する");
+            assertTrue(java.lang.reflect.Modifier.isFinal(newsMapperField.getModifiers()),
+                "NewsMapperフィールドはfinalである（コンストラクタインジェクション）");
 
             // LogHistoryRegistrationServiceフィールドの存在確認
             java.lang.reflect.Field logHistoryField = serviceClass.getDeclaredField("logHistoryService");
-            org.springframework.beans.factory.annotation.Autowired logHistoryAutowired = 
-                logHistoryField.getAnnotation(org.springframework.beans.factory.annotation.Autowired.class);
-            assertNotNull(logHistoryAutowired, "LogHistoryRegistrationServiceに@Autowiredが設定されている");
+            assertNotNull(logHistoryField, "LogHistoryRegistrationServiceフィールドが存在する");
+            assertTrue(java.lang.reflect.Modifier.isFinal(logHistoryField.getModifiers()),
+                "LogHistoryRegistrationServiceフィールドはfinalである（コンストラクタインジェクション）");
+
+            // コンストラクタの存在確認
+            java.lang.reflect.Constructor<?> constructor = serviceClass.getConstructor(
+                com.example.teamdev.mapper.NewsMapper.class,
+                LogHistoryRegistrationService.class,
+                java.time.Clock.class
+            );
+            assertNotNull(constructor, "3つのパラメータを持つコンストラクタが存在する");
 
             System.out.println("✅ 依存関係の注入設定が適切です");
-            System.out.println("- NewsMapper: @Autowiredで注入");
-            System.out.println("- LogHistoryRegistrationService: @Autowiredで注入");
+            System.out.println("- NewsMapper: コンストラクタインジェクション（final）");
+            System.out.println("- LogHistoryRegistrationService: コンストラクタインジェクション（final）");
+            System.out.println("- Clock: コンストラクタインジェクション（final）");
 
-        } catch (NoSuchFieldException e) {
-            fail("フィールドが見つかりません: " + e.getMessage());
+        } catch (NoSuchFieldException | NoSuchMethodException e) {
+            fail("フィールドまたはコンストラクタが見つかりません: " + e.getMessage());
         }
     }
 }

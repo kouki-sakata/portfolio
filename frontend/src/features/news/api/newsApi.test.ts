@@ -16,13 +16,13 @@ import type {
   NewsListResponse,
   NewsResponse,
   NewsUpdateRequest,
-} from "@/types/types.gen";
+} from "@/types";
 
 import {
   createNews,
   deleteNews,
   fetchNewsList,
-  fetchPublishedNewsList,
+  fetchPublishedNews,
   toggleNewsPublish,
   updateNews,
 } from "./newsApi";
@@ -31,10 +31,10 @@ const mockedApi = vi.mocked(api);
 
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
   id: 1,
-  newsDate: "2025-10-10",
-  content: "メンテナンスのお知らせ",
+  newsDate: "2025-10-01",
+  content: "本日18時よりシステムメンテナンスを実施します。",
   releaseFlag: true,
-  updateDate: "2025-10-10T12:00:00Z",
+  updateDate: "2025-10-01T09:00:00Z",
   ...overrides,
 });
 
@@ -47,7 +47,7 @@ describe("newsApi", () => {
     mockedApi.delete.mockReset();
   });
 
-  it("全お知らせ一覧を取得する", async () => {
+  it("fetches all news", async () => {
     const response: NewsListResponse = {
       news: [sampleNews()],
     };
@@ -56,68 +56,76 @@ describe("newsApi", () => {
 
     const result = await fetchNewsList();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/news");
+    expect(mockedApi.get).toHaveBeenCalledWith("/news", undefined);
     expect(result).toStrictEqual(response);
   });
 
-  it("公開済みお知らせ一覧を取得する", async () => {
+  it("fetches published news", async () => {
     const response: NewsListResponse = {
-      news: [sampleNews({ id: 2 })],
+      news: [sampleNews({ id: 2, releaseFlag: true })],
     };
 
     mockedApi.get.mockResolvedValue(response);
 
-    const result = await fetchPublishedNewsList();
+    const result = await fetchPublishedNews();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/news/published");
+    expect(mockedApi.get).toHaveBeenCalledWith("/news/published", undefined);
     expect(result).toStrictEqual(response);
   });
 
-  it("新規お知らせを作成する", async () => {
+  it("creates a news entry", async () => {
     const payload: NewsCreateRequest = {
-      newsDate: "2025-11-01",
-      content: "新機能をリリースしました",
+      newsDate: "2025-10-02",
+      content: "臨時システムメンテナンスのお知らせ",
     };
-    const created = sampleNews({ id: 10, ...payload });
+    const created = sampleNews({ id: 99, newsDate: payload.newsDate });
     mockedApi.post.mockResolvedValue(created);
 
     const result = await createNews(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/news", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/news", payload, undefined);
     expect(result).toBe(created);
   });
 
-  it("既存お知らせを更新する", async () => {
+  it("updates an existing news entry", async () => {
     const payload: NewsUpdateRequest = {
-      newsDate: "2025-11-02",
-      content: "内容を更新しました",
+      newsDate: "2025-10-05",
+      content: "更新されたお知らせ内容",
     };
     const updated = sampleNews({ id: 7, ...payload });
     mockedApi.put.mockResolvedValue(updated);
 
     const result = await updateNews(7, payload);
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/news/7", payload);
+    expect(mockedApi.put).toHaveBeenCalledWith("/news/7", payload, undefined);
     expect(result).toBe(updated);
   });
 
-  it("お知らせを削除する", async () => {
+  it("deletes a news entry", async () => {
     mockedApi.delete.mockResolvedValue(undefined);
 
-    await deleteNews(5);
+    await deleteNews(8);
 
-    expect(mockedApi.delete).toHaveBeenCalledWith("/news/5");
+    expect(mockedApi.delete).toHaveBeenCalledWith("/news/8", undefined);
   });
 
-  it("公開状態を切り替える", async () => {
-    // Backend returns 204 No Content, so api.patch returns undefined
+  it("toggles publication state", async () => {
     mockedApi.patch.mockResolvedValue(undefined);
 
-    const result = await toggleNewsPublish(3, false);
+    await toggleNewsPublish(5, true);
+    expect(mockedApi.patch).toHaveBeenCalledWith(
+      "/news/5/publish",
+      { releaseFlag: true },
+      undefined
+    );
 
-    expect(mockedApi.patch).toHaveBeenCalledWith("/news/3/publish", {
-      releaseFlag: false,
-    });
-    expect(result).toBeUndefined();
+    mockedApi.patch.mockClear();
+
+    await toggleNewsPublish(5, false);
+    expect(mockedApi.patch).toHaveBeenCalledWith(
+      "/news/5/publish",
+      { releaseFlag: false },
+      undefined
+    );
   });
 });

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/card";
 import { useTogglePublishMutation } from "@/features/news/hooks/useNews";
 import { cn } from "@/lib/utils";
-import type { NewsResponse } from "@/types/types.gen";
+import type { NewsResponse } from "@/types";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 type NewsCardProps = {
