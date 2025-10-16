@@ -1,5 +1,5 @@
 import type { EmployeeSummary } from "@/features/auth/types";
-import type { NewsItem } from "@/features/news/types";
+import type { NewsResponse } from "@/types";
 
 /**
  * テストユーザーを作成するファクトリ
@@ -58,18 +58,16 @@ export const createEmployeeList = (
 /**
  * ニュースアイテムを作成するファクトリ
  */
-export const createNewsItem = (overrides?: Partial<NewsItem>): NewsItem => {
+export const createNewsItem = (
+  overrides?: Partial<NewsResponse>
+): NewsResponse => {
   const now = new Date().toISOString();
   return {
     id: 1,
-    title: "テストニュース",
     content: "これはテスト用のニュース記事です。",
-    category: "general",
-    published: false,
-    publishedAt: null,
-    createdAt: now,
-    updatedAt: now,
-    authorId: 1,
+    newsDate: now.slice(0, 10),
+    releaseFlag: false,
+    updateDate: now,
     ...overrides,
   };
 };
@@ -80,10 +78,10 @@ export const createNewsItem = (overrides?: Partial<NewsItem>): NewsItem => {
 export const createNewsItemList = (
   count: number,
   options?: { startId?: number; publishedCount?: number }
-): NewsItem[] => {
+): NewsResponse[] => {
   const startId = options?.startId ?? 1;
   const publishedCount = options?.publishedCount ?? 0;
-  const items: NewsItem[] = [];
+  const items: NewsResponse[] = [];
   const now = new Date().toISOString();
 
   for (let i = 0; i < count; i++) {
@@ -91,14 +89,10 @@ export const createNewsItemList = (
     const isPublished = i < publishedCount;
     items.push({
       id,
-      title: `テストニュース${id}`,
       content: `これはテスト用のニュース記事${id}です。`,
-      category: "general",
-      published: isPublished,
-      publishedAt: isPublished ? now : null,
-      createdAt: now,
-      updatedAt: now,
-      authorId: 1,
+      newsDate: now.slice(0, 10),
+      releaseFlag: isPublished,
+      updateDate: now,
     });
   }
 

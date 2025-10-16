@@ -421,8 +421,8 @@ paths:
     patch:
       tags:
         - News Management
-      summary: お知らせ公開切り替え
-      description: 公開/非公開フラグをトグル（ADMIN権限が必要）
+      summary: お知らせ公開状態設定
+      description: 公開/非公開フラグを明示的に設定（ADMIN権限が必要）
       operationId: toggleNewsPublish
       security:
         - sessionAuth: []
@@ -432,9 +432,21 @@ paths:
           required: true
           schema:
             type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsPublishRequest'
       responses:
         '204':
-          description: 切り替え成功
+          description: 設定成功
+        '400':
+          description: バリデーションエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '403':
           description: 権限がありません
           content:
@@ -655,6 +667,15 @@ components:
           minLength: 1
           maxLength: 1000
           description: お知らせ内容（1-1000文字）
+    NewsPublishRequest:
+      type: object
+      required:
+        - releaseFlag
+      properties:
+        releaseFlag:
+          type: boolean
+          description: "公開フラグ（true: 公開, false: 非公開）"
+          example: true
     StampRequest:
       type: object
       required:

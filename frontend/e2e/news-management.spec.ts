@@ -69,7 +69,9 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /作成しました|登録しました/);
 
       const newsItems = server.getNewsItems();
-      const newItem = newsItems.find((item) => item.title === "新しいお知らせ");
+      const newItem = newsItems.find((item) =>
+        item.content.includes("新しいお知らせ")
+      );
       expect(newItem).toBeDefined();
       expect(newItem?.content).toBe("これは新しいお知らせです。");
     });
@@ -108,8 +110,8 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /更新しました/);
 
       const updatedNewsItems = server.getNewsItems();
-      const updatedItem = updatedNewsItems.find(
-        (item) => item.title === "更新されたお知らせ"
+      const updatedItem = updatedNewsItems.find((item) =>
+        item.content.includes("更新されたお知らせ")
       );
       expect(updatedItem).toBeDefined();
       expect(updatedItem?.content).toBe("内容が更新されました。");
@@ -146,8 +148,8 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /削除しました/);
 
       const remainingItems = server.getNewsItems();
-      const deletedItem = remainingItems.find(
-        (item) => item.title === "テストニュース1"
+      const deletedItem = remainingItems.find((item) =>
+        item.content.includes("テストニュース1")
       );
       expect(deletedItem).toBeUndefined();
     });
@@ -181,10 +183,10 @@ test.describe.skip("お知らせ管理機能の包括的テスト", () => {
       await waitForToast(page, /更新しました|変更しました/);
 
       const currentNewsItems = server.getNewsItems();
-      const updatedItem = currentNewsItems.find(
-        (item) => item.title === "テストニュース1"
+      const updatedItem = currentNewsItems.find((item) =>
+        item.content.includes("テストニュース1")
       );
-      expect(updatedItem?.published).toBe(true);
+      expect(updatedItem?.releaseFlag).toBe(true);
     });
   });
 

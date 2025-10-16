@@ -22,6 +22,11 @@ export const QUERY_CONFIG = {
     staleTime: 10 * 60 * 1000, // 10分
     gcTime: 30 * 60 * 1000, // 30分
   },
+  // お知らせ管理: 管理者更新頻度を考慮しつつ即時性も確保
+  news: {
+    staleTime: 5 * 60 * 1000, // 5分
+    gcTime: 10 * 60 * 1000, // 10分
+  },
   // ホームダッシュボード: リアルタイム性が高い
   homeDashboard: {
     staleTime: 60 * 1000, // 1分

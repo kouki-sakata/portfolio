@@ -6,8 +6,13 @@ import type {
   StampRequest,
   StampResponse,
 } from "@/features/home/types";
-import type { NewsItem } from "@/features/news/types";
 import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
+import type {
+  NewsCreateRequest,
+  NewsListResponse,
+  NewsResponse,
+  NewsUpdateRequest,
+} from "@/types";
 
 const DEFAULT_ADMIN_USER: EmployeeSummary = {
   id: 1,
@@ -28,8 +33,8 @@ const DEFAULT_HOME_DASHBOARD: HomeDashboardResponse = {
     {
       id: 1,
       content: "本日の社内ミーティングは10:00に開始します。",
-      newsDate: new Date().toISOString(),
-      released: true,
+      newsDate: new Date().toISOString().slice(0, 10),
+      releaseFlag: true,
     },
   ],
 };
@@ -46,7 +51,7 @@ type CreateAppMockServerOptions = {
   homeDashboard?: HomeDashboardResponse;
   stampResponse?: StampResponse;
   featureFlags?: Partial<FeatureFlags>;
-  initialNewsItems?: NewsItem[];
+  initialNewsItems?: NewsResponse[];
 };
 
 type ErrorSimulation = {
@@ -135,7 +140,7 @@ export class AppMockServer {
 
   private nextEmployeeId: number;
 
-  private newsItems: NewsItem[];
+  private newsItems: NewsResponse[];
 
   private nextNewsId: number;
 
@@ -212,11 +217,11 @@ export class AppMockServer {
     return this.lastStampRequest ? { ...this.lastStampRequest } : null;
   }
 
-  getNewsItems(): NewsItem[] {
+  getNewsItems(): NewsResponse[] {
     return this.newsItems.map((item) => ({ ...item }));
   }
 
-  setNewsItems(items: NewsItem[]) {
+  setNewsItems(items: NewsResponse[]) {
     this.newsItems = items.map((item) => ({ ...item }));
   }
 
@@ -458,19 +463,15 @@ export class AppMockServer {
 
     // News endpoints
     if (normalizedPath === "/news" && method === "GET") {
-      await route.fulfill(
-        buildJsonResponse({
-          items: this.newsItems,
-          total: this.newsItems.length,
-          page: 1,
-          pageSize: 50,
-        })
-      );
+      const response: NewsListResponse = {
+        news: this.newsItems,
+      };
+      await route.fulfill(buildJsonResponse(response));
       return;
     }
 
     if (normalizedPath === "/news" && method === "POST") {
-      const payload = getAxiosPayload<Omit<NewsItem, "id">>(
+      const payload = getAxiosPayload<NewsCreateRequest>(
         request.postDataJSON(),
         request.postData()
       );
@@ -479,12 +480,12 @@ export class AppMockServer {
         return;
       }
 
-      const newItem: NewsItem = {
-        ...payload,
+      const newItem: NewsResponse = {
         id: this.nextNewsId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        authorId: this.user.id,
+        newsDate: payload.newsDate,
+        content: payload.content,
+        releaseFlag: false,
+        updateDate: new Date().toISOString(),
       };
       this.nextNewsId += 1;
       this.newsItems = [...this.newsItems, newItem];
@@ -503,7 +504,7 @@ export class AppMockServer {
         return;
       }
 
-      const payload = getAxiosPayload<Partial<NewsItem>>(
+      const payload = getAxiosPayload<NewsUpdateRequest>(
         request.postDataJSON(),
         request.postData()
       );
@@ -518,11 +519,11 @@ export class AppMockServer {
         return;
       }
 
-      const updatedItem: NewsItem = {
+      const updatedItem: NewsResponse = {
         ...this.newsItems[index],
-        ...payload,
-        id: newsId,
-        updatedAt: new Date().toISOString(),
+        newsDate: payload.newsDate,
+        content: payload.content,
+        updateDate: new Date().toISOString(),
       };
       this.newsItems = [
         ...this.newsItems.slice(0, index),
@@ -548,7 +549,7 @@ export class AppMockServer {
 
     if (
       normalizedPath.startsWith("/news/") &&
-      normalizedPath.endsWith("/status") &&
+      normalizedPath.endsWith("/publish") &&
       method === "PATCH"
     ) {
       const segments = normalizedPath.split("/");
@@ -558,7 +559,7 @@ export class AppMockServer {
         return;
       }
 
-      const payload = getAxiosPayload<{ published: boolean }>(
+      const payload = getAxiosPayload<{ releaseFlag: boolean }>(
         request.postDataJSON(),
         request.postData()
       );
@@ -573,10 +574,10 @@ export class AppMockServer {
         return;
       }
 
-      const updatedItem: NewsItem = {
+      const updatedItem: NewsResponse = {
         ...this.newsItems[index],
-        published: payload.published,
-        updatedAt: new Date().toISOString(),
+        releaseFlag: payload.releaseFlag,
+        updateDate: new Date().toISOString(),
       };
       this.newsItems = [
         ...this.newsItems.slice(0, index),

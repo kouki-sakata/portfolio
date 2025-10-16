@@ -1,12 +1,11 @@
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,14 +18,23 @@ import com.example.teamdev.mapper.NewsMapper;
  * 公開/非公開設定処理
  */
 @Service
-public class NewsManageReleaseService{
+public class NewsManageReleaseService {
 
 	private static final Logger logger = LoggerFactory.getLogger(NewsManageReleaseService.class);
 
-	@Autowired
-	NewsMapper mapper;
-	@Autowired
-	LogHistoryRegistrationService logHistoryService;
+    private final NewsMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public NewsManageReleaseService(
+        NewsMapper mapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
 
 	@Transactional
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
@@ -61,14 +69,14 @@ public class NewsManageReleaseService{
 					logger.debug("Processing news ID: {}, releaseFlag: {}", id, releaseFlag);
 					
 					News entity =  mapper.getById(id).orElse(null);
-					if (entity != null) {
-					    // エンティティが見つかった場合の処理
-						entity.setReleaseFlag(releaseFlag);
-						Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-						entity.setUpdateDate(timestamp);
-						mapper.upDate(entity);
-						updatedCount++;
-						logger.debug("Successfully updated news ID: {} with releaseFlag: {}", id, releaseFlag);
+                    if (entity != null) {
+                        // エンティティが見つかった場合の処理
+                        entity.setReleaseFlag(releaseFlag);
+                        Timestamp timestamp = Timestamp.from(clock.instant());
+                        entity.setUpdateDate(timestamp);
+                        mapper.upDate(entity);
+                        updatedCount++;
+                        logger.debug("Successfully updated news ID: {} with releaseFlag: {}", id, releaseFlag);
 					} else {
 						logger.warn("News entity not found for ID: {}", id);
 					}
@@ -81,14 +89,15 @@ public class NewsManageReleaseService{
 				}
 			}
 			
-			if(updatedCount > 0) {
-				// 履歴記録
-				logger.info("Updated release flag for {} news item(s)", updatedCount);
-				logger.debug("Recording log history for release operation");
-				logHistoryService.execute(2, 5, null, null, updateEmployeeId , Timestamp.valueOf(LocalDateTime.now()));
-			} else {
-				logger.debug("No news items updated during release toggle");
-			}
+            if (updatedCount > 0) {
+                // 履歴記録
+                logger.info("Updated release flag for {} news item(s)", updatedCount);
+                logger.debug("Recording log history for release operation");
+                Timestamp timestamp = Timestamp.from(clock.instant());
+                logHistoryService.execute(2, 5, null, null, updateEmployeeId, timestamp);
+            } else {
+                logger.debug("No news items updated during release toggle");
+            }
 			
 			logger.debug("NewsManageReleaseService.execute completed successfully");
 		} catch (Exception e) {

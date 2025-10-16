@@ -8,10 +8,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -30,6 +32,7 @@ public class HomeService03Test {
     private ObjectMapper objectMapper;
 
     private AuthenticationService homeService03;
+    private Clock fixedClock;
 
     private Employee employeeFrom;
     private Employee storedEmployee;
@@ -38,9 +41,10 @@ public class HomeService03Test {
     void setUp() {
         // ObjectMapperの実物インスタンスを作成
         objectMapper = new ObjectMapper();
+        fixedClock = Clock.fixed(Instant.parse("2025-10-01T00:00:00Z"), ZoneId.of("Asia/Tokyo"));
 
         // AuthenticationServiceを手動で構築（実物のObjectMapperを注入）
-        homeService03 = new AuthenticationService(employeeMapper, passwordEncoder, objectMapper);
+        homeService03 = new AuthenticationService(employeeMapper, passwordEncoder, objectMapper, fixedClock);
 
         employeeFrom = new Employee();
         employeeFrom.setEmail("test@example.com");
