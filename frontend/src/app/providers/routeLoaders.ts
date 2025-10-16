@@ -60,38 +60,38 @@ const handleAuthRedirect = (error: unknown): never => {
 };
 
 export const newsManagementLoader = async (queryClient: QueryClient) => {
-  // セッション取得とアクセス権限チェック
-  const session = await queryClient
-    .fetchQuery({
+  try {
+    // セッション取得とアクセス権限チェック
+    const session = await queryClient.fetchQuery({
       queryKey: queryKeys.auth.session(),
       queryFn: fetchSession,
       staleTime: QUERY_CONFIG.auth.staleTime,
       gcTime: QUERY_CONFIG.auth.gcTime,
-    })
-    .catch((error) => {
-      handleAuthRedirect(error);
-      // この行には到達しませんが、TypeScript の型チェックのため
-      throw error;
     });
 
-  // 管理者権限チェック
-  if (!(session.authenticated && session.employee?.admin)) {
-    authEvents.emitForbidden("管理者権限が必要です。");
-    throw redirect("/");
-  }
+    // 管理者権限チェック
+    if (!(session.authenticated && session.employee?.admin)) {
+      authEvents.emitForbidden("管理者権限が必要です。");
+      throw redirect("/");
+    }
 
-  // ニュースリストのプリフェッチ
-  await queryClient
-    .fetchQuery({
+    // ニュースリストのプリフェッチ
+    await queryClient.fetchQuery({
       queryKey: queryKeys.news.list(),
       queryFn: fetchNewsList,
       staleTime: QUERY_CONFIG.news.staleTime,
       gcTime: QUERY_CONFIG.news.gcTime,
-    })
-    .catch((error) => {
-      handleAuthRedirect(error);
-      throw error;
     });
 
-  return session;
+    return session;
+  } catch (error) {
+    // React Router の redirect は Response オブジェクトを throw するため、
+    // そのまま再 throw して正常なナビゲーションを維持
+    if (error instanceof Response) {
+      throw error;
+    }
+
+    // API エラー（401/403など）は handleAuthRedirect で処理
+    handleAuthRedirect(error);
+  }
 };
