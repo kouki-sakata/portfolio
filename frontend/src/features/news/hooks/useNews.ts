@@ -1,8 +1,4 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import {
@@ -179,7 +175,12 @@ type TogglePublishContext = {
 export const useTogglePublishMutation = () => {
   const queryClient = useQueryClient();
 
-  return useMutation<void, unknown, TogglePublishVariables, TogglePublishContext>({
+  return useMutation<
+    void,
+    unknown,
+    TogglePublishVariables,
+    TogglePublishContext
+  >({
     mutationFn: ({ id, releaseFlag }) => toggleNewsPublish(id, releaseFlag),
     onMutate: async ({ id, releaseFlag }) => {
       await queryClient.cancelQueries({ queryKey: newsQueryKeys.list() });
@@ -244,7 +245,7 @@ export const useTogglePublishMutation = () => {
         variant: "destructive",
       });
     },
-    onSuccess: async () => {
+    onSuccess: () => {
       toast({
         title: "公開状態を更新しました",
         description: "閲覧権限が最新の状態に反映されました。",

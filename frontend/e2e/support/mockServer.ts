@@ -6,13 +6,13 @@ import type {
   StampRequest,
   StampResponse,
 } from "@/features/home/types";
+import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
 import type {
   NewsCreateRequest,
   NewsListResponse,
   NewsResponse,
   NewsUpdateRequest,
 } from "@/types";
-import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
 
 const DEFAULT_ADMIN_USER: EmployeeSummary = {
   id: 1,

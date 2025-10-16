@@ -15,9 +15,7 @@ export const fetchNewsList = (): Promise<NewsListResponse> =>
 export const fetchPublishedNews = (): Promise<NewsListResponse> =>
   api.get<NewsListResponse>(`${NEWS_ENDPOINT}/published`, undefined);
 
-export const createNews = (
-  payload: NewsCreateRequest
-): Promise<NewsResponse> =>
+export const createNews = (payload: NewsCreateRequest): Promise<NewsResponse> =>
   api.post<NewsResponse>(NEWS_ENDPOINT, payload, undefined);
 
 export const updateNews = (

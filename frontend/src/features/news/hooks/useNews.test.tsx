@@ -1,19 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
+import { HttpResponse, http } from "msw";
 import type { ReactNode } from "react";
-import { http, HttpResponse } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
+import * as newsApi from "@/features/news/api/newsApi";
 import { toast as toastFn } from "@/hooks/use-toast";
+import { mswServer } from "@/test/msw/server";
 import type {
   NewsCreateRequest,
   NewsListResponse,
   NewsResponse,
   NewsUpdateRequest,
 } from "@/types";
-import { mswServer } from "@/test/msw/server";
-
 import {
   newsQueryKeys,
   useCreateNewsMutation,
@@ -23,7 +23,6 @@ import {
   useTogglePublishMutation,
   useUpdateNewsMutation,
 } from "./useNews";
-import * as newsApi from "@/features/news/api/newsApi";
 
 vi.mock("@/hooks/use-toast", () => ({
   toast: vi.fn(),
@@ -333,9 +332,11 @@ describe("useTogglePublishMutation", () => {
     });
 
     await act(async () => {
-      await result.current.mutateAsync({ id: 41, releaseFlag: false }).catch(() => {
-        // 例外はテスト内で無視
-      });
+      await result.current
+        .mutateAsync({ id: 41, releaseFlag: false })
+        .catch(() => {
+          // 例外はテスト内で無視
+        });
     });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
