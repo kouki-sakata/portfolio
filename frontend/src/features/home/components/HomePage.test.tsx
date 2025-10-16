@@ -44,13 +44,13 @@ describe("HomePage", () => {
         id: 1,
         content: "システムメンテナンスのお知らせ",
         newsDate: "2024-01-15",
-        released: true,
+        releaseFlag: true,
       },
       {
         id: 2,
         content: "新機能がリリースされました",
         newsDate: "2024-01-10",
-        released: true,
+        releaseFlag: true,
       },
     ],
   };

@@ -1,9 +1,8 @@
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,12 +15,21 @@ import com.example.teamdev.mapper.NewsMapper;
  */
 @Service
 @Transactional
-public class NewsManageDeletionService{
+public class NewsManageDeletionService {
 
-	@Autowired
-	NewsMapper mapper;
-	@Autowired
-	LogHistoryRegistrationService logHistoryService;
+    private final NewsMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public NewsManageDeletionService(
+        NewsMapper mapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
 
 	public void execute(ListForm listForm, Integer updateEmployeeId) {
 
@@ -31,9 +39,10 @@ public class NewsManageDeletionService{
 			mapper.deleteById(id);
 			delete = true;
 		}
-		if(delete) {
-			//履歴記録
-			logHistoryService.execute(2, 4, null, null, updateEmployeeId , Timestamp.valueOf(LocalDateTime.now()));
-		}
+        if (delete) {
+            // 履歴記録
+            Timestamp timestamp = Timestamp.from(clock.instant());
+            logHistoryService.execute(2, 4, null, null, updateEmployeeId, timestamp);
+        }
 	}
 }

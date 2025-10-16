@@ -71,20 +71,20 @@
   - リソース不在シナリオテスト（404 Not Found）
   - _Requirements: 1.1-1.8_
 
-- [ ] 2. React Query統合とAPIクライアント接続
+- [x] 2. React Query統合とAPIクライアント接続
   - 既存newsApi.tsのAPI関数を実際のREST APIエンドポイントに接続
   - React Query Hooksを実装し効率的なデータフェッチングとキャッシュ管理を提供
   - 楽観的更新による即座のUI反映
   - _Requirements: 3.1-3.7_
 
-- [ ] 2.1 既存型定義の廃止とOpenAPI型への移行
+- [x] 2.1 既存型定義の廃止とOpenAPI型への移行
   - features/news/types.tsの既存NewsItem型定義を削除
   - types/news.tsからOpenAPI生成型（NewsResponse、NewsCreateRequest、NewsUpdateRequest、NewsListResponse）をインポート
   - HomeNewsItem型をNewsResponseに統一
   - TypeScript strictモードでの型チェックが通過することを確認
   - _Requirements: 2.1-2.5_
 
-- [ ] 2.2 newsApi.ts実装（実際のエンドポイント接続）
+- [x] 2.2 newsApi.ts実装（実際のエンドポイント接続）
   - features/news/api/newsApi.ts編集
   - shared/api/axiosClientを活用したHTTP通信実装
   - fetchNewsList(): GET /api/newsにリクエスト送信
@@ -96,7 +96,7 @@
   - OpenAPI生成型を使用した型安全な実装
   - _Requirements: 3.1, 3.2_
 
-- [ ] 2.3 React Query Hooks実装
+- [x] 2.3 React Query Hooks実装
   - features/news/hooks/useNews.ts作成
   - useNewsQuery: 全お知らせ一覧取得、キャッシュキー["news"]、staleTime 5分
   - usePublishedNewsQuery: 公開お知らせ一覧取得、キャッシュキー["news", "published"]
@@ -106,7 +106,7 @@
   - useTogglePublishMutation: 公開切り替え、楽観的更新実装、エラー時ロールバック
   - _Requirements: 3.2, 3.3, 3.4, 3.5, 3.6_
 
-- [ ] 2.4 楽観的更新実装（useTogglePublishMutation）
+- [x] 2.4 楽観的更新実装（useTogglePublishMutation）
   - onMutate: queryClient.cancelQueries実行、現在のキャッシュを保存
   - onMutate: queryClient.setQueryDataで即座にUI反映
   - onError: context.previousNewsでロールバック、エラーToast表示
@@ -114,7 +114,7 @@
   - onSuccess: 成功Toast表示
   - _Requirements: 3.4, 3.5_
 
-- [ ] 2.5 React Query Hooksテスト実装
+- [x] 2.5 React Query Hooksテスト実装
   - features/news/hooks/useNews.test.ts作成
   - MSWモックサーバー設定（各エンドポイント）
   - useNewsQueryの成功シナリオテスト

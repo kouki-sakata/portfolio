@@ -1,11 +1,10 @@
 import type { EmployeeSummary } from "@/features/auth/types";
+import type { NewsResponse } from "@/types";
 
-export type HomeNewsItem = {
-  id: number;
-  content: string;
-  newsDate: string;
-  released: boolean;
-};
+export type HomeNewsItem = Pick<
+  NewsResponse,
+  "id" | "content" | "newsDate" | "releaseFlag"
+>;
 
 export type HomeDashboardResponse = {
   employee: EmployeeSummary;

@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -33,6 +34,8 @@ public class LogUtil {
     public static final String LOG_LEVEL_WARN = "WARN";
     public static final String LOG_LEVEL_ERROR = "ERROR";
 
+    private static final ZoneId DEFAULT_ZONE = ZoneId.of("Asia/Tokyo");
+
     /**
      * セキュリティ関連のログを出力します
      * 
@@ -46,7 +49,7 @@ public class LogUtil {
             MDC.put("action", action);
             MDC.put("userId", userId != null ? userId.toString() : "anonymous");
             MDC.put("result", result);
-            MDC.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            MDC.put("timestamp", LocalDateTime.now(DEFAULT_ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             
             securityLogger.info("Security Event - Action: {}, User: {}, Result: {}, Details: {}", 
                 action, userId, result, details);
@@ -95,7 +98,7 @@ public class LogUtil {
         try {
             MDC.put("method", methodName);
             MDC.put("executionTime", String.valueOf(executionTimeMs));
-            MDC.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            MDC.put("timestamp", LocalDateTime.now(DEFAULT_ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             
             if (executionTimeMs > 1000) {
                 performanceLogger.warn("Slow execution - Method: {}, Time: {}ms, Params: {}", 
@@ -126,7 +129,7 @@ public class LogUtil {
             MDC.put("entityType", entityType);
             MDC.put("entityId", entityId);
             MDC.put("result", result);
-            MDC.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            MDC.put("timestamp", LocalDateTime.now(DEFAULT_ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             
             businessLogger.info("Business Operation - Op: {}, User: {}, Entity: {}({}), Result: {}", 
                 operation, userId, entityType, entityId, result);
@@ -149,7 +152,7 @@ public class LogUtil {
         try {
             MDC.put("userId", userId != null ? userId.toString() : "unknown");
             MDC.put("context", context != null ? context : "");
-            MDC.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            MDC.put("timestamp", LocalDateTime.now(DEFAULT_ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             
             if (exception != null) {
                 logger.error("Error occurred - Message: {}, Context: {}, User: {}", 
@@ -173,7 +176,7 @@ public class LogUtil {
         try {
             MDC.put("event", event);
             MDC.put("version", version != null ? version : "unknown");
-            MDC.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            MDC.put("timestamp", LocalDateTime.now(DEFAULT_ZONE).format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             
             businessLogger.info("Application Event - {}, Version: {}", event, version);
         } finally {

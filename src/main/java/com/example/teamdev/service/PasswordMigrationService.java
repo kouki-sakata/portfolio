@@ -6,13 +6,12 @@ import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.util.MessageUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -27,14 +26,15 @@ public class PasswordMigrationService {
 
     private final EmployeeMapper employeeMapper;
     private final PasswordEncoder passwordEncoder;
+    private final Clock clock;
     
     @Value("${app.startup.password-migration.force:false}")
     private boolean forceMigration;
 
-    @Autowired
-    public PasswordMigrationService(EmployeeMapper employeeMapper, PasswordEncoder passwordEncoder) {
+    public PasswordMigrationService(EmployeeMapper employeeMapper, PasswordEncoder passwordEncoder, Clock clock) {
         this.employeeMapper = employeeMapper;
         this.passwordEncoder = passwordEncoder;
+        this.clock = clock;
     }
 
     /**
@@ -82,7 +82,7 @@ public class PasswordMigrationService {
         logger.info("マイグレーション対象: {}件 / 総従業員数: {}件", plainPasswordEmployees.size(), totalCount);
         
         // バッチ更新のための現在時刻を一度だけ取得
-        Timestamp updateTime = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp updateTime = Timestamp.from(clock.instant());
         
         for (Employee employee : plainPasswordEmployees) {
             try {

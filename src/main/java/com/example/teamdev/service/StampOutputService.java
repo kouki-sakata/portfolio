@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -15,8 +14,8 @@ import java.io.PrintWriter;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -31,12 +30,22 @@ public class StampOutputService {
     private static final Logger logger = LoggerFactory.getLogger(
             StampOutputService.class);
 
-    @Autowired
-    StampHistoryMapper mapper;
-    @Autowired
-    LogHistoryRegistrationService logHistoryService;
-    @Autowired
-    private ObjectMapper objectMapper;
+    private final StampHistoryMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final ObjectMapper objectMapper;
+    private final Clock clock;
+
+    public StampOutputService(
+        StampHistoryMapper mapper,
+        LogHistoryRegistrationService logHistoryService,
+        ObjectMapper objectMapper,
+        Clock clock
+    ) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+        this.objectMapper = objectMapper;
+        this.clock = clock;
+    }
 
     public void execute(HttpServletResponse response, StampOutputForm stampOutputForm,
             Integer updateEmployeeId) throws IOException {
@@ -96,8 +105,8 @@ public class StampOutputService {
         outputCsvFile(response, year, month, employeeNames,
                 allStampHistoryList);
         // 履歴記録
-        logHistoryService.execute(6, 6, null, null, updateEmployeeId,
-                Timestamp.valueOf(LocalDateTime.now()));
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(6, 6, null, null, updateEmployeeId, timestamp);
     }
 
     /**

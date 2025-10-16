@@ -1,10 +1,8 @@
 package com.example.teamdev.service;
 
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,12 +16,21 @@ import com.example.teamdev.mapper.NewsMapper;
  */
 @Service
 @Transactional
-public class NewsManageRegistrationService{
+public class NewsManageRegistrationService {
 
-	@Autowired
-	NewsMapper mapper;
-	@Autowired
-	LogHistoryRegistrationService logHistoryService;
+    private final NewsMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public NewsManageRegistrationService(
+        NewsMapper mapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
 
 	public News execute(NewsManageForm newsManageForm, Integer updateEmployeeId) {
 
@@ -36,29 +43,29 @@ public class NewsManageRegistrationService{
 		LocalDate newsDate = LocalDate.parse(newsManageForm.getNewsDate());
 
 		//idが格納されている場合は更新
-		if (id != null) {
-			News entity =  mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
-			entity.setNewsDate(newsDate);
-			entity.setContent(newsManageForm.getContent());
-			Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-			entity.setUpdateDate(timestamp);
-			mapper.upDate(entity);
-			//履歴記録
-			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
-			return entity;
-		} else {
-			//idが格納されていない場合は新規登録
-			News entity = new News();
-			entity.setNewsDate(newsDate);
-			entity.setContent(newsManageForm.getContent());
-			boolean releaseFlag = false;
-			entity.setReleaseFlag(releaseFlag);
-			Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
-			entity.setUpdateDate(timestamp);
-			mapper.save(entity);
-			//履歴記録
-			logHistoryService.execute(2, 3, null, null, updateEmployeeId , timestamp);
-			return entity;
-		}
+        Timestamp timestamp = Timestamp.from(clock.instant());
+
+        if (id != null) {
+            News entity = mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
+            entity.setNewsDate(newsDate);
+            entity.setContent(newsManageForm.getContent());
+            entity.setUpdateDate(timestamp);
+            mapper.upDate(entity);
+            // 履歴記録
+            logHistoryService.execute(2, 3, null, null, updateEmployeeId, timestamp);
+            return entity;
+        } else {
+            // idが格納されていない場合は新規登録
+            News entity = new News();
+            entity.setNewsDate(newsDate);
+            entity.setContent(newsManageForm.getContent());
+            boolean releaseFlag = false;
+            entity.setReleaseFlag(releaseFlag);
+            entity.setUpdateDate(timestamp);
+            mapper.save(entity);
+            // 履歴記録
+            logHistoryService.execute(2, 3, null, null, updateEmployeeId, timestamp);
+            return entity;
+        }
 	}
 }

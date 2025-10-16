@@ -79,6 +79,16 @@ const homeKeys = {
 } as const;
 
 /**
+ * お知らせ管理のクエリキー
+ */
+const newsKeys = {
+  all: ["news"] as const,
+  list: () => ["news"] as const,
+  published: () => ["news", "published"] as const,
+  detail: (id: number) => ["news", id] as const,
+} as const;
+
+/**
  * 型安全なクエリキーファクトリーパターン
  * 各機能のクエリキーを一元管理し、型安全性を保証
  *
@@ -91,6 +101,7 @@ export const queryKeys = {
   employees: employeesKeys,
   stampHistory: stampHistoryKeys,
   home: homeKeys,
+  news: newsKeys,
 } as const;
 
 /**

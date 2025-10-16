@@ -6,10 +6,10 @@ import com.example.teamdev.util.LogUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
@@ -27,6 +27,7 @@ public class AuthenticationService {
     private final EmployeeMapper mapper;
     private final PasswordEncoder passwordEncoder;
     private final ObjectMapper objectMapper;
+    private final Clock clock;
 
     /**
      * AuthenticationServiceのコンストラクタ。
@@ -36,11 +37,11 @@ public class AuthenticationService {
      * @param passwordEncoder パスワードエンコーダー
      * @param objectMapper JSONマッパー
      */
-    @Autowired
-    public AuthenticationService(EmployeeMapper mapper, PasswordEncoder passwordEncoder, ObjectMapper objectMapper) {
+    public AuthenticationService(EmployeeMapper mapper, PasswordEncoder passwordEncoder, ObjectMapper objectMapper, Clock clock) {
         this.mapper = mapper;
         this.passwordEncoder = passwordEncoder;
         this.objectMapper = objectMapper;
+        this.clock = clock;
     }
 
     /**
@@ -74,7 +75,7 @@ public class AuthenticationService {
                     String employeeName = targetEmployee.getFirst_name() +
                             " " + targetEmployee.getLast_name();
                     map.put("employeeName", employeeName); // 表示用の従業員名
-                    map.put("signInTime", LocalDateTime.now()); // サインイン時刻
+                    map.put("signInTime", LocalDateTime.now(clock)); // サインイン時刻
                     map.remove("password"); // セキュリティのためパスワード情報は削除
                     
                     // 認証成功ログ

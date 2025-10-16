@@ -11,7 +11,10 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -32,6 +35,9 @@ class AuthenticationServiceTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private AuthenticationService authenticationService;
 
@@ -50,6 +56,9 @@ class AuthenticationServiceTest {
         dbEmployee.setLast_name("田中");
         dbEmployee.setEmail("test@example.com");
         dbEmployee.setPassword("$2a$10$hashedPassword");
+
+        when(clock.instant()).thenReturn(Instant.parse("2025-10-01T00:00:00Z"));
+        when(clock.getZone()).thenReturn(ZoneId.of("Asia/Tokyo"));
     }
 
     @Test

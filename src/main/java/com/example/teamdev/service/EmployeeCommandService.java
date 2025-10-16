@@ -7,14 +7,13 @@ import com.example.teamdev.form.EmployeeManageForm;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.mapper.LogHistoryMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.List;
 
 /**
@@ -29,6 +28,7 @@ public class EmployeeCommandService {
     private final LogHistoryRegistrationService logHistoryService;
     private final PasswordEncoder passwordEncoder;
     private final EmployeeQueryService employeeQueryService;
+    private final Clock clock;
 
     /**
      * EmployeeCommandServiceのコンストラクタ。
@@ -39,18 +39,19 @@ public class EmployeeCommandService {
      * @param passwordEncoder     パスワードエンコーダー
      * @param employeeQueryService 従業員検索サービス
      */
-    @Autowired
     public EmployeeCommandService(
             EmployeeMapper employeeMapper,
             LogHistoryMapper logHistoryMapper,
             LogHistoryRegistrationService logHistoryService,
             PasswordEncoder passwordEncoder,
-            EmployeeQueryService employeeQueryService) {
+            EmployeeQueryService employeeQueryService,
+            Clock clock) {
         this.employeeMapper = employeeMapper;
         this.logHistoryMapper = logHistoryMapper;
         this.logHistoryService = logHistoryService;
         this.passwordEncoder = passwordEncoder;
         this.employeeQueryService = employeeQueryService;
+        this.clock = clock;
     }
 
     /**
@@ -80,7 +81,7 @@ public class EmployeeCommandService {
         entity.setPassword(passwordEncoder.encode(form.getPassword()));
         entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = Timestamp.from(clock.instant());
         entity.setUpdate_date(timestamp);
 
         employeeMapper.save(entity);
@@ -130,7 +131,7 @@ public class EmployeeCommandService {
 
         entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
 
-        Timestamp timestamp = Timestamp.valueOf(LocalDateTime.now());
+        Timestamp timestamp = Timestamp.from(clock.instant());
         entity.setUpdate_date(timestamp);
 
         employeeMapper.upDate(entity);
@@ -159,8 +160,8 @@ public class EmployeeCommandService {
             // 先に履歴を削除してFK制約違反を回避
             logHistoryMapper.deleteByEmployeeIds(idList);
             employeeMapper.deleteByIdList(idList);
-            logHistoryService.execute(3, 4, null, null, updateEmployeeId,
-                    Timestamp.valueOf(LocalDateTime.now()));
+            Timestamp timestamp = Timestamp.from(clock.instant());
+            logHistoryService.execute(3, 4, null, null, updateEmployeeId, timestamp);
         }
     }
 }

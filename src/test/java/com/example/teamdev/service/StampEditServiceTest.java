@@ -11,6 +11,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.Clock;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
@@ -41,6 +42,9 @@ class StampEditServiceTest {
     @Mock
     private LogHistoryRegistrationService logHistoryService;
 
+    @Mock
+    private Clock clock;
+
     @InjectMocks
     private StampEditService stampEditService;
 
@@ -54,6 +58,8 @@ class StampEditServiceTest {
         testInTime = OffsetDateTime.of(2025, 10, 1, 9, 0, 0, 0, ZoneOffset.ofHours(9));
         testOutTime = OffsetDateTime.of(2025, 10, 1, 18, 0, 0, 0, ZoneOffset.ofHours(9));
         adjustedOutTime = OffsetDateTime.of(2025, 10, 2, 6, 0, 0, 0, ZoneOffset.ofHours(9));
+
+        when(clock.instant()).thenReturn(testInTime.toInstant());
     }
 
     @Nested
