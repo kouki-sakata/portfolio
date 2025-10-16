@@ -121,8 +121,10 @@ describe("NewsFormModal", () => {
     await waitFor(() => {
       expect(mocks.updateMutate).toHaveBeenCalledWith({
         id: sampleNews.id,
-        newsDate: "2025-10-12",
-        content: "内容を更新しました。",
+        data: {
+          newsDate: "2025-10-12",
+          content: "内容を更新しました。",
+        },
       });
     });
 

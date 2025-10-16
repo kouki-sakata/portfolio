@@ -107,7 +107,7 @@ describe("NewsManagementPage", () => {
 
   it("データ取得後にカード一覧と新規作成ボタンを表示する", () => {
     mocks.useNewsQuery.mockReturnValue({
-      data: [sampleNews()],
+      data: { news: [sampleNews()] },
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -123,7 +123,7 @@ describe("NewsManagementPage", () => {
   it("新規作成ボタンクリックで作成モーダルが開く", async () => {
     const user = userEvent.setup();
     mocks.useNewsQuery.mockReturnValue({
-      data: [],
+      data: { news: [] },
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
@@ -149,7 +149,7 @@ describe("NewsManagementPage", () => {
     const user = userEvent.setup();
     const news = sampleNews({ id: 55, content: "編集対象" });
     mocks.useNewsQuery.mockReturnValue({
-      data: [news],
+      data: { news: [news] },
       isLoading: false,
       isError: false,
       refetch: vi.fn(),
