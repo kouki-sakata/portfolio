@@ -40,10 +40,7 @@ export const NewsManagementPage = () => {
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
 
-  const newsItems = useMemo(
-    () => newsQuery.data?.news ?? [],
-    [newsQuery.data]
-  );
+  const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
 
   const handleOpenCreate = () => {
     setSelectedNews(undefined);
