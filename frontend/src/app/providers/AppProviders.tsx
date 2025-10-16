@@ -15,6 +15,7 @@ import { AppLayout } from "@/app/layouts/AppLayout";
 import {
   employeeAdminRouteLoader,
   homeRouteLoader,
+  newsManagementLoader,
   stampHistoryRouteLoader,
 } from "@/app/providers/routeLoaders";
 import { Toaster } from "@/components/ui/toaster";
@@ -45,6 +46,12 @@ const HomeRoute = lazy(() =>
 const StampHistoryRoute = lazy(() =>
   import("@/features/stampHistory/routes/StampHistoryRoute").then((module) => ({
     default: module.StampHistoryRoute,
+  }))
+);
+
+const NewsManagementRoute = lazy(() =>
+  import("@/features/news/routes/NewsManagementRoute").then((module) => ({
+    default: module.NewsManagementRoute,
   }))
 );
 
@@ -130,6 +137,11 @@ const router = createBrowserRouter([
             loader: () => stampHistoryRouteLoader(queryClient),
           },
           {
+            path: "news-management",
+            element: <NewsManagementRoute />,
+            loader: () => newsManagementLoader(queryClient),
+          },
+          {
             path: "news",
             element: (
               <ComingSoon
@@ -142,15 +154,6 @@ const router = createBrowserRouter([
             path: "admin/employees",
             element: <EmployeeAdminRoute />,
             loader: () => employeeAdminRouteLoader(queryClient),
-          },
-          {
-            path: "admin/news",
-            element: (
-              <ComingSoon
-                description="管理画面を順次公開予定です。"
-                title="お知らせ管理"
-              />
-            ),
           },
           {
             path: "admin/logs",

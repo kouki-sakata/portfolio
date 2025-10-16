@@ -42,6 +42,12 @@ const AppSidebarWrapper = ({ children }: { children: React.ReactNode }) => (
   </TestAuthProvider>
 );
 
+const NonAdminSidebarWrapper = ({
+  children,
+}: {
+  children: React.ReactNode;
+}) => <TestAuthProvider>{children}</TestAuthProvider>;
+
 describe("AppSidebar", () => {
   it("デフォルト状態でサイドバーが正しくレンダリングされる", () => {
     render(
@@ -56,8 +62,13 @@ describe("AppSidebar", () => {
     // 主要なナビゲーションアイテムが表示されている
     expect(screen.getByText("ホーム")).toBeInTheDocument();
     expect(screen.getByText("勤怠履歴")).toBeInTheDocument();
+    const newsManagementLink = screen.getByText("お知らせ管理");
+    expect(newsManagementLink).toBeInTheDocument();
+    expect(newsManagementLink.closest("a")).toHaveAttribute(
+      "href",
+      "/news-management"
+    );
     expect(screen.getByText("社員管理")).toBeInTheDocument();
-    expect(screen.getByText("通知")).toBeInTheDocument();
     expect(screen.getByText("レポート")).toBeInTheDocument();
     expect(screen.getByText("設定")).toBeInTheDocument();
 
@@ -75,15 +86,14 @@ describe("AppSidebar", () => {
     expect(screen.getByText("管理")).toBeInTheDocument();
   });
 
-  it("通知アイテムにバッジが表示される", () => {
+  it("管理者でないユーザーにはお知らせ管理リンクを表示しない", () => {
     render(
-      <AppSidebarWrapper>
+      <NonAdminSidebarWrapper>
         <AppSidebar />
-      </AppSidebarWrapper>
+      </NonAdminSidebarWrapper>
     );
 
-    // 通知バッジ（数字の3）が表示されている
-    expect(screen.getByText("3")).toBeInTheDocument();
+    expect(screen.queryByText("お知らせ管理")).not.toBeInTheDocument();
   });
 
   it("バージョン情報が表示される", () => {

@@ -2,13 +2,18 @@ import { QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
+import { fetchSession } from "@/features/auth/api/session";
 import { fetchEmployees } from "@/features/employees/api";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
+import { fetchNewsList } from "@/features/news/api/newsApi";
 import { fetchStampHistory } from "@/features/stampHistory/api";
+import { authEvents } from "@/shared/api/events/authEvents";
+import type { HttpClientError } from "@/shared/api/httpClient";
 import { queryKeys } from "@/shared/utils/queryUtils";
 import {
   employeeAdminRouteLoader,
   homeRouteLoader,
+  newsManagementLoader,
   stampHistoryRouteLoader,
 } from "../routeLoaders";
 
@@ -39,9 +44,28 @@ vi.mock("@/features/stampHistory/api", () => ({
   })),
 }));
 
+vi.mock("@/features/auth/api/session", () => ({
+  fetchSession: vi.fn(),
+}));
+
+vi.mock("@/features/news/api/newsApi", () => ({
+  fetchNewsList: vi.fn(async () => ({ news: [] })),
+}));
+
 describe("route loaders", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(fetchSession).mockResolvedValue({
+      authenticated: true,
+      employee: {
+        id: 1,
+        firstName: "管理者",
+        lastName: "ユーザー",
+        email: "admin@example.com",
+        admin: true,
+      },
+    });
+    vi.mocked(fetchNewsList).mockResolvedValue({ news: [] });
   });
 
   it("prefetches home dashboard data with configured cache options", async () => {
@@ -87,5 +111,116 @@ describe("route loaders", () => {
       })
     );
     expect(fetchStampHistory).toHaveBeenCalledWith({});
+  });
+
+  it("validates admin session and prefetches news list for news management route", async () => {
+    const queryClient = new QueryClient();
+    const fetchQuerySpy = vi.spyOn(queryClient, "fetchQuery");
+
+    await newsManagementLoader(queryClient);
+
+    expect(fetchQuerySpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: queryKeys.auth.session(),
+        queryFn: fetchSession,
+        staleTime: QUERY_CONFIG.auth.staleTime,
+        gcTime: QUERY_CONFIG.auth.gcTime,
+      })
+    );
+
+    expect(fetchQuerySpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        queryKey: queryKeys.news.list(),
+        queryFn: fetchNewsList,
+        staleTime: QUERY_CONFIG.news.staleTime,
+        gcTime: QUERY_CONFIG.news.gcTime,
+      })
+    );
+  });
+
+  it("redirects non-admin users away from news management route", async () => {
+    const queryClient = new QueryClient();
+    vi.mocked(fetchSession).mockResolvedValue({
+      authenticated: true,
+      employee: {
+        id: 2,
+        firstName: "一般",
+        lastName: "ユーザー",
+        email: "user@example.com",
+        admin: false,
+      },
+    });
+
+    const fetchQuerySpy = vi.spyOn(queryClient, "fetchQuery");
+    const forbiddenSpy = vi.spyOn(authEvents, "emitForbidden");
+
+    let thrown: unknown;
+    try {
+      await newsManagementLoader(queryClient);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeDefined();
+    expect(thrown).toMatchObject({ status: 302 });
+    const redirectResponse = thrown as Response;
+    expect(redirectResponse.headers.get("Location")).toBe("/");
+
+    expect(fetchQuerySpy).toHaveBeenCalledTimes(1);
+    expect(forbiddenSpy).toHaveBeenCalledWith("管理者権限が必要です。");
+
+    forbiddenSpy.mockRestore();
+  });
+
+  it("redirects to signin when session request returns 401", async () => {
+    const queryClient = new QueryClient();
+    const unauthorizedError = new Error("Unauthorized") as HttpClientError;
+    unauthorizedError.status = 401;
+
+    vi.mocked(fetchSession).mockRejectedValue(unauthorizedError);
+    const unauthorizedSpy = vi.spyOn(authEvents, "emitUnauthorized");
+
+    let thrown: unknown;
+    try {
+      await newsManagementLoader(queryClient);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeDefined();
+    expect(thrown).toMatchObject({ status: 302 });
+    const redirectResponse = thrown as Response;
+    expect(redirectResponse.headers.get("Location")).toBe("/signin");
+    expect(unauthorizedSpy).toHaveBeenCalledWith(
+      "セッションが期限切れです。再度サインインしてください。"
+    );
+
+    unauthorizedSpy.mockRestore();
+  });
+
+  it("redirects to signin when news prefetch fails with 401", async () => {
+    const queryClient = new QueryClient();
+    const unauthorizedError = new Error("Unauthorized") as HttpClientError;
+    unauthorizedError.status = 401;
+
+    vi.mocked(fetchNewsList).mockRejectedValue(unauthorizedError);
+    const unauthorizedSpy = vi.spyOn(authEvents, "emitUnauthorized");
+
+    let thrown: unknown;
+    try {
+      await newsManagementLoader(queryClient);
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toBeDefined();
+    expect(thrown).toMatchObject({ status: 302 });
+    const redirectResponse = thrown as Response;
+    expect(redirectResponse.headers.get("Location")).toBe("/signin");
+    expect(unauthorizedSpy).toHaveBeenCalledWith(
+      "セッションが期限切れです。再度サインインしてください。"
+    );
+
+    unauthorizedSpy.mockRestore();
   });
 });

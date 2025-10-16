@@ -180,20 +180,20 @@
   - Testing Libraryとvitestを活用
   - _Requirements: 4.1-7.5_
 
-- [ ] 4. ルーティング統合と権限制御
+- [x] 4. ルーティング統合と権限制御
   - React Router 7のRoute Loader統合
   - 管理者権限チェック
   - サイドバーナビゲーション更新
   - _Requirements: 9.1-9.5_
 
-- [ ] 4.1 お知らせ管理ルート追加
+- [x] 4.1 お知らせ管理ルート追加
   - app/routes.tsxにルート定義追加
   - path: "/news-management"
   - element: NewsManagementPageコンポーネント
   - loader: newsManagementLoader実装
   - _Requirements: 9.1_
 
-- [ ] 4.2 newsManagementLoader実装
+- [x] 4.2 newsManagementLoader実装
   - app/providers/routeLoaders.tsにローダー追加
   - セッションチェック（checkSession）
   - 管理者権限チェック（session.user.admin）
@@ -201,7 +201,7 @@
   - queryClient.prefetchQueryでお知らせデータプリフェッチ
   - _Requirements: 9.2, 9.3, 9.5_
 
-- [ ] 4.3 サイドバーナビゲーション更新
+- [x] 4.3 サイドバーナビゲーション更新
   - shared/components/layout/AppSidebar.tsxにお知らせ管理リンク追加
   - 管理者権限がある場合のみリンク表示
   - アイコンとラベル設定
