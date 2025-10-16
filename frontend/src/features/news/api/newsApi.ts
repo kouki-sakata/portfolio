@@ -8,24 +8,24 @@ import type {
 } from "@/types/types.gen";
 
 export const fetchNewsList = (): Promise<NewsListResponse> =>
-  api.get<NewsListResponse>("/api/news");
+  api.get<NewsListResponse>("/news");
 
 export const fetchPublishedNewsList = (): Promise<NewsListResponse> =>
-  api.get<NewsListResponse>("/api/news/published");
+  api.get<NewsListResponse>("/news/published");
 
 export const createNews = (payload: NewsCreateRequest): Promise<NewsResponse> =>
-  api.post<NewsResponse>("/api/news", payload);
+  api.post<NewsResponse>("/news", payload);
 
 export const updateNews = (
   id: number,
   payload: NewsUpdateRequest
-): Promise<NewsResponse> => api.put<NewsResponse>(`/api/news/${id}`, payload);
+): Promise<NewsResponse> => api.put<NewsResponse>(`/news/${id}`, payload);
 
 export const deleteNews = (id: number): Promise<void> =>
-  api.delete<void>(`/api/news/${id}`);
+  api.delete<void>(`/news/${id}`);
 
 export const toggleNewsPublish = (
   id: number,
   releaseFlag: boolean
 ): Promise<NewsResponse> =>
-  api.patch<NewsResponse>(`/api/news/${id}/publish`, { releaseFlag });
+  api.patch<NewsResponse>(`/news/${id}/publish`, { releaseFlag });

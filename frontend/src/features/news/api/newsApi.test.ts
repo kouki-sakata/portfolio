@@ -56,7 +56,7 @@ describe("newsApi", () => {
 
     const result = await fetchNewsList();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/news");
+    expect(mockedApi.get).toHaveBeenCalledWith("/news");
     expect(result).toStrictEqual(response);
   });
 
@@ -69,7 +69,7 @@ describe("newsApi", () => {
 
     const result = await fetchPublishedNewsList();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/api/news/published");
+    expect(mockedApi.get).toHaveBeenCalledWith("/news/published");
     expect(result).toStrictEqual(response);
   });
 
@@ -83,7 +83,7 @@ describe("newsApi", () => {
 
     const result = await createNews(payload);
 
-    expect(mockedApi.post).toHaveBeenCalledWith("/api/news", payload);
+    expect(mockedApi.post).toHaveBeenCalledWith("/news", payload);
     expect(result).toBe(created);
   });
 
@@ -97,7 +97,7 @@ describe("newsApi", () => {
 
     const result = await updateNews(7, payload);
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/api/news/7", payload);
+    expect(mockedApi.put).toHaveBeenCalledWith("/news/7", payload);
     expect(result).toBe(updated);
   });
 
@@ -106,7 +106,7 @@ describe("newsApi", () => {
 
     await deleteNews(5);
 
-    expect(mockedApi.delete).toHaveBeenCalledWith("/api/news/5");
+    expect(mockedApi.delete).toHaveBeenCalledWith("/news/5");
   });
 
   it("公開状態を切り替える", async () => {
@@ -115,7 +115,7 @@ describe("newsApi", () => {
 
     const result = await toggleNewsPublish(3, false);
 
-    expect(mockedApi.patch).toHaveBeenCalledWith("/api/news/3/publish", {
+    expect(mockedApi.patch).toHaveBeenCalledWith("/news/3/publish", {
       releaseFlag: false,
     });
     expect(result).toBe(toggled);
