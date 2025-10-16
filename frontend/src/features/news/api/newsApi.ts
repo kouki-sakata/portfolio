@@ -7,6 +7,13 @@ import type {
   NewsUpdateRequest,
 } from "@/types";
 
+import type {
+  NewsBulkDeleteRequest,
+  NewsBulkPublishRequest,
+  NewsBulkOperationResponse,
+  NewsPublishItem,
+} from "../types/bulk";
+
 const NEWS_ENDPOINT = "/news" as const;
 
 export const fetchNewsList = (): Promise<NewsListResponse> =>
@@ -32,3 +39,23 @@ export const toggleNewsPublish = (
   releaseFlag: boolean
 ): Promise<void> =>
   api.patch<void>(`${NEWS_ENDPOINT}/${id}/publish`, { releaseFlag }, undefined);
+
+/**
+ * 複数のお知らせを一括削除
+ * @param ids 削除対象のお知らせIDリスト（最大100件）
+ * @returns バルク操作結果
+ */
+export const bulkDeleteNews = (ids: number[]): Promise<NewsBulkOperationResponse> => {
+  const request: NewsBulkDeleteRequest = { ids };
+  return api.post<NewsBulkOperationResponse>(`${NEWS_ENDPOINT}/bulk/delete`, request, undefined);
+};
+
+/**
+ * 複数のお知らせの公開/非公開を一括変更
+ * @param items 更新対象のお知らせと公開フラグのリスト（最大100件）
+ * @returns バルク操作結果
+ */
+export const bulkPublishNews = (items: NewsPublishItem[]): Promise<NewsBulkOperationResponse> => {
+  const request: NewsBulkPublishRequest = { items };
+  return api.patch<NewsBulkOperationResponse>(`${NEWS_ENDPOINT}/bulk/publish`, request, undefined);
+};

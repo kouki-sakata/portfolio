@@ -20,6 +20,9 @@ import {
   useDeleteNewsMutation,
   useNewsQuery,
   usePublishedNewsQuery,
+  useBulkDeleteMutation,
+  useBulkPublishMutation,
+  useBulkUnpublishMutation,
   useTogglePublishMutation,
   useUpdateNewsMutation,
 } from "./useNews";
@@ -357,6 +360,173 @@ describe("useTogglePublishMutation", () => {
   });
 });
 
+describe("useBulkPublishMutation", () => {
+  beforeEach(() => {
+    toast.mockClear();
+  });
+
+  it("すべて成功した場合にバルクAPIを呼び出しトーストを表示する", async () => {
+    const bulkPublishSpy = vi
+      .spyOn(newsApi, "bulkPublishNews")
+      .mockResolvedValue({
+        successCount: 2,
+        failureCount: 0,
+        results: [
+          { id: 10, success: true, errorMessage: undefined },
+          { id: 20, success: true, errorMessage: undefined },
+        ],
+      });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useBulkPublishMutation(), {
+      wrapper,
+    });
+
+    const outcome = await result.current.mutateAsync({ ids: [10, 20] });
+
+    expect(outcome).toEqual({ successIds: [10, 20], failedIds: [] });
+    expect(bulkPublishSpy).toHaveBeenCalledWith([
+      { id: 10, releaseFlag: true },
+      { id: 20, releaseFlag: true },
+    ]);
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: newsQueryKeys.list() })
+      );
+    });
+
+    expect(toast).toHaveBeenCalledWith({
+      title: "お知らせを一括公開しました",
+      description: "2件のお知らせを公開済みに更新しました。",
+    });
+
+    bulkPublishSpy.mockRestore();
+  });
+
+  it("一部失敗した場合に失敗件数のトーストを表示する", async () => {
+    const bulkPublishSpy = vi
+      .spyOn(newsApi, "bulkPublishNews")
+      .mockResolvedValue({
+        successCount: 1,
+        failureCount: 1,
+        results: [
+          { id: 1, success: true, errorMessage: undefined },
+          { id: 2, success: false, errorMessage: "Failed to update" },
+        ],
+      });
+
+    const { wrapper } = createWrapper();
+
+    const { result } = renderHook(() => useBulkPublishMutation(), {
+      wrapper,
+    });
+
+    const outcome = await result.current.mutateAsync({ ids: [1, 2] });
+
+    expect(outcome).toEqual({ successIds: [1], failedIds: [2] });
+    expect(toast).toHaveBeenCalledWith({
+      title: "お知らせを一括公開しました",
+      description: "1件のお知らせを公開済みに更新しました。",
+    });
+    expect(toast).toHaveBeenCalledWith({
+      title: "一部のお知らせで公開に失敗しました",
+      description: "失敗: 1件",
+      variant: "destructive",
+    });
+
+    bulkPublishSpy.mockRestore();
+  });
+});
+
+describe("useBulkUnpublishMutation", () => {
+  beforeEach(() => {
+    toast.mockClear();
+  });
+
+  it("非公開処理をバルクAPIで実行する", async () => {
+    const bulkPublishSpy = vi
+      .spyOn(newsApi, "bulkPublishNews")
+      .mockResolvedValue({
+        successCount: 1,
+        failureCount: 0,
+        results: [
+          { id: 5, success: true, errorMessage: undefined },
+        ],
+      });
+
+    const { wrapper, queryClient } = createWrapper();
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
+
+    const { result } = renderHook(() => useBulkUnpublishMutation(), {
+      wrapper,
+    });
+
+    const outcome = await result.current.mutateAsync({ ids: [5] });
+
+    expect(outcome).toEqual({ successIds: [5], failedIds: [] });
+    expect(bulkPublishSpy).toHaveBeenCalledWith([
+      { id: 5, releaseFlag: false },
+    ]);
+
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: newsQueryKeys.list() })
+      );
+    });
+
+    expect(toast).toHaveBeenCalledWith({
+      title: "お知らせを一括非公開にしました",
+      description: "1件のお知らせを下書きに戻しました。",
+    });
+
+    bulkPublishSpy.mockRestore();
+  });
+});
+
+describe("useBulkDeleteMutation", () => {
+  beforeEach(() => {
+    toast.mockClear();
+  });
+
+  it("削除をバルクAPIで実行し失敗件数を通知する", async () => {
+    const bulkDeleteSpy = vi
+      .spyOn(newsApi, "bulkDeleteNews")
+      .mockResolvedValue({
+        successCount: 1,
+        failureCount: 1,
+        results: [
+          { id: 99, success: true, errorMessage: undefined },
+          { id: 100, success: false, errorMessage: "Delete failed" },
+        ],
+      });
+
+    const { wrapper } = createWrapper();
+
+    const { result } = renderHook(() => useBulkDeleteMutation(), {
+      wrapper,
+    });
+
+    const outcome = await result.current.mutateAsync({ ids: [99, 100] });
+
+    expect(outcome).toEqual({ successIds: [99], failedIds: [100] });
+    expect(bulkDeleteSpy).toHaveBeenCalledWith([99, 100]);
+    expect(toast).toHaveBeenCalledWith({
+      title: "お知らせを一括削除しました",
+      description: "1件のお知らせを削除しました。",
+    });
+    expect(toast).toHaveBeenCalledWith({
+      title: "一部のお知らせの削除に失敗しました",
+      description: "失敗: 1件",
+      variant: "destructive",
+    });
+
+    bulkDeleteSpy.mockRestore();
+  });
+});
+
 describe("ニュース関連フックのキャッシュ設定", () => {
   it("ニュース一覧クエリが設計されたstaleTime/gcTimeを使用する", async () => {
     const response = getListData([createNews({ id: 50 })]);
@@ -391,5 +561,44 @@ describe("ニュース関連フックのキャッシュ設定", () => {
 
     expect(options?.staleTime).toBe(QUERY_CONFIG.news.staleTime);
     expect(options?.gcTime).toBe(QUERY_CONFIG.news.gcTime);
+  });
+
+  it("公開ニュースクエリがカスタムrefetchIntervalを適用できる", async () => {
+    const response = getListData([createNews({ id: 60 })]);
+
+    mswServer.use(
+      http.get(`${API_BASE_URL}/news/published`, () =>
+        HttpResponse.json(response, { status: 200 })
+      )
+    );
+
+    const { wrapper, queryClient } = createWrapper();
+
+    renderHook(
+      () =>
+        usePublishedNewsQuery({
+          refetchInterval: 30_000,
+        }),
+      { wrapper }
+    );
+
+    await waitFor(() => {
+      const query = queryClient
+        .getQueryCache()
+        .find({ queryKey: newsQueryKeys.published() });
+      expect(query?.state.status).toBe("success");
+    });
+
+    const query = queryClient
+      .getQueryCache()
+      .find({ queryKey: newsQueryKeys.published() });
+
+    const options = query?.options as
+      | {
+          refetchInterval?: number;
+        }
+      | undefined;
+
+    expect(options?.refetchInterval).toBe(30_000);
   });
 });

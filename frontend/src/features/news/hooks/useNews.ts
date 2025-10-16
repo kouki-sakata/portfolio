@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import {
@@ -8,6 +13,8 @@ import {
   fetchPublishedNews,
   toggleNewsPublish,
   updateNews,
+  bulkDeleteNews,
+  bulkPublishNews,
 } from "@/features/news/api/newsApi";
 import { toast } from "@/hooks/use-toast";
 import { queryKeys } from "@/shared/utils/queryUtils";
@@ -17,6 +24,11 @@ import type {
   NewsResponse,
   NewsUpdateRequest,
 } from "@/types";
+
+import type {
+  NewsBulkOperationResponse,
+  NewsPublishItem,
+} from "../types/bulk";
 
 export const newsQueryKeys = {
   all: queryKeys.news.all,
@@ -33,13 +45,30 @@ export const useNewsQuery = () =>
     gcTime: QUERY_CONFIG.news.gcTime,
   });
 
-export const usePublishedNewsQuery = () =>
+type PublishedNewsQueryOptions = Omit<
+  UseQueryOptions<NewsListResponse, unknown>,
+  "queryKey" | "queryFn" | "staleTime" | "gcTime"
+>;
+
+export const usePublishedNewsQuery = (
+  options?: PublishedNewsQueryOptions
+) =>
   useQuery<NewsListResponse>({
     queryKey: newsQueryKeys.published(),
     queryFn: fetchPublishedNews,
     staleTime: QUERY_CONFIG.news.staleTime,
     gcTime: QUERY_CONFIG.news.gcTime,
+    ...options,
   });
+
+export type BulkMutationResult = {
+  successIds: number[];
+  failedIds: number[];
+};
+
+type BulkOperationVariables = {
+  ids: number[];
+};
 
 export const useCreateNewsMutation = () => {
   const queryClient = useQueryClient();
@@ -258,6 +287,135 @@ export const useTogglePublishMutation = () => {
       await queryClient.invalidateQueries({
         queryKey: newsQueryKeys.published(),
       });
+    },
+  });
+};
+
+/**
+ * バルクAPIレスポンスをBulkMutationResultに変換
+ */
+const toBulkMutationResult = (response: NewsBulkOperationResponse): BulkMutationResult => ({
+  successIds: response.results.filter(r => r.success).map(r => r.id),
+  failedIds: response.results.filter(r => !r.success).map(r => r.id),
+});
+
+const invalidateNewsQueries = async (
+  queryClient: ReturnType<typeof useQueryClient>
+) => {
+  await queryClient.invalidateQueries({
+    queryKey: newsQueryKeys.list(),
+  });
+  await queryClient.invalidateQueries({
+    queryKey: newsQueryKeys.published(),
+  });
+};
+
+export const useBulkPublishMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<BulkMutationResult, unknown, BulkOperationVariables>({
+    mutationFn: async ({ ids }) => {
+      const items: NewsPublishItem[] = ids.map(id => ({ id, releaseFlag: true }));
+      const response = await bulkPublishNews(items);
+      return toBulkMutationResult(response);
+    },
+    onSuccess: ({ successIds, failedIds }) => {
+      if (successIds.length > 0) {
+        toast({
+          title: "お知らせを一括公開しました",
+          description: `${successIds.length}件のお知らせを公開済みに更新しました。`,
+        });
+      }
+      if (failedIds.length > 0) {
+        toast({
+          title: "一部のお知らせで公開に失敗しました",
+          description: `失敗: ${failedIds.length}件`,
+          variant: "destructive",
+        });
+      }
+    },
+    onError: () => {
+      toast({
+        title: "お知らせの一括公開に失敗しました",
+        description: "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+    onSettled: async () => {
+      await invalidateNewsQueries(queryClient);
+    },
+  });
+};
+
+export const useBulkUnpublishMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<BulkMutationResult, unknown, BulkOperationVariables>({
+    mutationFn: async ({ ids }) => {
+      const items: NewsPublishItem[] = ids.map(id => ({ id, releaseFlag: false }));
+      const response = await bulkPublishNews(items);
+      return toBulkMutationResult(response);
+    },
+    onSuccess: ({ successIds, failedIds }) => {
+      if (successIds.length > 0) {
+        toast({
+          title: "お知らせを一括非公開にしました",
+          description: `${successIds.length}件のお知らせを下書きに戻しました。`,
+        });
+      }
+      if (failedIds.length > 0) {
+        toast({
+          title: "一部のお知らせの非公開処理に失敗しました",
+          description: `失敗: ${failedIds.length}件`,
+          variant: "destructive",
+        });
+      }
+    },
+    onError: () => {
+      toast({
+        title: "お知らせの一括非公開に失敗しました",
+        description: "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+    onSettled: async () => {
+      await invalidateNewsQueries(queryClient);
+    },
+  });
+};
+
+export const useBulkDeleteMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<BulkMutationResult, unknown, BulkOperationVariables>({
+    mutationFn: async ({ ids }) => {
+      const response = await bulkDeleteNews(ids);
+      return toBulkMutationResult(response);
+    },
+    onSuccess: ({ successIds, failedIds }) => {
+      if (successIds.length > 0) {
+        toast({
+          title: "お知らせを一括削除しました",
+          description: `${successIds.length}件のお知らせを削除しました。`,
+        });
+      }
+      if (failedIds.length > 0) {
+        toast({
+          title: "一部のお知らせの削除に失敗しました",
+          description: `失敗: ${failedIds.length}件`,
+          variant: "destructive",
+        });
+      }
+    },
+    onError: () => {
+      toast({
+        title: "お知らせの一括削除に失敗しました",
+        description: "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+    onSettled: async () => {
+      await invalidateNewsQueries(queryClient);
     },
   });
 };

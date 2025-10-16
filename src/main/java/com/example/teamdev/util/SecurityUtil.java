@@ -3,7 +3,6 @@ package com.example.teamdev.util;
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -14,11 +13,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityUtil {
 
-    private static EmployeeMapper employeeMapper;
+    private static SecurityUtil instance;
 
-    @Autowired
+    private final EmployeeMapper employeeMapper;
+
     public SecurityUtil(EmployeeMapper employeeMapper) {
-        SecurityUtil.employeeMapper = employeeMapper;
+        this.employeeMapper = employeeMapper;
+        instance = this;
     }
 
     /**
@@ -26,6 +27,10 @@ public class SecurityUtil {
      * @return 従業員ID、取得できない場合はnull
      */
     public static Integer getCurrentEmployeeId() {
+        return getInstance().getCurrentEmployeeIdInternal();
+    }
+
+    private Integer getCurrentEmployeeIdInternal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals(AppConstants.Security.ANONYMOUS_USER)) {
             Employee currentEmployee = employeeMapper.getEmployeeByEmail(authentication.getName());
@@ -39,6 +44,10 @@ public class SecurityUtil {
      * @return 従業員エンティティ、取得できない場合はnull
      */
     public static Employee getCurrentEmployee() {
+        return getInstance().getCurrentEmployeeInternal();
+    }
+
+    private Employee getCurrentEmployeeInternal() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals(AppConstants.Security.ANONYMOUS_USER)) {
             return employeeMapper.getEmployeeByEmail(authentication.getName());
@@ -51,7 +60,14 @@ public class SecurityUtil {
      * @return 管理者の場合true、それ以外はfalse
      */
     public static boolean isCurrentUserAdmin() {
-        Employee currentEmployee = getCurrentEmployee();
+        Employee currentEmployee = getInstance().getCurrentEmployeeInternal();
         return currentEmployee != null && currentEmployee.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+    }
+
+    private static SecurityUtil getInstance() {
+        if (instance == null) {
+            throw new IllegalStateException("SecurityUtil bean has not been initialized");
+        }
+        return instance;
     }
 }

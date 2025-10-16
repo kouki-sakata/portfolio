@@ -1,4 +1,5 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
+import { Link } from "react-router-dom";
 
 import {
   Card,
@@ -7,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { HomeNewsItem } from "@/features/home/types";
 import { cn } from "@/lib/utils";
@@ -19,6 +21,8 @@ export type NewsCardProps = {
   newsItems: HomeNewsItem[];
   isLoading?: boolean;
   className?: string;
+  manageHref?: string;
+  manageLabel?: string;
 };
 
 /**
@@ -26,7 +30,24 @@ export type NewsCardProps = {
  * Single Responsibility: ニュース表示のみを担当
  */
 export const NewsCard = memo(
-  ({ newsItems, isLoading = false, className }: NewsCardProps) => {
+  ({
+    newsItems,
+    isLoading = false,
+    className,
+    manageHref,
+    manageLabel = "お知らせ管理へ",
+  }: NewsCardProps) => {
+    const visibleNews = useMemo(() => {
+      const toTime = (value: string) => {
+        const time = new Date(value).getTime();
+        return Number.isNaN(time) ? 0 : time;
+      };
+
+      return [...newsItems]
+        .sort((a, b) => toTime(b.newsDate) - toTime(a.newsDate))
+        .slice(0, 5);
+    }, [newsItems]);
+
     const renderContent = () => {
       if (isLoading) {
         return (
@@ -38,7 +59,7 @@ export const NewsCard = memo(
         );
       }
 
-      if (newsItems.length === 0) {
+      if (visibleNews.length === 0) {
         return (
           <CardDescription className="py-8 text-center text-muted-foreground">
             現在表示できるお知らせはありません。
@@ -48,7 +69,7 @@ export const NewsCard = memo(
 
       return (
         <ul className="space-y-4">
-          {newsItems.map((news) => (
+          {visibleNews.map((news) => (
             <li className="border-b pb-3 last:border-0 last:pb-0" key={news.id}>
               <div className="space-y-1">
                 <time
@@ -80,7 +101,16 @@ export const NewsCard = memo(
             重要なお知らせを新着順で表示します。
           </CardDescription>
         </CardHeader>
-        <CardContent>{renderContent()}</CardContent>
+        <CardContent>
+          {renderContent()}
+          {manageHref ? (
+            <div className="mt-6 flex justify-end">
+              <Button asChild variant="outline">
+                <Link to={manageHref}>{manageLabel}</Link>
+              </Button>
+            </div>
+          ) : null}
+        </CardContent>
       </Card>
     );
   }

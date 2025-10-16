@@ -29,4 +29,27 @@
 			id = #{id}
 	</update>
 
+	<!-- 複数のお知らせの公開フラグを一括更新（同じフラグ値） -->
+	<update id="bulkUpdateReleaseFlag">
+		UPDATE news
+		SET
+			release_flag = #{releaseFlag},
+			update_date = #{updateDate}
+		WHERE id IN
+		<foreach collection="ids" item="id" open="(" separator="," close=")">
+			#{id}
+		</foreach>
+	</update>
+
+	<!-- 複数のお知らせの公開フラグを個別に一括更新（異なるフラグ値） -->
+	<update id="bulkUpdateReleaseFlagIndividual">
+		<foreach collection="items" item="item" separator=";">
+			UPDATE news
+			SET
+				release_flag = #{item.releaseFlag},
+				update_date = #{updateDate}
+			WHERE id = #{item.id}
+		</foreach>
+	</update>
+
 </mapper>

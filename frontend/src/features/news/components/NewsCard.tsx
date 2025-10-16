@@ -1,5 +1,8 @@
+import type { CheckedState } from "@radix-ui/react-checkbox";
+
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Card,
   CardContent,
@@ -16,6 +19,9 @@ type NewsCardProps = {
   className?: string;
   news: NewsResponse;
   onEdit?: (news: NewsResponse) => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onSelectionChange?: (news: NewsResponse, next: boolean) => void;
 };
 
 const truncateContent = (content: string, maxLength = 160): string => {
@@ -25,7 +31,14 @@ const truncateContent = (content: string, maxLength = 160): string => {
   return `${content.slice(0, maxLength)}…`;
 };
 
-export const NewsCard = ({ className, news, onEdit }: NewsCardProps) => {
+export const NewsCard = ({
+  className,
+  news,
+  onEdit,
+  selectable = false,
+  selected = false,
+  onSelectionChange,
+}: NewsCardProps) => {
   const toggleMutation = useTogglePublishMutation();
 
   const handleEdit = () => {
@@ -39,6 +52,14 @@ export const NewsCard = ({ className, news, onEdit }: NewsCardProps) => {
     });
   };
 
+  const handleSelectChange = (next: CheckedState) => {
+    if (!selectable) {
+      return;
+    }
+    const checked = next === true;
+    onSelectionChange?.(news, checked);
+  };
+
   const status = news.releaseFlag
     ? ({ label: "公開中", variant: "default" } as const)
     : ({ label: "下書き", variant: "secondary" } as const);
@@ -46,11 +67,20 @@ export const NewsCard = ({ className, news, onEdit }: NewsCardProps) => {
   return (
     <Card className={cn("flex h-full flex-col", className)}>
       <CardHeader className="space-y-3">
-        <div className="flex items-center justify-between gap-2">
-          <CardTitle className="font-semibold text-base">
-            {news.newsDate}
-          </CardTitle>
-          <Badge variant={status.variant}>{status.label}</Badge>
+        <div className="flex items-start gap-3">
+          {selectable ? (
+            <Checkbox
+              aria-label={`${news.content}を選択`}
+              checked={selected}
+              onCheckedChange={handleSelectChange}
+            />
+          ) : null}
+          <div className="flex w-full items-start justify-between gap-2">
+            <CardTitle className="font-semibold text-base">
+              {news.newsDate}
+            </CardTitle>
+            <Badge variant={status.variant}>{status.label}</Badge>
+          </div>
         </div>
         <p className="text-muted-foreground text-sm">
           最終更新: {new Date(news.updateDate).toLocaleString("ja-JP")}

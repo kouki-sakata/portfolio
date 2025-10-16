@@ -4,7 +4,6 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.teamdev.entity.LogHistory;
@@ -15,10 +14,13 @@ import com.example.teamdev.mapper.LogHistoryMapper;
  * 登録処理
  */
 @Service
-public class LogHistoryRegistrationService{
+public class LogHistoryRegistrationService {
 
-	@Autowired
-	LogHistoryMapper mapper;
+    private final LogHistoryMapper mapper;
+
+    public LogHistoryRegistrationService(LogHistoryMapper mapper) {
+        this.mapper = mapper;
+    }
 
 	public void execute(int displayName, int operationType, Timestamp stampTime,
 			Integer employeeId, Integer update_employee_id, Timestamp update_date) {

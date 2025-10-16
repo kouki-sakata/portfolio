@@ -277,12 +277,12 @@
   - 型定義統一によるランタイムエラー0件確認
   - _Requirements: 全要件のMVP Success Criteria_
 
-- [ ] 6. 一般ユーザー向けお知らせ閲覧機能（Phase 2）
+- [x] 6. 一般ユーザー向けお知らせ閲覧機能（Phase 2）
   - ホーム画面での公開お知らせ表示
   - 既存Pollerとの統合
   - _Requirements: 10.1-10.6_
 
-- [ ] 6.1 ホーム画面お知らせ表示コンポーネント実装
+- [x] 6.1 ホーム画面お知らせ表示コンポーネント実装
   - features/home/components/NewsCard.tsx拡張または新規作成
   - usePublishedNewsQueryで公開お知らせ取得
   - お知らせ日付と内容表示
@@ -290,44 +290,44 @@
   - 公開お知らせ0件時に"現在お知らせはありません"メッセージ表示
   - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [ ] 6.2 既存Poller統合
+- [x] 6.2 既存Poller統合
   - features/home/hooks/usePolling.tsまたは同等のポーリング機構統合
   - 30秒間隔でusePublishedNewsQueryを再検証
   - 自動更新によるリアルタイム反映
   - _Requirements: 10.5_
 
-- [ ] 6.3 管理者/一般ユーザーUI分離
+- [x] 6.3 管理者/一般ユーザーUI分離
   - 管理者: /news-managementで管理画面表示
   - 一般ユーザー: ホーム画面で閲覧のみ
   - 権限に応じたUI表示の分岐
   - _Requirements: 10.6_
 
-- [ ] 7. 一括操作機能（Phase 2 - Optional）
+- [x] 7. 一括操作機能（Phase 2 - Optional）
   - 複数選択チェックボックス
   - 一括公開/非公開/削除
   - エラーハンドリング
   - _Requirements: 11.1-11.6_
 
-- [ ] 7.1 チェックボックス選択機能実装
+- [x] 7.1 チェックボックス選択機能実装
   - NewsCardにチェックボックス追加
   - 選択状態管理（useState）
   - 全選択/全解除機能
   - _Requirements: 11.1_
 
-- [ ] 7.2 一括操作バー表示
+- [x] 7.2 一括操作バー表示
   - 選択数 > 0時に一括操作バー表示
   - 一括公開ボタン、一括非公開ボタン、一括削除ボタン配置
   - 選択件数表示
   - _Requirements: 11.2_
 
-- [ ] 7.3 一括操作API呼び出し実装
+- [x] 7.3 一括操作API呼び出し実装
   - useBulkPublishMutation: 選択されたIDの一括公開
   - useBulkUnpublishMutation: 選択されたIDの一括非公開
   - useBulkDeleteMutation: 選択されたIDの一括削除
   - Promise.allを活用した並列処理
   - _Requirements: 11.3, 11.4, 11.5_
 
-- [ ] 7.4 一括操作エラーハンドリング
+- [x] 7.4 一括操作エラーハンドリング
   - 成功した操作は維持
   - エラー件数をToast通知
   - 部分的成功の処理

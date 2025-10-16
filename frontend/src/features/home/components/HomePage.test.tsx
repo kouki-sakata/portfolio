@@ -3,13 +3,16 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router-dom";
 
 import type {
   HomeDashboardResponse,
   StampResponse,
 } from "@/features/home/types";
+import type { NewsListResponse } from "@/types";
 import { mswServer } from "@/test/msw/server";
 import { HomePageRefactored as HomePage } from "./HomePageRefactored";
+import { newsQueryKeys } from "@/features/news/hooks/useNews";
 
 describe("HomePage", () => {
   let queryClient: QueryClient;
@@ -25,11 +28,86 @@ describe("HomePage", () => {
     mswServer.use(
       http.get("/api/public/feature-flags", () => HttpResponse.json({}))
     );
+
+    setupPublishedNewsResponse();
+  });
+
+  describe("管理者と一般ユーザーのUI分岐", () => {
+    it("管理者にはお知らせ管理画面への導線が表示される", async () => {
+      setupPublishedNewsResponse();
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json({
+            ...mockDashboardData,
+            employee: { ...mockDashboardData.employee, admin: true },
+          })
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        const link = screen.getByRole("link", { name: "お知らせ管理へ" });
+        expect(link).toHaveAttribute("href", "/news-management");
+      });
+    });
+
+    it("一般ユーザーにはお知らせ管理導線は表示されない", async () => {
+      setupPublishedNewsResponse();
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("heading", { name: "最新のお知らせ" })
+        ).toBeInTheDocument();
+      });
+
+      expect(
+        screen.queryByRole("link", { name: "お知らせ管理へ" })
+      ).not.toBeInTheDocument();
+    });
   });
 
   afterEach(() => {
     cleanup();
   });
+
+  function createPublishedNewsItem(
+    overrides?: Partial<NewsListResponse["news"][number]>
+  ): NewsListResponse["news"][number] {
+    return {
+      id: overrides?.id ?? 1,
+      newsDate: overrides?.newsDate ?? "2025-10-01",
+      content:
+        overrides?.content ??
+        "本日18時よりシステムメンテナンスを実施します。",
+      releaseFlag: overrides?.releaseFlag ?? true,
+      updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
+    };
+  }
+
+  function setupPublishedNewsResponse(
+    news: NewsListResponse["news"] = [
+      createPublishedNewsItem({ id: 1, newsDate: "2025-10-01" }),
+      createPublishedNewsItem({
+        id: 2,
+        newsDate: "2025-09-25",
+        content: "給与明細の公開が完了しました。",
+      }),
+    ]
+  ) {
+    mswServer.use(
+      http.get("http://localhost/api/news/published", () =>
+        HttpResponse.json<NewsListResponse>({ news })
+      )
+    );
+  }
 
   const mockDashboardData: HomeDashboardResponse = {
     employee: {
@@ -58,7 +136,7 @@ describe("HomePage", () => {
   const renderWithQueryClient = (component: React.ReactElement) =>
     render(
       <QueryClientProvider client={queryClient}>
-        {component}
+        <MemoryRouter>{component}</MemoryRouter>
       </QueryClientProvider>
     );
 
@@ -404,6 +482,7 @@ describe("HomePage", () => {
 
   describe("ニュースカードの機能", () => {
     it("ニュースカードのタイトルが表示される", async () => {
+      setupPublishedNewsResponse();
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
           HttpResponse.json(mockDashboardData)
@@ -419,7 +498,66 @@ describe("HomePage", () => {
       });
     });
 
-    it("ニュースアイテムが表示される", async () => {
+    it("公開お知らせが新しい順で最大5件まで表示される", async () => {
+      const publishedNews = [
+        createPublishedNewsItem({
+          id: 1,
+          newsDate: "2025-09-30",
+          content: "古いお知らせ",
+        }),
+        createPublishedNewsItem({
+          id: 2,
+          newsDate: "2025-10-02",
+          content: "二番目のお知らせ",
+        }),
+        createPublishedNewsItem({
+          id: 3,
+          newsDate: "2025-10-05",
+          content: "最新のお知らせ",
+        }),
+        createPublishedNewsItem({
+          id: 4,
+          newsDate: "2025-10-04",
+          content: "四番目のお知らせ",
+        }),
+        createPublishedNewsItem({
+          id: 5,
+          newsDate: "2025-10-03",
+          content: "三番目のお知らせ",
+        }),
+        createPublishedNewsItem({
+          id: 6,
+          newsDate: "2025-09-25",
+          content: "表示されないお知らせ",
+        }),
+      ];
+
+      setupPublishedNewsResponse(publishedNews);
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        expect(screen.getAllByRole("listitem")).toHaveLength(5);
+      });
+
+      const listItems = screen.getAllByRole("listitem");
+
+      expect(listItems[0]).toHaveTextContent("2025-10-05");
+      expect(listItems[0]).toHaveTextContent("最新のお知らせ");
+      expect(listItems[1]).toHaveTextContent("2025-10-04");
+      expect(listItems[1]).toHaveTextContent("四番目のお知らせ");
+      expect(listItems[4]).toHaveTextContent("2025-09-30");
+      expect(listItems[4]).toHaveTextContent("古いお知らせ");
+      expect(screen.queryByText("表示されないお知らせ")).not.toBeInTheDocument();
+    });
+
+    it("ニュースがない場合は空の状態メッセージが表示される", async () => {
+      setupPublishedNewsResponse([]);
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
           HttpResponse.json(mockDashboardData)
@@ -430,35 +568,45 @@ describe("HomePage", () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText("システムメンテナンスのお知らせ")
+          screen.getByText("現在表示できるお知らせはありません。")
         ).toBeInTheDocument();
-        expect(
-          screen.getByText("新機能がリリースされました")
-        ).toBeInTheDocument();
-        expect(screen.getByText("2024-01-15")).toBeInTheDocument();
-        expect(screen.getByText("2024-01-10")).toBeInTheDocument();
       });
     });
 
-    it("ニュースがない場合は空の状態メッセージが表示される", async () => {
-      const emptyNewsData = {
-        ...mockDashboardData,
-        news: [],
-      };
-
+    it("公開お知らせクエリは30秒ごとの自動更新設定を適用する", async () => {
+      setupPublishedNewsResponse([
+        createPublishedNewsItem({
+          id: 99,
+          newsDate: "2025-10-06",
+          content: "自動更新テスト",
+        }),
+      ]);
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
-          HttpResponse.json(emptyNewsData)
+          HttpResponse.json(mockDashboardData)
         )
       );
 
       renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("現在表示できるお知らせはありません。")
-        ).toBeInTheDocument();
+        const query = queryClient
+          .getQueryCache()
+          .find({ queryKey: newsQueryKeys.published() });
+        expect(query?.state.status).toBe("success");
       });
+
+      const query = queryClient
+        .getQueryCache()
+        .find({ queryKey: newsQueryKeys.published() });
+
+      const options = query?.options as
+        | {
+            refetchInterval?: number;
+          }
+        | undefined;
+
+      expect(options?.refetchInterval).toBe(30_000);
     });
   });
 

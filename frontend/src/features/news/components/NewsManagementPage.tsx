@@ -1,9 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CheckedState } from "@radix-ui/react-checkbox";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNewsQuery } from "@/features/news/hooks/useNews";
+import {
+  useBulkDeleteMutation,
+  useBulkPublishMutation,
+  useBulkUnpublishMutation,
+  useNewsQuery,
+  type BulkMutationResult,
+} from "@/features/news/hooks/useNews";
 import type { NewsResponse } from "@/types";
 
 import { NewsCard } from "./NewsCard";
@@ -36,11 +44,42 @@ const NewsListSkeleton = () => (
 
 export const NewsManagementPage = () => {
   const newsQuery = useNewsQuery();
+  const bulkPublishMutation = useBulkPublishMutation();
+  const bulkUnpublishMutation = useBulkUnpublishMutation();
+  const bulkDeleteMutation = useBulkDeleteMutation();
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
+  const activeSelectedIds = useMemo(
+    () => newsItems.filter((item) => selectedIds.has(item.id)).map((item) => item.id),
+    [newsItems, selectedIds]
+  );
+
+  useEffect(() => {
+    setSelectedIds((current) => {
+      if (current.size === 0) {
+        return current;
+      }
+      const next = new Set(
+        newsItems.filter((item) => current.has(item.id)).map((item) => item.id)
+      );
+      if (next.size === current.size) {
+        let isSame = true;
+        current.forEach((id) => {
+          if (!next.has(id)) {
+            isSame = false;
+          }
+        });
+        if (isSame) {
+          return current;
+        }
+      }
+      return next;
+    });
+  }, [newsItems]);
 
   const handleOpenCreate = () => {
     setSelectedNews(undefined);
@@ -58,6 +97,80 @@ export const NewsManagementPage = () => {
     setFormOpen(false);
     setSelectedNews(undefined);
   };
+
+  const handleSelectToggle = (news: NewsResponse, next: boolean) => {
+    setSelectedIds((current) => {
+      const nextSet = new Set(current);
+      if (next) {
+        nextSet.add(news.id);
+      } else {
+        nextSet.delete(news.id);
+      }
+      return nextSet;
+    });
+  };
+
+  const handleToggleAll = (state: CheckedState) => {
+    if (state === true) {
+      setSelectedIds(new Set(newsItems.map((item) => item.id)));
+      return;
+    }
+    if (state === "indeterminate") {
+      return;
+    }
+    setSelectedIds(new Set());
+  };
+
+  const syncSelectionAfterBulk = (result: BulkMutationResult) => {
+    if (result.failedIds.length === 0) {
+      setSelectedIds(new Set());
+      return;
+    }
+    setSelectedIds(new Set(result.failedIds));
+  };
+
+  const executeBulkPublish = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkPublishMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const executeBulkUnpublish = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkUnpublishMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const executeBulkDelete = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkDeleteMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const clearSelection = () => {
+    setSelectedIds(new Set());
+  };
+
+  const selectedCount = activeSelectedIds.length;
+  const totalCount = newsItems.length;
+  const isAllSelected = totalCount > 0 && selectedCount === totalCount;
+  const isIndeterminate = selectedCount > 0 && !isAllSelected;
+  const hasSelection = selectedCount > 0;
+  const bulkPublishDisabled = !hasSelection || bulkPublishMutation.isPending;
+  const bulkUnpublishDisabled = !hasSelection || bulkUnpublishMutation.isPending;
+  const bulkDeleteDisabled = !hasSelection || bulkDeleteMutation.isPending;
 
   if (newsQuery.isLoading) {
     return <NewsListSkeleton />;
@@ -88,10 +201,62 @@ export const NewsManagementPage = () => {
             お知らせの作成・編集・公開管理を行います。
           </p>
         </div>
-        <Button onClick={handleOpenCreate} type="button">
-          新規作成
-        </Button>
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+          {totalCount > 0 ? (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                aria-label="全選択"
+                checked={isAllSelected ? true : isIndeterminate ? "indeterminate" : false}
+                onCheckedChange={handleToggleAll}
+              />
+              <span className="text-sm text-muted-foreground">全選択</span>
+              {hasSelection ? (
+                <Button onClick={clearSelection} size="sm" type="button" variant="ghost">
+                  選択解除
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+          <Button onClick={handleOpenCreate} type="button">
+            新規作成
+          </Button>
+        </div>
       </header>
+
+      {hasSelection ? (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/40 p-3">
+          <p className="font-medium">選択中: {selectedCount}件</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={bulkPublishDisabled}
+              onClick={executeBulkPublish}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              一括公開
+            </Button>
+            <Button
+              disabled={bulkUnpublishDisabled}
+              onClick={executeBulkUnpublish}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              一括非公開
+            </Button>
+            <Button
+              disabled={bulkDeleteDisabled}
+              onClick={executeBulkDelete}
+              size="sm"
+              type="button"
+              variant="destructive"
+            >
+              一括削除
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {isEmpty ? (
         <section className="flex h-[40vh] flex-col items-center justify-center space-y-3 rounded-xl border border-dashed p-8 text-center">
@@ -108,7 +273,14 @@ export const NewsManagementPage = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {newsItems.map((item) => (
-            <NewsCard key={item.id} news={item} onEdit={handleEdit} />
+            <NewsCard
+              key={item.id}
+              news={item}
+              onEdit={handleEdit}
+              selectable
+              selected={selectedIds.has(item.id)}
+              onSelectionChange={handleSelectToggle}
+            />
           ))}
         </div>
       )}

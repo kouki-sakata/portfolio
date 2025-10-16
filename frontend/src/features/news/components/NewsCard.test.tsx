@@ -103,4 +103,30 @@ describe("NewsCard", () => {
 
     expect(mocks.deleteMutate).toHaveBeenCalledWith(news.id);
   });
+
+  it("選択可能時にチェックボックス経由で選択状態を通知する", async () => {
+    const user = userEvent.setup();
+    const news = newsSample();
+    const handleSelection = vi.fn();
+
+    render(
+      <NewsCard
+        news={news}
+        onEdit={vi.fn()}
+        selectable
+        selected={false}
+        onSelectionChange={handleSelection}
+      />
+    );
+
+    const checkbox = screen.getByRole("checkbox", {
+      name: "重要メンテナンスのお知らせを選択",
+    });
+
+    expect(checkbox).not.toBeChecked();
+
+    await user.click(checkbox);
+
+    expect(handleSelection).toHaveBeenCalledWith(news, true);
+  });
 });

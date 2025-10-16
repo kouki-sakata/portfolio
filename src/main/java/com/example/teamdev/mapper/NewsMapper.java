@@ -1,5 +1,6 @@
 package com.example.teamdev.mapper;
 
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,6 +12,7 @@ import org.apache.ibatis.annotations.ResultMap;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
+import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
 import com.example.teamdev.entity.News;
 
 /**
@@ -99,4 +101,52 @@ public interface NewsMapper {
 	 * @return 更新件数
 	 */
 	int upDate(News entity);
+
+	/**
+	 * 複数のお知らせを一括削除
+	 *
+	 * @param ids お知らせIDリスト
+	 * @return 削除件数
+	 */
+	@Delete({
+		"<script>",
+		"DELETE FROM news WHERE id IN",
+		"<foreach collection='ids' item='id' open='(' separator=',' close=')'>",
+		"#{id}",
+		"</foreach>",
+		"</script>"
+	})
+	int deleteByIds(@Param("ids") List<Integer> ids);
+
+	/**
+	 * 複数のお知らせの公開フラグを一括更新
+	 * <p>
+	 * XMLマッパーで定義（src/main/resources/com/example/teamdev/mapper/NewsMapper.xml）
+	 * </p>
+	 *
+	 * @param ids お知らせIDリスト
+	 * @param releaseFlag 公開フラグ
+	 * @param updateDate 更新日時
+	 * @return 更新件数
+	 */
+	int bulkUpdateReleaseFlag(
+		@Param("ids") List<Integer> ids,
+		@Param("releaseFlag") Boolean releaseFlag,
+		@Param("updateDate") Timestamp updateDate
+	);
+
+	/**
+	 * 複数のお知らせの公開フラグを個別に一括更新（異なるフラグ値）
+	 * <p>
+	 * XMLマッパーで定義（src/main/resources/com/example/teamdev/mapper/NewsMapper.xml）
+	 * </p>
+	 *
+	 * @param items 更新アイテムリスト
+	 * @param updateDate 更新日時
+	 * @return 更新件数
+	 */
+	int bulkUpdateReleaseFlagIndividual(
+		@Param("items") List<NewsBulkPublishRequest.NewsPublishItem> items,
+		@Param("updateDate") Timestamp updateDate
+	);
 }

@@ -1,51 +1,51 @@
 package com.example.teamdev.service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.teamdev.constant.AppConstants;
+import com.example.teamdev.dto.api.home.HomeNewsItem;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.mapper.NewsMapper;
 import com.example.teamdev.util.DateFormatUtil;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * ホーム画面
  * 画面情報取得処理
  */
 @Service
-public class HomeNewsService{
-	@Autowired
-	private NewsMapper mapper;
+public class HomeNewsService {
 
-	@Autowired
-	private ObjectMapper objectMapper;
+    private final NewsMapper mapper;
 
+    public HomeNewsService(NewsMapper mapper) {
+        this.mapper = mapper;
+    }
 
-	public List<Map<String,Object>> execute() {
+    public List<HomeNewsItem> execute() {
+        List<News> newsList = mapper.getNewsByReleaseFlagTrueWithLimit(
+            AppConstants.News.HOME_DISPLAY_LIMIT
+        );
 
-		List<Map<String,Object>>newsMapList = new ArrayList<Map<String,Object>>();
-		Map<String, Object> newsMap = new HashMap<String, Object>();
+        return newsList.stream()
+            .map(this::toHomeNewsItem)
+            .toList();
+    }
 
-		//お知らせ情報の公開フラグがTRUEのレコードを、お知らせ日付の降順で表示する（4件まで）
-		List<News> newsList =  mapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT);
-		for (News news : newsList) {
-			//お知らせ情報をmapに詰め替え
-			newsMap = objectMapper.convertValue(news, Map.class);
-
-			// Newsオブジェクトから日付を取得し、
-			// 日付フォーマット変換（yyyy-MM-dd → yyyy/MM/dd）
-			String formattedDate = DateFormatUtil.formatDate(news.getNewsDate());
-			newsMap.put("news_date", formattedDate);  // Mapにセット
-			//Listに追加
-
-			newsMapList.add(newsMap);
+    private HomeNewsItem toHomeNewsItem(News news) {
+        Boolean releaseFlag = news.getReleaseFlag();
+        if (releaseFlag == null) {
+            throw new IllegalStateException("releaseFlag must not be null for news id=" + news.getId());
         }
-		return newsMapList;
-	}
+
+        String formattedDate = DateFormatUtil.formatDate(news.getNewsDate());
+
+        return new HomeNewsItem(
+            news.getId(),
+            news.getContent(),
+            formattedDate,
+            releaseFlag
+        );
+    }
 }

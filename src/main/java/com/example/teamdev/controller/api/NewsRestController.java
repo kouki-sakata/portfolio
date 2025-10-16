@@ -1,5 +1,8 @@
 package com.example.teamdev.controller.api;
 
+import com.example.teamdev.dto.api.news.NewsBulkDeleteRequest;
+import com.example.teamdev.dto.api.news.NewsBulkOperationResponse;
+import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
 import com.example.teamdev.dto.api.news.NewsCreateRequest;
 import com.example.teamdev.dto.api.news.NewsListResponse;
 import com.example.teamdev.dto.api.news.NewsPublishRequest;
@@ -8,6 +11,8 @@ import com.example.teamdev.dto.api.news.NewsUpdateRequest;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.form.ListForm;
 import com.example.teamdev.form.NewsManageForm;
+import com.example.teamdev.service.NewsManageBulkDeletionService;
+import com.example.teamdev.service.NewsManageBulkReleaseService;
 import com.example.teamdev.service.NewsManageDeletionService;
 import com.example.teamdev.service.NewsManageRegistrationService;
 import com.example.teamdev.service.NewsManageReleaseService;
@@ -21,6 +26,8 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -40,21 +47,29 @@ import org.springframework.web.server.ResponseStatusException;
 @Tag(name = "News Management", description = "お知らせ管理 API")
 public class NewsRestController {
 
+    private static final Logger logger = LoggerFactory.getLogger(NewsRestController.class);
+
     private final NewsManageService newsManageService;
     private final NewsManageRegistrationService registrationService;
     private final NewsManageDeletionService deletionService;
     private final NewsManageReleaseService releaseService;
+    private final NewsManageBulkDeletionService bulkDeletionService;
+    private final NewsManageBulkReleaseService bulkReleaseService;
 
     public NewsRestController(
         NewsManageService newsManageService,
         NewsManageRegistrationService registrationService,
         NewsManageDeletionService deletionService,
-        NewsManageReleaseService releaseService
+        NewsManageReleaseService releaseService,
+        NewsManageBulkDeletionService bulkDeletionService,
+        NewsManageBulkReleaseService bulkReleaseService
     ) {
         this.newsManageService = newsManageService;
         this.registrationService = registrationService;
         this.deletionService = deletionService;
         this.releaseService = releaseService;
+        this.bulkDeletionService = bulkDeletionService;
+        this.bulkReleaseService = bulkReleaseService;
     }
 
     @Operation(summary = "お知らせ一覧取得", description = "すべてのお知らせを日付降順で取得（管理者向け）")
@@ -127,6 +142,76 @@ public class NewsRestController {
         ListForm listForm = new ListForm(List.of(String.valueOf(id)), List.of(edit));
         releaseService.execute(listForm, operatorId);
         return ResponseEntity.noContent().build();
+    }
+
+    @Operation(
+        summary = "お知らせ一括削除",
+        description = "複数のお知らせを一括で削除（最大100件、ADMIN権限が必要）"
+    )
+    @PostMapping("/bulk/delete")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NewsBulkOperationResponse> bulkDelete(
+        @Valid @RequestBody NewsBulkDeleteRequest request
+    ) {
+        Integer operatorId = requireCurrentEmployeeId();
+
+        try {
+            int deletedCount = bulkDeletionService.execute(request.ids(), operatorId);
+
+            List<NewsBulkOperationResponse.OperationResult> results = request.ids().stream()
+                .map(id -> new NewsBulkOperationResponse.OperationResult(id, true, null))
+                .toList();
+
+            NewsBulkOperationResponse response = new NewsBulkOperationResponse(
+                deletedCount,
+                0,
+                results
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("Bulk delete failed", e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "一括削除に失敗しました: " + e.getMessage()
+            );
+        }
+    }
+
+    @Operation(
+        summary = "お知らせ一括公開切り替え",
+        description = "複数のお知らせの公開ステータスを一括変更（最大100件、ADMIN権限が必要）"
+    )
+    @PatchMapping("/bulk/publish")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<NewsBulkOperationResponse> bulkPublish(
+        @Valid @RequestBody NewsBulkPublishRequest request
+    ) {
+        Integer operatorId = requireCurrentEmployeeId();
+
+        try {
+            int updatedCount = bulkReleaseService.executeIndividual(request.items(), operatorId);
+
+            List<NewsBulkOperationResponse.OperationResult> results = request.items().stream()
+                .map(item -> new NewsBulkOperationResponse.OperationResult(item.id(), true, null))
+                .toList();
+
+            NewsBulkOperationResponse response = new NewsBulkOperationResponse(
+                updatedCount,
+                0,
+                results
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            logger.error("Bulk publish toggle failed", e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "一括公開切り替えに失敗しました: " + e.getMessage()
+            );
+        }
     }
 
     private Integer requireCurrentEmployeeId() {
