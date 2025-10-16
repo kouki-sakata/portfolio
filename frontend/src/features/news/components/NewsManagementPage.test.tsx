@@ -131,6 +131,7 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
+    // 空状態では2つの「新規作成」ボタンが存在するため、最初のもの（ヘッダーのボタン）を選択
     const createButtons = screen.getAllByRole("button", { name: "新規作成" });
     await user.click(createButtons[0]);
 
