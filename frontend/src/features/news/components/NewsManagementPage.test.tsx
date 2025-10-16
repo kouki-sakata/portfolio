@@ -133,8 +133,12 @@ describe("NewsManagementPage", () => {
 
     // 空状態では2つの「新規作成」ボタンが存在するため、最初のもの（ヘッダーのボタン）を選択
     const createButtons = screen.getAllByRole("button", { name: "新規作成" });
+    // getAllByRole()が成功した時点で配列には必ず要素が存在する
+    expect(createButtons.length).toBeGreaterThan(0);
     const firstButton = createButtons[0];
-    expect(firstButton).toBeDefined();
+    if (!firstButton) {
+      throw new Error("First button not found");
+    }
     await user.click(firstButton);
 
     expect(screen.getByText("mode:create")).toBeInTheDocument();
