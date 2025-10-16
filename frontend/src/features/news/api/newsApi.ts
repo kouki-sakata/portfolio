@@ -7,7 +7,7 @@ import type {
   NewsUpdateRequest,
 } from "@/types";
 
-const NEWS_ENDPOINT = "news" as const;
+const NEWS_ENDPOINT = "/news" as const;
 
 export const fetchNewsList = (): Promise<NewsListResponse> =>
   api.get<NewsListResponse>(NEWS_ENDPOINT, undefined);
