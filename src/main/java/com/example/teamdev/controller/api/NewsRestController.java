@@ -156,25 +156,40 @@ public class NewsRestController {
         Integer operatorId = requireCurrentEmployeeId();
 
         try {
-            int deletedCount = bulkDeletionService.execute(request.ids(), operatorId);
+            var result = bulkDeletionService.execute(request.ids(), operatorId);
 
-            List<NewsBulkOperationResponse.OperationResult> results = request.ids().stream()
-                .map(id -> new NewsBulkOperationResponse.OperationResult(id, true, null))
-                .toList();
+            // ログ出力
+            if (result.failureCount() > 0) {
+                logger.warn("Bulk delete partial success: {} of {} items deleted",
+                    result.successCount(), request.ids().size());
+            } else {
+                logger.info("Bulk delete completed: all {} items deleted successfully",
+                    result.successCount());
+            }
 
             NewsBulkOperationResponse response = new NewsBulkOperationResponse(
-                deletedCount,
-                0,
-                results
+                result.successCount(),
+                result.failureCount(),
+                result.results()
             );
 
             return ResponseEntity.ok(response);
 
+        } catch (IllegalArgumentException e) {
+            // バリデーションエラー（空リスト、サイズ上限超過など）
+            logger.warn("Bulk delete validation error: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+
         } catch (Exception e) {
+            // その他のエラー
             logger.error("Bulk delete failed", e);
+
+            // エラーの詳細を取得
+            String rootCause = extractRootCause(e);
+
             throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "一括削除に失敗しました: " + e.getMessage()
+                "一括削除に失敗しました: " + rootCause
             );
         }
     }
@@ -191,25 +206,40 @@ public class NewsRestController {
         Integer operatorId = requireCurrentEmployeeId();
 
         try {
-            int updatedCount = bulkReleaseService.executeIndividual(request.items(), operatorId);
+            var result = bulkReleaseService.executeIndividual(request.items(), operatorId);
 
-            List<NewsBulkOperationResponse.OperationResult> results = request.items().stream()
-                .map(item -> new NewsBulkOperationResponse.OperationResult(item.id(), true, null))
-                .toList();
+            // ログ出力
+            if (result.failureCount() > 0) {
+                logger.warn("Bulk publish partial success: {} of {} items updated",
+                    result.successCount(), request.items().size());
+            } else {
+                logger.info("Bulk publish completed: all {} items updated successfully",
+                    result.successCount());
+            }
 
             NewsBulkOperationResponse response = new NewsBulkOperationResponse(
-                updatedCount,
-                0,
-                results
+                result.successCount(),
+                result.failureCount(),
+                result.results()
             );
 
             return ResponseEntity.ok(response);
 
+        } catch (IllegalArgumentException e) {
+            // バリデーションエラー（空リスト、サイズ上限超過など）
+            logger.warn("Bulk publish validation error: {}", e.getMessage());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+
         } catch (Exception e) {
+            // その他のエラー
             logger.error("Bulk publish toggle failed", e);
+
+            // エラーの詳細を取得
+            String rootCause = extractRootCause(e);
+
             throw new ResponseStatusException(
                 HttpStatus.INTERNAL_SERVER_ERROR,
-                "一括公開切り替えに失敗しました: " + e.getMessage()
+                "一括公開切り替えに失敗しました: " + rootCause
             );
         }
     }
@@ -239,5 +269,20 @@ public class NewsRestController {
             releaseFlag,
             updateDate
         );
+    }
+
+    /**
+     * エラーの根本原因を抽出する
+     *
+     * @param e 例外
+     * @return 根本原因のメッセージ
+     */
+    private String extractRootCause(Exception e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage();
+        return message != null ? message : "Unknown error";
     }
 }

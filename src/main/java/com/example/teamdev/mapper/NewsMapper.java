@@ -119,6 +119,22 @@ public interface NewsMapper {
 	int deleteByIds(@Param("ids") List<Integer> ids);
 
 	/**
+	 * 指定されたIDリストのうち、実際に存在するIDのみを返す
+	 *
+	 * @param ids チェック対象のIDリスト
+	 * @return 存在するIDのリスト
+	 */
+	@Select({
+		"<script>",
+		"SELECT id FROM news WHERE id IN",
+		"<foreach collection='ids' item='id' open='(' separator=',' close=')'>",
+		"#{id}",
+		"</foreach>",
+		"</script>"
+	})
+	List<Integer> findExistingIds(@Param("ids") List<Integer> ids);
+
+	/**
 	 * 複数のお知らせの公開フラグを一括更新
 	 * <p>
 	 * XMLマッパーで定義（src/main/resources/com/example/teamdev/mapper/NewsMapper.xml）

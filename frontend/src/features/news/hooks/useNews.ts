@@ -43,7 +43,7 @@ export const useNewsQuery = () =>
   });
 
 type PublishedNewsQueryOptions = Omit<
-  UseQueryOptions<NewsListResponse, unknown>,
+  UseQueryOptions<NewsListResponse, Error>,
   "queryKey" | "queryFn" | "staleTime" | "gcTime"
 >;
 
