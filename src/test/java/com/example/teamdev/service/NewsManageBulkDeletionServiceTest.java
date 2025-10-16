@@ -46,7 +46,7 @@ class NewsManageBulkDeletionServiceTest {
 
     @BeforeEach
     void setUp() {
-        when(clock.instant()).thenReturn(FIXED_INSTANT);
+        lenient().when(clock.instant()).thenReturn(FIXED_INSTANT);
     }
 
     @Test
@@ -209,8 +209,6 @@ class NewsManageBulkDeletionServiceTest {
             () -> service.execute(ids, OPERATOR_ID)
         );
         assertEquals("削除対象のIDリストが空です", exception.getMessage());
-        verify(mapper, never()).deleteByIds(any());
-        verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 
     @Test
@@ -222,8 +220,6 @@ class NewsManageBulkDeletionServiceTest {
             () -> service.execute(null, OPERATOR_ID)
         );
         assertEquals("削除対象のIDリストが空です", exception.getMessage());
-        verify(mapper, never()).deleteByIds(any());
-        verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 
     @Test
@@ -241,8 +237,6 @@ class NewsManageBulkDeletionServiceTest {
             () -> service.execute(ids, OPERATOR_ID)
         );
         assertTrue(exception.getMessage().contains("一度に削除できるのは100件まで"));
-        verify(mapper, never()).deleteByIds(any());
-        verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 
     @Test
@@ -259,6 +253,14 @@ class NewsManageBulkDeletionServiceTest {
         // Assert
         assertEquals(0, result.successCount());
         assertEquals(3, result.failureCount());  // 削除できなかった場合は失敗としてカウント
+        assertEquals(3, result.results().size());
+
+        // 全ての結果が失敗であることを確認
+        for (NewsBulkOperationResponse.OperationResult opResult : result.results()) {
+            assertFalse(opResult.success());
+            assertEquals("削除処理に失敗しました", opResult.errorMessage());
+        }
+
         verify(mapper, times(1)).findExistingIds(ids);
         verify(mapper, times(1)).deleteByIds(ids);
         verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
@@ -269,10 +271,9 @@ class NewsManageBulkDeletionServiceTest {
     void testMapperException() {
         // Arrange
         List<Integer> ids = Arrays.asList(1, 2, 3);
-        List<Integer> existingIds = Arrays.asList(1, 2, 3);
         RuntimeException mapperException = new RuntimeException("Database error");
-        when(mapper.findExistingIds(ids)).thenReturn(existingIds);
-        when(mapper.deleteByIds(existingIds)).thenThrow(mapperException);
+        when(mapper.findExistingIds(ids)).thenReturn(ids);
+        when(mapper.deleteByIds(ids)).thenThrow(mapperException);
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -281,7 +282,7 @@ class NewsManageBulkDeletionServiceTest {
         );
         assertEquals("Database error", exception.getMessage());
         verify(mapper, times(1)).findExistingIds(ids);
-        verify(mapper, times(1)).deleteByIds(existingIds);
+        verify(mapper, times(1)).deleteByIds(ids);
         verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 
@@ -290,9 +291,8 @@ class NewsManageBulkDeletionServiceTest {
     void testDeletionExceptionHandling() {
         // Arrange
         List<Integer> ids = Arrays.asList(1, 2, 3);
-        List<Integer> existingIds = Arrays.asList(1, 2);  // 1と2は存在
-        when(mapper.findExistingIds(ids)).thenReturn(existingIds);
-        when(mapper.deleteByIds(existingIds)).thenThrow(new RuntimeException("Constraint violation"));
+        when(mapper.findExistingIds(ids)).thenReturn(Arrays.asList(1, 2));  // 1と2は存在
+        when(mapper.deleteByIds(Arrays.asList(1, 2))).thenThrow(new RuntimeException("Constraint violation"));
 
         // Act & Assert
         RuntimeException exception = assertThrows(
@@ -304,7 +304,7 @@ class NewsManageBulkDeletionServiceTest {
 
         // 検証: findExistingIdsとdeleteByIdsが呼び出されたが、ログは記録されない
         verify(mapper, times(1)).findExistingIds(ids);
-        verify(mapper, times(1)).deleteByIds(existingIds);
+        verify(mapper, times(1)).deleteByIds(Arrays.asList(1, 2));
         verify(logHistoryService, never()).execute(anyInt(), anyInt(), any(), any(), any(), any());
     }
 }

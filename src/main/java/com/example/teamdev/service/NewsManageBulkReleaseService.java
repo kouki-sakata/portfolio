@@ -50,10 +50,10 @@ public class NewsManageBulkReleaseService {
      */
     @Transactional
     public int executeUniform(List<Integer> ids, Boolean releaseFlag, Integer operatorId) {
+        validateRequest(ids);
+
         logger.debug("NewsManageBulkReleaseService.executeUniform started - operatorId: {}, ids count: {}, releaseFlag: {}",
             operatorId, ids.size(), releaseFlag);
-
-        validateRequest(ids);
 
         try {
             Timestamp timestamp = Timestamp.from(clock.instant());
@@ -81,10 +81,10 @@ public class NewsManageBulkReleaseService {
      */
     @Transactional
     public BulkUpdateResult executeIndividual(List<NewsBulkPublishRequest.NewsPublishItem> items, Integer operatorId) {
+        validateItemsRequest(items);
+
         logger.debug("NewsManageBulkReleaseService.executeIndividual started - operatorId: {}, items count: {}",
             operatorId, items.size());
-
-        validateItemsRequest(items);
 
         // IDのみのリストを取得
         List<Integer> ids = items.stream()

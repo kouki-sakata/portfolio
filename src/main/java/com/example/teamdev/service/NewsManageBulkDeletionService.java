@@ -48,10 +48,10 @@ public class NewsManageBulkDeletionService {
      */
     @Transactional
     public BulkDeletionResult execute(List<Integer> ids, Integer operatorId) {
+        validateRequest(ids);
+
         logger.debug("NewsManageBulkDeletionService.execute started - operatorId: {}, ids count: {}",
             operatorId, ids.size());
-
-        validateRequest(ids);
 
         // 事前検証：存在チェック
         List<Integer> existingIds = mapper.findExistingIds(ids);
@@ -74,13 +74,18 @@ public class NewsManageBulkDeletionService {
                 deletedCount = mapper.deleteByIds(existingIds);
                 logger.info("Bulk deleted {} news items", deletedCount);
 
-                // 成功した削除を結果に追加
-                for (Integer id : existingIds) {
-                    results.add(new NewsBulkOperationResponse.OperationResult(id, true, null));
-                }
+                // 削除件数が0の場合、存在確認したIDも失敗として扱う
+                if (deletedCount == 0) {
+                    for (Integer id : existingIds) {
+                        results.add(new NewsBulkOperationResponse.OperationResult(id, false, "削除処理に失敗しました"));
+                    }
+                } else {
+                    // 成功した削除を結果に追加
+                    for (Integer id : existingIds) {
+                        results.add(new NewsBulkOperationResponse.OperationResult(id, true, null));
+                    }
 
-                // 履歴記録
-                if (deletedCount > 0) {
+                    // 履歴記録
                     Timestamp timestamp = Timestamp.from(clock.instant());
                     logHistoryService.execute(2, 4, null, null, operatorId, timestamp);
                 }
