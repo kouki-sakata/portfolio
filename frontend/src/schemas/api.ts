@@ -122,6 +122,10 @@ const NewsUpdateRequest = z
   .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
   .strict()
   .passthrough();
+const NewsPublishRequest = z
+  .object({ releaseFlag: z.boolean() })
+  .strict()
+  .passthrough();
 
 export const schemas = {
   LoginRequest,
@@ -142,6 +146,7 @@ export const schemas = {
   NewsListResponse,
   NewsCreateRequest,
   NewsUpdateRequest,
+  NewsPublishRequest,
 };
 
 const endpoints = makeApi([
@@ -419,9 +424,14 @@ const endpoints = makeApi([
     method: "patch",
     path: "/api/news/:id/publish",
     alias: "toggleNewsPublish",
-    description: `公開/非公開フラグをトグル（ADMIN権限が必要）`,
+    description: `公開/非公開フラグを明示的に設定（ADMIN権限が必要）`,
     requestFormat: "json",
     parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.object({ releaseFlag: z.boolean() }).strict().passthrough(),
+      },
       {
         name: "id",
         type: "Path",
@@ -430,6 +440,11 @@ const endpoints = makeApi([
     ],
     response: z.void(),
     errors: [
+      {
+        status: 400,
+        description: `バリデーションエラー`,
+        schema: ErrorResponse,
+      },
       {
         status: 403,
         description: `権限がありません`,

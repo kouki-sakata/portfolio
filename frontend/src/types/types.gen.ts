@@ -160,6 +160,13 @@ export type NewsUpdateRequest = {
     content: string;
 };
 
+export type NewsPublishRequest = {
+    /**
+     * 公開フラグ（true: 公開, false: 非公開）
+     */
+    releaseFlag: boolean;
+};
+
 export type StampRequest = {
     /**
      * 打刻時刻（ISO形式）
@@ -637,7 +644,7 @@ export type UpdateNewsResponses = {
 export type UpdateNewsResponse = UpdateNewsResponses[keyof UpdateNewsResponses];
 
 export type ToggleNewsPublishData = {
-    body?: never;
+    body: NewsPublishRequest;
     path: {
         id: number;
     };
@@ -646,6 +653,10 @@ export type ToggleNewsPublishData = {
 };
 
 export type ToggleNewsPublishErrors = {
+    /**
+     * バリデーションエラー
+     */
+    400: ErrorResponse;
     /**
      * 権限がありません
      */
@@ -660,7 +671,7 @@ export type ToggleNewsPublishError = ToggleNewsPublishErrors[keyof ToggleNewsPub
 
 export type ToggleNewsPublishResponses = {
     /**
-     * 切り替え成功
+     * 設定成功
      */
     204: void;
 };
