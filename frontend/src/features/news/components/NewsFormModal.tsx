@@ -94,7 +94,7 @@ export const NewsFormModal = ({
       if (mode === "create") {
         await createMutation.mutateAsync(values);
       } else if (mode === "edit" && news) {
-        await updateMutation.mutateAsync({ id: news.id, ...values });
+        await updateMutation.mutateAsync({ id: news.id, data: values });
       }
 
       onClose();
