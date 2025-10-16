@@ -1,0 +1,85 @@
+services:
+  # Spring Boot API Service
+  - type: web
+    name: teamdev-api
+    runtime: docker
+    plan: starter  # または standard
+    region: singapore  # アジア太平洋地域
+    branch: main
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    numInstances: 1
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: APP_NAME
+        value: TeamDevelop-API
+      - key: SERVER_PORT
+        value: 8080
+      - key: DB_HOST
+        fromDatabase:
+          name: teamdev-postgres
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: teamdev-postgres
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: teamdev-postgres
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: teamdev-postgres
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: teamdev-postgres
+          property: password
+      - key: JWT_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+      - key: LOG_LEVEL_ROOT
+        value: WARN
+      - key: LOG_LEVEL_APP
+        value: INFO
+      - key: LOG_FILE
+        value: /tmp/teamdev.log
+      - key: MANAGEMENT_PORT
+        value: 8081
+    buildFilter:
+      paths:
+        - src/**
+        - frontend/**
+        - build.gradle
+        - gradlew
+        - gradle/**
+        - Dockerfile
+      ignoredPaths:
+        - README.md
+        - docs/**
+        - "*.md"
+
+  # PostgreSQL Database
+  - type: pgsql
+    name: teamdev-postgres
+    plan: starter  # または standard
+    region: singapore
+    databaseName: teamdev_db
+    databaseUser: teamdev_user
+    ipAllowList: []  # 空の場合はすべてのIPを許可
+    version: "16"
+
+# 自動デプロイ設定
+deploy:
+  - name: production
+    branch: main
+    services:
+      - teamdev-api
+      - teamdev-postgres
+
+# Blueprint (Optional: Infrastructure as Code)
+previewsEnabled: true
+previewsExpireAfterDays: 7
