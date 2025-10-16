@@ -394,8 +394,22 @@ describe("AuthProvider", () => {
         expect(result.current.loading).toBe(false);
       });
 
-      expect(result.current.isSessionExpiring).toBe(true);
-      expect(result.current.sessionTimeoutWarning).toBe(true);
+      // sessionInfoが設定されるまで待機
+      await waitFor(
+        () => {
+          expect(result.current.sessionInfo).toBeDefined();
+        },
+        { timeout: 5000 }
+      );
+
+      // セッションチェックロジックが実行され、警告フラグが設定されるまで待機
+      await waitFor(
+        () => {
+          expect(result.current.isSessionExpiring).toBe(true);
+          expect(result.current.sessionTimeoutWarning).toBe(true);
+        },
+        { timeout: 15_000 }
+      );
     });
 
     it("セッションをリフレッシュできる", async () => {
