@@ -33,8 +33,8 @@ const mapResponse = (
 ): StampHistoryResponse => {
   const entries = response.entries.map(mapEntry);
   return {
-    selectedYear: response.year,
-    selectedMonth: response.month,
+    selectedYear: response.selectedYear,
+    selectedMonth: response.selectedMonth,
     years: response.years,
     months: response.months,
     entries,

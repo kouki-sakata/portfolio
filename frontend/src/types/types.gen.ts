@@ -193,11 +193,11 @@ export type StampHistoryResponse = {
     /**
      * 対象年
      */
-    year: string;
+    selectedYear: string;
     /**
      * 対象月
      */
-    month: string;
+    selectedMonth: string;
     /**
      * 選択可能な年リスト
      */
