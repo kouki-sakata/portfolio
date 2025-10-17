@@ -294,9 +294,15 @@ export function DataTable<TData, TValue = unknown>({
                           );
 
                           // content列の場合は特別処理
-                          if (cell.column.id === "content" && typeof cellContent === "string") {
+                          if (
+                            cell.column.id === "content" &&
+                            typeof cellContent === "string"
+                          ) {
                             return (
-                              <div className="max-w-[200px] truncate" title={cellContent}>
+                              <div
+                                className="max-w-[200px] truncate"
+                                title={cellContent}
+                              >
                                 {cellContent}
                               </div>
                             );

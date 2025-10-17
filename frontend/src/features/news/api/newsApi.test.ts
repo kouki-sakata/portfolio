@@ -33,7 +33,8 @@ const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
   id: overrides?.id ?? 1,
   newsDate: overrides?.newsDate ?? "2025-10-01",
   title: overrides?.title ?? "システムメンテナンスのお知らせ",
-  content: overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
+  content:
+    overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
   category: overrides?.category ?? "システム",
   releaseFlag: overrides?.releaseFlag ?? true,
   updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
