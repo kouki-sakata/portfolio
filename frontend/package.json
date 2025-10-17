@@ -11,7 +11,7 @@
     "lint": "biome check .",
     "lint:fix": "biome check . --write --unsafe",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run --coverage",
+    "test": "DEBUG_PRINT_LIMIT=100 vitest run --coverage",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
