@@ -6,12 +6,16 @@
 	<insert id="save" parameterType="com.example.teamdev.entity.News" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
 		INSERT INTO news (
 			news_date,
+			title,
 			content,
+			category,
 			release_flag,
 			update_date
 		) VALUES (
 			#{newsDate},
+			#{title},
 			#{content},
+			#{category},
 			#{releaseFlag},
 			#{updateDate}
 		)
@@ -22,7 +26,9 @@
 		UPDATE news
 		SET
 			news_date = #{newsDate},
+			title = #{title},
 			content = #{content},
+			category = #{category},
 			release_flag = #{releaseFlag},
 			update_date = #{updateDate}
 		WHERE

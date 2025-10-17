@@ -91,12 +91,13 @@ vi.mock("./NewsFormModal", () => ({
 }));
 
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: 1,
-  newsDate: "2025-10-10",
-  content: "リリースノート",
-  releaseFlag: true,
-  updateDate: "2025-10-10T12:00:00Z",
-  ...overrides,
+  id: overrides?.id ?? 1,
+  newsDate: overrides?.newsDate ?? "2025-10-10",
+  title: overrides?.title ?? "リリースノート",
+  content: overrides?.content ?? "新機能のリリース情報",
+  category: overrides?.category ?? "一般",
+  releaseFlag: overrides?.releaseFlag ?? true,
+  updateDate: overrides?.updateDate ?? "2025-10-10T12:00:00Z",
 });
 
 describe("NewsManagementPage", () => {
@@ -213,7 +214,7 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    const selectAll = screen.getByLabelText("全選択");
+    const selectAll = screen.getByLabelText("全て選択");
     await user.click(selectAll);
 
     const itemCheckboxes = screen.getAllByRole("checkbox", {
@@ -253,7 +254,7 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    await user.click(screen.getByLabelText("全選択"));
+    await user.click(screen.getByLabelText("全て選択"));
 
     await user.click(screen.getByRole("button", { name: "一括公開" }));
 
@@ -291,7 +292,7 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    await user.click(screen.getByLabelText("全選択"));
+    await user.click(screen.getByLabelText("全て選択"));
 
     await user.click(screen.getByRole("button", { name: "一括削除" }));
 

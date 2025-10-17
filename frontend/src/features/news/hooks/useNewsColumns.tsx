@@ -59,6 +59,20 @@ export function useNewsColumns({
         ),
       },
       {
+        accessorKey: "title",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="タイトル" />
+        ),
+        cell: ({ row }) => {
+          const title = row.getValue("title") as string;
+          return (
+            <div className="max-w-[200px] truncate font-medium md:max-w-[300px]">
+              {title}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "content",
         header: "内容",
         cell: ({ row }) => {
@@ -72,7 +86,7 @@ export function useNewsColumns({
                   <div
                     className={cn(
                       "max-w-[300px] md:max-w-[500px]",
-                      shouldTruncate && "truncate cursor-help"
+                      shouldTruncate && "cursor-help truncate"
                     )}
                   >
                     {content}
@@ -80,7 +94,7 @@ export function useNewsColumns({
                 </TooltipTrigger>
                 {shouldTruncate && (
                   <TooltipContent
-                    className="max-w-[400px] break-words whitespace-pre-wrap"
+                    className="max-w-[400px] whitespace-pre-wrap break-words"
                     side="bottom"
                   >
                     <p className="text-sm">{content}</p>
@@ -89,6 +103,29 @@ export function useNewsColumns({
               </Tooltip>
             </TooltipProvider>
           );
+        },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="カテゴリ" />
+        ),
+        cell: ({ row }) => {
+          const category = row.getValue("category") as string;
+          let variant: "destructive" | "default" | "secondary" = "secondary";
+          if (category === "重要") {
+            variant = "destructive";
+          } else if (category === "システム") {
+            variant = "default";
+          }
+
+          return <Badge variant={variant}>{category}</Badge>;
+        },
+        filterFn: (row, id, value) => {
+          if (value === "all") {
+            return true;
+          }
+          return row.getValue(id) === value;
         },
       },
       {

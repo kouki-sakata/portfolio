@@ -22,12 +22,13 @@ vi.mock("@/features/news/hooks/useNews", () => ({
 }));
 
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: 1,
-  newsDate: "2025-10-10",
-  content: "長いテキスト".repeat(50),
-  releaseFlag: false,
-  updateDate: "2025-10-10T10:00:00Z",
-  ...overrides,
+  id: overrides?.id ?? 1,
+  newsDate: overrides?.newsDate ?? "2025-10-10",
+  title: overrides?.title ?? "削除対象のお知らせ",
+  content: overrides?.content ?? "長いテキスト".repeat(50),
+  category: overrides?.category ?? "一般",
+  releaseFlag: overrides?.releaseFlag ?? false,
+  updateDate: overrides?.updateDate ?? "2025-10-10T10:00:00Z",
 });
 
 describe("DeleteConfirmDialog", () => {

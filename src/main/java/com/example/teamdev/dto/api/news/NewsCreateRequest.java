@@ -10,9 +10,17 @@ public record NewsCreateRequest(
     @NotBlank
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$")
     String newsDate,
-    @Schema(description = "お知らせ内容（最大1000文字）", example = "システムメンテナンスのお知らせ")
+    @Schema(description = "タイトル（最大200文字）", example = "勤怠締め日のお知らせ")
+    @NotBlank
+    @Size(min = 1, max = 200)
+    String title,
+    @Schema(description = "お知らせ内容（最大1000文字）", example = "今月の勤怠締め日は月末です。期日までに必ず勤怠記録を確認してください。")
     @NotBlank
     @Size(min = 1, max = 1000)
-    String content
+    String content,
+    @Schema(description = "カテゴリ（重要/システム/一般）", example = "重要")
+    @NotBlank
+    @Pattern(regexp = "^(重要|システム|一般)$")
+    String category
 ) {
 }

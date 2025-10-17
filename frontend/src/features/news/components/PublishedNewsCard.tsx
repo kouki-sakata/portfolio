@@ -8,11 +8,19 @@ type PublishedNewsCardProps = {
   className?: string;
 };
 
-const truncateContent = (content: string, maxLength = 120): string => {
-  if (content.length <= maxLength) {
-    return content;
+const getBadgeVariant = (
+  category: string
+): "destructive" | "default" | "secondary" => {
+  switch (category) {
+    case "重要":
+      return "destructive";
+    case "システム":
+      return "default";
+    case "一般":
+      return "secondary";
+    default:
+      return "secondary";
   }
-  return `${content.slice(0, maxLength)}…`;
 };
 
 export const PublishedNewsCard = ({
@@ -26,16 +34,19 @@ export const PublishedNewsCard = ({
     )}
   >
     <CardHeader className="space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <CardTitle className="font-semibold text-base">
-          {news.newsDate}
+      <div className="flex items-center justify-between gap-2">
+        <CardTitle className="line-clamp-2 font-semibold text-lg">
+          {news.title}
         </CardTitle>
-        <Badge variant="default">公開中</Badge>
+        <Badge variant={getBadgeVariant(news.category)}>{news.category}</Badge>
+      </div>
+      <div className="flex items-center gap-2 text-muted-foreground text-sm">
+        <time>{news.newsDate}</time>
       </div>
     </CardHeader>
     <CardContent className="flex-1">
-      <p className="whitespace-pre-wrap text-muted-foreground text-sm leading-relaxed">
-        {truncateContent(news.content)}
+      <p className="line-clamp-3 whitespace-pre-wrap text-muted-foreground text-sm leading-relaxed">
+        {news.content}
       </p>
     </CardContent>
   </Card>

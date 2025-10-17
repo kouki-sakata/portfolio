@@ -39,7 +39,9 @@ class HomeNewsServiceTest {
         News entity = new News(
             10,
             LocalDate.parse("2025-10-10"),
+            "システムメンテナンスのお知らせ",
             "システムメンテナンスを実施します",
+            "システム",
             true,
             Timestamp.from(Instant.parse("2025-10-09T12:34:56Z"))
         );
@@ -68,6 +70,8 @@ class HomeNewsServiceTest {
             20,
             LocalDate.parse("2025-11-01"),
             "公開判定が不明なお知らせ",
+            "公開判定が不明なお知らせの内容",
+            "一般",
             null,
             Timestamp.from(Instant.parse("2025-11-01T00:00:00Z"))
         );

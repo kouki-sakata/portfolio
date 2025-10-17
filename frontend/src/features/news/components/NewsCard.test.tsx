@@ -19,12 +19,18 @@ vi.mock("@/features/news/hooks/useNews", () => ({
     mutateAsync: mocks.deleteMutate,
     isPending: false,
   }),
+  useBulkDeleteMutation: () => ({
+    mutateAsync: vi.fn(),
+    isPending: false,
+  }),
 }));
 
 const newsSample = (): NewsResponse => ({
   id: 42,
   newsDate: "2025-10-10",
-  content: "重要メンテナンスのお知らせ",
+  title: "重要メンテナンスのお知らせ",
+  content: "メンテナンスの詳細内容",
+  category: "重要",
   releaseFlag: true,
   updateDate: "2025-10-10T12:00:00Z",
 });
