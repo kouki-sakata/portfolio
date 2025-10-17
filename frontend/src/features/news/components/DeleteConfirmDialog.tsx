@@ -60,19 +60,37 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
     return null;
   }, [type, props]);
 
+  const performDelete = async () => {
+    if (type === "single") {
+      if (!props.news) {
+        throw new Error("No news item provided for single deletion");
+      }
+      await deleteMutation.mutateAsync(props.news.id);
+      return;
+    }
+
+    if (props.newsIds) {
+      await bulkDeleteMutation.mutateAsync({ ids: props.newsIds });
+    }
+  };
+
   const handleDelete = async () => {
     try {
-      if (type === "single" && props.news) {
-        await deleteMutation.mutateAsync(props.news.id);
-      } else if (type === "bulk" && props.newsIds) {
-        await bulkDeleteMutation.mutateAsync({ ids: props.newsIds });
-      }
+      await performDelete();
       onOpenChange(false);
       onConfirm?.();
     } catch (error) {
       // エラー時はダイアログを開いたままにし、再試行を許可する
-      console.error("News deletion failed:", {
+      const correlationId =
+        globalThis.crypto?.randomUUID?.() ?? `news-delete-${Date.now()}`;
+      const targetIds =
+        type === "single"
+          ? [props.news?.id].filter((id): id is number => id !== undefined)
+          : (props.newsIds ?? []);
+      console.error("News deletion failed", {
+        correlationId,
         type,
+        targetIds: Array.isArray(targetIds) ? targetIds : [],
         error: error instanceof Error ? error.message : String(error),
       });
     }

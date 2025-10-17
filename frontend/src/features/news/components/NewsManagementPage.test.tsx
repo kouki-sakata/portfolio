@@ -2,6 +2,8 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { BulkMutationResult } from "@/features/news/hooks/useNews";
+import { getFirstByRoleOrThrow } from "@/test/dom-assertions";
 import type { NewsResponse } from "@/types";
 import { NewsManagementPage } from "./NewsManagementPage";
 
@@ -9,6 +11,8 @@ const mocks = vi.hoisted(() => ({
   useNewsQuery: vi.fn(),
   deleteMutate: vi.fn(),
   bulkDeleteMutate: vi.fn(),
+  bulkPublishMutate: vi.fn(),
+  bulkUnpublishMutate: vi.fn(),
 }));
 
 vi.mock("@/features/news/hooks/useNews", () => ({
@@ -20,6 +24,20 @@ vi.mock("@/features/news/hooks/useNews", () => ({
     isPending: false,
   }),
   useTogglePublishMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useBulkPublishMutation: () => ({
+    mutate: mocks.bulkPublishMutate,
+    mutateAsync: vi.fn(),
+    isPending: false,
+    reset: vi.fn(),
+    status: "idle",
+  }),
+  useBulkUnpublishMutation: () => ({
+    mutate: mocks.bulkUnpublishMutate,
+    mutateAsync: vi.fn(),
+    isPending: false,
+    reset: vi.fn(),
+    status: "idle",
+  }),
   useBulkDeleteMutation: () => ({
     mutateAsync: mocks.bulkDeleteMutate,
     isPending: false,
@@ -65,8 +83,16 @@ describe("NewsManagementPage", () => {
     mocks.useNewsQuery.mockReset();
     mocks.deleteMutate.mockReset();
     mocks.bulkDeleteMutate.mockReset();
+    mocks.bulkPublishMutate.mockReset();
+    mocks.bulkUnpublishMutate.mockReset();
     mocks.deleteMutate.mockResolvedValue(undefined);
     mocks.bulkDeleteMutate.mockResolvedValue({ successIds: [], failedIds: [] });
+    mocks.bulkPublishMutate.mockImplementation(() => {
+      // noop: default mutation handler for tests without assertions
+    });
+    mocks.bulkUnpublishMutate.mockImplementation(() => {
+      // noop: default mutation handler for tests without assertions
+    });
   });
 
   afterEach(() => {
@@ -129,15 +155,12 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    const createButtons = screen.getAllByRole("button", { name: "新規作成" });
-    expect(createButtons.length).toBeGreaterThan(0);
+    const firstCreateButton = getFirstByRoleOrThrow(
+      screen.getAllByRole("button", { name: "新規作成" }),
+      "新規作成ボタン"
+    );
 
-    const [firstButton] = createButtons;
-    if (!firstButton) {
-      throw new Error("First create button not found");
-    }
-
-    await user.click(firstButton);
+    await user.click(firstCreateButton);
 
     expect(screen.getByText("mode:create")).toBeInTheDocument();
     expect(screen.getByText("open:true")).toBeInTheDocument();
@@ -155,11 +178,10 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    const editButtons = screen.getAllByRole("button", { name: /編集/ });
-    const [editButton] = editButtons;
-    if (!editButton) {
-      throw new Error("Edit button not found");
-    }
+    const editButton = getFirstByRoleOrThrow(
+      screen.getAllByRole("button", { name: /編集/ }),
+      "編集ボタン"
+    );
 
     await user.click(editButton);
 
@@ -227,5 +249,77 @@ describe("NewsManagementPage", () => {
         screen.queryByRole("button", { name: "選択した2件を削除" })
       ).not.toBeInTheDocument();
     });
+  });
+
+  it("選択状態で一括公開と一括非公開ボタンを表示しミューテーションを呼び出す", async () => {
+    const user = userEvent.setup();
+    const items = [
+      sampleNews({ id: 201, content: "成功", releaseFlag: false }),
+      sampleNews({ id: 202, content: "失敗", releaseFlag: true }),
+    ];
+
+    mocks.useNewsQuery.mockReturnValue({
+      data: { news: items },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    const publishResult: BulkMutationResult = {
+      successIds: [201],
+      failedIds: [],
+    };
+    const unpublishResult: BulkMutationResult = {
+      successIds: [202],
+      failedIds: [],
+    };
+
+    mocks.bulkPublishMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.(publishResult);
+    });
+    mocks.bulkUnpublishMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.(unpublishResult);
+    });
+
+    render(<NewsManagementPage />);
+
+    await user.click(screen.getByLabelText("全て選択"));
+
+    const bulkPublishButton = screen.getByRole("button", { name: "一括公開" });
+    let bulkUnpublishButton = screen.getByRole("button", {
+      name: "一括非公開",
+    });
+
+    expect(bulkPublishButton).toBeEnabled();
+    expect(bulkUnpublishButton).toBeEnabled();
+
+    await user.click(bulkPublishButton);
+
+    expect(mocks.bulkPublishMutate).toHaveBeenCalledWith(
+      { ids: [201, 202] },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+
+    // 選択状態はpublish成功でリセット済み
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "一括公開" })
+      ).not.toBeInTheDocument();
+    });
+
+    const selectAllControl = screen.getByLabelText("全て選択");
+    await user.click(selectAllControl); // 一度目で既存選択を解除
+    await user.click(selectAllControl); // 二度目で全選択を再適用
+
+    bulkUnpublishButton = await screen.findByRole("button", {
+      name: "一括非公開",
+    });
+
+    await user.click(bulkUnpublishButton);
+
+    expect(mocks.bulkUnpublishMutate).toHaveBeenCalledWith(
+      { ids: [201, 202] },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 });

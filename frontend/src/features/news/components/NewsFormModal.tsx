@@ -179,6 +179,8 @@ export const NewsFormModal = ({
               autoResize
               id="content"
               maxHeight="400px"
+              maxLength={1000}
+              minLength={1}
               placeholder="お知らせの内容を入力してください"
               {...form.register("content")}
             />

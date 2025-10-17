@@ -36,7 +36,9 @@ public interface NewsMapper {
 	@Results(id = "newsResultMap", value = {
 		@Result(property = "id", column = "id"),
 		@Result(property = "newsDate", column = "news_date"),
+		@Result(property = "title", column = "title"),
 		@Result(property = "content", column = "content"),
+		@Result(property = "category", column = "category"),
 		@Result(property = "releaseFlag", column = "release_flag"),
 		@Result(property = "updateDate", column = "update_date")
 	})

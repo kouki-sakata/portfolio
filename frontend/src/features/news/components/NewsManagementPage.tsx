@@ -3,11 +3,17 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNewsQuery } from "@/features/news/hooks/useNews";
+import {
+  type BulkMutationResult,
+  useBulkPublishMutation,
+  useBulkUnpublishMutation,
+  useNewsQuery,
+} from "@/features/news/hooks/useNews";
 import { useNewsColumns } from "@/features/news/hooks/useNewsColumns";
 import { DataTable } from "@/shared/components/data-table";
 import type { NewsResponse } from "@/types";
 
+import { BulkActionBar } from "./BulkActionBar";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 import { NewsFormModal } from "./NewsFormModal";
 import { PublishedNewsGrid } from "./PublishedNewsGrid";
@@ -48,6 +54,8 @@ export const NewsManagementPage = () => {
   const tableRef = useRef<HTMLDivElement>(null);
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
+  const bulkPublishMutation = useBulkPublishMutation();
+  const bulkUnpublishMutation = useBulkUnpublishMutation();
 
   const handleEdit = useCallback((news: NewsResponse) => {
     setSelectedNews(news);
@@ -69,6 +77,17 @@ export const NewsManagementPage = () => {
     setSelectedNewsIds([]);
     setBulkDeleteDialogOpen(false);
   }, []);
+
+  const handleBulkMutationResult = useCallback(
+    ({ failedIds }: BulkMutationResult) => {
+      setSelectedNewsIds((prev) =>
+        failedIds.length === 0
+          ? []
+          : prev.filter((id) => failedIds.includes(id))
+      );
+    },
+    []
+  );
 
   const columns = useNewsColumns({
     onEdit: handleEdit,
@@ -168,19 +187,16 @@ export const NewsManagementPage = () => {
             className="space-y-4"
             ref={tableRef}
           >
-            <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <h2 className="font-semibold text-lg">全お知らせ一覧</h2>
-              {selectedNewsIds.length > 0 && (
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={() => setBulkDeleteDialogOpen(true)}
-                  size="sm"
-                  type="button"
-                  variant="destructive"
-                >
-                  選択した{selectedNewsIds.length}件を削除
-                </Button>
-              )}
+              <BulkActionBar
+                onBulkDeleteClick={() => setBulkDeleteDialogOpen(true)}
+                onPublishSuccess={handleBulkMutationResult}
+                onUnpublishSuccess={handleBulkMutationResult}
+                publishMutation={bulkPublishMutation}
+                selectedIds={selectedNewsIds}
+                unpublishMutation={bulkUnpublishMutation}
+              />
             </div>
             <DataTable
               columns={columns}

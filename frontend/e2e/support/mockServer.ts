@@ -6,6 +6,12 @@ import type {
   StampRequest,
   StampResponse,
 } from "@/features/home/types";
+import type {
+  NewsBulkDeleteRequest,
+  NewsBulkOperationResponse,
+  NewsBulkPublishRequest,
+  NewsPublishItem,
+} from "@/features/news/types/bulk";
 import type { FeatureFlags } from "@/shared/hooks/use-feature-flag";
 import type {
   NewsCreateRequest,
@@ -544,6 +550,86 @@ export class AppMockServer {
 
       this.newsItems = this.newsItems.filter((item) => item.id !== newsId);
       await route.fulfill({ status: 204, body: "" });
+      return;
+    }
+
+    if (normalizedPath === "/news/bulk/delete" && method === "POST") {
+      const payload = getAxiosPayload<NewsBulkDeleteRequest>(
+        request.postDataJSON(),
+        request.postData()
+      );
+      if (!payload) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const results = payload.ids.map((id) => {
+        const index = this.newsItems.findIndex((item) => item.id === id);
+        const success = index >= 0;
+        if (success) {
+          this.newsItems = [
+            ...this.newsItems.slice(0, index),
+            ...this.newsItems.slice(index + 1),
+          ];
+        }
+        return {
+          id,
+          success,
+          errorMessage: success ? undefined : "対象が見つかりません",
+        };
+      });
+
+      const response: NewsBulkOperationResponse = {
+        successCount: results.filter((result) => result.success).length,
+        failureCount: results.filter((result) => !result.success).length,
+        results,
+      };
+
+      await route.fulfill(buildJsonResponse(response));
+      return;
+    }
+
+    if (normalizedPath === "/news/bulk/publish" && method === "PATCH") {
+      const payload = getAxiosPayload<NewsBulkPublishRequest>(
+        request.postDataJSON(),
+        request.postData()
+      );
+      if (!payload) {
+        await route.fulfill({ status: 400, body: "" });
+        return;
+      }
+
+      const updateItem = (item: NewsPublishItem) => {
+        const index = this.newsItems.findIndex((news) => news.id === item.id);
+        const success = index >= 0;
+        if (success) {
+          const current = this.newsItems[index];
+          const updated: NewsResponse = {
+            ...current,
+            releaseFlag: item.releaseFlag,
+            updateDate: new Date().toISOString(),
+          };
+          this.newsItems = [
+            ...this.newsItems.slice(0, index),
+            updated,
+            ...this.newsItems.slice(index + 1),
+          ];
+        }
+        return {
+          id: item.id,
+          success,
+          errorMessage: success ? undefined : "対象が見つかりません",
+        };
+      };
+
+      const results = payload.items.map(updateItem);
+      const response: NewsBulkOperationResponse = {
+        successCount: results.filter((result) => result.success).length,
+        failureCount: results.filter((result) => !result.success).length,
+        results,
+      };
+
+      await route.fulfill(buildJsonResponse(response));
       return;
     }
 
