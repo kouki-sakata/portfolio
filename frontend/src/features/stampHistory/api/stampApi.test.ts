@@ -33,8 +33,8 @@ describe("stampApi", () => {
 
   it("fetches stamp history with query params and calculates summary", async () => {
     mockedApi.get.mockResolvedValue({
-      year: "2024",
-      month: "04",
+      selectedYear: "2024",
+      selectedMonth: "04",
       years: ["2023", "2024"],
       months: ["03", "04"],
       entries: [

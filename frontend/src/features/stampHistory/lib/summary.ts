@@ -44,16 +44,31 @@ export const calculateMonthlySummary = (
     const inMinutes = toMinutes(entry.inTime);
     const outMinutes = toMinutes(entry.outTime);
 
-    if (
-      inMinutes === undefined ||
-      outMinutes === undefined ||
-      outMinutes <= inMinutes
-    ) {
+    if (inMinutes === undefined || outMinutes === undefined) {
       continue;
     }
 
     presentDays += 1;
-    totalWorkingHours += (outMinutes - inMinutes) / MINUTES_PER_HOUR;
+
+    // 日跨ぎ勤務の処理
+    // 退勤時刻が出勤時刻より早い場合は翌日とみなす
+    // 例: 18:00(1080分) → 翌03:00(180分) = (1440-1080)+180 = 540分(9時間)
+    let workingMinutes: number;
+    if (outMinutes < inMinutes) {
+      // 日をまたぐ勤務（夜勤など）
+      workingMinutes = 1440 - inMinutes + outMinutes;
+    } else {
+      // 通常勤務（同日内）
+      workingMinutes = outMinutes - inMinutes;
+    }
+
+    // 異常値チェック（0分以下または24時間超）
+    if (workingMinutes <= 0 || workingMinutes > 1440) {
+      presentDays -= 1; // カウントを戻す
+      continue;
+    }
+
+    totalWorkingHours += workingMinutes / MINUTES_PER_HOUR;
   }
 
   const totalWorkingDays = entries.length;

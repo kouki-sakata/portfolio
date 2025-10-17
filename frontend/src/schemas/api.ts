@@ -92,8 +92,8 @@ const StampHistoryEntryResponse = z
   .passthrough();
 const StampHistoryResponse = z
   .object({
-    year: z.string(),
-    month: z.string(),
+    selectedYear: z.string(),
+    selectedMonth: z.string(),
     years: z.array(z.string()),
     months: z.array(z.string()),
     entries: z.array(StampHistoryEntryResponse),

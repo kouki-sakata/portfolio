@@ -710,16 +710,16 @@ components:
     StampHistoryResponse:
       type: object
       required:
-        - year
-        - month
+        - selectedYear
+        - selectedMonth
         - years
         - months
         - entries
       properties:
-        year:
+        selectedYear:
           type: string
           description: 対象年
-        month:
+        selectedMonth:
           type: string
           description: 対象月
         years:
