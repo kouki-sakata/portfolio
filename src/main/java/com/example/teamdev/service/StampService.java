@@ -5,7 +5,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +23,13 @@ import com.example.teamdev.mapper.StampHistoryMapper;
 @Transactional
 public class StampService {
 
-    @Autowired
-    StampHistoryMapper mapper;
-    @Autowired
-    LogHistoryRegistrationService logHistoryService;
+    private final StampHistoryMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+
+    public StampService(StampHistoryMapper mapper, LogHistoryRegistrationService logHistoryService) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+    }
 
     public void execute(HomeForm homeForm, Integer employeeId) {
         StampType stampType = homeForm.getStampType();

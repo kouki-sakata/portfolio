@@ -16,6 +16,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.example.teamdev.dto.api.news.BulkDeletionResult;
+import com.example.teamdev.dto.api.news.BulkUpdateResult;
+import com.example.teamdev.dto.api.news.NewsBulkDeleteRequest;
+import com.example.teamdev.dto.api.news.NewsBulkOperationResponse;
+import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
 import com.example.teamdev.dto.api.news.NewsCreateRequest;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.entity.News;
@@ -25,6 +30,8 @@ import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.NewsManageDeletionService;
 import com.example.teamdev.service.NewsManageRegistrationService;
 import com.example.teamdev.service.NewsManageReleaseService;
+import com.example.teamdev.service.NewsManageBulkDeletionService;
+import com.example.teamdev.service.NewsManageBulkReleaseService;
 import com.example.teamdev.service.NewsManageService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
@@ -77,6 +84,12 @@ class NewsRestControllerTest {
 
     @MockBean
     private NewsManageReleaseService releaseService;
+
+    @MockBean
+    private NewsManageBulkDeletionService bulkDeletionService;
+
+    @MockBean
+    private NewsManageBulkReleaseService bulkReleaseService;
 
     @MockBean
     private EmployeeMapper employeeMapper;
@@ -288,6 +301,142 @@ class NewsRestControllerTest {
     @Test
     void deleteNewsRequiresAuthentication() throws Exception {
         mockMvc.perform(delete("/api/news/{id}", 15).with(csrf()))
+            .andExpect(result -> assertThat(result.getResponse().getStatus()).isIn(401, 302));
+    }
+
+    @DisplayName("POST /api/news/bulk/delete deletes multiple news items")
+    @Test
+    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
+    void bulkDeleteNewsReturnsPartialSuccess() throws Exception {
+        // Arrange - 部分成功シナリオ
+        List<Integer> ids = List.of(1, 2, 3, 4, 5);
+        List<NewsBulkOperationResponse.OperationResult> results = List.of(
+            new NewsBulkOperationResponse.OperationResult(1, true, null),
+            new NewsBulkOperationResponse.OperationResult(2, true, null),
+            new NewsBulkOperationResponse.OperationResult(3, false, "お知らせが見つかりません"),
+            new NewsBulkOperationResponse.OperationResult(4, true, null),
+            new NewsBulkOperationResponse.OperationResult(5, false, "お知らせが見つかりません")
+        );
+        BulkDeletionResult mockResult = new BulkDeletionResult(3, 2, results);
+
+        when(bulkDeletionService.execute(eq(ids), eq(ADMIN_ID))).thenReturn(mockResult);
+
+        NewsBulkDeleteRequest request = new NewsBulkDeleteRequest(ids);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/news/bulk/delete")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.successCount").value(3))
+            .andExpect(jsonPath("$.failureCount").value(2))
+            .andExpect(jsonPath("$.results[0].id").value(1))
+            .andExpect(jsonPath("$.results[0].success").value(true))
+            .andExpect(jsonPath("$.results[2].id").value(3))
+            .andExpect(jsonPath("$.results[2].success").value(false))
+            .andExpect(jsonPath("$.results[2].errorMessage").value("お知らせが見つかりません"));
+
+        verify(bulkDeletionService).execute(eq(ids), eq(ADMIN_ID));
+    }
+
+    @DisplayName("PATCH /api/news/bulk/publish updates multiple news release flags")
+    @Test
+    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
+    void bulkPublishNewsHandlesPartialSuccess() throws Exception {
+        // Arrange - 部分成功シナリオ
+        List<NewsBulkPublishRequest.NewsPublishItem> items = List.of(
+            new NewsBulkPublishRequest.NewsPublishItem(1, true),
+            new NewsBulkPublishRequest.NewsPublishItem(2, false),
+            new NewsBulkPublishRequest.NewsPublishItem(3, true),
+            new NewsBulkPublishRequest.NewsPublishItem(4, true)
+        );
+        List<NewsBulkOperationResponse.OperationResult> results = List.of(
+            new NewsBulkOperationResponse.OperationResult(1, true, null),
+            new NewsBulkOperationResponse.OperationResult(2, true, null),
+            new NewsBulkOperationResponse.OperationResult(3, false, "お知らせが見つかりません"),
+            new NewsBulkOperationResponse.OperationResult(4, true, null)
+        );
+        BulkUpdateResult mockResult = new BulkUpdateResult(3, 1, results);
+
+        when(bulkReleaseService.executeIndividual(eq(items), eq(ADMIN_ID))).thenReturn(mockResult);
+
+        NewsBulkPublishRequest request = new NewsBulkPublishRequest(items);
+
+        // Act & Assert
+        mockMvc.perform(patch("/api/news/bulk/publish")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.successCount").value(3))
+            .andExpect(jsonPath("$.failureCount").value(1))
+            .andExpect(jsonPath("$.results[0].success").value(true))
+            .andExpect(jsonPath("$.results[2].success").value(false))
+            .andExpect(jsonPath("$.results[2].errorMessage").value("お知らせが見つかりません"));
+
+        verify(bulkReleaseService).executeIndividual(eq(items), eq(ADMIN_ID));
+    }
+
+    @DisplayName("POST /api/news/bulk/delete handles complete success")
+    @Test
+    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
+    void bulkDeleteNewsAllSuccess() throws Exception {
+        // Arrange - 全件成功シナリオ
+        List<Integer> ids = List.of(10, 20, 30);
+        List<NewsBulkOperationResponse.OperationResult> results = List.of(
+            new NewsBulkOperationResponse.OperationResult(10, true, null),
+            new NewsBulkOperationResponse.OperationResult(20, true, null),
+            new NewsBulkOperationResponse.OperationResult(30, true, null)
+        );
+        BulkDeletionResult mockResult = new BulkDeletionResult(3, 0, results);
+
+        when(bulkDeletionService.execute(eq(ids), eq(ADMIN_ID))).thenReturn(mockResult);
+
+        NewsBulkDeleteRequest request = new NewsBulkDeleteRequest(ids);
+
+        // Act & Assert
+        mockMvc.perform(post("/api/news/bulk/delete")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.successCount").value(3))
+            .andExpect(jsonPath("$.failureCount").value(0))
+            .andExpect(jsonPath("$.results", org.hamcrest.Matchers.hasSize(3)));
+
+        verify(bulkDeletionService).execute(eq(ids), eq(ADMIN_ID));
+    }
+
+    @DisplayName("POST /api/news/bulk/delete returns 400 for empty list")
+    @Test
+    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
+    void bulkDeleteNewsRejectEmptyList() throws Exception {
+        // Arrange
+        when(bulkDeletionService.execute(eq(List.of()), eq(ADMIN_ID)))
+            .thenThrow(new IllegalArgumentException("削除対象のIDリストが空です"));
+
+        NewsBulkDeleteRequest request = new NewsBulkDeleteRequest(List.of());
+
+        // Act & Assert
+        mockMvc.perform(post("/api/news/bulk/delete")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @DisplayName("PATCH /api/news/bulk/publish requires authentication")
+    @Test
+    void bulkPublishNewsRequiresAuthentication() throws Exception {
+        NewsBulkPublishRequest request = new NewsBulkPublishRequest(
+            List.of(new NewsBulkPublishRequest.NewsPublishItem(1, true))
+        );
+
+        mockMvc.perform(patch("/api/news/bulk/publish")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
             .andExpect(result -> assertThat(result.getResponse().getStatus()).isIn(401, 302));
     }
 

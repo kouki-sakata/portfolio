@@ -1,9 +1,17 @@
+import type { CheckedState } from "@radix-ui/react-checkbox";
 import { useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useNewsQuery } from "@/features/news/hooks/useNews";
+import {
+  useBulkDeleteMutation,
+  useBulkPublishMutation,
+  useBulkUnpublishMutation,
+  useNewsQuery,
+} from "@/features/news/hooks/useNews";
+import { useNewsSelection } from "@/features/news/hooks/useNewsSelection";
 import type { NewsResponse } from "@/types";
 
 import { NewsCard } from "./NewsCard";
@@ -34,13 +42,44 @@ const NewsListSkeleton = () => (
   </div>
 );
 
+// チェックボックスの状態を決定するヘルパー関数
+const getCheckboxState = (
+  isAllSelected: boolean,
+  isIndeterminate: boolean
+): CheckedState => {
+  if (isAllSelected) {
+    return true;
+  }
+  if (isIndeterminate) {
+    return "indeterminate";
+  }
+  return false;
+};
+
 export const NewsManagementPage = () => {
   const newsQuery = useNewsQuery();
+  const bulkPublishMutation = useBulkPublishMutation();
+  const bulkUnpublishMutation = useBulkUnpublishMutation();
+  const bulkDeleteMutation = useBulkDeleteMutation();
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
+
+  // カスタムフックを使用して選択状態を管理
+  const {
+    selectedIds,
+    activeSelectedIds,
+    selectedCount,
+    isAllSelected,
+    isIndeterminate,
+    hasSelection,
+    handleSelectToggle,
+    handleToggleAll,
+    clearSelection,
+    syncSelectionAfterBulk,
+  } = useNewsSelection(newsItems);
 
   const handleOpenCreate = () => {
     setSelectedNews(undefined);
@@ -58,6 +97,42 @@ export const NewsManagementPage = () => {
     setFormOpen(false);
     setSelectedNews(undefined);
   };
+
+  const executeBulkPublish = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkPublishMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const executeBulkUnpublish = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkUnpublishMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const executeBulkDelete = async () => {
+    if (activeSelectedIds.length === 0) {
+      return;
+    }
+    const result = await bulkDeleteMutation.mutateAsync({
+      ids: activeSelectedIds,
+    });
+    syncSelectionAfterBulk(result);
+  };
+
+  const totalCount = newsItems.length;
+  const bulkPublishDisabled = !hasSelection || bulkPublishMutation.isPending;
+  const bulkUnpublishDisabled =
+    !hasSelection || bulkUnpublishMutation.isPending;
+  const bulkDeleteDisabled = !hasSelection || bulkDeleteMutation.isPending;
 
   if (newsQuery.isLoading) {
     return <NewsListSkeleton />;
@@ -88,10 +163,67 @@ export const NewsManagementPage = () => {
             お知らせの作成・編集・公開管理を行います。
           </p>
         </div>
-        <Button onClick={handleOpenCreate} type="button">
-          新規作成
-        </Button>
+        <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
+          {totalCount > 0 ? (
+            <div className="flex items-center gap-2">
+              <Checkbox
+                aria-label="全選択"
+                checked={getCheckboxState(isAllSelected, isIndeterminate)}
+                onCheckedChange={handleToggleAll}
+              />
+              <span className="text-muted-foreground text-sm">全選択</span>
+              {hasSelection ? (
+                <Button
+                  onClick={clearSelection}
+                  size="sm"
+                  type="button"
+                  variant="ghost"
+                >
+                  選択解除
+                </Button>
+              ) : null}
+            </div>
+          ) : null}
+          <Button onClick={handleOpenCreate} type="button">
+            新規作成
+          </Button>
+        </div>
       </header>
+
+      {hasSelection ? (
+        <section className="flex flex-wrap items-center justify-between gap-3 rounded-md border bg-muted/40 p-3">
+          <p className="font-medium">選択中: {selectedCount}件</p>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              disabled={bulkPublishDisabled}
+              onClick={executeBulkPublish}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              一括公開
+            </Button>
+            <Button
+              disabled={bulkUnpublishDisabled}
+              onClick={executeBulkUnpublish}
+              size="sm"
+              type="button"
+              variant="secondary"
+            >
+              一括非公開
+            </Button>
+            <Button
+              disabled={bulkDeleteDisabled}
+              onClick={executeBulkDelete}
+              size="sm"
+              type="button"
+              variant="destructive"
+            >
+              一括削除
+            </Button>
+          </div>
+        </section>
+      ) : null}
 
       {isEmpty ? (
         <section className="flex h-[40vh] flex-col items-center justify-center space-y-3 rounded-xl border border-dashed p-8 text-center">
@@ -108,7 +240,14 @@ export const NewsManagementPage = () => {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {newsItems.map((item) => (
-            <NewsCard key={item.id} news={item} onEdit={handleEdit} />
+            <NewsCard
+              key={item.id}
+              news={item}
+              onEdit={handleEdit}
+              onSelectionChange={handleSelectToggle}
+              selectable
+              selected={selectedIds.has(item.id)}
+            />
           ))}
         </div>
       )}

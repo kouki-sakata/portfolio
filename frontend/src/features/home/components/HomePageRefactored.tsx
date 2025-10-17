@@ -1,8 +1,12 @@
+import { useMemo } from "react";
+
 import { Skeleton } from "@/components/ui/skeleton";
+import { usePublishedNewsQuery } from "@/features/news/hooks/useNews";
 import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
 
 import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
+import type { HomeNewsItem } from "../types";
 import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
 
@@ -14,6 +18,30 @@ import { StampCard } from "./StampCard";
 export const HomePageRefactored = () => {
   const { data, isLoading, isError, error, refetch } = useDashboard();
   const { handleStamp, isLoading: isStamping, message } = useStamp();
+  const publishedNewsQuery = usePublishedNewsQuery({
+    refetchInterval: 30_000,
+  });
+
+  const publishedNews = useMemo<HomeNewsItem[]>(() => {
+    const items = publishedNewsQuery.data?.news ?? [];
+
+    const toTime = (value: string) => {
+      const time = new Date(value).getTime();
+      return Number.isNaN(time) ? 0 : time;
+    };
+
+    return [...items]
+      .sort((a, b) => toTime(b.newsDate) - toTime(a.newsDate))
+      .slice(0, 5)
+      .map(
+        ({ id, newsDate, content, releaseFlag }): HomeNewsItem => ({
+          id,
+          newsDate,
+          content,
+          releaseFlag,
+        })
+      );
+  }, [publishedNewsQuery.data?.news]);
 
   if (isError) {
     return (
@@ -62,8 +90,9 @@ export const HomePageRefactored = () => {
         />
         <NewsCard
           className="home-card"
-          isLoading={false}
-          newsItems={data.news}
+          isLoading={publishedNewsQuery.isLoading}
+          manageHref={data.employee.admin ? "/news-management" : undefined}
+          newsItems={publishedNews}
         />
       </div>
     </section>

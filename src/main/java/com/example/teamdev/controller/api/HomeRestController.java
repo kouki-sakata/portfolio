@@ -31,7 +31,6 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/home")
@@ -57,9 +56,7 @@ public class HomeRestController {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
         }
 
-        List<HomeNewsItem> newsItems = homeNewsService.execute().stream()
-            .map(this::toNewsItem)
-            .toList();
+        List<HomeNewsItem> newsItems = homeNewsService.execute();
 
         HomeDashboardResponse response = new HomeDashboardResponse(toEmployeeSummary(currentEmployee), newsItems);
         return ResponseEntity.ok(response);
@@ -101,16 +98,6 @@ public class HomeRestController {
             employee.getLast_name(),
             employee.getEmail(),
             admin
-        );
-    }
-
-    @SuppressWarnings("unchecked")
-    private HomeNewsItem toNewsItem(Map<String, Object> source) {
-        return new HomeNewsItem(
-            (Integer) source.get("id"),
-            (String) source.get("content"),
-            (String) source.get("news_date"),
-            source.get("release_flag") instanceof Boolean flag ? flag : Boolean.TRUE
         );
     }
 }
