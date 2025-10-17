@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,12 +11,33 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { useDeleteNewsMutation } from "@/features/news/hooks/useNews";
+import {
+  useBulkDeleteMutation,
+  useDeleteNewsMutation,
+} from "@/features/news/hooks/useNews";
 import type { NewsResponse } from "@/types";
 
-type DeleteConfirmDialogProps = {
+type DeleteConfirmDialogSingleProps = {
+  type: "single";
   news: NewsResponse;
+  newsIds?: never;
+  onConfirm?: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
+
+type DeleteConfirmDialogBulkProps = {
+  type: "bulk";
+  news?: never;
+  newsIds: number[];
+  onConfirm?: () => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+};
+
+type DeleteConfirmDialogProps =
+  | DeleteConfirmDialogSingleProps
+  | DeleteConfirmDialogBulkProps;
 
 const previewContent = (content: string): string => {
   if (content.length <= 100) {
@@ -25,58 +46,81 @@ const previewContent = (content: string): string => {
   return `${content.slice(0, 100)}…`;
 };
 
-export const DeleteConfirmDialog = ({ news }: DeleteConfirmDialogProps) => {
-  const [open, setOpen] = useState(false);
+export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
+  const { type, onConfirm, open, onOpenChange } = props;
   const deleteMutation = useDeleteNewsMutation();
+  const bulkDeleteMutation = useBulkDeleteMutation();
 
-  const contentPreview = useMemo(
-    () => previewContent(news.content),
-    [news.content]
-  );
+  const isPending = deleteMutation.isPending || bulkDeleteMutation.isPending;
+
+  const contentPreview = useMemo(() => {
+    if (type === "single" && props.news) {
+      return previewContent(props.news.content);
+    }
+    return null;
+  }, [type, props]);
 
   const handleDelete = async () => {
     try {
-      await deleteMutation.mutateAsync(news.id);
-      setOpen(false);
+      if (type === "single" && props.news) {
+        await deleteMutation.mutateAsync(props.news.id);
+      } else if (type === "bulk" && props.newsIds) {
+        await bulkDeleteMutation.mutateAsync({ ids: props.newsIds });
+      }
+      onOpenChange(false);
+      onConfirm?.();
     } catch (error) {
       // エラー時はダイアログを開いたままにし、再試行を許可する
       console.error("News deletion failed:", {
-        newsId: news.id,
-        newsDate: news.newsDate,
+        type,
         error: error instanceof Error ? error.message : String(error),
       });
     }
   };
 
+  const title =
+    type === "single"
+      ? "このお知らせを削除しますか？"
+      : `選択した${props.newsIds?.length ?? 0}件のお知らせを削除しますか？`;
+
+  const description =
+    type === "single" ? (
+      <>
+        {contentPreview}
+        <br />
+        この操作は取り消せません。削除すると復元できません。
+      </>
+    ) : (
+      <>
+        選択した{props.newsIds?.length ?? 0}
+        件のお知らせが完全に削除されます。
+        <br />
+        この操作は取り消せません。削除すると復元できません。
+      </>
+    );
+
   return (
-    <AlertDialog onOpenChange={setOpen} open={open}>
-      <AlertDialogTrigger asChild>
-        <Button
-          disabled={deleteMutation.isPending}
-          size="sm"
-          type="button"
-          variant="destructive"
-        >
-          削除
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog onOpenChange={onOpenChange} open={open}>
+      {type === "single" && (
+        <AlertDialogTrigger asChild>
+          <Button
+            disabled={isPending}
+            size="sm"
+            type="button"
+            variant="destructive"
+          >
+            削除
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>このお知らせを削除しますか？</AlertDialogTitle>
-          <AlertDialogDescription>
-            {contentPreview}
-            <br />
-            この操作は取り消せません。削除すると復元できません。
-          </AlertDialogDescription>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={deleteMutation.isPending}>
-            キャンセル
-          </AlertDialogCancel>
-          <AlertDialogAction
-            disabled={deleteMutation.isPending}
-            onClick={handleDelete}
-          >
+          <AlertDialogCancel disabled={isPending}>キャンセル</AlertDialogCancel>
+          <AlertDialogAction disabled={isPending} onClick={handleDelete}>
             削除する
           </AlertDialogAction>
         </AlertDialogFooter>
