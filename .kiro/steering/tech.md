@@ -36,13 +36,34 @@ npm run test:e2e     # Playwright E2E
 npm run generate:api # OpenAPI型生成
 ```
 
+### フロントエンド設計パターン
+
+#### 選択状態管理の分離
+- **カスタムフック**: `useNewsSelection`パターンで選択ロジックをUI層から完全分離
+- **Set型管理**: 効率的なID管理（O(1)検索・追加・削除）
+- **バルク操作後の同期**: 失敗IDのみ保持、成功IDは自動削除（`syncSelectionAfterBulk`）
+- **チェックボックス3状態**: all/indeterminate/none対応（`areSetsEqual`、`syncSelectedIds`ヘルパー）
+
+#### React Query楽観的更新
+- **`onMutate`**: キャッシュ直接更新で即時UI反映（公開切り替え、削除等）
+- **`onError`**: previousデータでロールバック（エラー時の整合性保証）
+- **`onSettled`**: サーバー再検証（`queryClient.invalidateQueries`）で最終整合性確保
+- **複数キャッシュキー同時無効化**: list + published等、関連キャッシュの同期更新
+
 ## バックエンド
 
 ### 主要スタック
 - Java 21、Spring Boot 3.4.3、Spring Security 6.4
-- MyBatis 3.0.4（動的SQL: `<foreach>`一括操作、`deleteByIds`、`bulkUpdate*`）
+- MyBatis 3.0.4
 - PostgreSQL 16、HikariCP
 - Springdoc OpenAPI 2.6.0
+
+### MyBatis実装パターン
+- **動的SQL使い分け**:
+  - **アノテーションベース**: シンプルなクエリ（`@Delete` + `<script>`、`@Select` + `<foreach>`）
+  - **XML定義**: 複雑な更新ロジック（`bulkUpdate*`、条件分岐、複数カラム更新）
+  - **一括操作**: `<foreach>`で動的IN句生成（`deleteByIds`、`bulkUpdateReleaseFlag`）
+- **ResultMap定義**: snake_case→camelCase変換を一元管理、型安全なマッピング
 
 ### サービス層アーキテクチャ（SOLID原則）
 - **ファサードパターン**: EmployeeService、NewsManageService
@@ -69,6 +90,10 @@ npm run generate:api # OpenAPI型生成
 - **Map型レスポンス変換パターン**（打刻履歴）:
   - Service層: `List<Map<String, Object>>`でカレンダー形式データ返却
   - Controller層: record DTO（`StampHistoryEntryResponse`）に型安全変換
+- **バルクAPIエラー戦略**:
+  - `extractRootCause`メソッドでネストされた例外の根本原因を抽出
+  - バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理
+  - 部分成功時のログ出力（成功件数/失敗件数、`logger.info`で詳細記録）
 
 ### セキュリティ
 - セッションベース認証（8時間）、CSRF保護（Cookie + X-XSRF-TOKEN）
@@ -110,4 +135,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-17 (stampHistory機能パターン追加)*
+*Last Updated: 2025-10-17 (フロントエンド設計パターン、バルクAPIエラー戦略、MyBatis実装パターン追加)*

@@ -1,5 +1,45 @@
 # Steering Documents Changelog
 
+## 2025-10-17 (Update 27)
+
+### Updated Documents
+- `tech.md` - フロントエンド設計パターン、バルクAPIエラー戦略、MyBatis実装パターンを追加
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **フロントエンド設計パターンの文書化**
+  - 選択状態管理の分離パターン（`useNewsSelection`）
+    - Set型による効率的なID管理（O(1)検索・追加・削除）
+    - バルク操作後の選択同期（失敗IDのみ保持）
+    - チェックボックス3状態管理（all/indeterminate/none）
+  - React Query楽観的更新パターン
+    - `onMutate`によるキャッシュ直接更新（即時UI反映）
+    - `onError`によるロールバック（エラー時整合性保証）
+    - `onSettled`によるサーバー再検証（最終整合性確保）
+    - 複数キャッシュキー同時無効化パターン
+
+- **バルクAPIエラー戦略の詳細化**
+  - `extractRootCause`メソッドによるネストされた例外の根本原因抽出
+  - バリデーションエラー（IllegalArgumentException）とシステムエラーの分離処理
+  - 部分成功時のログ出力（成功件数/失敗件数の詳細記録）
+
+- **MyBatis実装パターンの明確化**
+  - 動的SQL使い分け基準の確立
+    - アノテーションベース: シンプルなクエリ（`@Delete` + `<script>`、`@Select` + `<foreach>`）
+    - XML定義: 複雑な更新ロジック（`bulkUpdate*`、条件分岐、複数カラム更新）
+  - ResultMap定義によるsnake_case→camelCase変換の一元管理
+
+### Impact
+- フロントエンド設計の再利用可能パターンが確立され、他機能への展開が容易化
+- React Query楽観的更新の実装指針が明確化され、UX向上の一貫性を実現
+- バルクAPIエラーハンドリングの詳細戦略が文書化され、保守性と可読性が向上
+- MyBatis動的SQL使い分け基準が確立され、データベース操作の最適化指針を提供
+
+### Note
+news-management機能は既に完了済み（Update 25）。本更新はコードベース検証で発見された汎用パターンを文書化し、ステアリングとコードの乖離を解消する作業です。これらのパターンはニュース管理専用ではなく、他機能でも再利用可能な設計パターンとして抽出されました。
+
+---
+
 ## 2025-10-17 (Update 26)
 
 ### Updated Documents
@@ -196,5 +236,5 @@ stampHistory機能は既に実装済みであり、本更新はコードベー�
 *古いエントリ（Update 1-17）はgit履歴で参照可能*
 
 ---
-*Last Updated: 2025-10-15*
+*Last Updated: 2025-10-17*
 *Inclusion Mode: Always Included*
