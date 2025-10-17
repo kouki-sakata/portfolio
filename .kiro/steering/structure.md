@@ -21,16 +21,17 @@ TeamDevelopBravo-main/
 
 ```
 ├── config/           # Spring設定（Security、OpenAPI、WebMvc等）
-├── controller/api/   # REST APIコントローラー
+├── controller/api/   # REST APIコントローラー（NewsRestController、StampHistoryRestController等）
 ├── service/          # ビジネスロジック（SOLID原則準拠）
 │   ├── 認証系: AuthenticationService、AuthSessionService
 │   ├── 従業員: EmployeeService（ファサード）、QueryService、CommandService
-│   ├── 打刻: StampService、EditService、HistoryService
+│   ├── 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService
+│   ├── 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter
 │   └── お知らせ: NewsManageService（ファサード）、各専門サービス
 ├── mapper/           # MyBatisマッパー
 ├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
-├── entity/           # エンティティ（Employee、News、StampHistory等）
-├── exception/        # カスタム例外
+├── entity/           # エンティティ（Employee、News、StampHistory、StampHistoryDisplay等）
+├── exception/        # カスタム例外（DuplicateStampException等）
 └── util/             # ユーティリティ
 ```
 
@@ -47,7 +48,18 @@ TeamDevelopBravo-main/
 │   ├── employees/    # 従業員管理
 │   ├── home/         # ダッシュボード
 │   ├── logManagement/ # 監査ログ・操作履歴
-│   └── news/         # お知らせ管理（APIクライアント、hooks、UI）
+│   ├── news/         # お知らせ管理
+│   │   ├── api/      # newsApi.ts（CRUD + バルク操作）
+│   │   ├── components/ # NewsManagementPage、NewsFormModal、NewsCard、DeleteConfirmDialog
+│   │   ├── hooks/    # useNews（Query/Mutation統合）、useNewsSelection（選択状態管理）
+│   │   └── types/    # bulk.ts（バルクAPI型定義）
+│   └── stampHistory/ # 打刻履歴管理
+│       ├── api/      # stampApi.ts（履歴取得、編集・削除、バッチ操作）
+│       ├── components/ # StampHistoryPage、MonthlyStatsCard、EditStampDialog、DeleteStampDialog、ExportDialog
+│       ├── hooks/    # useStampHistoryExport（CSV/TSV/Excel-CSVエクスポート）
+│       ├── lib/      # batch-processor、csv-generator、blob-downloader、summary
+│       ├── routes/   # StampHistoryRoute
+│       └── types/    # index.ts（MonthlyStats、ExportConfig、CSV型定義）
 ├── shared/           # 共通コンポーネント
 │   ├── api/          # API共通設定、エラークラス
 │   ├── components/   # layout、loading
@@ -60,12 +72,15 @@ TeamDevelopBravo-main/
 ## レイヤードアーキテクチャ
 
 ### バックエンド（SOLID原則）
-- **Controller**: REST API（Spring MVC）。`NewsRestController`のようにBean Validation付きrecord DTOを受け取り、Service層と`ListForm`/`NewsManageForm`で橋渡しする。
+- **Controller**: REST API（Spring MVC）
+  - record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）
+  - Form Bridge パターン（`ListForm`/`NewsManageForm`でService接続）
+  - SecurityUtil経由で操作者ID取得
 - **Service**: ビジネスロジック
   - ファサードパターン（複雑性の隠蔽）
   - Query/Command分離（CQRS）
 - **Mapper**: データアクセス（MyBatis）
-- **Entity/DTO**: データモデル
+- **Entity/DTO**: データモデル（camelCase統一）
 
 ### フロントエンド
 - **機能ベース**: features/配下に機能別モジュール
@@ -96,4 +111,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-15 (News REST API統合)*
+*Last Updated: 2025-10-17 (stampHistory機能構造追加、libディレクトリパターン)*

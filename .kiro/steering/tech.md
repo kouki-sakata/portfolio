@@ -40,7 +40,8 @@ npm run generate:api # OpenAPI型生成
 
 ### 主要スタック
 - Java 21、Spring Boot 3.4.3、Spring Security 6.4
-- MyBatis 3.0.4、PostgreSQL 16、HikariCP
+- MyBatis 3.0.4（動的SQL: `<foreach>`一括操作、`deleteByIds`、`bulkUpdate*`）
+- PostgreSQL 16、HikariCP
 - Springdoc OpenAPI 2.6.0
 
 ### サービス層アーキテクチャ（SOLID原則）
@@ -49,13 +50,25 @@ npm run generate:api # OpenAPI型生成
 - **専門サービス分離**:
   - 認証: AuthenticationService、AuthSessionService
   - 従業員: QueryService、CommandService、CacheService
-  - 打刻: StampService、EditService、HistoryService、DeleteService
-  - お知らせ: RegistrationService、ReleaseService、DeletionService
+  - 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService、StampOutputService
+  - 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter、StampFormDataExtractor
+  - お知らせ: RegistrationService、ReleaseService、DeletionService、BulkDeletionService、BulkReleaseService
 
 ### API層の実装パターン
-- `NewsRestController`に代表されるREST層はrecord DTO + Bean Validationで入力を確定させ、`SecurityUtil#getCurrentEmployeeId()`で操作者IDを取得してService層へ委譲する。
-- 変更系エンドポイントは`@PreAuthorize("hasRole('ADMIN')")`で保護し、公開切り替えは`ListForm`/`NewsManageForm`を経由して既存サービスのドメインロジックを再利用する。
-- レスポンスはエンティティ→DTO変換ヘルパーでcamelCaseへ正規化し、OpenAPI 3.0スキーマと`npm run generate:api`で生成されるTypeScript型と突き合わせる。
+- **REST Controller層**: record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）で入力検証
+- **認証・認可**: `SecurityUtil#getCurrentEmployeeId()`で操作者取得、`@PreAuthorize`でロール制御
+- **Form Bridge パターン**: 既存のForm型（`ListForm`, `NewsManageForm`, `HomeForm`）でService層と接続
+- **型同期**: OpenAPI 3.0スキーマ → `@hey-api/openapi-ts`でTypeScript型自動生成
+- **バリデーション同期**:
+  - Backend: Bean Validation（record DTO）
+  - Frontend: Zod スキーマ（同一ルール・メッセージ）
+- **バルクAPI設計**:
+  - 部分成功レスポンス（`successCount`, `failureCount`, `results[]`）
+  - 上限設定（最大100件）、事前検証とトランザクション管理
+  - 個別の成否とエラーメッセージを返却
+- **Map型レスポンス変換パターン**（打刻履歴）:
+  - Service層: `List<Map<String, Object>>`でカレンダー形式データ返却
+  - Controller層: record DTO（`StampHistoryEntryResponse`）に型安全変換
 
 ### セキュリティ
 - セッションベース認証（8時間）、CSRF保護（Cookie + X-XSRF-TOKEN）
@@ -71,9 +84,13 @@ npm run generate:api # OpenAPI型生成
 ## テスト戦略
 
 1. **単体テスト**: JUnit 5 / Vitest（80%+ カバレッジ）
+   - Controller: `@WebMvcTest` + MockBean
+   - React: Testing Library + MSW
 2. **統合テスト**: Spring Boot Test + Testcontainers / MSW
    - モック削減方針（実DBテスト強化、2025-10-15）
 3. **E2Eテスト**: Playwright（主要フロー）
+   - ファクトリ関数でテストデータ生成
+   - MSWモックサーバー（開発中）
 4. **契約テスト**: OpenAPI4j 1.0.7
 5. **パフォーマンステスト**: Lighthouse CI
 
@@ -93,4 +110,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-15 (News REST API統合)*
+*Last Updated: 2025-10-17 (stampHistory機能パターン追加)*

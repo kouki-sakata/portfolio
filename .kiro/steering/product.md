@@ -8,8 +8,9 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 
 ### 認証・勤怠管理
 - セッションベース認証（8時間有効、CSRF保護）
-- Web打刻、履歴管理、月次集計
-- CSV出力（Shift-JIS with BOM対応）
+- Web打刻（ATTENDANCE/DEPARTURE、夜勤対応、二重打刻防止）
+- 打刻履歴管理（月次集計、編集・削除、カレンダー表示）
+- CSV/TSV/Excel-CSV大量データエクスポート（Shift-JIS with BOM、バッチ処理最大1000件）
 
 ### 従業員・ダッシュボード
 - TanStack Tableによる高性能検索・ソート
@@ -17,9 +18,9 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ロールベースアクセス制御
 
 ### お知らせ・ログ管理
-- お知らせ登録・公開管理・削除
+- お知らせCRUD・公開切り替え・バルク操作（REST API完全実装）
 - システムログ照会・検索・監査証跡
-- DataTables統合による大量データ表示
+- React Queryによる楽観的更新・キャッシュ管理
 
 ## 主要な価値提案
 
@@ -53,8 +54,17 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ✅ Biome統合、TanStack Table、OpenAPI型生成
 - ✅ React Query、MSW統合テスト、Playwright E2E
 - ✅ パフォーマンス監視（Lighthouse CI）
-- ✅ お知らせ管理機能スキーマ移行完了（2025-10-15）
-- ✅ お知らせ管理REST APIとOpenAPI型同期の実装（2025-10-15）
+- ✅ お知らせ管理機能完全実装（2025-10-17）
+  - REST API（CRUD、公開管理、バルク削除/公開切り替え）
+  - Reactコンポーネント（NewsManagementPage、選択状態管理）
+  - バルクAPI：部分成功対応、最大100件処理
+  - Zod バリデーション、React Query統合、包括的テスト完備
+- ✅ 打刻履歴管理機能完全実装
+  - REST API（履歴取得、編集・削除）
+  - SOLID原則サービス分離（StampHistoryPersistence、OutTimeAdjuster等）
+  - カスタムフック統合（useStampHistoryExport）
+  - CSV/TSV/Excel-CSVバッチエクスポート（大量データ対応）
+  - 月次統計計算、編集・削除ダイアログ、包括的テスト完備
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
@@ -62,4 +72,4 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - 📋 外部システム連携API、プッシュ通知、生体認証
 
 ---
-*Last Updated: 2025-10-15 (News REST API統合)*
+*Last Updated: 2025-10-17 (stampHistory機能文書化)*
