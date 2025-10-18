@@ -140,6 +140,7 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
             )
             .exceptionHandling(ex -> ex
+                // API endpoints return 401 JSON response
                 .defaultAuthenticationEntryPointFor(
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/api/**")
@@ -148,12 +149,14 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/actuator/**")
                 )
+                // Non-API endpoints (SPA routes) redirect to /signin with relative URL
+                .defaultAuthenticationEntryPointFor(
+                    (request, response, authException) -> response.sendRedirect("/signin"),
+                    new AntPathRequestMatcher("/**")
+                )
+                // All endpoints return 403 for access denied (frontend handles the error)
                 .accessDeniedHandler((request, response, accessDeniedException) -> {
-                    if (request.getRequestURI().startsWith("/api/")) {
-                        response.sendError(HttpServletResponse.SC_FORBIDDEN);
-                    } else {
-                        response.sendRedirect("/signin");
-                    }
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
                 })
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
