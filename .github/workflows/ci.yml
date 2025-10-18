@@ -515,9 +515,34 @@ jobs:
           BACKEND_PID=$!
           echo "Backend process started with PID: $BACKEND_PID"
 
+          # 初期待機（Spring Bootの起動を待つ）
+          echo "Waiting for Spring Boot to start..."
+          sleep 5
+
           for i in {1..30}; do
-            if curl -sf http://127.0.0.1:8080/actuator/health >/dev/null 2>&1; then
-              echo "Backend is up and healthy!"; exit 0;
+            # ポート8080がリッスンしているか確認
+            if ! netstat -tln | grep -q ":8080 "; then
+              if [ $i -eq 1 ]; then
+                echo "Port 8080 not yet listening, waiting..."
+              fi
+              sleep 2
+              continue
+            fi
+
+            # ヘルスチェックの詳細なレスポンスを確認
+            HEALTH_RESPONSE=$(curl -s http://127.0.0.1:8080/actuator/health 2>&1)
+            HEALTH_STATUS=$?
+
+            if [ $HEALTH_STATUS -eq 0 ] && echo "$HEALTH_RESPONSE" | grep -q "UP"; then
+              echo "Backend is up and healthy!"
+              echo "Health response: $HEALTH_RESPONSE"
+              exit 0;
+            fi
+
+            # 初回はレスポンスをログ出力
+            if [ $i -eq 1 ]; then
+              echo "Port 8080 is listening"
+              echo "Initial health check response (status=$HEALTH_STATUS): $HEALTH_RESPONSE"
             fi
 
             # プロセスが終了していないかチェック
