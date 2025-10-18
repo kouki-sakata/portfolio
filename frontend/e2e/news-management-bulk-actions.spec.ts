@@ -33,7 +33,9 @@ test.describe("ニュース管理: バルク操作契約", () => {
     await selectAllCheckbox.click();
 
     await test.step("一括公開で全件を公開済みにする", async () => {
-      await page.getByRole("button", { name: "一括公開" }).click();
+      const publishButton = page.getByRole("button", { name: "一括公開" });
+      await publishButton.waitFor({ state: "visible" });
+      await publishButton.click();
 
       await waitForToast(page, /一括公開/);
 
@@ -41,13 +43,12 @@ test.describe("ニュース管理: バルク操作契約", () => {
       expect(latest.every((item) => item.releaseFlag)).toBe(true);
     });
 
-    await page.getByLabel("全て選択").click();
-
     await test.step("一括非公開で全件を非公開に戻す", async () => {
-      await selectAllCheckbox.click(); // 既存選択を解除
-      await selectAllCheckbox.click(); // 再度全選択
-
-      await page.getByRole("button", { name: "一括非公開" }).click();
+      // 選択状態は保持されているため、再選択は不要
+      // ただし、ボタンの表示を確認してからクリック
+      const unpublishButton = page.getByRole("button", { name: "一括非公開" });
+      await unpublishButton.waitFor({ state: "visible", timeout: 10000 });
+      await unpublishButton.click();
 
       await waitForToast(page, /一括非公開/);
 
