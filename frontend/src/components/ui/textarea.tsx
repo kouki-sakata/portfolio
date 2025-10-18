@@ -56,7 +56,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
       }
 
       const match = PX_MAX_HEIGHT_REGEX.exec(maxHeight.trim());
-      if (!match) {
+      if (!match || !match[1]) {
         return null;
       }
       return Number.parseFloat(match[1]);
