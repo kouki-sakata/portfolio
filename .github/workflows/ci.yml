@@ -520,29 +520,26 @@ jobs:
           sleep 5
 
           for i in {1..30}; do
-            # ポート8080がリッスンしているか確認
-            if ! netstat -tln | grep -q ":8080 "; then
-              if [ $i -eq 1 ]; then
-                echo "Port 8080 not yet listening, waiting..."
-              fi
-              sleep 2
-              continue
-            fi
-
-            # ヘルスチェックの詳細なレスポンスを確認
+            # ヘルスチェックを試行
             HEALTH_RESPONSE=$(curl -s http://127.0.0.1:8080/actuator/health 2>&1)
-            HEALTH_STATUS=$?
+            CURL_EXIT_CODE=$?
 
-            if [ $HEALTH_STATUS -eq 0 ] && echo "$HEALTH_RESPONSE" | grep -q "UP"; then
-              echo "Backend is up and healthy!"
-              echo "Health response: $HEALTH_RESPONSE"
-              exit 0;
+            # 初回と10回ごとにレスポンスをログ出力
+            if [ $i -eq 1 ] || [ $((i % 10)) -eq 0 ]; then
+              echo "Attempt $i/30: curl exit code=$CURL_EXIT_CODE"
+              echo "Health response: '$HEALTH_RESPONSE'"
             fi
 
-            # 初回はレスポンスをログ出力
-            if [ $i -eq 1 ]; then
-              echo "Port 8080 is listening"
-              echo "Initial health check response (status=$HEALTH_STATUS): $HEALTH_RESPONSE"
+            # ヘルスチェック成功判定
+            if [ $CURL_EXIT_CODE -eq 0 ]; then
+              # レスポンスにUPが含まれているか確認
+              if echo "$HEALTH_RESPONSE" | grep -qi "\"status\":\"UP\""; then
+                echo "✓ Backend is up and healthy!"
+                echo "Health response: $HEALTH_RESPONSE"
+                exit 0;
+              else
+                echo "Health endpoint responded but status is not UP: $HEALTH_RESPONSE"
+              fi
             fi
 
             # プロセスが終了していないかチェック
