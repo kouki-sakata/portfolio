@@ -3,7 +3,7 @@
 --
 
 INSERT INTO employee (id, last_name, first_name, email, password, admin_flag, update_date) VALUES
-(1,'坂田','晃輝','test@gmail.com','$2y$10$QSukgcKC8We4gVB6yeTfFeSGzhymFxAfoKm/QfJnE9FlrYC/7eHvu', 1, '2025-02-09 18:24:28'),
+(1,'坂田','晃輝','test@gmail.com','$2a$10$QSukgcKC8We4gVB6yeTfFeSGzhymFxAfoKm/QfJnE9FlrYC/7eHvu', 1, '2025-02-09 18:24:28'),
 (2,'戸川','秀幸','th1@tm.com','$2y$10$syB2Dhd4uXbFcrUEmh7iq.vmHmoH56W8h.wW0NDiT6cdFG9Dtfkve', 1, '2024-09-20 18:37:27'),
 (3,'浜崎','のりたか','hgjp2@it.com','$2y$10$f35Aba0Frz6IhyIJIIS0buPcGpro6LKHPw7G9YBmBXfghy5LZQDD.', 1, '2025-02-15 03:05:16'),
 (4,'富田','太郎','xne13@pm.com','$2y$10$Vpgcxg7XPEk6aSXGiupnpuKjpyZ1Q05vlKRYSq.QorAR7qTBD95S6', 0, '2024-09-20 18:37:27'),

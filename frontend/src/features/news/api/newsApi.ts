@@ -16,8 +16,17 @@ import type {
 
 const NEWS_ENDPOINT = "/news" as const;
 
-export const fetchNewsList = (): Promise<NewsListResponse> =>
-  api.get<NewsListResponse>(NEWS_ENDPOINT, undefined);
+export const fetchNewsList = async (): Promise<NewsListResponse> => {
+  const response = await api.get<NewsListResponse>(NEWS_ENDPOINT, undefined);
+  // デバッグ用ログ（開発環境でのみ表示）
+  if (import.meta.env.DEV) {
+    console.log("News API Response:", response);
+    if (response?.news?.length > 0) {
+      console.log("First news item:", response.news[0]);
+    }
+  }
+  return response;
+};
 
 export const fetchPublishedNews = (): Promise<NewsListResponse> =>
   api.get<NewsListResponse>(`${NEWS_ENDPOINT}/published`, undefined);

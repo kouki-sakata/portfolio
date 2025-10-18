@@ -67,7 +67,7 @@ export function useNewsColumns({
           const title = row.getValue("title") as string;
           return (
             <div className="max-w-[200px] truncate font-medium md:max-w-[300px]">
-              {title}
+              {title || <span className="text-muted-foreground italic">タイトル未設定</span>}
             </div>
           );
         },
@@ -112,6 +112,10 @@ export function useNewsColumns({
         ),
         cell: ({ row }) => {
           const category = row.getValue("category") as string;
+          if (!category) {
+            return <span className="text-muted-foreground italic">カテゴリ未設定</span>;
+          }
+
           let variant: "destructive" | "default" | "secondary" = "secondary";
           if (category === "重要") {
             variant = "destructive";
