@@ -47,7 +47,7 @@ test.describe("ニュース管理: バルク操作契約", () => {
       // 選択状態は保持されているため、再選択は不要
       // ただし、ボタンの表示を確認してからクリック
       const unpublishButton = page.getByRole("button", { name: "一括非公開" });
-      await unpublishButton.waitFor({ state: "visible", timeout: 10000 });
+      await unpublishButton.waitFor({ state: "visible", timeout: 10_000 });
       await unpublishButton.click();
 
       await waitForToast(page, /一括非公開/);

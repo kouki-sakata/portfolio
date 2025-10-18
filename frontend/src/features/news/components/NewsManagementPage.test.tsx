@@ -300,18 +300,15 @@ describe("NewsManagementPage", () => {
       expect.objectContaining({ onSuccess: expect.any(Function) })
     );
 
-    // 選択状態はpublish成功でリセット済み
+    // 全成功の場合は選択状態を保持（連続操作のため）
     await waitFor(() => {
       expect(
-        screen.queryByRole("button", { name: "一括公開" })
-      ).not.toBeInTheDocument();
+        screen.getByRole("button", { name: "一括公開" })
+      ).toBeInTheDocument();
     });
 
-    const selectAllControl = screen.getByLabelText("全て選択");
-    await user.click(selectAllControl); // 一度目で既存選択を解除
-    await user.click(selectAllControl); // 二度目で全選択を再適用
-
-    bulkUnpublishButton = await screen.findByRole("button", {
+    // 選択状態が保持されているため、一括非公開ボタンもそのまま表示されている
+    bulkUnpublishButton = screen.getByRole("button", {
       name: "一括非公開",
     });
 

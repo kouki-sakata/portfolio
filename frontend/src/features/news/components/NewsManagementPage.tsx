@@ -83,7 +83,9 @@ export const NewsManagementPage = () => {
       // 失敗したIDのみ選択を保持（成功したものは選択解除）
       // 全成功の場合は選択状態を保持して連続操作を可能に
       if (failedIds.length > 0) {
-        setSelectedNewsIds((prev) => prev.filter((id) => failedIds.includes(id)));
+        setSelectedNewsIds((prev) =>
+          prev.filter((id) => failedIds.includes(id))
+        );
       }
     },
     []
