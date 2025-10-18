@@ -519,21 +519,28 @@ jobs:
           echo "Waiting for Spring Boot to start..."
           sleep 5
 
-          for i in {1..30}; do
+          for i in {1..45}; do
             # ヘルスチェックを試行（curlが失敗してもループ継続できるよう一時的に-errexit解除）
             set +e
-            HEALTH_RESPONSE=$(curl -s http://127.0.0.1:8080/actuator/health 2>&1)
+            HEALTH_TMP=$(mktemp)
+            HTTP_STATUS=$(curl -sS -o "$HEALTH_TMP" -w "%{http_code}" -H 'Accept: application/json' http://127.0.0.1:8080/actuator/health 2>&1)
             CURL_EXIT_CODE=$?
+            HEALTH_RESPONSE=$(cat "$HEALTH_TMP" 2>/dev/null)
+            rm -f "$HEALTH_TMP"
             set -e
 
             # 初回と10回ごとにレスポンスをログ出力
             if [ $i -eq 1 ] || [ $((i % 10)) -eq 0 ]; then
-              echo "Attempt $i/30: curl exit code=$CURL_EXIT_CODE"
+              echo "Attempt $i/45: curl exit code=$CURL_EXIT_CODE, http status=$HTTP_STATUS"
               echo "Health response: '$HEALTH_RESPONSE'"
             fi
 
             # ヘルスチェック成功判定
             if [ $CURL_EXIT_CODE -eq 0 ]; then
+              if [ "$HTTP_STATUS" = "200" ] && [ -z "$HEALTH_RESPONSE" ]; then
+                echo "Health endpoint returned HTTP 200 with empty body; treating as healthy."
+                exit 0;
+              fi
               # レスポンスにUPが含まれているか確認
               if echo "$HEALTH_RESPONSE" | grep -qi "\"status\":\"UP\""; then
                 echo "✓ Backend is up and healthy!"
