@@ -120,6 +120,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/signin", "/signin/**").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
