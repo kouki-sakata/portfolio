@@ -520,9 +520,11 @@ jobs:
           sleep 5
 
           for i in {1..30}; do
-            # ヘルスチェックを試行
+            # ヘルスチェックを試行（curlが失敗してもループ継続できるよう一時的に-errexit解除）
+            set +e
             HEALTH_RESPONSE=$(curl -s http://127.0.0.1:8080/actuator/health 2>&1)
             CURL_EXIT_CODE=$?
+            set -e
 
             # 初回と10回ごとにレスポンスをログ出力
             if [ $i -eq 1 ] || [ $((i % 10)) -eq 0 ]; then
