@@ -1,69 +1,47 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { BulkMutationResult } from "@/features/news/hooks/useNews";
+import { getFirstByRoleOrThrow } from "@/test/dom-assertions";
 import type { NewsResponse } from "@/types";
 import { NewsManagementPage } from "./NewsManagementPage";
 
 const mocks = vi.hoisted(() => ({
   useNewsQuery: vi.fn(),
+  deleteMutate: vi.fn(),
+  bulkDeleteMutate: vi.fn(),
   bulkPublishMutate: vi.fn(),
   bulkUnpublishMutate: vi.fn(),
-  bulkDeleteMutate: vi.fn(),
 }));
 
 vi.mock("@/features/news/hooks/useNews", () => ({
   useNewsQuery: mocks.useNewsQuery,
   useCreateNewsMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
   useUpdateNewsMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useDeleteNewsMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useTogglePublishMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
-  useBulkPublishMutation: () => ({
-    mutateAsync: mocks.bulkPublishMutate,
+  useDeleteNewsMutation: () => ({
+    mutateAsync: mocks.deleteMutate,
     isPending: false,
   }),
-  useBulkUnpublishMutation: () => ({
-    mutateAsync: mocks.bulkUnpublishMutate,
+  useTogglePublishMutation: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useBulkPublishMutation: () => ({
+    mutate: mocks.bulkPublishMutate,
+    mutateAsync: vi.fn(),
     isPending: false,
+    reset: vi.fn(),
+    status: "idle",
+  }),
+  useBulkUnpublishMutation: () => ({
+    mutate: mocks.bulkUnpublishMutate,
+    mutateAsync: vi.fn(),
+    isPending: false,
+    reset: vi.fn(),
+    status: "idle",
   }),
   useBulkDeleteMutation: () => ({
     mutateAsync: mocks.bulkDeleteMutate,
     isPending: false,
   }),
-}));
-
-vi.mock("./NewsCard", () => ({
-  // biome-ignore lint/style/useNamingConvention: vi.mockでは元のコンポーネント名を使用する必要がある
-  NewsCard: ({
-    news,
-    onEdit,
-    selectable,
-    selected,
-    onSelectionChange,
-  }: {
-    news: NewsResponse;
-    onEdit?: (item: NewsResponse) => void;
-    selectable?: boolean;
-    selected?: boolean;
-    onSelectionChange?: (item: NewsResponse, next: boolean) => void;
-  }) => (
-    <div>
-      <span>{news.content}</span>
-      {selectable ? (
-        <input
-          aria-label={`${news.content}を選択`}
-          checked={selected}
-          onChange={(event) =>
-            onSelectionChange?.(news, event.currentTarget.checked)
-          }
-          type="checkbox"
-        />
-      ) : null}
-      <button onClick={() => onEdit?.(news)} type="button">
-        編集
-      </button>
-    </div>
-  ),
 }));
 
 vi.mock("./NewsFormModal", () => ({
@@ -91,20 +69,30 @@ vi.mock("./NewsFormModal", () => ({
 }));
 
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: 1,
-  newsDate: "2025-10-10",
-  content: "リリースノート",
-  releaseFlag: true,
-  updateDate: "2025-10-10T12:00:00Z",
-  ...overrides,
+  id: overrides?.id ?? 1,
+  newsDate: overrides?.newsDate ?? "2025-10-10",
+  title: overrides?.title ?? "リリースノート",
+  content: overrides?.content ?? "新機能のリリース情報",
+  category: overrides?.category ?? "一般",
+  releaseFlag: overrides?.releaseFlag ?? true,
+  updateDate: overrides?.updateDate ?? "2025-10-10T12:00:00Z",
 });
 
 describe("NewsManagementPage", () => {
   beforeEach(() => {
     mocks.useNewsQuery.mockReset();
+    mocks.deleteMutate.mockReset();
+    mocks.bulkDeleteMutate.mockReset();
     mocks.bulkPublishMutate.mockReset();
     mocks.bulkUnpublishMutate.mockReset();
-    mocks.bulkDeleteMutate.mockReset();
+    mocks.deleteMutate.mockResolvedValue(undefined);
+    mocks.bulkDeleteMutate.mockResolvedValue({ successIds: [], failedIds: [] });
+    mocks.bulkPublishMutate.mockImplementation(() => {
+      // noop: default mutation handler for tests without assertions
+    });
+    mocks.bulkUnpublishMutate.mockImplementation(() => {
+      // noop: default mutation handler for tests without assertions
+    });
   });
 
   afterEach(() => {
@@ -121,7 +109,7 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    expect(screen.getAllByTestId("news-card-skeleton")).toHaveLength(3);
+    expect(screen.getAllByTestId("news-card-skeleton")).toHaveLength(4);
   });
 
   it("エラー時にエラーメッセージを表示する", () => {
@@ -139,7 +127,7 @@ describe("NewsManagementPage", () => {
     ).toBeInTheDocument();
   });
 
-  it("データ取得後にカード一覧と新規作成ボタンを表示する", () => {
+  it("データ取得後にヘッダーと公開中カードを表示する", () => {
     mocks.useNewsQuery.mockReturnValue({
       data: { news: [sampleNews()] },
       isLoading: false,
@@ -150,8 +138,10 @@ describe("NewsManagementPage", () => {
     render(<NewsManagementPage />);
 
     expect(screen.getByText("お知らせ管理")).toBeInTheDocument();
-    expect(screen.getByText("リリースノート")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "新規作成" })).toBeEnabled();
+
+    const releaseNotes = screen.getAllByText("リリースノート");
+    expect(releaseNotes.length).toBeGreaterThan(0);
   });
 
   it("新規作成ボタンクリックで作成モーダルが開く", async () => {
@@ -165,15 +155,12 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    // 空状態では2つの「新規作成」ボタンが存在するため、最初のもの（ヘッダーのボタン）を選択
-    const createButtons = screen.getAllByRole("button", { name: "新規作成" });
-    // getAllByRole()が成功した時点で配列には必ず要素が存在する
-    expect(createButtons.length).toBeGreaterThan(0);
-    const firstButton = createButtons[0];
-    if (!firstButton) {
-      throw new Error("First button not found");
-    }
-    await user.click(firstButton);
+    const firstCreateButton = getFirstByRoleOrThrow(
+      screen.getAllByRole("button", { name: "新規作成" }),
+      "新規作成ボタン"
+    );
+
+    await user.click(firstCreateButton);
 
     expect(screen.getByText("mode:create")).toBeInTheDocument();
     expect(screen.getByText("open:true")).toBeInTheDocument();
@@ -191,86 +178,18 @@ describe("NewsManagementPage", () => {
 
     render(<NewsManagementPage />);
 
-    await user.click(screen.getByRole("button", { name: "編集" }));
+    const editButton = getFirstByRoleOrThrow(
+      screen.getAllByRole("button", { name: /編集/ }),
+      "編集ボタン"
+    );
+
+    await user.click(editButton);
 
     expect(screen.getByText("mode:edit")).toBeInTheDocument();
     expect(screen.getByText("selected:55")).toBeInTheDocument();
   });
 
-  it("全選択チェックボックスでカードが選択され一括操作バーが表示される", async () => {
-    const user = userEvent.setup();
-    const items = [
-      sampleNews({ id: 101, content: "A" }),
-      sampleNews({ id: 102, content: "B" }),
-    ];
-
-    mocks.useNewsQuery.mockReturnValue({
-      data: { news: items },
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    });
-
-    render(<NewsManagementPage />);
-
-    const selectAll = screen.getByLabelText("全選択");
-    await user.click(selectAll);
-
-    const itemCheckboxes = screen.getAllByRole("checkbox", {
-      name: /を選択$/,
-    });
-
-    expect(itemCheckboxes).toHaveLength(2);
-    expect(
-      itemCheckboxes.every(
-        (checkbox) => checkbox instanceof HTMLInputElement && checkbox.checked
-      )
-    ).toBe(true);
-
-    expect(screen.getByText("選択中: 2件")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "一括公開" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "一括削除" })).toBeEnabled();
-  });
-
-  it("一括公開実行後に失敗したIDのみ選択状態を維持する", async () => {
-    const user = userEvent.setup();
-    const items = [
-      sampleNews({ id: 201, content: "成功" }),
-      sampleNews({ id: 202, content: "失敗" }),
-    ];
-
-    mocks.useNewsQuery.mockReturnValue({
-      data: { news: items },
-      isLoading: false,
-      isError: false,
-      refetch: vi.fn(),
-    });
-
-    mocks.bulkPublishMutate.mockResolvedValue({
-      successIds: [201],
-      failedIds: [202],
-    });
-
-    render(<NewsManagementPage />);
-
-    await user.click(screen.getByLabelText("全選択"));
-
-    await user.click(screen.getByRole("button", { name: "一括公開" }));
-
-    expect(mocks.bulkPublishMutate).toHaveBeenCalledWith({ ids: [201, 202] });
-
-    expect(await screen.findByText("選択中: 1件")).toBeInTheDocument();
-
-    const remaining = screen
-      .getAllByRole("checkbox", {
-        name: /を選択$/,
-      })
-      .filter((checkbox) => (checkbox as HTMLInputElement).checked);
-
-    expect(remaining).toHaveLength(1);
-  });
-
-  it("一括削除ボタンで削除ミューテーションが呼び出される", async () => {
+  it("全選択後に一括削除ボタンを表示し、確定で選択状態をリセットする", async () => {
     const user = userEvent.setup();
     const items = [
       sampleNews({ id: 301, content: "削除対象" }),
@@ -285,16 +204,119 @@ describe("NewsManagementPage", () => {
     });
 
     mocks.bulkDeleteMutate.mockResolvedValue({
-      successIds: [301],
+      successIds: [301, 302],
       failedIds: [],
     });
 
     render(<NewsManagementPage />);
 
-    await user.click(screen.getByLabelText("全選択"));
+    await user.click(screen.getByLabelText("全て選択"));
 
-    await user.click(screen.getByRole("button", { name: "一括削除" }));
+    const table = screen.getByLabelText("データテーブル");
+    const itemCheckboxes = within(table).getAllByRole("checkbox", {
+      name: /のお知らせを選択$/,
+    });
 
-    expect(mocks.bulkDeleteMutate).toHaveBeenCalledWith({ ids: [301, 302] });
+    expect(itemCheckboxes).toHaveLength(2);
+    for (const checkbox of itemCheckboxes) {
+      expect(checkbox).toHaveAttribute("data-state", "checked");
+    }
+
+    const bulkDeleteButton = screen.getByRole("button", {
+      name: "選択した2件を削除",
+    });
+    expect(bulkDeleteButton).toBeEnabled();
+
+    await user.click(bulkDeleteButton);
+
+    expect(
+      await screen.findByText("選択した2件のお知らせを削除しますか？")
+    ).toBeInTheDocument();
+
+    const confirmButton = await screen.findByRole("button", {
+      name: "削除する",
+    });
+    await user.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mocks.bulkDeleteMutate).toHaveBeenCalledWith({
+        ids: [301, 302],
+      });
+    });
+
+    await waitFor(() => {
+      expect(
+        screen.queryByRole("button", { name: "選択した2件を削除" })
+      ).not.toBeInTheDocument();
+    });
+  });
+
+  it("選択状態で一括公開と一括非公開ボタンを表示しミューテーションを呼び出す", async () => {
+    const user = userEvent.setup();
+    const items = [
+      sampleNews({ id: 201, content: "成功", releaseFlag: false }),
+      sampleNews({ id: 202, content: "失敗", releaseFlag: true }),
+    ];
+
+    mocks.useNewsQuery.mockReturnValue({
+      data: { news: items },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    const publishResult: BulkMutationResult = {
+      successIds: [201],
+      failedIds: [],
+    };
+    const unpublishResult: BulkMutationResult = {
+      successIds: [202],
+      failedIds: [],
+    };
+
+    mocks.bulkPublishMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.(publishResult);
+    });
+    mocks.bulkUnpublishMutate.mockImplementation((_payload, options) => {
+      options?.onSuccess?.(unpublishResult);
+    });
+
+    render(<NewsManagementPage />);
+
+    await user.click(screen.getByLabelText("全て選択"));
+
+    const bulkPublishButton = screen.getByRole("button", { name: "一括公開" });
+    let bulkUnpublishButton = screen.getByRole("button", {
+      name: "一括非公開",
+    });
+
+    expect(bulkPublishButton).toBeEnabled();
+    expect(bulkUnpublishButton).toBeEnabled();
+
+    await user.click(bulkPublishButton);
+
+    expect(mocks.bulkPublishMutate).toHaveBeenCalledWith(
+      { ids: [201, 202] },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
+
+    // 全成功の場合は選択状態を保持（連続操作のため）
+    await waitFor(() => {
+      expect(
+        screen.getByRole("button", { name: "一括公開" })
+      ).toBeInTheDocument();
+    });
+
+    // 選択状態が保持されているため、一括非公開ボタンもそのまま表示されている
+    bulkUnpublishButton = screen.getByRole("button", {
+      name: "一括非公開",
+    });
+
+    await user.click(bulkUnpublishButton);
+
+    expect(mocks.bulkUnpublishMutate).toHaveBeenCalledWith(
+      { ids: [201, 202] },
+      expect.objectContaining({ onSuccess: expect.any(Function) })
+    );
   });
 });

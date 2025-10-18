@@ -48,7 +48,9 @@ public class NewsManageRegistrationService {
         if (id != null) {
             News entity = mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
             entity.setNewsDate(newsDate);
+            entity.setTitle(newsManageForm.getTitle());
             entity.setContent(newsManageForm.getContent());
+            entity.setCategory(newsManageForm.getCategory());
             entity.setUpdateDate(timestamp);
             mapper.upDate(entity);
             // 履歴記録
@@ -58,7 +60,9 @@ public class NewsManageRegistrationService {
             // idが格納されていない場合は新規登録
             News entity = new News();
             entity.setNewsDate(newsDate);
+            entity.setTitle(newsManageForm.getTitle());
             entity.setContent(newsManageForm.getContent());
+            entity.setCategory(newsManageForm.getCategory());
             boolean releaseFlag = false;
             entity.setReleaseFlag(releaseFlag);
             entity.setUpdateDate(timestamp);

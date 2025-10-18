@@ -63,6 +63,10 @@
           "correctness": {
             "noNestedComponentDefinitions": "off"
             // react-day-pickerのcomponentsプロップで動的なコンポーネントを渡すために必要
+          },
+          "nursery": {
+            "noShadow": "off"
+            // react-day-pickerのcomponentsプロップで内部コンポーネントがCalendarのpropsと同名の引数を持つ場合があるため
           }
         }
       }

@@ -26,9 +26,21 @@ public class NewsManageForm {
     @Pattern(regexp = "^\\d{4}-\\d{2}-\\d{2}$")
     private String newsDate;
     /**
+     * タイトル
+     */
+    @NotBlank
+    @Size(min = 1, max = 200)
+    private String title;
+    /**
      * 内容
      */
     @NotBlank
     @Size(min = 1, max = 1000)
     private String content;
+    /**
+     * カテゴリ
+     */
+    @NotBlank
+    @Pattern(regexp = "^(重要|システム|一般)$")
+    private String category;
 }

@@ -177,10 +177,10 @@ export function DataTable<TData, TValue = unknown>({
         {enableColumnVisibility && <DataTableViewOptions table={table} />}
       </div>
 
-      {/* テーブル本体 - デスクトップビュー (md以上) */}
+      {/* テーブル本体 - デスクトップビュー (lg以上) */}
       <section
         aria-label="データテーブル"
-        className="relative hidden w-full overflow-auto rounded-md border md:block"
+        className="relative hidden w-full overflow-auto rounded-md border lg:block"
         style={fixedHeight ? { height: fixedHeight } : undefined}
       >
         <Table>
@@ -265,10 +265,10 @@ export function DataTable<TData, TValue = unknown>({
         )}
       </section>
 
-      {/* モバイルカードビュー (md未満) */}
+      {/* モバイルカードビュー (lg未満) */}
       <section
         aria-label="データリスト"
-        className="space-y-3 md:hidden"
+        className="space-y-3 lg:hidden"
         style={
           fixedHeight ? { height: fixedHeight, overflowY: "auto" } : undefined
         }
@@ -287,10 +287,29 @@ export function DataTable<TData, TValue = unknown>({
                         {headerText || cell.column.id}
                       </div>
                       <div className="text-right text-gray-900 text-sm">
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
+                        {(() => {
+                          const cellContent = flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          );
+
+                          // content列の場合は特別処理
+                          if (
+                            cell.column.id === "content" &&
+                            typeof cellContent === "string"
+                          ) {
+                            return (
+                              <div
+                                className="max-w-[200px] truncate"
+                                title={cellContent}
+                              >
+                                {cellContent}
+                              </div>
+                            );
+                          }
+
+                          return cellContent;
+                        })()}
                       </div>
                     </div>
                   );

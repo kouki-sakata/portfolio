@@ -23,6 +23,10 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
@@ -34,6 +38,9 @@ public class SecurityConfig {
 
     @Value("${app.environment:prod}")
     private String environment;
+
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
 
     /**
      * CSRF Token Repository を環境に応じて設定
@@ -83,8 +90,24 @@ public class SecurityConfig {
     }
 
     @Bean
+    public CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        // 環境変数から読み込み（カンマ区切りで複数指定可能）
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setExposedHeaders(Arrays.asList("X-XSRF-TOKEN"));
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
                 .csrfTokenRequestHandler(createCsrfTokenRequestHandler())
@@ -101,6 +124,7 @@ public class SecurityConfig {
                 ).permitAll()
                 .requestMatchers("/signin", "/signin/**").permitAll()
                 .requestMatchers("/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
@@ -121,6 +145,7 @@ public class SecurityConfig {
                 .deleteCookies("JSESSIONID")
             )
             .exceptionHandling(ex -> ex
+                // API endpoints return 401 JSON response
                 .defaultAuthenticationEntryPointFor(
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/api/**")
@@ -129,8 +154,15 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/actuator/**")
                 )
-                .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/signin"))
-                .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
+                // Non-API endpoints (SPA routes) redirect to /signin with relative URL
+                .defaultAuthenticationEntryPointFor(
+                    (request, response, authException) -> response.sendRedirect("/signin"),
+                    new AntPathRequestMatcher("/**")
+                )
+                // All endpoints return 403 for access denied (frontend handles the error)
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                })
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
             .sessionManagement(session -> session

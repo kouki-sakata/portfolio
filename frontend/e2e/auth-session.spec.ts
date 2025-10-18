@@ -4,9 +4,10 @@ import { signIn } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
 test.describe("認証・セッション管理の包括的テスト", () => {
-  // TODO: ログアウト機能のテストを修正
+  // TODO: ログアウト機能のテストを修正 (GitHub Issue #TBD)
   // - ログアウトボタンそもそもない設計のためサインアウトボタンにログアウト機能を実装
   // - ログアウト後のリダイレクト処理のタイミング調整が必要
+  // 優先度: P2 (中) - 認証フローの重要な部分
   test("サインアウト機能が正常に動作する", async ({ page }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, { user: adminUser });
@@ -116,9 +117,10 @@ test.describe("認証・セッション管理の包括的テスト", () => {
     });
   });
 
-  // TODO: 複数タブでのセッション管理テストを修正
+  // TODO: 複数タブでのセッション管理テストを修正 (GitHub Issue #TBD)
   // - mockServerが複数ページで共有されていない可能性
   // - タブ間のセッション同期メカニズムの確認が必要
+  // 優先度: P3 (低) - エッジケースだが確認は必要
   test("複数タブで同時ログイン状態を維持できる", async ({ browser }) => {
     const adminUser = createAdminUser();
 

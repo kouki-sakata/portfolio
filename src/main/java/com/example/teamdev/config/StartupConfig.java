@@ -58,10 +58,27 @@ public class StartupConfig implements CommandLineRunner {
             LogUtil.logBusiness("STARTUP", null, "Application", applicationName, "SUCCESS");
             
         } catch (Exception e) {
-            LogUtil.logError(logger, "アプリケーション初期化中にエラーが発生しました", e, null, 
+            LogUtil.logError(logger, "アプリケーション初期化中にエラーが発生しました", e, null,
                 "application=" + applicationName);
             LogUtil.logBusiness("STARTUP", null, "Application", applicationName, "FAILURE");
-            
+
+            // エラーの詳細をログに出力
+            logger.error("例外の型: {}", e.getClass().getName());
+            logger.error("例外メッセージ: {}", e.getMessage());
+
+            if (e.getCause() != null) {
+                logger.error("根本原因: {} - {}",
+                    e.getCause().getClass().getName(),
+                    e.getCause().getMessage());
+            }
+
+            // スタックトレースの最初の10行を出力
+            StackTraceElement[] stackTrace = e.getStackTrace();
+            logger.error("スタックトレース:");
+            for (int i = 0; i < Math.min(10, stackTrace.length); i++) {
+                logger.error("  at {}", stackTrace[i]);
+            }
+
             // 初期化エラーでもアプリケーションは続行
             logger.warn("初期化処理でエラーが発生しましたが、アプリケーションは続行します");
         } finally {
