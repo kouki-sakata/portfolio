@@ -39,6 +39,9 @@ public class SecurityConfig {
     @Value("${app.environment:prod}")
     private String environment;
 
+    @Value("${app.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
+
     /**
      * CSRF Token Repository を環境に応じて設定
      * 開発環境・テスト環境では Secure フラグを無効化し、HTTP でも Cookie が動作するようにする
@@ -89,7 +92,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:5173"));
+        // 環境変数から読み込み（カンマ区切りで複数指定可能）
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);

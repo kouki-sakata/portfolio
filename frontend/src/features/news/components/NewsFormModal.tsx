@@ -26,6 +26,7 @@ import {
   useCreateNewsMutation,
   useUpdateNewsMutation,
 } from "@/features/news/hooks/useNews";
+import { logger } from "@/shared/utils/logger";
 import type { NewsResponse } from "@/types";
 
 const newsFormSchema = z.object({
@@ -121,7 +122,7 @@ export const NewsFormModal = ({
       form.reset(defaultValues);
     } catch (error) {
       // ミューテーションでハンドリング済みだが、開発時のデバッグのためログ出力
-      console.error("News form submission error:", {
+      logger.error("News form submission error:", {
         mode,
         newsId: news?.id,
         error: error instanceof Error ? error.message : String(error),

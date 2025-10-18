@@ -15,6 +15,7 @@ import {
   useBulkDeleteMutation,
   useDeleteNewsMutation,
 } from "@/features/news/hooks/useNews";
+import { logger } from "@/shared/utils/logger";
 import type { NewsResponse } from "@/types";
 
 type DeleteConfirmDialogSingleProps = {
@@ -87,7 +88,7 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
         type === "single"
           ? [props.news?.id].filter((id): id is number => id !== undefined)
           : (props.newsIds ?? []);
-      console.error("News deletion failed", {
+      logger.error("News deletion failed", {
         correlationId,
         type,
         targetIds: Array.isArray(targetIds) ? targetIds : [],

@@ -1,4 +1,5 @@
 import { api } from "@/shared/api/axiosClient";
+import { logger } from "@/shared/utils/logger";
 
 import type {
   NewsCreateRequest,
@@ -19,11 +20,9 @@ const NEWS_ENDPOINT = "/news" as const;
 export const fetchNewsList = async (): Promise<NewsListResponse> => {
   const response = await api.get<NewsListResponse>(NEWS_ENDPOINT, undefined);
   // デバッグ用ログ（開発環境でのみ表示）
-  if (import.meta.env.DEV) {
-    console.log("News API Response:", response);
-    if (response?.news?.length > 0) {
-      console.log("First news item:", response.news[0]);
-    }
+  logger.debug("News API Response:", response);
+  if (response?.news?.length > 0) {
+    logger.debug("First news item:", response.news[0]);
   }
   return response;
 };
