@@ -78,10 +78,12 @@ export function useNewsColumns({
 
           return (
             <div
-              className="max-w-[300px] md:max-w-[500px] overflow-hidden text-ellipsis"
+              className="max-w-[300px] overflow-hidden text-ellipsis md:max-w-[500px]"
               style={{
                 display: "-webkit-box",
+                // biome-ignore lint/style/useNamingConvention: Webkit prefixes require capitalization
                 WebkitLineClamp: 2,
+                // biome-ignore lint/style/useNamingConvention: Webkit prefixes require capitalization
                 WebkitBoxOrient: "vertical",
               }}
             >
@@ -191,7 +193,11 @@ export function useNewsColumns({
                   type="button"
                   variant="default"
                 >
-                  <SpriteIcon className="h-4 w-4 md:hidden" decorative name="edit" />
+                  <SpriteIcon
+                    className="h-4 w-4 md:hidden"
+                    decorative
+                    name="edit"
+                  />
                   <span className="hidden md:inline">編集</span>
                 </Button>
               )}
@@ -203,7 +209,11 @@ export function useNewsColumns({
                   type="button"
                   variant="destructive"
                 >
-                  <SpriteIcon className="h-4 w-4 md:hidden" decorative name="trash-2" />
+                  <SpriteIcon
+                    className="h-4 w-4 md:hidden"
+                    decorative
+                    name="trash-2"
+                  />
                   <span className="hidden md:inline">削除</span>
                 </Button>
               )}

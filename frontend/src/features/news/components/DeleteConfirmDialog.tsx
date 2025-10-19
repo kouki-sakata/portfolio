@@ -106,7 +106,7 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
     type === "single" ? (
       <>
         {titlePreview ? (
-          <span className="mb-2 block rounded-md bg-muted px-3 py-2 text-sm font-semibold text-foreground">
+          <span className="mb-2 block rounded-md bg-muted px-3 py-2 font-semibold text-foreground text-sm">
             {titlePreview}
           </span>
         ) : null}
