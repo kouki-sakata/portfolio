@@ -50,7 +50,7 @@ export const PublishedNewsGrid = ({
           <Skeleton className="h-5 w-32" />
           <Skeleton className="h-5 w-20" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
           {skeletonKeys.map((key) => (
             <Card key={key}>
               <CardHeader className="space-y-2">
@@ -90,10 +90,9 @@ export const PublishedNewsGrid = ({
             最近公開されたお知らせを最大{maxItems}件表示しています。
           </p>
         </div>
-        <Badge variant="default">公開中: {publishedNews.length}件</Badge>
       </header>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
         {items.map((item) => (
           <Card className="h-full" key={item.id}>
             <CardHeader className="space-y-3">
