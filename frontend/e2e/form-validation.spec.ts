@@ -21,8 +21,7 @@ test.describe("フォームバリデーションの包括的テスト", () => {
     // 新規登録フォームを開く
     await page.getByRole("button", { name: "新規登録" }).click();
   });
-  // TODO: ネットワークエラー時のトースト通知表示テストを修正 (GitHub Issue #TBD)
-  // 優先度: P2 (中) - error-handling.spec.tsと同じ問題
+  // TODO: ネットワークエラー時のトースト通知表示テストを修正
   test("必須項目が空の場合、エラーメッセージが表示される", async ({ page }) => {
     await test.step("空のまま送信", async () => {
       await page.getByRole("button", { name: "登録する" }).click();

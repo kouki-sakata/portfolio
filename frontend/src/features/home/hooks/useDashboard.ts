@@ -1,6 +1,5 @@
 import { queryOptions, useQuery } from "@tanstack/react-query";
 
-import { QUERY_CONFIG } from "@/app/config/queryClient";
 import {
   createHomeRepository,
   type IHomeRepository,
@@ -19,8 +18,7 @@ export const dashboardQueryOptions = (
   queryOptions({
     queryKey: ["home", "dashboard"] as const,
     queryFn: () => repository.getDashboard(),
-    staleTime: QUERY_CONFIG.homeDashboard.staleTime,
-    gcTime: QUERY_CONFIG.homeDashboard.gcTime,
+    staleTime: 60 * 1000,
     refetchInterval: 5 * 60 * 1000, // 5分ごとに自動更新
   });
 

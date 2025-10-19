@@ -96,7 +96,7 @@ public class NewsRestController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NewsResponse> create(@Valid @RequestBody NewsCreateRequest request) {
         Integer operatorId = requireCurrentEmployeeId();
-        NewsManageForm form = new NewsManageForm("", request.newsDate(), request.title(), request.content(), request.category());
+        NewsManageForm form = new NewsManageForm("", request.newsDate(), request.content());
         News created = registrationService.execute(form, operatorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
@@ -110,7 +110,7 @@ public class NewsRestController {
     ) {
         requireExistingNews(id);
         Integer operatorId = requireCurrentEmployeeId();
-        NewsManageForm form = new NewsManageForm(String.valueOf(id), request.newsDate(), request.title(), request.content(), request.category());
+        NewsManageForm form = new NewsManageForm(String.valueOf(id), request.newsDate(), request.content());
         News updated = registrationService.execute(form, operatorId);
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -265,9 +265,7 @@ public class NewsRestController {
         return new NewsResponse(
             news.getId(),
             news.getNewsDate() != null ? news.getNewsDate().toString() : null,
-            news.getTitle(),
             news.getContent(),
-            news.getCategory(),
             releaseFlag,
             updateDate
         );

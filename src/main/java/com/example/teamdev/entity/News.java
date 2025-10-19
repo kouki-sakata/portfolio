@@ -5,7 +5,6 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -36,16 +35,6 @@ public class News {
 	private LocalDate newsDate;
 
 	/**
-	 * タイトル
-	 * <p>
-	 * データベースカラム: title (VARCHAR(200)型)
-	 * </p>
-	 */
-	@NotBlank
-	@Size(max = 200)
-	private String title;
-
-	/**
 	 * 内容
 	 * <p>
 	 * データベースカラム: content (TEXT型, max 1000 characters)
@@ -54,17 +43,6 @@ public class News {
 	@NotBlank
 	@Size(max = 1000)
 	private String content;
-
-	/**
-	 * カテゴリ
-	 * <p>
-	 * データベースカラム: category (VARCHAR(20)型)
-	 * 許可値: 重要、システム、一般
-	 * </p>
-	 */
-	@NotBlank
-	@Pattern(regexp = "^(重要|システム|一般)$")
-	private String category;
 
 	/**
 	 * 公開フラグ

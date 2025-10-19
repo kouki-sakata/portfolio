@@ -601,9 +601,7 @@ components:
       required:
         - id
         - newsDate
-        - title
         - content
-        - category
         - releaseFlag
         - updateDate
       properties:
@@ -615,21 +613,10 @@ components:
           format: date
           description: お知らせ日付（YYYY-MM-DD形式）
           example: "2025-10-15"
-        title:
-          type: string
-          maxLength: 200
-          description: タイトル（最大200文字）
-          example: "勤怠締め日のお知らせ"
         content:
           type: string
           maxLength: 1000
           description: お知らせ内容（最大1000文字）
-          example: "今月の勤怠締め日は月末です。期日までに必ず勤怠記録を確認してください。"
-        category:
-          type: string
-          enum: ["重要", "システム", "一般"]
-          description: カテゴリ（重要/システム/一般）
-          example: "重要"
         releaseFlag:
           type: boolean
           description: 公開フラグ（true:公開, false:非公開）
@@ -652,62 +639,34 @@ components:
       type: object
       required:
         - newsDate
-        - title
         - content
-        - category
       properties:
         newsDate:
           type: string
           format: date
           description: お知らせ日付（YYYY-MM-DD形式）
           example: "2025-10-15"
-        title:
-          type: string
-          minLength: 1
-          maxLength: 200
-          description: タイトル（1-200文字）
-          example: "勤怠締め日のお知らせ"
         content:
           type: string
           minLength: 1
           maxLength: 1000
           description: お知らせ内容（1-1000文字）
-          example: "今月の勤怠締め日は月末です。期日までに必ず勤怠記録を確認してください。"
-        category:
-          type: string
-          enum: ["重要", "システム", "一般"]
-          description: カテゴリ（重要/システム/一般）
-          example: "重要"
     NewsUpdateRequest:
       type: object
       required:
         - newsDate
-        - title
         - content
-        - category
       properties:
         newsDate:
           type: string
           format: date
           description: お知らせ日付（YYYY-MM-DD形式）
           example: "2025-10-15"
-        title:
-          type: string
-          minLength: 1
-          maxLength: 200
-          description: タイトル（1-200文字）
-          example: "勤怠締め日のお知らせ"
         content:
           type: string
           minLength: 1
           maxLength: 1000
           description: お知らせ内容（1-1000文字）
-          example: "今月の勤怠締め日は月末です。期日までに必ず勤怠記録を確認してください。"
-        category:
-          type: string
-          enum: ["重要", "システム", "一般"]
-          description: カテゴリ（重要/システム/一般）
-          example: "重要"
     NewsPublishRequest:
       type: object
       required:
