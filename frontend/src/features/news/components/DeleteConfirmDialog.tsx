@@ -54,9 +54,9 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
 
   const isPending = deleteMutation.isPending || bulkDeleteMutation.isPending;
 
-  const contentPreview = useMemo(() => {
+  const titlePreview = useMemo(() => {
     if (type === "single" && props.news) {
-      return previewContent(props.news.content);
+      return previewContent(props.news.title);
     }
     return null;
   }, [type, props]);
@@ -105,9 +105,14 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
   const description =
     type === "single" ? (
       <>
-        {contentPreview}
-        <br />
-        この操作は取り消せません。削除すると復元できません。
+        {titlePreview ? (
+          <span className="mb-2 block rounded-md bg-muted px-3 py-2 text-sm font-semibold text-foreground">
+            {titlePreview}
+          </span>
+        ) : null}
+        <span className="block">
+          この操作は取り消せません。削除すると復元できません。
+        </span>
       </>
     ) : (
       <>

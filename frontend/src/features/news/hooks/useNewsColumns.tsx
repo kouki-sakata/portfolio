@@ -4,14 +4,7 @@ import { useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { DataTableColumnHeader } from "@/shared/components/data-table";
-import { cn } from "@/shared/utils/cn";
 import type { NewsResponse } from "@/types";
 
 type UseNewsColumnsProps = {
@@ -81,31 +74,18 @@ export function useNewsColumns({
         header: "内容",
         cell: ({ row }) => {
           const content = row.getValue("content") as string;
-          const shouldTruncate = content.length > 50; // 50文字以上で省略
 
           return (
-            <TooltipProvider delayDuration={300}>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "max-w-[300px] md:max-w-[500px]",
-                      shouldTruncate && "cursor-help truncate"
-                    )}
-                  >
-                    {content}
-                  </div>
-                </TooltipTrigger>
-                {shouldTruncate && (
-                  <TooltipContent
-                    className="max-w-[400px] whitespace-pre-wrap break-words"
-                    side="bottom"
-                  >
-                    <p className="text-sm">{content}</p>
-                  </TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
+            <div
+              className="max-w-[300px] md:max-w-[500px] overflow-hidden text-ellipsis"
+              style={{
+                display: "-webkit-box",
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: "vertical",
+              }}
+            >
+              {content}
+            </div>
           );
         },
       },

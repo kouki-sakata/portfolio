@@ -15,6 +15,7 @@ import type { NewsResponse } from "@/types";
 
 import { BulkActionBar } from "./BulkActionBar";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
+import { NewsDetailDialog } from "./NewsDetailDialog";
 import { NewsFormModal } from "./NewsFormModal";
 import { PublishedNewsGrid } from "./PublishedNewsGrid";
 
@@ -51,6 +52,10 @@ export const NewsManagementPage = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<NewsResponse | undefined>();
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+  const [selectedNewsForDetail, setSelectedNewsForDetail] = useState<
+    NewsResponse | undefined
+  >();
   const tableRef = useRef<HTMLDivElement>(null);
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
@@ -113,6 +118,11 @@ export const NewsManagementPage = () => {
     setFormOpen(true);
   };
 
+  const handleRowClick = useCallback((news: NewsResponse) => {
+    setSelectedNewsForDetail(news);
+    setDetailDialogOpen(true);
+  }, []);
+
   // カスタムイベントで編集を処理
   useEffect(() => {
     const handleEditEvent = (event: Event) => {
@@ -152,7 +162,7 @@ export const NewsManagementPage = () => {
   const isEmpty = newsItems.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="container mx-auto space-y-6 py-6">
       {/* ヘッダー */}
       <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -208,6 +218,7 @@ export const NewsManagementPage = () => {
               enableGlobalFilter
               enableRowSelection
               loading={newsQuery.isLoading}
+              onRowClick={handleRowClick}
               onRowSelectionChange={handleRowSelectionChange}
             />
           </section>
@@ -239,6 +250,15 @@ export const NewsManagementPage = () => {
         news={selectedNews}
         onClose={handleCloseForm}
         open={formOpen}
+      />
+
+      {/* 詳細表示モーダル */}
+      <NewsDetailDialog
+        news={selectedNewsForDetail ?? null}
+        onDelete={handleDeleteClick}
+        onEdit={handleEdit}
+        onOpenChange={setDetailDialogOpen}
+        open={detailDialogOpen}
       />
     </div>
   );
