@@ -30,14 +30,12 @@ import {
 const mockedApi = vi.mocked(api);
 
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: overrides?.id ?? 1,
-  newsDate: overrides?.newsDate ?? "2025-10-01",
-  title: overrides?.title ?? "システムメンテナンスのお知らせ",
-  content:
-    overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
-  category: overrides?.category ?? "システム",
-  releaseFlag: overrides?.releaseFlag ?? true,
-  updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
+  id: 1,
+  newsDate: "2025-10-01",
+  content: "本日18時よりシステムメンテナンスを実施します。",
+  releaseFlag: true,
+  updateDate: "2025-10-01T09:00:00Z",
+  ...overrides,
 });
 
 describe("newsApi", () => {
@@ -78,17 +76,9 @@ describe("newsApi", () => {
   it("creates a news entry", async () => {
     const payload: NewsCreateRequest = {
       newsDate: "2025-10-02",
-      title: "臨時メンテナンス",
       content: "臨時システムメンテナンスのお知らせ",
-      category: "重要",
     };
-    const created = sampleNews({
-      id: 99,
-      newsDate: payload.newsDate,
-      title: payload.title,
-      content: payload.content,
-      category: payload.category,
-    });
+    const created = sampleNews({ id: 99, newsDate: payload.newsDate });
     mockedApi.post.mockResolvedValue(created);
 
     const result = await createNews(payload);
@@ -100,9 +90,7 @@ describe("newsApi", () => {
   it("updates an existing news entry", async () => {
     const payload: NewsUpdateRequest = {
       newsDate: "2025-10-05",
-      title: "更新されたタイトル",
       content: "更新されたお知らせ内容",
-      category: "一般",
     };
     const updated = sampleNews({ id: 7, ...payload });
     mockedApi.put.mockResolvedValue(updated);

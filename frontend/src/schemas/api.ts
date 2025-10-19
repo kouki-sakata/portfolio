@@ -104,9 +104,7 @@ const NewsResponse = z
   .object({
     id: z.number().int(),
     newsDate: z.string(),
-    title: z.string().max(200),
     content: z.string().max(1000),
-    category: z.enum(["重要", "システム", "一般"]),
     releaseFlag: z.boolean(),
     updateDate: z.string().datetime({ offset: true }),
   })
@@ -117,21 +115,11 @@ const NewsListResponse = z
   .strict()
   .passthrough();
 const NewsCreateRequest = z
-  .object({
-    newsDate: z.string(),
-    title: z.string().min(1).max(200),
-    content: z.string().min(1).max(1000),
-    category: z.enum(["重要", "システム", "一般"]),
-  })
+  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
   .strict()
   .passthrough();
 const NewsUpdateRequest = z
-  .object({
-    newsDate: z.string(),
-    title: z.string().min(1).max(200),
-    content: z.string().min(1).max(1000),
-    category: z.enum(["重要", "システム", "一般"]),
-  })
+  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
   .strict()
   .passthrough();
 const NewsPublishRequest = z

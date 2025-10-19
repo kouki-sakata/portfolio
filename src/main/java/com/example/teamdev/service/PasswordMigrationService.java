@@ -45,18 +45,9 @@ public class PasswordMigrationService {
     public void migratePasswords() {
         long startTime = System.currentTimeMillis();
         logger.info("パスワードマイグレーション処理を開始します（強制実行: {}）", forceMigration);
-
-        // データベース接続確認（Fail-Fast）
-        List<Employee> sampleEmployees;
-        try {
-            // 高速事前チェック：最初の数件をサンプリング
-            logger.debug("データベース接続確認のため、サンプル従業員データを取得します");
-            sampleEmployees = employeeMapper.getTopEmployees(10);
-            logger.debug("サンプル従業員データ取得成功: {}件", sampleEmployees.size());
-        } catch (Exception e) {
-            logger.error("データベース接続に失敗しました。パスワードマイグレーション処理を中断します", e);
-            throw new RuntimeException("データベース接続失敗: パスワードマイグレーション処理を開始できません", e);
-        }
+        
+        // 高速事前チェック：最初の数件をサンプリング
+        List<Employee> sampleEmployees = employeeMapper.getTopEmployees(10);
         boolean hasPossiblePlainText = sampleEmployees.stream()
             .anyMatch(emp -> emp.getPassword() != null && 
                             !emp.getPassword().startsWith(AppConstants.Security.BCRYPT_PREFIX_2A) && 

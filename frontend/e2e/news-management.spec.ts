@@ -9,8 +9,7 @@ import { acceptDialog, signIn, waitForToast } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
 // お知らせ管理機能は未実装のため、一時的に全テストをスキップ
-// TODO: お知らせ管理機能の実装完了後にtest.describeに戻す (GitHub Issue #TBD)
-// 優先度: P3 (低) - 機能実装と連動
+// TODO: お知らせ管理機能の実装完了後にtest.describeに戻す
 test.describe.skip("お知らせ管理機能の包括的テスト", () => {
   test("お知らせ一覧が表示される", async ({ page }) => {
     const adminUser = createAdminUser();

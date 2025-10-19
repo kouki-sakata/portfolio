@@ -512,69 +512,17 @@ jobs:
           fi
           echo "Starting backend with jar: $BOOT_JAR"
           nohup bash -c "java -jar $BOOT_JAR" > backend.log 2>&1 &
-          BACKEND_PID=$!
-          echo "Backend process started with PID: $BACKEND_PID"
-
-          # 初期待機（Spring Bootの起動を待つ）
-          echo "Waiting for Spring Boot to start..."
-          sleep 5
-
-          for i in {1..45}; do
-            # ヘルスチェックを試行（curlが失敗してもループ継続できるよう一時的に-errexit解除）
-            set +e
-            HEALTH_TMP=$(mktemp)
-            HTTP_STATUS=$(curl -sS -o "$HEALTH_TMP" -w "%{http_code}" -H 'Accept: application/json' http://127.0.0.1:8080/actuator/health 2>&1)
-            CURL_EXIT_CODE=$?
-            HEALTH_RESPONSE=$(cat "$HEALTH_TMP" 2>/dev/null)
-            rm -f "$HEALTH_TMP"
-            set -e
-
-            # 初回と10回ごとにレスポンスをログ出力
-            if [ $i -eq 1 ] || [ $((i % 10)) -eq 0 ]; then
-              echo "Attempt $i/45: curl exit code=$CURL_EXIT_CODE, http status=$HTTP_STATUS"
-              echo "Health response: '$HEALTH_RESPONSE'"
+          for i in {1..60}; do
+            if curl -sf http://127.0.0.1:8080/actuator/health >/dev/null; then
+              echo "Backend is up"; exit 0; fi
+            # If process exited, show logs and fail fast
+            if ! pgrep -f "java .*build/libs/.*\.jar" >/dev/null; then
+              echo "Backend process exited. Dumping logs:";
+              sed -n '1,200p' backend.log || true; exit 1;
             fi
-
-            # ヘルスチェック成功判定
-            if [ $CURL_EXIT_CODE -eq 0 ]; then
-              if [ "$HTTP_STATUS" = "200" ] && [ -z "$HEALTH_RESPONSE" ]; then
-                echo "Health endpoint returned HTTP 200 with empty body; treating as healthy."
-                exit 0;
-              fi
-              # レスポンスにUPが含まれているか確認
-              if echo "$HEALTH_RESPONSE" | grep -qi "\"status\":\"UP\""; then
-                echo "✓ Backend is up and healthy!"
-                echo "Health response: $HEALTH_RESPONSE"
-                exit 0;
-              else
-                echo "Health endpoint responded but status is not UP: $HEALTH_RESPONSE"
-              fi
-            fi
-
-            # プロセスが終了していないかチェック
-            if ! kill -0 $BACKEND_PID 2>/dev/null; then
-              echo "ERROR: Backend process exited unexpectedly!"
-              echo "===== Backend Log (First 300 lines) ====="
-              head -n 300 backend.log || true
-              echo "===== End of Backend Log ====="
-              exit 1;
-            fi
-
-            # 進行状況を表示（10秒ごと）
-            if [ $((i % 5)) -eq 0 ]; then
-              echo "Waiting for backend... (${i}0 seconds elapsed)"
-              echo "Latest log entries:"
-              tail -n 5 backend.log || true
-            fi
-
-            sleep 2;
+            echo "Waiting for backend..."; sleep 2;
           done
-
-          echo "ERROR: Backend did not become healthy within 90 seconds!"
-          echo "===== Backend Log (Last 300 lines) ====="
-          tail -n 300 backend.log || true
-          echo "===== End of Backend Log ====="
-          exit 1
+          echo "Backend did not become healthy in time. Last 200 lines:"; tail -n 200 backend.log || true; exit 1
 
       - name: Run Playwright E2E tests
         working-directory: frontend

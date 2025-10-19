@@ -19,18 +19,12 @@ vi.mock("@/features/news/hooks/useNews", () => ({
     mutateAsync: mocks.deleteMutate,
     isPending: false,
   }),
-  useBulkDeleteMutation: () => ({
-    mutateAsync: vi.fn(),
-    isPending: false,
-  }),
 }));
 
 const newsSample = (): NewsResponse => ({
   id: 42,
   newsDate: "2025-10-10",
-  title: "重要メンテナンスのお知らせ",
-  content: "メンテナンスの詳細内容",
-  category: "重要",
+  content: "重要メンテナンスのお知らせ",
   releaseFlag: true,
   updateDate: "2025-10-10T12:00:00Z",
 });
@@ -50,7 +44,7 @@ describe("NewsCard", () => {
   it("公開中バッジと内容を表示する", () => {
     render(<NewsCard news={newsSample()} onEdit={vi.fn()} />);
 
-    expect(screen.getByText("メンテナンスの詳細内容")).toBeInTheDocument();
+    expect(screen.getByText("重要メンテナンスのお知らせ")).toBeInTheDocument();
     expect(screen.getByText("2025-10-10")).toBeInTheDocument();
     expect(screen.getByText("公開中")).toBeInTheDocument();
   });
@@ -126,7 +120,7 @@ describe("NewsCard", () => {
     );
 
     const checkbox = screen.getByRole("checkbox", {
-      name: "メンテナンスの詳細内容を選択",
+      name: "重要メンテナンスのお知らせを選択",
     });
 
     expect(checkbox).not.toBeChecked();
