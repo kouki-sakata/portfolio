@@ -52,6 +52,11 @@ export type DataTableProps<TData, TValue = unknown> = {
   onRowSelectionChange?: (selection: RowSelectionState) => void;
 
   /**
+   * 行選択状態（コントロール用）
+   */
+  rowSelection?: RowSelectionState;
+
+  /**
    * グローバルフィルターを有効にするか
    */
   enableGlobalFilter?: boolean;

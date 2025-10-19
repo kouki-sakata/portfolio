@@ -1,3 +1,4 @@
+import type { RowSelectionState } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export const NewsManagementPage = () => {
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
   const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
   const [selectedNewsIds, setSelectedNewsIds] = useState<number[]>([]);
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<NewsResponse | undefined>();
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
@@ -59,6 +61,22 @@ export const NewsManagementPage = () => {
   const tableRef = useRef<HTMLDivElement>(null);
 
   const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
+
+  const syncRowSelectionWithIds = useCallback(
+    (ids: number[]) => {
+      const idSet = new Set(ids);
+      const nextSelection: RowSelectionState = {};
+
+      newsItems.forEach((item, index) => {
+        if (idSet.has(item.id)) {
+          nextSelection[index.toString()] = true;
+        }
+      });
+
+      setRowSelection(nextSelection);
+    },
+    [newsItems]
+  );
   const bulkPublishMutation = useBulkPublishMutation();
   const bulkUnpublishMutation = useBulkUnpublishMutation();
 
@@ -78,26 +96,35 @@ export const NewsManagementPage = () => {
     setDeleteDialogOpen(false);
   }, []);
 
-  const handleBulkDeleteSuccess = useCallback((result?: BulkMutationResult) => {
-    if (result && result.failedIds.length > 0) {
-      setSelectedNewsIds(result.failedIds);
-    } else {
-      setSelectedNewsIds([]);
-    }
-    setBulkDeleteDialogOpen(false);
-  }, []);
+  const handleBulkDeleteSuccess = useCallback(
+    (result?: BulkMutationResult) => {
+      if (result && result.failedIds.length > 0) {
+        setSelectedNewsIds(result.failedIds);
+        syncRowSelectionWithIds(result.failedIds);
+      } else {
+        setSelectedNewsIds([]);
+        syncRowSelectionWithIds([]);
+      }
+      setBulkDeleteDialogOpen(false);
+    },
+    [syncRowSelectionWithIds]
+  );
 
   const handleBulkMutationResult = useCallback(
     ({ failedIds }: BulkMutationResult) => {
       // 失敗したIDのみ選択を保持（成功したものは選択解除）
       // 全成功の場合は選択状態を保持して連続操作を可能に
       if (failedIds.length > 0) {
-        setSelectedNewsIds((prev) =>
-          prev.filter((id) => failedIds.includes(id))
-        );
+        setSelectedNewsIds((prev) => {
+          const nextIds = prev.filter((id) => failedIds.includes(id));
+          syncRowSelectionWithIds(nextIds);
+          return nextIds;
+        });
+      } else {
+        syncRowSelectionWithIds(selectedNewsIds);
       }
     },
-    []
+    [selectedNewsIds, syncRowSelectionWithIds]
   );
 
   const columns = useNewsColumns({
@@ -106,15 +133,20 @@ export const NewsManagementPage = () => {
   });
 
   const handleRowSelectionChange = useCallback(
-    (selection: Record<string, boolean>) => {
+    (selection: RowSelectionState) => {
       const selectedIds = Object.keys(selection)
         .filter((key) => selection[key])
         .map((key) => newsItems[Number.parseInt(key, 10)]?.id)
         .filter((id): id is number => id !== undefined);
       setSelectedNewsIds(selectedIds);
+      setRowSelection(selection);
     },
     [newsItems]
   );
+
+  useEffect(() => {
+    syncRowSelectionWithIds(selectedNewsIds);
+  }, [selectedNewsIds, syncRowSelectionWithIds]);
 
   const handleOpenCreate = () => {
     setSelectedNews(undefined);
@@ -224,6 +256,7 @@ export const NewsManagementPage = () => {
               loading={newsQuery.isLoading}
               onRowClick={handleRowClick}
               onRowSelectionChange={handleRowSelectionChange}
+              rowSelection={rowSelection}
             />
           </section>
         </>

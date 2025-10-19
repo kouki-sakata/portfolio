@@ -53,6 +53,24 @@ export function useNewsColumns({
         ),
       },
       {
+        accessorKey: "title",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="タイトル" />
+        ),
+        cell: ({ row }) => {
+          const title = row.getValue("title") as string;
+          return (
+            <div className="max-w-[200px] truncate font-medium md:max-w-[300px]">
+              {title || (
+                <span className="text-muted-foreground italic">
+                  タイトル未設定
+                </span>
+              )}
+            </div>
+          );
+        },
+      },
+      {
         accessorKey: "content",
         header: "内容",
         cell: ({ row }) => {
@@ -72,6 +90,37 @@ export function useNewsColumns({
               {content}
             </div>
           );
+        },
+      },
+      {
+        accessorKey: "category",
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="カテゴリ" />
+        ),
+        cell: ({ row }) => {
+          const category = row.getValue("category") as string;
+          if (!category) {
+            return (
+              <span className="text-muted-foreground italic">
+                カテゴリ未設定
+              </span>
+            );
+          }
+
+          let variant: "destructive" | "default" | "secondary" = "secondary";
+          if (category === "重要") {
+            variant = "destructive";
+          } else if (category === "システム") {
+            variant = "default";
+          }
+
+          return <Badge variant={variant}>{category}</Badge>;
+        },
+        filterFn: (row, id, value) => {
+          if (value === "all") {
+            return true;
+          }
+          return row.getValue(id) === value;
         },
       },
       {

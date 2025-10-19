@@ -5,6 +5,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   type PaginationState,
+  type RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
 import { useMemo, useState } from "react";
@@ -45,6 +46,7 @@ export function DataTable<TData, TValue = unknown>({
   loading = false,
   enableRowSelection = false,
   onRowSelectionChange,
+  rowSelection,
   enableGlobalFilter = true,
   enableColumnVisibility = true,
   fixedHeight,
@@ -71,6 +73,9 @@ export function DataTable<TData, TValue = unknown>({
   // 使用するページネーション状態を決定
   const pagination = controlledPagination || internalPagination;
   const setPagination = onPaginationChange || setInternalPagination;
+
+  const resolvedRowSelection: RowSelectionState =
+    rowSelection ?? state.rowSelection;
 
   // スケルトンローディング用の安定したID生成
   const skeletonIds = useMemo(
@@ -120,13 +125,16 @@ export function DataTable<TData, TValue = unknown>({
     // Row Selection
     enableRowSelection,
     onRowSelectionChange: (updater) => {
+      const previousSelection = resolvedRowSelection;
       const newSelection =
-        typeof updater === "function" ? updater(state.rowSelection) : updater;
+        typeof updater === "function" ? updater(previousSelection) : updater;
 
-      setState((prev) => ({
-        ...prev,
-        rowSelection: newSelection,
-      }));
+      if (!rowSelection) {
+        setState((prev) => ({
+          ...prev,
+          rowSelection: newSelection,
+        }));
+      }
 
       onRowSelectionChange?.(newSelection);
     },
@@ -144,6 +152,7 @@ export function DataTable<TData, TValue = unknown>({
     // State
     state: {
       ...state,
+      rowSelection: resolvedRowSelection,
       pagination,
     },
   });
