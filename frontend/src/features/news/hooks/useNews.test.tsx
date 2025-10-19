@@ -38,10 +38,8 @@ const API_BASE_URL = "http://localhost/api";
 const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
   id: overrides?.id ?? 1,
   newsDate: overrides?.newsDate ?? "2025-10-01",
-  title: overrides?.title ?? "システムメンテナンスのお知らせ",
   content:
     overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
-  category: overrides?.category ?? "システム",
   releaseFlag: overrides?.releaseFlag ?? true,
   updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
 });
@@ -131,9 +129,7 @@ describe("useCreateNewsMutation", () => {
   it("作成成功時にキャッシュを無効化しトーストを表示する", async () => {
     const payload: NewsCreateRequest = {
       newsDate: "2025-10-05",
-      title: "新機能リリース",
       content: "新機能リリースのお知らせ",
-      category: "一般",
     };
 
     const created = createNews({ id: 99, ...payload, releaseFlag: false });
@@ -186,9 +182,7 @@ describe("useUpdateNewsMutation", () => {
   it("更新成功時に一覧を再取得する", async () => {
     const payload: NewsUpdateRequest = {
       newsDate: "2025-10-06",
-      title: "更新後のタイトル",
       content: "本文を更新しました",
-      category: "重要",
     };
 
     const updated = createNews({ id: 5, ...payload, releaseFlag: true });

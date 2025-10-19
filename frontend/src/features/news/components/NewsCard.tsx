@@ -1,5 +1,4 @@
 import type { CheckedState } from "@radix-ui/react-checkbox";
-import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,7 +40,6 @@ export const NewsCard = ({
   onSelectionChange,
 }: NewsCardProps) => {
   const toggleMutation = useTogglePublishMutation();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const handleEdit = () => {
     onEdit?.(news);
@@ -106,12 +104,7 @@ export const NewsCard = ({
         >
           公開状態を切り替え
         </Button>
-        <DeleteConfirmDialog
-          news={news}
-          onOpenChange={setShowDeleteDialog}
-          open={showDeleteDialog}
-          type="single"
-        />
+        <DeleteConfirmDialog news={news} />
       </CardFooter>
     </Card>
   );

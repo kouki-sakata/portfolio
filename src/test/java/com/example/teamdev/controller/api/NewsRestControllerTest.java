@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.teamdev.config.SecurityConfig;
 import com.example.teamdev.util.SecurityUtil;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
@@ -73,25 +73,25 @@ class NewsRestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockitoBean
+    @MockBean
     private NewsManageService newsManageService;
 
-    @MockitoBean
+    @MockBean
     private NewsManageRegistrationService registrationService;
 
-    @MockitoBean
+    @MockBean
     private NewsManageDeletionService deletionService;
 
-    @MockitoBean
+    @MockBean
     private NewsManageReleaseService releaseService;
 
-    @MockitoBean
+    @MockBean
     private NewsManageBulkDeletionService bulkDeletionService;
 
-    @MockitoBean
+    @MockBean
     private NewsManageBulkReleaseService bulkReleaseService;
 
-    @MockitoBean
+    @MockBean
     private EmployeeMapper employeeMapper;
 
     @BeforeEach
@@ -115,9 +115,7 @@ class NewsRestControllerTest {
         News news = new News(
             1,
             LocalDate.parse("2025-10-10"),
-            "システムメンテナンスのお知らせ",
             "システムメンテナンスを予定しています。",
-            "システム",
             true,
             Timestamp.from(Instant.parse("2025-10-09T12:34:56Z"))
         );
@@ -127,9 +125,7 @@ class NewsRestControllerTest {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.news[0].id").value(1))
             .andExpect(jsonPath("$.news[0].newsDate").value("2025-10-10"))
-            .andExpect(jsonPath("$.news[0].title").value("システムメンテナンスのお知らせ"))
             .andExpect(jsonPath("$.news[0].content").value("システムメンテナンスを予定しています。"))
-            .andExpect(jsonPath("$.news[0].category").value("システム"))
             .andExpect(jsonPath("$.news[0].releaseFlag").value(true))
             .andExpect(jsonPath("$.news[0].updateDate").value("2025-10-09T12:34:56Z"));
     }
@@ -140,9 +136,7 @@ class NewsRestControllerTest {
         News news = new News(
             2,
             LocalDate.parse("2025-10-11"),
-            "公開お知らせ",
             "公開済みのお知らせです。",
-            "一般",
             true,
             Timestamp.from(Instant.parse("2025-10-11T08:00:00Z"))
         );
@@ -151,8 +145,6 @@ class NewsRestControllerTest {
         mockMvc.perform(get("/api/news/published"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.news[0].id").value(2))
-            .andExpect(jsonPath("$.news[0].title").value("公開お知らせ"))
-            .andExpect(jsonPath("$.news[0].category").value("一般"))
             .andExpect(jsonPath("$.news[0].releaseFlag").value(true));
     }
 
@@ -163,20 +155,13 @@ class NewsRestControllerTest {
         News created = new News(
             5,
             LocalDate.parse("2025-10-15"),
-            "システムメンテナンス予定",
             "新しいお知らせです。",
-            "システム",
             false,
             Timestamp.from(Instant.parse("2025-10-15T09:00:00Z"))
         );
         when(registrationService.execute(any(NewsManageForm.class), eq(ADMIN_ID))).thenReturn(created);
 
-        NewsCreateRequest request = new NewsCreateRequest(
-            "2025-10-15",
-            "システムメンテナンス予定",
-            "新しいお知らせです。",
-            "システム"
-        );
+        NewsCreateRequest request = new NewsCreateRequest("2025-10-15", "新しいお知らせです。");
 
         mockMvc.perform(post("/api/news")
                 .with(csrf())
@@ -184,12 +169,10 @@ class NewsRestControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(5))
-            .andExpect(jsonPath("$.title").value("システムメンテナンス予定"))
-            .andExpect(jsonPath("$.category").value("システム"))
             .andExpect(jsonPath("$.releaseFlag").value(false));
 
         verify(registrationService).execute(
-            argThat(formMatches("", "2025-10-15", "システムメンテナンス予定", "新しいお知らせです。", "システム")),
+            argThat(formMatches("", "2025-10-15", "新しいお知らせです。")),
             eq(ADMIN_ID)
         );
     }
@@ -202,18 +185,14 @@ class NewsRestControllerTest {
         News existing = new News(
             newsId,
             LocalDate.parse("2025-10-01"),
-            "旧タイトル",
             "旧コンテンツ",
-            "一般",
             false,
             Timestamp.from(Instant.parse("2025-10-01T10:00:00Z"))
         );
         News updated = new News(
             newsId,
             LocalDate.parse("2025-10-20"),
-            "更新後タイトル",
             "更新後コンテンツ",
-            "重要",
             false,
             Timestamp.from(Instant.parse("2025-10-20T11:11:11Z"))
         );
@@ -227,20 +206,16 @@ class NewsRestControllerTest {
                 .content("""
                     {
                       "newsDate": "2025-10-20",
-                      "title": "更新後タイトル",
-                      "content": "更新後コンテンツ",
-                      "category": "重要"
+                      "content": "更新後コンテンツ"
                     }
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(newsId))
             .andExpect(jsonPath("$.newsDate").value("2025-10-20"))
-            .andExpect(jsonPath("$.title").value("更新後タイトル"))
-            .andExpect(jsonPath("$.content").value("更新後コンテンツ"))
-            .andExpect(jsonPath("$.category").value("重要"));
+            .andExpect(jsonPath("$.content").value("更新後コンテンツ"));
 
         verify(registrationService).execute(
-            argThat(formMatches(String.valueOf(newsId), "2025-10-20", "更新後タイトル", "更新後コンテンツ", "重要")),
+            argThat(formMatches(String.valueOf(newsId), "2025-10-20", "更新後コンテンツ")),
             eq(ADMIN_ID)
         );
     }
@@ -253,9 +228,7 @@ class NewsRestControllerTest {
         News existing = new News(
             newsId,
             LocalDate.parse("2025-09-01"),
-            "削除予定のお知らせ",
             "削除対象",
-            "一般",
             false,
             Timestamp.from(Instant.parse("2025-09-01T09:00:00Z"))
         );
@@ -279,9 +252,7 @@ class NewsRestControllerTest {
         News existing = new News(
             newsId,
             LocalDate.parse("2025-08-20"),
-            "下書き状態のタイトル",
             "下書きのお知らせ",
-            "一般",
             false,
             Timestamp.from(Instant.parse("2025-08-20T08:30:00Z"))
         );
@@ -318,9 +289,7 @@ class NewsRestControllerTest {
                 .content("""
                     {
                       "newsDate": "2025-10-20",
-                      "title": "未存在タイトル",
-                      "content": "未存在更新",
-                      "category": "一般"
+                      "content": "未存在更新"
                     }
                     """))
             .andExpect(status().isNotFound());
@@ -471,86 +440,10 @@ class NewsRestControllerTest {
             .andExpect(result -> assertThat(result.getResponse().getStatus()).isIn(401, 302));
     }
 
-    @DisplayName("POST /api/news validates title length (max 200)")
-    @Test
-    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
-    void createNewsRejectsTooLongTitle() throws Exception {
-        String tooLongTitle = "あ".repeat(201);
-
-        mockMvc.perform(post("/api/news")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "newsDate": "2025-10-15",
-                      "title": "%s",
-                      "content": "内容",
-                      "category": "一般"
-                    }
-                    """.formatted(tooLongTitle)))
-            .andExpect(status().isBadRequest());
-    }
-
-    @DisplayName("POST /api/news validates title is required")
-    @Test
-    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
-    void createNewsRejectsEmptyTitle() throws Exception {
-        mockMvc.perform(post("/api/news")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "newsDate": "2025-10-15",
-                      "title": "",
-                      "content": "内容",
-                      "category": "一般"
-                    }
-                    """))
-            .andExpect(status().isBadRequest());
-    }
-
-    @DisplayName("POST /api/news validates category enum")
-    @Test
-    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
-    void createNewsRejectsInvalidCategory() throws Exception {
-        mockMvc.perform(post("/api/news")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "newsDate": "2025-10-15",
-                      "title": "タイトル",
-                      "content": "内容",
-                      "category": "無効なカテゴリ"
-                    }
-                    """))
-            .andExpect(status().isBadRequest());
-    }
-
-    @DisplayName("POST /api/news validates category is required")
-    @Test
-    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
-    void createNewsRejectsEmptyCategory() throws Exception {
-        mockMvc.perform(post("/api/news")
-                .with(csrf())
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                    {
-                      "newsDate": "2025-10-15",
-                      "title": "タイトル",
-                      "content": "内容",
-                      "category": ""
-                    }
-                    """))
-            .andExpect(status().isBadRequest());
-    }
-
-    private ArgumentMatcher<NewsManageForm> formMatches(String id, String newsDate, String title, String content, String category) {
+    private ArgumentMatcher<NewsManageForm> formMatches(String id, String newsDate, String content) {
         return form -> form != null
             && ((id == null && form.getId() == null) || (id != null && id.equals(form.getId())))
             && newsDate.equals(form.getNewsDate())
-            && title.equals(form.getTitle())
-            && content.equals(form.getContent())
-            && category.equals(form.getCategory());
+            && content.equals(form.getContent());
     }
 }

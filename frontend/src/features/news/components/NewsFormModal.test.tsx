@@ -37,9 +37,7 @@ const renderWithClient = (ui: React.ReactElement) => {
 const sampleNews: NewsResponse = {
   id: 10,
   newsDate: "2025-10-12",
-  title: "秋の社内イベント",
   content: "秋の社内イベントのお知らせ",
-  category: "一般",
   releaseFlag: false,
   updateDate: "2025-10-12T08:30:00Z",
 };
@@ -66,23 +64,17 @@ describe("NewsFormModal", () => {
     );
 
     const dateInput = screen.getByLabelText("お知らせ日付");
-    const titleInput = screen.getByLabelText("タイトル");
     const contentInput = screen.getByLabelText("内容");
 
     await user.type(dateInput, "2025-10-20");
-    await user.type(titleInput, "新機能リリース");
     await user.type(contentInput, "新しい機能をリリースしました。");
-
-    // デフォルトカテゴリは "一般" なのでそのまま
 
     await user.click(screen.getByRole("button", { name: "保存" }));
 
     await waitFor(() => {
       expect(mocks.createMutate).toHaveBeenCalledWith({
         newsDate: "2025-10-20",
-        title: "新機能リリース",
         content: "新しい機能をリリースしました。",
-        category: "一般",
       });
     });
 
@@ -98,7 +90,6 @@ describe("NewsFormModal", () => {
 
     await user.click(screen.getByRole("button", { name: "保存" }));
 
-    expect(await screen.findByText("タイトルは必須です")).toBeInTheDocument();
     expect(await screen.findByText("内容は必須です")).toBeInTheDocument();
     expect(mocks.createMutate).not.toHaveBeenCalled();
   });
@@ -117,7 +108,6 @@ describe("NewsFormModal", () => {
     );
 
     expect(screen.getByDisplayValue("2025-10-12")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("秋の社内イベント")).toBeInTheDocument();
     expect(
       screen.getByDisplayValue("秋の社内イベントのお知らせ")
     ).toBeInTheDocument();
@@ -133,9 +123,7 @@ describe("NewsFormModal", () => {
         id: sampleNews.id,
         data: {
           newsDate: "2025-10-12",
-          title: "秋の社内イベント",
           content: "内容を更新しました。",
-          category: "一般",
         },
       });
     });

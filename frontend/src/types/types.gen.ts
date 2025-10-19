@@ -118,17 +118,9 @@ export type NewsResponse = {
      */
     newsDate: string;
     /**
-     * タイトル（最大200文字）
-     */
-    title: string;
-    /**
      * お知らせ内容（最大1000文字）
      */
     content: string;
-    /**
-     * カテゴリ（重要/システム/一般）
-     */
-    category: '重要' | 'システム' | '一般';
     /**
      * 公開フラグ（true:公開, false:非公開）
      */
@@ -152,17 +144,9 @@ export type NewsCreateRequest = {
      */
     newsDate: string;
     /**
-     * タイトル（1-200文字）
-     */
-    title: string;
-    /**
      * お知らせ内容（1-1000文字）
      */
     content: string;
-    /**
-     * カテゴリ（重要/システム/一般）
-     */
-    category: '重要' | 'システム' | '一般';
 };
 
 export type NewsUpdateRequest = {
@@ -171,17 +155,9 @@ export type NewsUpdateRequest = {
      */
     newsDate: string;
     /**
-     * タイトル（1-200文字）
-     */
-    title: string;
-    /**
      * お知らせ内容（1-1000文字）
      */
     content: string;
-    /**
-     * カテゴリ（重要/システム/一般）
-     */
-    category: '重要' | 'システム' | '一般';
 };
 
 export type NewsPublishRequest = {
