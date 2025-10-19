@@ -54,7 +54,7 @@ export const NewsDetailDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[600px] max-w-[95vw] min-h-[400px] max-h-[85vh] flex flex-col gap-0 p-0 overflow-hidden">
+      <DialogContent className="w-[600px] max-w-[70vw] min-h-[300px] max-h-[70vh] flex flex-col gap-0 p-0 overflow-hidden">
         {/* ヘッダーセクション - 固定 */}
         <div className="flex-shrink-0 px-6 py-4 border-b border-border">
           <DialogHeader className="space-y-3 text-left">
