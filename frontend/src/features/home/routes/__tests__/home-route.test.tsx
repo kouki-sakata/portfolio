@@ -3,6 +3,7 @@ import { render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HomeRoute } from "@/features/home/routes/HomeRoute";
+import { newsQueryKeys } from "@/features/news/hooks/useNews";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 describe("HomeRoute", () => {
@@ -25,6 +26,8 @@ describe("HomeRoute", () => {
       },
       news: [],
     });
+
+    queryClient.setQueryData(newsQueryKeys.published(), { news: [] });
 
     render(
       <QueryClientProvider client={queryClient}>

@@ -7,11 +7,16 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 const mocks = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
+  bulkMutateAsync: vi.fn(),
 }));
 
 vi.mock("@/features/news/hooks/useNews", () => ({
   useDeleteNewsMutation: () => ({
     mutateAsync: mocks.mutateAsync,
+    isPending: false,
+  }),
+  useBulkDeleteMutation: () => ({
+    mutateAsync: mocks.bulkMutateAsync,
     isPending: false,
   }),
 }));
@@ -28,6 +33,7 @@ const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
 describe("DeleteConfirmDialog", () => {
   beforeEach(() => {
     mocks.mutateAsync.mockReset();
+    mocks.bulkMutateAsync.mockReset();
   });
 
   it("削除ボタンでダイアログを開き、プレビューを100文字で表示する", async () => {

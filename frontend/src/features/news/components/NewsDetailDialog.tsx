@@ -30,17 +30,9 @@ export const NewsDetailDialog = ({
     return null;
   }
 
-  const getCategoryVariant = (
-    category: string
-  ): "destructive" | "default" | "secondary" => {
-    if (category === "重要") {
-      return "destructive";
-    }
-    if (category === "システム") {
-      return "default";
-    }
-    return "secondary";
-  };
+  const headline = news.content.split("\n")[0] ?? "";
+  const truncatedHeadline =
+    headline.length > 60 ? `${headline.slice(0, 60)}…` : headline;
 
   const handleEdit = () => {
     onEdit(news);
@@ -58,19 +50,9 @@ export const NewsDetailDialog = ({
         {/* ヘッダーセクション - 固定 */}
         <div className="flex-shrink-0 border-border border-b px-6 py-4">
           <DialogHeader className="space-y-3 text-left">
-            {/* カテゴリーバッジ */}
-            <div>
-              <Badge
-                className="px-3 py-1 font-medium text-xs"
-                variant={getCategoryVariant(news.category)}
-              >
-                {news.category}
-              </Badge>
-            </div>
-
-            {/* タイトル - 折り返し対応 */}
+            {/* ヘッドライン */}
             <DialogTitle className="break-words font-bold text-2xl leading-tight tracking-tight sm:text-3xl">
-              {news.title}
+              {truncatedHeadline || "お知らせ詳細"}
             </DialogTitle>
 
             {/* メタデータ */}

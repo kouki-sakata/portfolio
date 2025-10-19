@@ -78,8 +78,12 @@ export const NewsManagementPage = () => {
     setDeleteDialogOpen(false);
   }, []);
 
-  const handleBulkDeleteSuccess = useCallback(() => {
-    setSelectedNewsIds([]);
+  const handleBulkDeleteSuccess = useCallback((result?: BulkMutationResult) => {
+    if (result && result.failedIds.length > 0) {
+      setSelectedNewsIds(result.failedIds);
+    } else {
+      setSelectedNewsIds([]);
+    }
     setBulkDeleteDialogOpen(false);
   }, []);
 

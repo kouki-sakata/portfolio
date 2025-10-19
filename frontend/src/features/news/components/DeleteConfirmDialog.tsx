@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
+  type BulkMutationResult,
   useBulkDeleteMutation,
   useDeleteNewsMutation,
 } from "@/features/news/hooks/useNews";
@@ -19,19 +20,19 @@ import { logger } from "@/shared/utils/logger";
 import type { NewsResponse } from "@/types";
 
 type DeleteConfirmDialogSingleProps = {
-  type: "single";
+  type?: "single";
   news: NewsResponse;
   newsIds?: never;
   onConfirm?: () => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 type DeleteConfirmDialogBulkProps = {
   type: "bulk";
   news?: never;
   newsIds: number[];
-  onConfirm?: () => void;
+  onConfirm?: (result?: BulkMutationResult) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 };
@@ -48,49 +49,81 @@ const previewContent = (content: string): string => {
 };
 
 export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
-  const { type, onConfirm, open, onOpenChange } = props;
+  const isBulk = props.type === "bulk";
+  const dialogType: "single" | "bulk" = isBulk ? "bulk" : "single";
+
   const deleteMutation = useDeleteNewsMutation();
   const bulkDeleteMutation = useBulkDeleteMutation();
 
-  const isPending = deleteMutation.isPending || bulkDeleteMutation.isPending;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const controlledOpen =
+    "open" in props && typeof props.open === "boolean" ? props.open : undefined;
+  const actualOpen = controlledOpen ?? internalOpen;
+
+  const handleDialogOpenChange = (next: boolean) => {
+    if (controlledOpen === undefined) {
+      setInternalOpen(next);
+    }
+
+    if ("onOpenChange" in props && props.onOpenChange) {
+      props.onOpenChange(next);
+    }
+  };
+
+  let newsItem: NewsResponse | undefined;
+  let newsIds: number[] = [];
+
+  if (isBulk) {
+    newsIds = props.newsIds;
+  } else {
+    newsItem = props.news;
+  }
+
+  const isPending = isBulk
+    ? deleteMutation.isPending || bulkDeleteMutation.isPending
+    : deleteMutation.isPending;
 
   const titlePreview = useMemo(() => {
-    if (type === "single" && props.news) {
-      return previewContent(props.news.title);
+    if (!newsItem) {
+      return null;
     }
-    return null;
-  }, [type, props]);
+    return previewContent(newsItem.content);
+  }, [newsItem]);
 
   const performDelete = async () => {
-    if (type === "single") {
-      if (!props.news) {
+    if (!isBulk) {
+      if (!newsItem) {
         throw new Error("No news item provided for single deletion");
       }
-      await deleteMutation.mutateAsync(props.news.id);
+      await deleteMutation.mutateAsync(newsItem.id);
       return;
     }
 
-    if (props.newsIds) {
-      await bulkDeleteMutation.mutateAsync({ ids: props.newsIds });
+    if (newsIds.length > 0) {
+      return bulkDeleteMutation.mutateAsync({ ids: newsIds });
     }
   };
 
   const handleDelete = async () => {
     try {
-      await performDelete();
-      onOpenChange(false);
-      onConfirm?.();
+      const result = await performDelete();
+      handleDialogOpenChange(false);
+      if (isBulk) {
+        props.onConfirm?.(result as BulkMutationResult | undefined);
+      } else {
+        props.onConfirm?.();
+      }
     } catch (error) {
       // エラー時はダイアログを開いたままにし、再試行を許可する
       const correlationId =
         globalThis.crypto?.randomUUID?.() ?? `news-delete-${Date.now()}`;
       const targetIds =
-        type === "single"
-          ? [props.news?.id].filter((id): id is number => id !== undefined)
-          : (props.newsIds ?? []);
+        dialogType === "single"
+          ? [newsItem?.id].filter((id): id is number => id !== undefined)
+          : newsIds;
       logger.error("News deletion failed", {
         correlationId,
-        type,
+        type: dialogType,
         targetIds: Array.isArray(targetIds) ? targetIds : [],
         error: error instanceof Error ? error.message : String(error),
       });
@@ -98,12 +131,12 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
   };
 
   const title =
-    type === "single"
+    dialogType === "single"
       ? "このお知らせを削除しますか？"
-      : `選択した${props.newsIds?.length ?? 0}件のお知らせを削除しますか？`;
+      : `選択した${newsIds.length}件のお知らせを削除しますか？`;
 
   const description =
-    type === "single" ? (
+    dialogType === "single" ? (
       <>
         {titlePreview ? (
           <span className="mb-2 block rounded-md bg-muted px-3 py-2 font-semibold text-foreground text-sm">
@@ -116,16 +149,15 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
       </>
     ) : (
       <>
-        選択した{props.newsIds?.length ?? 0}
-        件のお知らせが完全に削除されます。
+        選択した{newsIds.length}件のお知らせが完全に削除されます。
         <br />
         この操作は取り消せません。削除すると復元できません。
       </>
     );
 
   return (
-    <AlertDialog onOpenChange={onOpenChange} open={open}>
-      {type === "single" && (
+    <AlertDialog onOpenChange={handleDialogOpenChange} open={actualOpen}>
+      {dialogType === "single" && controlledOpen === undefined && (
         <AlertDialogTrigger asChild>
           <Button
             disabled={isPending}
