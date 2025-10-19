@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DataTableColumnHeader } from "@/shared/components/data-table";
+import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import type { NewsResponse } from "@/types";
 
 type UseNewsColumnsProps = {
@@ -190,8 +191,8 @@ export function useNewsColumns({
                   type="button"
                   variant="default"
                 >
+                  <SpriteIcon className="h-4 w-4 md:hidden" decorative name="edit" />
                   <span className="hidden md:inline">編集</span>
-                  <span className="md:hidden">✏️</span>
                 </Button>
               )}
               {onDeleteClick && (
@@ -202,8 +203,8 @@ export function useNewsColumns({
                   type="button"
                   variant="destructive"
                 >
+                  <SpriteIcon className="h-4 w-4 md:hidden" decorative name="trash-2" />
                   <span className="hidden md:inline">削除</span>
-                  <span className="md:hidden">🗑️</span>
                 </Button>
               )}
             </div>
