@@ -45,6 +45,7 @@ export function DataTable<TData, TValue = unknown>({
   loading = false,
   enableRowSelection = false,
   onRowSelectionChange,
+  rowSelection: controlledRowSelection,
   enableGlobalFilter = true,
   enableColumnVisibility = true,
   fixedHeight,
@@ -79,6 +80,8 @@ export function DataTable<TData, TValue = unknown>({
   );
 
   // TanStack Tableインスタンスの作成
+  const currentRowSelection = controlledRowSelection ?? state.rowSelection;
+
   const table = useReactTable({
     data,
     columns,
@@ -121,7 +124,7 @@ export function DataTable<TData, TValue = unknown>({
     enableRowSelection,
     onRowSelectionChange: (updater) => {
       const newSelection =
-        typeof updater === "function" ? updater(state.rowSelection) : updater;
+        typeof updater === "function" ? updater(currentRowSelection) : updater;
 
       setState((prev) => ({
         ...prev,
@@ -144,6 +147,7 @@ export function DataTable<TData, TValue = unknown>({
     // State
     state: {
       ...state,
+      rowSelection: currentRowSelection,
       pagination,
     },
   });

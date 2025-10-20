@@ -1,3 +1,4 @@
+import type { RowSelectionState } from "@tanstack/react-table";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -108,6 +109,21 @@ export const NewsManagementPage = () => {
     onEdit: handleEdit,
     onDeleteClick: handleDeleteClick,
   });
+
+  const tableRowSelection = useMemo<RowSelectionState>(() => {
+    if (selectedNewsIds.length === 0) {
+      return {};
+    }
+
+    const selectedSet = new Set(selectedNewsIds);
+
+    return newsItems.reduce<RowSelectionState>((acc, news, index) => {
+      if (selectedSet.has(news.id)) {
+        acc[index.toString()] = true;
+      }
+      return acc;
+    }, {});
+  }, [newsItems, selectedNewsIds]);
 
   const handleRowSelectionChange = useCallback(
     (selection: Record<string, boolean>) => {
@@ -228,6 +244,7 @@ export const NewsManagementPage = () => {
               loading={newsQuery.isLoading}
               onRowClick={handleRowClick}
               onRowSelectionChange={handleRowSelectionChange}
+              rowSelection={tableRowSelection}
             />
           </section>
         </>
