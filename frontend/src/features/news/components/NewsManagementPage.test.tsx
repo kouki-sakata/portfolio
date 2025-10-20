@@ -1,12 +1,11 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import {
-  toNewsViewModel,
-  type NewsViewModel,
-} from "@/features/news/lib/newsViewModel";
 import type { BulkMutationResult } from "@/features/news/hooks/useNews";
+import {
+  type NewsViewModel,
+  toNewsViewModel,
+} from "@/features/news/lib/newsViewModel";
 import { getFirstByRoleOrThrow } from "@/test/dom-assertions";
 import type { NewsResponse } from "@/types";
 import { NewsManagementPage } from "./NewsManagementPage";

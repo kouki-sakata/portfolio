@@ -2,8 +2,8 @@ import { useMemo } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  toNewsViewModelList,
   type NewsViewModel,
+  toNewsViewModelList,
 } from "@/features/news/lib/newsViewModel";
 import type { NewsResponse } from "@/types";
 

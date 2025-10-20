@@ -11,8 +11,8 @@ import {
 } from "@/features/news/hooks/useNews";
 import { useNewsColumns } from "@/features/news/hooks/useNewsColumns";
 import {
-  toNewsViewModel,
   type NewsViewModel,
+  toNewsViewModel,
 } from "@/features/news/lib/newsViewModel";
 import { DataTable } from "@/shared/components/data-table";
 

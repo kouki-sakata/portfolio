@@ -9,12 +9,14 @@ export type NewsViewModel = NewsResponse & {
 
 const CATEGORY_PATTERN = /^【(?<category>[^】]+)】/u;
 
-const deriveCategory = (content: string): {
+const deriveCategory = (
+  content: string
+): {
   category: string;
   normalizedContent: string;
 } => {
   const match = content.match(CATEGORY_PATTERN);
-  if (!match || !match.groups) {
+  if (!match?.groups) {
     return { category: "一般", normalizedContent: content };
   }
 
@@ -26,8 +28,10 @@ const deriveCategory = (content: string): {
   };
 };
 
+const LINE_BREAK_PATTERN = /\r?\n/u;
+
 const deriveTitle = (content: string): string => {
-  const firstLine = content.split(/\r?\n/u)[0] ?? "";
+  const firstLine = content.split(LINE_BREAK_PATTERN)[0] ?? "";
   if (!firstLine) {
     return "お知らせ";
   }
