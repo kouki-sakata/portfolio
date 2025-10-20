@@ -83,15 +83,3 @@ databases:
     user: teamdev_user
     ipAllowList: []
     postgresMajorVersion: "16"
-
-# 自動デプロイ設定
-deploy:
-  - name: production
-    branch: main
-    services:
-      - teamdev-api
-      - teamdev-postgres
-
-# Blueprint (Optional: Infrastructure as Code)
-previewsEnabled: true
-previewsExpireAfterDays: 7
