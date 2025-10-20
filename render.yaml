@@ -16,8 +16,6 @@ services:
         value: prod
       - key: APP_NAME
         value: TeamDevelop-API
-      - key: SERVER_PORT
-        value: 8080
       - key: DB_HOST
         fromDatabase:
           name: teamdev-postgres
