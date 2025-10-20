@@ -63,13 +63,13 @@ services:
         - "*.md"
 
   # PostgreSQL Database
-  - type: pgsql
+  - type: postgres
     name: teamdev-postgres
-    plan: starter  # または standard
+    plan: starter
     region: singapore
     databaseName: teamdev_db
     databaseUser: teamdev_user
-    ipAllowList: []  # 空の場合はすべてのIPを許可
+    ipAllowList: []
     version: "16"
 
 # 自動デプロイ設定

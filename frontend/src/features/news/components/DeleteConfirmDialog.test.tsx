@@ -1,5 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { NewsResponse } from "@/types";
@@ -7,11 +8,16 @@ import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
 
 const mocks = vi.hoisted(() => ({
   mutateAsync: vi.fn(),
+  bulkMutateAsync: vi.fn(),
 }));
 
 vi.mock("@/features/news/hooks/useNews", () => ({
   useDeleteNewsMutation: () => ({
     mutateAsync: mocks.mutateAsync,
+    isPending: false,
+  }),
+  useBulkDeleteMutation: () => ({
+    mutateAsync: mocks.bulkMutateAsync,
     isPending: false,
   }),
 }));
@@ -28,11 +34,12 @@ const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
 describe("DeleteConfirmDialog", () => {
   beforeEach(() => {
     mocks.mutateAsync.mockReset();
+    mocks.bulkMutateAsync.mockReset();
   });
 
   it("削除ボタンでダイアログを開き、プレビューを100文字で表示する", async () => {
     const user = userEvent.setup();
-    render(<DeleteConfirmDialog news={sampleNews()} />);
+    render(<ControlledDeleteConfirmDialog news={sampleNews()} type="single" />);
 
     await user.click(screen.getByRole("button", { name: "削除" }));
 
@@ -60,7 +67,7 @@ describe("DeleteConfirmDialog", () => {
     mocks.mutateAsync.mockResolvedValue(undefined);
 
     const news = sampleNews({ id: 44 });
-    render(<DeleteConfirmDialog news={news} />);
+    render(<ControlledDeleteConfirmDialog news={news} type="single" />);
 
     await user.click(screen.getByRole("button", { name: "削除" }));
     await user.click(await screen.findByRole("button", { name: "削除する" }));
@@ -70,7 +77,7 @@ describe("DeleteConfirmDialog", () => {
 
   it("キャンセルボタンでダイアログを閉じる", async () => {
     const user = userEvent.setup();
-    render(<DeleteConfirmDialog news={sampleNews()} />);
+    render(<ControlledDeleteConfirmDialog news={sampleNews()} type="single" />);
 
     await user.click(screen.getByRole("button", { name: "削除" }));
 
@@ -84,3 +91,15 @@ describe("DeleteConfirmDialog", () => {
     ).not.toBeInTheDocument();
   });
 });
+type SingleDialogProps = Extract<
+  Parameters<typeof DeleteConfirmDialog>[0],
+  { type: "single" }
+>;
+
+const ControlledDeleteConfirmDialog = (
+  props: Omit<SingleDialogProps, "open" | "onOpenChange">
+) => {
+  const [open, setOpen] = useState(false);
+
+  return <DeleteConfirmDialog {...props} onOpenChange={setOpen} open={open} />;
+};

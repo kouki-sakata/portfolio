@@ -8,6 +8,7 @@ import { NewsCard } from "./NewsCard";
 const mocks = vi.hoisted(() => ({
   toggleMutate: vi.fn(),
   deleteMutate: vi.fn(),
+  bulkDeleteMutate: vi.fn(),
 }));
 
 vi.mock("@/features/news/hooks/useNews", () => ({
@@ -17,6 +18,10 @@ vi.mock("@/features/news/hooks/useNews", () => ({
   }),
   useDeleteNewsMutation: () => ({
     mutateAsync: mocks.deleteMutate,
+    isPending: false,
+  }),
+  useBulkDeleteMutation: () => ({
+    mutateAsync: mocks.bulkDeleteMutate,
     isPending: false,
   }),
 }));
@@ -33,11 +38,16 @@ describe("NewsCard", () => {
   beforeEach(() => {
     mocks.toggleMutate.mockResolvedValue(undefined);
     mocks.deleteMutate.mockResolvedValue(undefined);
+    mocks.bulkDeleteMutate.mockResolvedValue({
+      successIds: [],
+      failedIds: [],
+    });
   });
 
   afterEach(() => {
     mocks.toggleMutate.mockReset();
     mocks.deleteMutate.mockReset();
+    mocks.bulkDeleteMutate.mockReset();
     vi.clearAllMocks();
   });
 

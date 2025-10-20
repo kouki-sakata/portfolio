@@ -11,6 +11,10 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 
 ## Project Context
 
+### test account
+- email:test@gmail.com
+- password:testtest
+
 ### Paths
 - Steering: `.kiro/steering/`
 - Specs: `.kiro/specs/`
