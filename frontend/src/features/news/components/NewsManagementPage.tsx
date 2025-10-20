@@ -10,8 +10,11 @@ import {
   useNewsQuery,
 } from "@/features/news/hooks/useNews";
 import { useNewsColumns } from "@/features/news/hooks/useNewsColumns";
+import {
+  toNewsViewModel,
+  type NewsViewModel,
+} from "@/features/news/lib/newsViewModel";
 import { DataTable } from "@/shared/components/data-table";
-import type { NewsResponse } from "@/types";
 
 import { BulkActionBar } from "./BulkActionBar";
 import { DeleteConfirmDialog } from "./DeleteConfirmDialog";
@@ -47,28 +50,33 @@ export const NewsManagementPage = () => {
   const newsQuery = useNewsQuery();
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
-  const [selectedNews, setSelectedNews] = useState<NewsResponse | undefined>();
+  const [selectedNews, setSelectedNews] = useState<NewsViewModel | undefined>();
   const [selectedNewsIds, setSelectedNewsIds] = useState<number[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<NewsResponse | undefined>();
+  const [deleteTarget, setDeleteTarget] = useState<NewsViewModel | undefined>();
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [selectedNewsForDetail, setSelectedNewsForDetail] = useState<
-    NewsResponse | undefined
+    NewsViewModel | undefined
   >();
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const newsItems = useMemo(() => newsQuery.data?.news ?? [], [newsQuery.data]);
+  const newsItems = useMemo(() => {
+    if (!newsQuery.data) {
+      return [] as NewsViewModel[];
+    }
+    return newsQuery.data.news.map(toNewsViewModel);
+  }, [newsQuery.data]);
   const bulkPublishMutation = useBulkPublishMutation();
   const bulkUnpublishMutation = useBulkUnpublishMutation();
 
-  const handleEdit = useCallback((news: NewsResponse) => {
+  const handleEdit = useCallback((news: NewsViewModel) => {
     setSelectedNews(news);
     setFormMode("edit");
     setFormOpen(true);
   }, []);
 
-  const handleDeleteClick = useCallback((news: NewsResponse) => {
+  const handleDeleteClick = useCallback((news: NewsViewModel) => {
     setDeleteTarget(news);
     setDeleteDialogOpen(true);
   }, []);
@@ -118,7 +126,7 @@ export const NewsManagementPage = () => {
     setFormOpen(true);
   };
 
-  const handleRowClick = useCallback((news: NewsResponse) => {
+  const handleRowClick = useCallback((news: NewsViewModel) => {
     setSelectedNewsForDetail(news);
     setDetailDialogOpen(true);
   }, []);
@@ -126,7 +134,7 @@ export const NewsManagementPage = () => {
   // カスタムイベントで編集を処理
   useEffect(() => {
     const handleEditEvent = (event: Event) => {
-      const customEvent = event as CustomEvent<NewsResponse>;
+      const customEvent = event as CustomEvent<NewsViewModel>;
       handleEdit(customEvent.detail);
     };
 

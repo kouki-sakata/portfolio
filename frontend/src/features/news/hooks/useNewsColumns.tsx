@@ -6,9 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getNewsCategoryBadgeVariant } from "@/features/news/lib/categoryBadge";
+import type { NewsViewModel } from "@/features/news/lib/newsViewModel";
 import { DataTableColumnHeader } from "@/shared/components/data-table";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
-import type { NewsResponse } from "@/types";
 
 const multiLineClampStyle = {
   display: "-webkit-box",
@@ -21,15 +21,15 @@ const stopPropagation = (event: SyntheticEvent) => {
 };
 
 type UseNewsColumnsProps = {
-  onEdit?: (news: NewsResponse) => void;
-  onDeleteClick?: (news: NewsResponse) => void;
+  onEdit?: (news: NewsViewModel) => void;
+  onDeleteClick?: (news: NewsViewModel) => void;
 };
 
 export function useNewsColumns({
   onEdit,
   onDeleteClick,
 }: UseNewsColumnsProps = {}) {
-  return useMemo<ColumnDef<NewsResponse>[]>(
+  return useMemo<ColumnDef<NewsViewModel>[]>(
     () => [
       {
         id: "select",

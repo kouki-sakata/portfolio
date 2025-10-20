@@ -10,14 +10,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getNewsCategoryBadgeVariant } from "@/features/news/lib/categoryBadge";
-import type { NewsResponse } from "@/types";
+import type { NewsViewModel } from "@/features/news/lib/newsViewModel";
 
 type NewsDetailDialogProps = {
-  news: NewsResponse | null;
+  news: NewsViewModel | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onEdit: (news: NewsResponse) => void;
-  onDelete: (news: NewsResponse) => void;
+  onEdit: (news: NewsViewModel) => void;
+  onDelete: (news: NewsViewModel) => void;
 };
 
 export const NewsDetailDialog = ({

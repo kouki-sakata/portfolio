@@ -2,6 +2,10 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import {
+  toNewsViewModel,
+  type NewsViewModel,
+} from "@/features/news/lib/newsViewModel";
 import type { BulkMutationResult } from "@/features/news/hooks/useNews";
 import { getFirstByRoleOrThrow } from "@/test/dom-assertions";
 import type { NewsResponse } from "@/types";
@@ -54,7 +58,7 @@ vi.mock("./NewsFormModal", () => ({
   }: {
     mode: "create" | "edit";
     open: boolean;
-    news?: NewsResponse;
+    news?: NewsViewModel;
     onClose: () => void;
   }) => (
     <div data-testid="news-form-modal">
@@ -68,15 +72,28 @@ vi.mock("./NewsFormModal", () => ({
   ),
 }));
 
-const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: overrides?.id ?? 1,
-  newsDate: overrides?.newsDate ?? "2025-10-10",
-  title: overrides?.title ?? "リリースノート",
-  content: overrides?.content ?? "新機能のリリース情報",
-  category: overrides?.category ?? "一般",
-  releaseFlag: overrides?.releaseFlag ?? true,
-  updateDate: overrides?.updateDate ?? "2025-10-10T12:00:00Z",
-});
+const sampleNews = (overrides?: Partial<NewsViewModel>): NewsViewModel => {
+  const { title, category, ...rest } = overrides ?? {};
+
+  const base: NewsResponse = {
+    id: rest.id ?? 1,
+    newsDate: rest.newsDate ?? "2025-10-10",
+    content:
+      rest.content ??
+      "【一般】リリースノート\n本日のリリース内容をご確認ください。",
+    releaseFlag: rest.releaseFlag ?? true,
+    updateDate: rest.updateDate ?? "2025-10-10T12:00:00Z",
+  };
+
+  const view = toNewsViewModel(base);
+
+  return {
+    ...view,
+    ...rest,
+    ...(title !== undefined ? { title } : {}),
+    ...(category !== undefined ? { category } : {}),
+  } satisfies NewsViewModel;
+};
 
 describe("NewsManagementPage", () => {
   beforeEach(() => {

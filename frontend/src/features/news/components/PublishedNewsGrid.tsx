@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  toNewsViewModelList,
+  type NewsViewModel,
+} from "@/features/news/lib/newsViewModel";
 import type { NewsResponse } from "@/types";
 
 import { PublishedNewsCard } from "./PublishedNewsCard";
@@ -31,9 +35,14 @@ export const PublishedNewsGrid = ({
   isLoading = false,
 }: PublishedNewsGridProps) => {
   // 公開中のお知らせのみフィルタリング（最大4件）
-  const publishedNews = useMemo(
-    () => news.filter((item) => item.releaseFlag).slice(0, 4),
+  const viewModelNews = useMemo<NewsViewModel[]>(
+    () => toNewsViewModelList(news),
     [news]
+  );
+
+  const publishedNews = useMemo(
+    () => viewModelNews.filter((item) => item.releaseFlag).slice(0, 4),
+    [viewModelNews]
   );
 
   if (isLoading) {
