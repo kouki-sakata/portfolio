@@ -35,13 +35,19 @@ TeamDevelopBravo-main/
 └── util/             # ユーティリティ
 ```
 
+### API公開パターンの追加
+- `/api/public/**` は `FeatureFlagRestController` が担当し、モダンUIフラグを匿名アクセスで提供（`FeatureFlagService` が Spring プロファイルに応じて値を決定）。
+- `DebugController` は dev/test プロファイル限定で `/api/debug` を公開し、CSRF ヘッダー／Cookie の整合性やリクエストヘッダーを可視化するデバッグ専用エンドポイント。
+
 ## フロントエンド構造 (`frontend/src/`)
 
 ```
 ├── app/              # メインアプリケーション
 │   ├── config/       # QueryClient設定
+│   ├── layouts/      # AppLayout（認証ガード + レスポンシブシェル）
 │   ├── providers/    # AppProviders、routeLoaders
 │   └── routes.tsx
+├── hooks/            # グローバルで再利用するUI/UXカスタムフック
 ├── components/ui/    # shadcn/uiコンポーネント
 ├── features/         # 機能別モジュール
 │   ├── auth/         # 認証（AuthProvider、hooks、api）
@@ -63,11 +69,29 @@ TeamDevelopBravo-main/
 ├── shared/           # 共通コンポーネント
 │   ├── api/          # API共通設定、エラークラス
 │   ├── components/   # layout、loading
+│   ├── contexts/     # FeatureFlagContextなどのクロスカッティング状態
+│   ├── error-handling/ # GlobalErrorHandler・ErrorBoundary（トースト + ログ統合）
+│   ├── hooks/        # use-feature-flag、useOptimizedImageなどの共有フック
+│   ├── lib/          # 環境変数・最適化ロジックなどの共通ライブラリ
+│   ├── performance/  # パフォーマンス計測ユーティリティ
+│   ├── repositories/ # IHttpClientアダプター、InterceptableHttpClient
 │   └── utils/
 ├── schemas/          # Zodスキーマ（OpenAPI生成）
 ├── test/             # テストユーティリティ（MSW、setup）
 └── types/            # 自動生成型定義
 ```
+
+### SPAレイアウトとルーター層
+- `app/layouts/AppLayout` が認証ガード、モバイルサイドバー、`NavigationProgress` を結合したシェルとして全画面を包み、レスポンシブな 2 カラム構成を維持する。
+- `app/providers/routeLoaders.ts` は React Router ローダーで初期データをプリフェッチし、401/403 を `authEvents` に流してトースト通知と `redirect()` を一元化する。
+- 共通 `hooks/` は toast・画像最適化など UI 体験の横断パターンをまとめ、features 配下からも import できる仕組みを提供。
+
+### 共有基盤の拡張パターン
+- `shared/contexts/FeatureFlagContext` と `shared/hooks/use-feature-flag` が `/api/public/feature-flags` をローカルストレージと同期し、UI ラッパーの分岐を制御。
+- `shared/components/ui-wrapper/*` は shadcn/ui コンポーネントにフォールバック実装を被せ、段階的ロールアウトを可能にする Feature Flag トグル層。
+- `shared/error-handling/` は `GlobalErrorHandler`・`ErrorBoundary`・`error-logger` を備え、API 例外を分類して Toast とロギングに反映するグローバルハンドリングを担う。
+- `shared/repositories/` は `IHttpClient` インターフェース＋アダプターによる Repository パターンを提供し、Zod バリデーション付きの `AuthRepository` や `HomeRepository` が依存逆転で再利用。
+- `shared/components/layout/` に AppShell / Sidebar / Header / ComingSoon などの骨格 UI を集約し、AppLayout や各ページから再利用できる。
 
 ## レイヤードアーキテクチャ
 
@@ -111,4 +135,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-17 (stampHistory機能構造追加、libディレクトリパターン)*
+*Last Updated: 2025-10-20 (FeatureFlag UI基盤と共有エラーハンドリング構造を追記)*

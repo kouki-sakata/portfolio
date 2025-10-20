@@ -50,6 +50,21 @@ npm run generate:api # OpenAPI型生成
 - **`onSettled`**: サーバー再検証（`queryClient.invalidateQueries`）で最終整合性確保
 - **複数キャッシュキー同時無効化**: list + published等、関連キャッシュの同期更新
 
+#### Feature Flag UIトグルとフォールバック
+- `FeatureFlagProvider` + `FeatureFlagContext` が `/api/public/feature-flags` から取得した値をローカルストレージと同期し、起動直後から安定したフラグ状態を提供。
+- `shared/components/ui-wrapper/*` が shadcn/ui コンポーネントを安全にラップし、旗が無効な環境でもカスタムのフォールバック UI に自動切替（段階的ロールアウトやレガシー互換を両立）。
+- `NavigationProgress` と `AppLayout` が Feature Flag で切り替わる UI に対しても共通のナビゲーション UX（モバイルドロワー、ヘッダー）を維持。
+
+#### グローバルエラーハンドリングとイベント連携
+- `shared/error-handling/GlobalErrorHandler` が API 例外を識別（認証/権限/ネットワーク/バリデーション）し、Toast 表示とロギングを一元管理。
+- `shared/api/interceptors/errorInterceptor` が Axios 401/403 を `authEvents` にエスカレートし、`AppProviders` でトースト + ルーターリダイレクトを統合。
+- `configureQueryClientErrorHandler` が React Query の QueryCache と組み合わせて 401 発生時に自動 logout + `/signin` リダイレクト、403 ではダッシュボードに戻すガードを実現。
+
+#### Repository + HTTPアダプター
+- `shared/repositories/IHttpClient` で HTTP 層を抽象化し、`httpClientAdapter` が fetch ベースクライアントを Repository から切り離す。
+- 各 Repository（`AuthRepository`, `HomeRepository` 等）は Zod スキーマで API 応答を検証し、依存逆転の原則 (DIP) を満たしたテスト容易な構造。
+- `InterceptableHttpClient` とインターセプター型が将来のロギング/認証ヘッダー拡張に備えた拡張ポイントとして定義済み。
+
 ## バックエンド
 
 ### 主要スタック
@@ -135,4 +150,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-17 (フロントエンド設計パターン、バルクAPIエラー戦略、MyBatis実装パターン追加)*
+*Last Updated: 2025-10-20 (Feature Flag UIトグルとグローバルエラーハンドリングを反映)*

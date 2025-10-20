@@ -1,5 +1,32 @@
 # Steering Documents Changelog
 
+## 2025-10-20 (Update 28)
+
+### Updated Documents
+- `product.md` - Feature Flag 基盤とグローバルエラーハンドリングの実装状況を追記
+- `tech.md` - Feature Flag UI トグル、エラーイベント連携、Repository 抽象化を反映
+- `structure.md` - フロント共有基盤と `/api/public` / デバッグAPI の構造指針を更新
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **Feature Flag UI基盤の文書化**
+  - `/api/public/feature-flags` と `FeatureFlagService` によるプロファイル別フラグ提供を整理
+  - `FeatureFlagProvider` + UI Wrapper で shadcn/ui を安全にトグルするパターンを明文化
+- **グローバルエラーハンドリング指針**
+  - `GlobalErrorHandler`・`authEvents`・QueryClient エラーフック連携による 401/403 処理と Toast 通知を記録
+  - Route Loader とリダイレクト戦略を合わせて記述し、プリフェッチと権限制御の流れを統一
+- **共有リポジトリ/ユーティリティ構造**
+  - `shared/repositories` の IHttpClient アダプターと Zod 検証パターンを追加
+  - 共有ディレクトリ（contexts, error-handling, components/layout など）の役割と再利用方針を整理
+
+### Impact
+- Feature Flag に依存する UI/UX 変更を安全に展開するための手順が明確化され、段階的リリース時の判断基準が整備された。
+- エラー通知とセッション制御の統一パターンが明文化され、複数機能で一貫した UX を保ちながら保守できる。
+- 共有リポジトリ層の抽象化が文書化され、追加機能でも DIP を守ったデータ取得実装を再利用しやすくなった。
+
+### Note
+Feature Flag 実装とエラーハンドリング改善は 2025-10-20 時点の main ブランチを反映。既存セクションは保持しつつ加筆のみで差分を可視化している。
+
 ## 2025-10-17 (Update 27)
 
 ### Updated Documents

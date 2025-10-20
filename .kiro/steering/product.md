@@ -32,6 +32,8 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - shadcn/ui@canary + Tailwind CSS 4
 - Biome統合によるコード品質管理
 - React Query 5キャッシング、Vite 7コード分割
+- Feature Flag API + React Context による shadcn/ui 切替（フォールバックUI付きで段階導入を可能にする）
+- GlobalErrorHandler + QueryClient エラーフックで一貫した Toast/リダイレクト制御
 - 500+ ユニットテスト（Vitest、Playwright E2E）
 
 ### ビジネス価値
@@ -65,6 +67,14 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - カスタムフック統合（useStampHistoryExport）
   - CSV/TSV/Excel-CSVバッチエクスポート（大量データ対応）
   - 月次統計計算、編集・削除ダイアログ、包括的テスト完備
+- ✅ モダンUI Feature Flag レイヤー整備（2025-10-20）
+  - `/api/public/feature-flags` エンドポイント + FeatureFlagService でプロファイル別フラグを提供
+  - FeatureFlagProvider + UI Wrapper で shadcn/ui とカスタムUIを安全にトグル
+  - ModernUI/Legacy プロファイルの統合テスト（MockMvc）で常時 true を保証
+- ✅ グローバルエラーハンドリング基盤
+  - GlobalErrorHandler + Toast + error-logger による例外分類と通知整流
+  - authEvents + QueryClient エラーフックで 401/403 を自動リダイレクト & セッションリセット
+  - RouteLoader でプリフェッチと権限制御（redirect + トースト）を共通化
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
@@ -72,4 +82,4 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - 📋 外部システム連携API、プッシュ通知、生体認証
 
 ---
-*Last Updated: 2025-10-17 (stampHistory機能文書化)*
+*Last Updated: 2025-10-20 (Feature Flag基盤とグローバルエラーハンドリングを反映)*
