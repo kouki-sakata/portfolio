@@ -74,15 +74,15 @@ services:
         - docs/**
         - "*.md"
 
-  # PostgreSQL Database
-  - type: postgres
-    name: teamdev-postgres
+# PostgreSQL Database
+databases:
+  - name: teamdev-postgres
     plan: starter
     region: singapore
     databaseName: teamdev_db
-    databaseUser: teamdev_user
+    user: teamdev_user
     ipAllowList: []
-    version: "16"
+    postgresMajorVersion: "16"
 
 # 自動デプロイ設定
 deploy:
