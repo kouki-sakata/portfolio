@@ -3,7 +3,7 @@ services:
   - type: web
     name: teamdev-api
     runtime: docker
-    plan: starter  # または standard
+    plan: free  # 無料プラン（15分でスリープ）
     region: singapore  # アジア太平洋地域
     branch: main
     autoDeploy: true  # main ブランチへの push で自動デプロイ
@@ -78,7 +78,7 @@ services:
 # PostgreSQL Database
 databases:
   - name: teamdev-postgres
-    plan: starter
+    plan: free  # 無料プラン（90日後削除、容量制限あり）
     region: singapore
     databaseName: teamdev_db
     user: teamdev_user
