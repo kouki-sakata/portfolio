@@ -83,9 +83,12 @@ export const NewsManagementPage = () => {
   }, []);
 
   const handleDeleteSuccess = useCallback(() => {
+    if (deleteTarget) {
+      setSelectedNewsIds((prev) => prev.filter((id) => id !== deleteTarget.id));
+    }
     setDeleteTarget(undefined);
     setDeleteDialogOpen(false);
-  }, []);
+  }, [deleteTarget]);
 
   const handleBulkDeleteSuccess = useCallback(() => {
     setSelectedNewsIds([]);

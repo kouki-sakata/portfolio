@@ -63,7 +63,7 @@ services:
         - "*.md"
 
   # PostgreSQL Database
-  - type: psql
+  - type: postgres
     name: teamdev-postgres
     plan: starter
     region: singapore
