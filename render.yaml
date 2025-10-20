@@ -6,6 +6,7 @@ services:
     plan: starter  # または standard
     region: singapore  # アジア太平洋地域
     branch: main
+    autoDeploy: true  # main ブランチへの push で自動デプロイ
     dockerfilePath: ./Dockerfile
     dockerContext: .
     numInstances: 1
