@@ -42,18 +42,11 @@
     }
   ],
   "env": {
-    "NODE_ENV": "production",
-    "VITE_BUILD_SOURCEMAP": "false"
-  },
-  "build": {
-    "env": {
-      "_comment": "VITE_API_BASE_URL must be set in Vercel Dashboard Environment Variables",
-      "VITE_API_BASE_URL": "@vite_api_base_url"
-    }
+    "NODE_ENV": "production"
   },
   "rewrites": [
     {
-      "source": "/((?!api).*)",
+      "source": "/:path((?!api|assets|img|.*\\.[a-z0-9]+$).*)",
       "destination": "/index.html"
     }
   ]
