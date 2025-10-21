@@ -23,6 +23,13 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Configuration
 @EnableWebSecurity
@@ -80,6 +87,56 @@ public class SecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    /**
+     * CORS設定
+     * Vercel フロントエンドからのクロスオリジンリクエストを許可
+     * 環境変数 CORS_ALLOWED_ORIGINS で制御
+     */
+    @Bean
+    public CorsConfigurationSource corsConfigurationSource(
+        @Value("${spring.web.cors.allowed-origins}") String allowedOrigins
+    ) {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(parseAllowedOrigins(allowedOrigins));
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
+        configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
+    }
+
+    /**
+     * 許可されたOriginを解析・検証
+     * カンマ区切りの文字列をリストに変換し、各Originの形式を検証
+     */
+    private List<String> parseAllowedOrigins(String origins) {
+        if (origins == null || origins.trim().isEmpty()) {
+            throw new IllegalStateException("CORS_ALLOWED_ORIGINS must be set in production");
+        }
+
+        return Arrays.stream(origins.split(","))
+            .map(String::trim)
+            .filter(s -> !s.isEmpty())
+            .peek(this::validateOriginFormat)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * Origin形式の検証
+     * ワイルドカード（*）や不正な形式を拒否
+     */
+    private void validateOriginFormat(String origin) {
+        if ("*".equals(origin)) {
+            throw new IllegalArgumentException("Wildcard origin (*) not allowed with credentials");
+        }
+        if (!origin.startsWith("http://") && !origin.startsWith("https://")) {
+            throw new IllegalArgumentException("Invalid origin format (must start with http:// or https://): " + origin);
+        }
     }
 
     @Bean
