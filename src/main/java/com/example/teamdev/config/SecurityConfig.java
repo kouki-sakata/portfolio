@@ -150,14 +150,7 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers(
-                    "/",
-                    "/index.html",
-                    "/favicon.ico",
-                    "/manifest.webmanifest",
-                    "/assets/**"
-                ).permitAll()
-                .requestMatchers("/signin", "/signin/**").permitAll()
+                // API & Health endpoints only (SPA is hosted on Vercel)
                 .requestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
@@ -187,7 +180,8 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/actuator/**")
                 )
-                .authenticationEntryPoint((request, response, authException) -> response.sendRedirect("/signin"))
+                // For non-API requests, return 404 (SPA routes don't exist on API server)
+                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.NOT_FOUND))
                 .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
