@@ -63,6 +63,7 @@ services:
         - gradlew
         - gradle/**
         - Dockerfile
+        - render.yaml
       ignoredPaths:
         - README.md
         - docs/**
