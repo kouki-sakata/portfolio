@@ -39,11 +39,9 @@ COPY --from=build --chown=appuser:appgroup /app/build/libs/*.jar app.jar
 # Switch to non-root user
 USER appuser
 
-# Add health check
+# Add health check (uses dynamic PORT env var from Render)
 HEALTHCHECK --interval=30s --timeout=3s --start-period=30s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health || exit 1
-
-EXPOSE 8080
+    CMD wget --no-verbose --tries=1 --spider http://localhost:${PORT:-8080}/actuator/health || exit 1
 
 # Use exec form and add JVM optimization
 ENTRYPOINT ["java", \
