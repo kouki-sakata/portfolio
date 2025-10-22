@@ -39,7 +39,7 @@ public class SecurityConfig {
     private static final String ENV_TEST = "test";
     private static final String ENV_DEV = "dev";
 
-    @Value("${app.environment:prod}")
+    @Value("${app.environment:production}")
     private String environment;
 
     /**
@@ -134,6 +134,9 @@ public class SecurityConfig {
         if ("*".equals(origin)) {
             throw new IllegalArgumentException("Wildcard origin (*) not allowed with credentials");
         }
+        if (origin.contains("*")) {
+            throw new IllegalArgumentException("Wildcard patterns not allowed with credentials: " + origin);
+        }
         if (!origin.startsWith("http://") && !origin.startsWith("https://")) {
             throw new IllegalArgumentException("Invalid origin format (must start with http:// or https://): " + origin);
         }
@@ -146,8 +149,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
                 .csrfTokenRequestHandler(createCsrfTokenRequestHandler())
-                // Allow health endpoints, login, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
-                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
+                // Allow health endpoints, login, session, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/debug/**")
             )
             .authorizeHttpRequests(authz -> authz
                 // API & Health endpoints only (SPA is hosted on Vercel)
@@ -180,13 +183,11 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/actuator/**")
                 )
-                // For non-API requests, return 404 (SPA routes don't exist on API server)
-                .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.NOT_FOUND))
                 .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
             .sessionManagement(session -> session
-                .maximumSessions(1)
+                .maximumSessions(3)  // Allow multiple devices (PC + mobile + tablet)
                 .maxSessionsPreventsLogin(false)
             )
             .headers(headers -> headers
@@ -196,15 +197,7 @@ public class SecurityConfig {
                     .maxAgeInSeconds(31536000)
                     .includeSubDomains(true)
                 )
-                .contentSecurityPolicy(csp -> csp
-                    .policyDirectives("default-src 'self'; " +
-                        "script-src 'self'; " +
-                        "style-src 'self' 'unsafe-inline'; " +
-                        "font-src 'self'; " +
-                        "img-src 'self' data:; " +
-                        "connect-src 'self'; " +
-                        "frame-ancestors 'none'")
-                )
+                // CSP is managed by Vercel frontend (SPA hosting)
             );
 
         return http.build();
