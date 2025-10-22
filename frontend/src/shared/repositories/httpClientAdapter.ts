@@ -1,11 +1,58 @@
-import type { AxiosRequestConfig } from "axios";
+import type { AxiosRequestConfig, RawAxiosRequestHeaders } from "axios";
 import { apiClient } from "@/shared/api/axiosClient";
 import { ApiError } from "@/shared/api/errors/ApiError";
-import type { HttpRequestOptions, IHttpClient, RepositoryError } from "./types";
+import type {
+  HttpRequestOptions,
+  IHttpClient,
+  JsonHttpRequestOptions,
+  NoParseHttpRequestOptions,
+  RepositoryError,
+} from "./types";
+
+const REPOSITORY_ERROR_CODES = [
+  "NETWORK_ERROR",
+  "VALIDATION_ERROR",
+  "NOT_FOUND",
+  "UNAUTHORIZED",
+  "UNKNOWN",
+] as const;
+
+type RepositoryErrorCode = (typeof REPOSITORY_ERROR_CODES)[number];
+
+const isRepositoryErrorCode = (value: unknown): value is RepositoryErrorCode =>
+  typeof value === "string" &&
+  REPOSITORY_ERROR_CODES.includes(value as RepositoryErrorCode);
 
 /**
  * HTTPエラーの型定義
  */
+const normalizeHeaders = (
+  headers?: HeadersInit
+): RawAxiosRequestHeaders | undefined => {
+  if (!headers) {
+    return;
+  }
+
+  if (headers instanceof Headers) {
+    const normalized: Record<string, string> = {};
+    for (const [key, value] of headers.entries()) {
+      normalized[key] = value;
+    }
+    return normalized as RawAxiosRequestHeaders;
+  }
+
+  if (Array.isArray(headers)) {
+    const normalized: Record<string, string> = {};
+    for (const [key, value] of headers) {
+      normalized[key] = value;
+    }
+    return normalized as RawAxiosRequestHeaders;
+  }
+
+  // Record<string, string> などはそのまま流用
+  return headers as RawAxiosRequestHeaders;
+};
+
 const mapHttpOptionsToAxiosConfig = (
   options?: HttpRequestOptions
 ): AxiosRequestConfig => {
@@ -14,7 +61,7 @@ const mapHttpOptionsToAxiosConfig = (
   }
 
   const config: AxiosRequestConfig = {
-    headers: options.headers,
+    headers: normalizeHeaders(options.headers),
     signal: options.signal,
   };
 
@@ -31,113 +78,183 @@ const mapHttpOptionsToAxiosConfig = (
  * Adapter Patternの実装
  */
 export const createHttpClientAdapter = (): IHttpClient => {
-  const handleError = (error: unknown): never => {
-    const repoError = new Error("HTTP request failed") as RepositoryError;
+  const buildRepositoryError = (error: ApiError): RepositoryError => {
+    const repoError = Object.assign(new Error(error.message), {
+      code: isRepositoryErrorCode(error.code) ? error.code : "UNKNOWN",
+      status: error.status,
+      details: error.details,
+    }) as RepositoryError;
 
-    if (error instanceof ApiError) {
-      repoError.message = error.message;
-      repoError.status = error.status;
-      repoError.details = error.details;
-
-      switch (error.status) {
-        case 0:
-          repoError.code = "NETWORK_ERROR";
-          break;
-        case 401:
-        case 403:
-          repoError.code = "UNAUTHORIZED";
-          break;
-        case 404:
-          repoError.code = "NOT_FOUND";
-          break;
-        case 422:
-          repoError.code = "VALIDATION_ERROR";
-          break;
-        default:
-          repoError.code =
-            error.status >= 500 ? "NETWORK_ERROR" : "VALIDATION_ERROR";
-      }
-    } else {
-      repoError.code = "UNKNOWN";
-      repoError.message = "An unexpected error occurred";
-      repoError.details = error;
+    if (error.status === 0) {
+      return { ...repoError, code: "NETWORK_ERROR" } as RepositoryError;
     }
 
-    throw repoError;
+    if (error.status === 401 || error.status === 403) {
+      return { ...repoError, code: "UNAUTHORIZED" } as RepositoryError;
+    }
+
+    if (error.status === 404) {
+      return { ...repoError, code: "NOT_FOUND" } as RepositoryError;
+    }
+
+    if (error.status === 422) {
+      return { ...repoError, code: "VALIDATION_ERROR" } as RepositoryError;
+    }
+
+    if (error.status >= 500) {
+      return { ...repoError, code: "NETWORK_ERROR" } as RepositoryError;
+    }
+
+    return repoError;
+  };
+
+  const handleUnexpectedError = (error: unknown): RepositoryError =>
+    Object.assign(new Error("An unexpected error occurred"), {
+      code: "UNKNOWN" as RepositoryErrorCode,
+      details: error,
+    }) as RepositoryError;
+
+  const handleError = (error: unknown): never => {
+    if (error instanceof ApiError) {
+      throw buildRepositoryError(error);
+    }
+
+    throw handleUnexpectedError(error);
+  };
+
+  const get = (async <T>(
+    path: string,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> => {
+    try {
+      const config = mapHttpOptionsToAxiosConfig(options);
+      const response = await apiClient.get<T>(path, config);
+      const shouldParse = options?.parseJson !== false;
+      if (!shouldParse) {
+        return;
+      }
+      return response.data as T;
+    } catch (error) {
+      return handleError(error);
+    }
+  }) as {
+    <T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+    (path: string, options: NoParseHttpRequestOptions): Promise<void>;
+  };
+
+  const post = (async <T>(
+    path: string,
+    body?: unknown,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> => {
+    try {
+      const config = mapHttpOptionsToAxiosConfig(options);
+      const response = await apiClient.post<T>(path, body, config);
+      const shouldParse = options?.parseJson !== false;
+      if (!shouldParse) {
+        return;
+      }
+      return response.data as T;
+    } catch (error) {
+      return handleError(error);
+    }
+  }) as {
+    <T>(
+      path: string,
+      body?: unknown,
+      options?: JsonHttpRequestOptions
+    ): Promise<T>;
+    (
+      path: string,
+      body: unknown,
+      options: NoParseHttpRequestOptions
+    ): Promise<void>;
+  };
+
+  const put = (async <T>(
+    path: string,
+    body?: unknown,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> => {
+    try {
+      const config = mapHttpOptionsToAxiosConfig(options);
+      const response = await apiClient.put<T>(path, body, config);
+      const shouldParse = options?.parseJson !== false;
+      if (!shouldParse) {
+        return;
+      }
+      return response.data as T;
+    } catch (error) {
+      return handleError(error);
+    }
+  }) as {
+    <T>(
+      path: string,
+      body?: unknown,
+      options?: JsonHttpRequestOptions
+    ): Promise<T>;
+    (
+      path: string,
+      body: unknown,
+      options: NoParseHttpRequestOptions
+    ): Promise<void>;
+  };
+
+  const patch = (async <T>(
+    path: string,
+    body?: unknown,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> => {
+    try {
+      const config = mapHttpOptionsToAxiosConfig(options);
+      const response = await apiClient.patch<T>(path, body, config);
+      const shouldParse = options?.parseJson !== false;
+      if (!shouldParse) {
+        return;
+      }
+      return response.data as T;
+    } catch (error) {
+      return handleError(error);
+    }
+  }) as {
+    <T>(
+      path: string,
+      body?: unknown,
+      options?: JsonHttpRequestOptions
+    ): Promise<T>;
+    (
+      path: string,
+      body: unknown,
+      options: NoParseHttpRequestOptions
+    ): Promise<void>;
+  };
+
+  const deleteMethod = (async <T>(
+    path: string,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> => {
+    try {
+      const config = mapHttpOptionsToAxiosConfig(options);
+      const response = await apiClient.delete<T>(path, config);
+      const shouldParse = options?.parseJson !== false;
+      if (!shouldParse) {
+        return;
+      }
+      return response.data as T;
+    } catch (error) {
+      return handleError(error);
+    }
+  }) as {
+    <T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+    (path: string, options: NoParseHttpRequestOptions): Promise<void>;
   };
 
   return {
-    async get<T>(path: string, options?: HttpRequestOptions): Promise<T> {
-      try {
-        const config = mapHttpOptionsToAxiosConfig(options);
-        const response = await apiClient.get<T>(path, config);
-        return options?.parseJson === false
-          ? (undefined as T)
-          : (response.data as T);
-      } catch (error) {
-        return handleError(error);
-      }
-    },
-
-    async post<T>(
-      path: string,
-      body?: unknown,
-      options?: HttpRequestOptions
-    ): Promise<T> {
-      try {
-        const config = mapHttpOptionsToAxiosConfig(options);
-        const response = await apiClient.post<T>(path, body, config);
-        return options?.parseJson === false
-          ? (undefined as T)
-          : (response.data as T);
-      } catch (error) {
-        return handleError(error);
-      }
-    },
-
-    async put<T>(
-      path: string,
-      body?: unknown,
-      options?: HttpRequestOptions
-    ): Promise<T> {
-      try {
-        const config = mapHttpOptionsToAxiosConfig(options);
-        const response = await apiClient.put<T>(path, body, config);
-        return options?.parseJson === false
-          ? (undefined as T)
-          : (response.data as T);
-      } catch (error) {
-        return handleError(error);
-      }
-    },
-
-    async patch<T>(
-      path: string,
-      body?: unknown,
-      options?: HttpRequestOptions
-    ): Promise<T> {
-      try {
-        const config = mapHttpOptionsToAxiosConfig(options);
-        const response = await apiClient.patch<T>(path, body, config);
-        return options?.parseJson === false
-          ? (undefined as T)
-          : (response.data as T);
-      } catch (error) {
-        return handleError(error);
-      }
-    },
-
-    async delete<T>(path: string, options?: HttpRequestOptions): Promise<T> {
-      try {
-        const config = mapHttpOptionsToAxiosConfig(options);
-        const response = await apiClient.delete<T>(path, config);
-        return options?.parseJson === false
-          ? (undefined as T)
-          : (response.data as T);
-      } catch (error) {
-        return handleError(error);
-      }
-    },
+    get,
+    post,
+    put,
+    patch,
+    delete: deleteMethod,
   };
 };
 

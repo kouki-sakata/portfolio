@@ -1,7 +1,6 @@
 import { QueryCache } from "@tanstack/react-query";
 
-import { ApiError } from "@/shared/api/errors/ApiError";
-import type { RepositoryError } from "@/shared/repositories/types";
+import { hasStatus, type StatusError } from "@/app/utils/error";
 
 /**
  * エラーインターセプター設定
@@ -16,17 +15,6 @@ export type ErrorInterceptorConfig = {
 };
 
 /**
- * HTTPエラーかどうか判定
- */
-type StatusAwareError = ApiError | (RepositoryError & { status: number });
-
-const hasStatus = (error: unknown): error is StatusAwareError =>
-  error instanceof ApiError ||
-  (error instanceof Error &&
-    "status" in error &&
-    typeof (error as { status?: unknown }).status === "number");
-
-/**
  * 401エラーハンドリング
  * 未認証エラー時に自動ログアウト・リダイレクトを実行
  */
@@ -38,7 +26,9 @@ export const handle401Error = async (
     return;
   }
 
-  if (error.status === 401) {
+  const statusError: StatusError = error;
+
+  if (statusError.status === 401) {
     try {
       // ログアウト処理を実行
       await config.onLogout();
@@ -65,7 +55,9 @@ export const createGlobalErrorHandler = (
 
     // その他のエラー処理
     if (hasStatus(error)) {
-      switch (error.status) {
+      const statusError: StatusError = error;
+
+      switch (statusError.status) {
         case 403:
           break;
         case 404:

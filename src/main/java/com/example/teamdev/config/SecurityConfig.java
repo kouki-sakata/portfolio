@@ -1,5 +1,6 @@
 package com.example.teamdev.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,7 +17,11 @@ import org.springframework.security.config.annotation.web.configurers.HeadersCon
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.DefaultRedirectStrategy;
+import org.springframework.security.web.RedirectStrategy;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
+import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
@@ -27,6 +32,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import org.springframework.security.core.AuthenticationException;
+
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -168,7 +176,17 @@ public class SecurityConfig {
             .addFilterAfter(new CsrfHeaderFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
             .authorizeHttpRequests(authz -> authz
                 // API & Health endpoints only (SPA is hosted on Vercel)
-                .requestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
+                .requestMatchers(
+                    "/",
+                    "/signin",
+                    "/index.html",
+                    "/assets/**",
+                    "/actuator/**",
+                    "/api/auth/login",
+                    "/api/auth/session",
+                    "/api/auth/logout",
+                    "/api/public/**"
+                ).permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
@@ -197,6 +215,10 @@ public class SecurityConfig {
                     new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                     new AntPathRequestMatcher("/actuator/**")
                 )
+                .defaultAuthenticationEntryPointFor(
+                    spaLoginEntryPoint(),
+                    new AntPathRequestMatcher("/**")
+                )
                 .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
@@ -215,5 +237,31 @@ public class SecurityConfig {
             );
 
         return http.build();
+    }
+
+    private AuthenticationEntryPoint spaLoginEntryPoint() {
+        return new SpaLoginEntryPoint("/signin");
+    }
+
+    private static final class SpaLoginEntryPoint implements AuthenticationEntryPoint {
+
+        private final RedirectStrategy redirectStrategy;
+        private final String loginPath;
+
+        private SpaLoginEntryPoint(String loginPath) {
+            DefaultRedirectStrategy strategy = new DefaultRedirectStrategy();
+            strategy.setContextRelative(true);
+            this.redirectStrategy = strategy;
+            this.loginPath = loginPath;
+        }
+
+        @Override
+        public void commence(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AuthenticationException authException
+        ) throws IOException {
+            redirectStrategy.sendRedirect(request, response, loginPath);
+        }
     }
 }

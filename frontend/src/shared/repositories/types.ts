@@ -8,34 +8,62 @@
  * 具象実装から抽象へ依存を逆転
  */
 export type IHttpClient = {
-  get<T>(path: string, options?: HttpRequestOptions): Promise<T>;
+  get<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  get(path: string, options: NoParseHttpRequestOptions): Promise<void>;
   post<T>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
+  post(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
   put<T>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
+  put(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
   patch<T>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
-  delete<T>(path: string, options?: HttpRequestOptions): Promise<T>;
+  patch(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  delete<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  delete(path: string, options: NoParseHttpRequestOptions): Promise<void>;
 };
 
 /**
  * HTTPリクエストオプション
  */
-export type HttpRequestOptions = {
+export type JsonHttpRequestOptions = {
   headers?: HeadersInit;
-  parseJson?: boolean;
+  parseJson?: true;
   signal?: AbortSignal;
   credentials?: RequestCredentials;
 };
+
+export type NoParseHttpRequestOptions = {
+  headers?: HeadersInit;
+  parseJson: false;
+  signal?: AbortSignal;
+  credentials?: RequestCredentials;
+};
+
+export type HttpRequestOptions =
+  | JsonHttpRequestOptions
+  | NoParseHttpRequestOptions;
 
 /**
  * リポジトリエラー

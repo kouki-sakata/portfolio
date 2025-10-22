@@ -1,4 +1,13 @@
-import type { HttpRequestOptions, IHttpClient } from "./types";
+import type {
+  HttpRequestOptions,
+  IHttpClient,
+  JsonHttpRequestOptions,
+  NoParseHttpRequestOptions,
+} from "./types";
+
+const isNoParseOptions = (
+  options: HttpRequestOptions
+): options is NoParseHttpRequestOptions => options.parseJson === false;
 
 /**
  * インターセプター型定義
@@ -96,48 +105,135 @@ export class InterceptableHttpClient implements IHttpClient {
     }
   }
 
-  async get<T>(path: string, options?: HttpRequestOptions): Promise<T> {
+  async get<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  async get(path: string, options: NoParseHttpRequestOptions): Promise<void>;
+  async get<T>(
+    path: string,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> {
     const processedOptions = await this.processRequest(path, options);
-    return this.processResponse(this.baseClient.get<T>(path, processedOptions));
+    if (isNoParseOptions(processedOptions)) {
+      await this.processResponse(this.baseClient.get(path, processedOptions));
+      return;
+    }
+
+    return this.processResponse(
+      this.baseClient.get(path, processedOptions as JsonHttpRequestOptions)
+    );
   }
 
   async post<T>(
     path: string,
     body?: unknown,
+    options?: JsonHttpRequestOptions
+  ): Promise<T>;
+  async post(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  async post<T>(
+    path: string,
+    body?: unknown,
     options?: HttpRequestOptions
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     const processedOptions = await this.processRequest(path, options);
+    if (isNoParseOptions(processedOptions)) {
+      await this.processResponse(
+        this.baseClient.post(path, body, processedOptions)
+      );
+      return;
+    }
+
     return this.processResponse(
-      this.baseClient.post<T>(path, body, processedOptions)
+      this.baseClient.post(
+        path,
+        body,
+        processedOptions as JsonHttpRequestOptions
+      )
     );
   }
 
   async put<T>(
     path: string,
     body?: unknown,
+    options?: JsonHttpRequestOptions
+  ): Promise<T>;
+  async put(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  async put<T>(
+    path: string,
+    body?: unknown,
     options?: HttpRequestOptions
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     const processedOptions = await this.processRequest(path, options);
+    if (isNoParseOptions(processedOptions)) {
+      await this.processResponse(
+        this.baseClient.put(path, body, processedOptions)
+      );
+      return;
+    }
+
     return this.processResponse(
-      this.baseClient.put<T>(path, body, processedOptions)
+      this.baseClient.put(
+        path,
+        body,
+        processedOptions as JsonHttpRequestOptions
+      )
     );
   }
 
   async patch<T>(
     path: string,
     body?: unknown,
+    options?: JsonHttpRequestOptions
+  ): Promise<T>;
+  async patch(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  async patch<T>(
+    path: string,
+    body?: unknown,
     options?: HttpRequestOptions
-  ): Promise<T> {
+  ): Promise<T | undefined> {
     const processedOptions = await this.processRequest(path, options);
+    if (isNoParseOptions(processedOptions)) {
+      await this.processResponse(
+        this.baseClient.patch(path, body, processedOptions)
+      );
+      return;
+    }
+
     return this.processResponse(
-      this.baseClient.patch<T>(path, body, processedOptions)
+      this.baseClient.patch(
+        path,
+        body,
+        processedOptions as JsonHttpRequestOptions
+      )
     );
   }
 
-  async delete<T>(path: string, options?: HttpRequestOptions): Promise<T> {
+  async delete<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  async delete(path: string, options: NoParseHttpRequestOptions): Promise<void>;
+  async delete<T>(
+    path: string,
+    options?: HttpRequestOptions
+  ): Promise<T | undefined> {
     const processedOptions = await this.processRequest(path, options);
+    if (isNoParseOptions(processedOptions)) {
+      await this.processResponse(
+        this.baseClient.delete(path, processedOptions)
+      );
+      return;
+    }
+
     return this.processResponse(
-      this.baseClient.delete<T>(path, processedOptions)
+      this.baseClient.delete(path, processedOptions as JsonHttpRequestOptions)
     );
   }
 }

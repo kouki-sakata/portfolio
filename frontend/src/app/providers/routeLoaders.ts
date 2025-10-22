@@ -2,14 +2,13 @@ import type { QueryClient } from "@tanstack/react-query";
 import { redirect } from "react-router-dom";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
+import { hasStatus, type StatusError } from "@/app/utils/error";
 import { fetchSession } from "@/features/auth/api/session";
 import { fetchEmployees } from "@/features/employees/api";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { fetchNewsList } from "@/features/news/api/newsApi";
 import { fetchStampHistory } from "@/features/stampHistory/api";
-import { ApiError } from "@/shared/api/errors/ApiError";
 import { authEvents } from "@/shared/api/events/authEvents";
-import type { RepositoryError } from "@/shared/repositories/types";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 export const homeRouteLoader = async (queryClient: QueryClient) =>
@@ -36,25 +35,18 @@ export const stampHistoryRouteLoader = async (queryClient: QueryClient) =>
     gcTime: QUERY_CONFIG.stampHistory.gcTime,
   });
 
-type StatusError = Pick<RepositoryError, "status"> | ApiError;
-
-const hasStatus = (error: unknown): error is StatusError =>
-  error instanceof ApiError ||
-  (typeof error === "object" &&
-    error !== null &&
-    "status" in error &&
-    typeof (error as { status?: unknown }).status === "number");
-
 const handleAuthRedirect = (error: unknown): never => {
   if (hasStatus(error)) {
-    if (error.status === 401) {
+    const statusError: StatusError = error;
+
+    if (statusError.status === 401) {
       authEvents.emitUnauthorized(
         "セッションが期限切れです。再度サインインしてください。"
       );
       throw redirect("/signin");
     }
 
-    if (error.status === 403) {
+    if (statusError.status === 403) {
       authEvents.emitForbidden("管理者権限が必要です。");
       throw redirect("/");
     }
