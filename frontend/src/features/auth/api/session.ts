@@ -1,6 +1,5 @@
-import { httpClient } from "@/shared/api/httpClient";
-
+import { api } from "@/shared/api/axiosClient";
 import type { SessionResponse } from "../types";
 
 export const fetchSession = async () =>
-  httpClient<SessionResponse>("/auth/session");
+  api.get<SessionResponse>("/auth/session");

@@ -10,7 +10,7 @@ import {
   type LoginFormData,
   loginSchema,
 } from "@/features/auth/schemas/loginSchema";
-import type { HttpClientError } from "@/shared/api/httpClient";
+import { ApiError } from "@/shared/api/errors/ApiError";
 import { EnhancedFormField } from "@/shared/components/enhanced-form-field";
 import { logger } from "@/shared/utils/logger";
 
@@ -38,7 +38,16 @@ export const SignInPage = () => {
       // CI/E2E 環境の差異（401/403/その他）にも頑健
       setError("メールアドレスまたはパスワードが正しくありません。");
       // 開発者向けにデバッグ用途でコンソールへは詳細を出す
-      logger.debug("Login failed:", err as HttpClientError);
+      if (err instanceof ApiError) {
+        logger.debug("Login failed:", {
+          status: err.status,
+          code: err.code,
+          message: err.message,
+          details: err.details,
+        });
+      } else {
+        logger.debug("Login failed:", err);
+      }
     }
   };
 

@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useStamp } from "@/features/home/hooks/useStamp";
 import type { IHomeRepository } from "@/features/home/repositories/HomeRepository";
 import type { StampResponse } from "@/features/home/types";
-import type { HttpClientError } from "@/shared/api/httpClient";
+import { ApiError } from "@/shared/api/errors/ApiError";
 
 // toast関数をモック
 vi.mock("@/hooks/use-toast", () => ({
@@ -104,15 +104,10 @@ describe("useStamp", () => {
 
   describe("409 Conflict エラーハンドリング", () => {
     it("409エラー発生時、payloadのメッセージを表示する", async () => {
-      const error: HttpClientError = {
-        name: "HttpClientError",
-        message: "Conflict",
-        status: 409,
-        payload: {
-          message:
-            "打刻時刻が既に登録されています: 出勤 (2025-10-15T09:00:00+09:00)",
-        },
-      };
+      const error = new ApiError("Conflict", 409, "VALIDATION_ERROR", {
+        message:
+          "打刻時刻が既に登録されています: 出勤 (2025-10-15T09:00:00+09:00)",
+      });
 
       vi.mocked(mockRepository.submitStamp).mockRejectedValue(error);
 
@@ -143,12 +138,7 @@ describe("useStamp", () => {
     });
 
     it("409エラー発生時、payloadがない場合はデフォルトメッセージを表示する", async () => {
-      const error: HttpClientError = {
-        name: "HttpClientError",
-        message: "Conflict",
-        status: 409,
-        payload: {},
-      };
+      const error = new ApiError("Conflict", 409);
 
       vi.mocked(mockRepository.submitStamp).mockRejectedValue(error);
 
@@ -178,14 +168,9 @@ describe("useStamp", () => {
     });
 
     it("409エラー時には他のエラーハンドリングをスキップする", async () => {
-      const error: HttpClientError = {
-        name: "HttpClientError",
-        message: "Conflict",
-        status: 409,
-        payload: {
-          message: "重複エラー",
-        },
-      };
+      const error = new ApiError("Conflict", 409, "VALIDATION_ERROR", {
+        message: "重複エラー",
+      });
 
       vi.mocked(mockRepository.submitStamp).mockRejectedValue(error);
 
@@ -381,12 +366,7 @@ describe("useStamp", () => {
 
   describe("その他のエラーハンドリング", () => {
     it("ネットワークエラー時に適切なメッセージを表示する", async () => {
-      const error: HttpClientError = {
-        name: "HttpClientError",
-        message: "Network error",
-        status: 0,
-        payload: null,
-      };
+      const error = new ApiError("Network Error", 0, "NETWORK_ERROR");
 
       vi.mocked(mockRepository.submitStamp).mockRejectedValue(error);
 

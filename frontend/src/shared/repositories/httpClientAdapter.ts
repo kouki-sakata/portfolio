@@ -1,23 +1,29 @@
-import { httpClient } from "@/shared/api/httpClient";
-
+import type { AxiosRequestConfig } from "axios";
+import { apiClient } from "@/shared/api/axiosClient";
+import { ApiError } from "@/shared/api/errors/ApiError";
 import type { HttpRequestOptions, IHttpClient, RepositoryError } from "./types";
 
 /**
  * HTTPエラーの型定義
  */
-interface HttpError extends Error {
-  status: number;
-  message: string;
-  payload?: unknown;
-}
+const mapHttpOptionsToAxiosConfig = (
+  options?: HttpRequestOptions
+): AxiosRequestConfig => {
+  if (!options) {
+    return {};
+  }
 
-/**
- * Type guard for HttpError
- */
-const isHttpError = (error: unknown): error is HttpError =>
-  error instanceof Error &&
-  "status" in error &&
-  typeof (error as HttpError).status === "number";
+  const config: AxiosRequestConfig = {
+    headers: options.headers,
+    signal: options.signal,
+  };
+
+  if (options.credentials !== undefined) {
+    config.withCredentials = options.credentials === "include";
+  }
+
+  return config;
+};
 
 /**
  * HttpClientAdapter
@@ -28,21 +34,24 @@ export const createHttpClientAdapter = (): IHttpClient => {
   const handleError = (error: unknown): never => {
     const repoError = new Error("HTTP request failed") as RepositoryError;
 
-    if (isHttpError(error)) {
+    if (error instanceof ApiError) {
       repoError.message = error.message;
       repoError.status = error.status;
-      repoError.details = error.payload;
+      repoError.details = error.details;
 
       switch (error.status) {
         case 0:
           repoError.code = "NETWORK_ERROR";
           break;
-        case 404:
-          repoError.code = "NOT_FOUND";
-          break;
         case 401:
         case 403:
           repoError.code = "UNAUTHORIZED";
+          break;
+        case 404:
+          repoError.code = "NOT_FOUND";
+          break;
+        case 422:
+          repoError.code = "VALIDATION_ERROR";
           break;
         default:
           repoError.code =
@@ -60,10 +69,11 @@ export const createHttpClientAdapter = (): IHttpClient => {
   return {
     async get<T>(path: string, options?: HttpRequestOptions): Promise<T> {
       try {
-        return await httpClient<T>(path, {
-          method: "GET",
-          ...options,
-        });
+        const config = mapHttpOptionsToAxiosConfig(options);
+        const response = await apiClient.get<T>(path, config);
+        return options?.parseJson === false
+          ? (undefined as T)
+          : (response.data as T);
       } catch (error) {
         return handleError(error);
       }
@@ -75,11 +85,11 @@ export const createHttpClientAdapter = (): IHttpClient => {
       options?: HttpRequestOptions
     ): Promise<T> {
       try {
-        return await httpClient<T>(path, {
-          method: "POST",
-          body: body ? JSON.stringify(body) : undefined,
-          ...options,
-        });
+        const config = mapHttpOptionsToAxiosConfig(options);
+        const response = await apiClient.post<T>(path, body, config);
+        return options?.parseJson === false
+          ? (undefined as T)
+          : (response.data as T);
       } catch (error) {
         return handleError(error);
       }
@@ -91,11 +101,11 @@ export const createHttpClientAdapter = (): IHttpClient => {
       options?: HttpRequestOptions
     ): Promise<T> {
       try {
-        return await httpClient<T>(path, {
-          method: "PUT",
-          body: body ? JSON.stringify(body) : undefined,
-          ...options,
-        });
+        const config = mapHttpOptionsToAxiosConfig(options);
+        const response = await apiClient.put<T>(path, body, config);
+        return options?.parseJson === false
+          ? (undefined as T)
+          : (response.data as T);
       } catch (error) {
         return handleError(error);
       }
@@ -107,11 +117,11 @@ export const createHttpClientAdapter = (): IHttpClient => {
       options?: HttpRequestOptions
     ): Promise<T> {
       try {
-        return await httpClient<T>(path, {
-          method: "PATCH",
-          body: body ? JSON.stringify(body) : undefined,
-          ...options,
-        });
+        const config = mapHttpOptionsToAxiosConfig(options);
+        const response = await apiClient.patch<T>(path, body, config);
+        return options?.parseJson === false
+          ? (undefined as T)
+          : (response.data as T);
       } catch (error) {
         return handleError(error);
       }
@@ -119,10 +129,11 @@ export const createHttpClientAdapter = (): IHttpClient => {
 
     async delete<T>(path: string, options?: HttpRequestOptions): Promise<T> {
       try {
-        return await httpClient<T>(path, {
-          method: "DELETE",
-          ...options,
-        });
+        const config = mapHttpOptionsToAxiosConfig(options);
+        const response = await apiClient.delete<T>(path, config);
+        return options?.parseJson === false
+          ? (undefined as T)
+          : (response.data as T);
       } catch (error) {
         return handleError(error);
       }

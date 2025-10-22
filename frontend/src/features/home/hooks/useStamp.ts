@@ -7,11 +7,96 @@ import {
 } from "@/features/home/repositories/HomeRepository";
 import type { StampRequest, StampResponse } from "@/features/home/types";
 import { toast } from "@/hooks/use-toast";
-import type { HttpClientError } from "@/shared/api/httpClient";
+import { ApiError } from "@/shared/api/errors/ApiError";
+import type { RepositoryError } from "@/shared/repositories/types";
 import { formatLocalTimestamp } from "@/shared/utils/date";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
+
+const GENERIC_STATUS_MESSAGES: Record<number, string[]> = {
+  409: ["conflict"],
+};
+const DEFAULT_CONFLICT_MESSAGE =
+  "既に打刻済みです。同じ日に同じ種別の打刻はできません。";
+
+type ErrorInfo = {
+  status?: number;
+  code?: RepositoryError["code"] | string;
+  message?: string;
+  details?: unknown;
+};
+
+const extractErrorInfo = (error: unknown): ErrorInfo => {
+  if (error instanceof ApiError) {
+    return {
+      status: error.status,
+      message: error.message,
+      details: error.details,
+    };
+  }
+
+  if (error instanceof Error && "code" in error) {
+    const repoError = error as RepositoryError & { status?: number };
+    return {
+      status: repoError.status,
+      code: repoError.code,
+      message: repoError.message,
+      details: repoError.details,
+    };
+  }
+
+  if (error instanceof Error) {
+    return { message: error.message };
+  }
+
+  return {};
+};
+
+const extractServerMessage = (details: unknown): string | undefined => {
+  if (details && typeof details === "object" && "message" in details) {
+    const maybeMessage = (details as { message?: unknown }).message;
+    if (typeof maybeMessage === "string" && maybeMessage.length > 0) {
+      return maybeMessage;
+    }
+  }
+  return;
+};
+
+const resolveConflictMessage = (errorInfo: ErrorInfo): string | null => {
+  if (errorInfo.status !== 409) {
+    return null;
+  }
+
+  const normalizedMessage = errorInfo.message?.trim();
+  const isGenericMessage = Boolean(
+    normalizedMessage &&
+      GENERIC_STATUS_MESSAGES[errorInfo.status ?? -1]?.includes(
+        normalizedMessage.toLowerCase()
+      )
+  );
+
+  return (
+    extractServerMessage(errorInfo.details) ||
+    (isGenericMessage ? undefined : normalizedMessage) ||
+    DEFAULT_CONFLICT_MESSAGE
+  );
+};
+
+const isNetworkIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
+  !navigator.onLine ||
+  errorInfo.status === 0 ||
+  errorInfo.code === "NETWORK_ERROR" ||
+  errorInfo.message?.toLowerCase() === "network error" ||
+  error.message === "Network Error";
+
+const isTimeoutIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
+  errorInfo.code === "TIMEOUT" ||
+  error.message.includes("timeout") ||
+  error.message.includes("Timeout");
+
+const isServerIssue = (error: Error): boolean =>
+  error.message.includes("500") || error.message.includes("Server");
 
 /**
  * 打刻用カスタムフック
@@ -46,18 +131,16 @@ export const useStamp = (
       });
     },
     onError: (error) => {
-      // 409 Conflict（重複打刻エラー）の特別処理
-      const httpError = error as HttpClientError;
-      if (httpError.status === 409) {
-        const serverMessage =
-          (httpError.payload as { message?: string })?.message ||
-          "既に打刻済みです。同じ日に同じ種別の打刻はできません。";
+      const errorInfo = extractErrorInfo(error);
 
-        setMessage(serverMessage);
+      // 409 Conflict（重複打刻エラー）の特別処理
+      const conflictMessage = resolveConflictMessage(errorInfo);
+      if (conflictMessage) {
+        setMessage(conflictMessage);
         toast({
           variant: "destructive",
           title: "重複打刻エラー",
-          description: serverMessage,
+          description: conflictMessage,
         });
         return; // 早期リターンで他のエラーハンドリングをスキップ
       }
@@ -65,46 +148,40 @@ export const useStamp = (
       const errorMessage = "打刻に失敗しました。再度お試しください。";
       setMessage(errorMessage);
 
-      // ネットワークエラーの判定
-      const isNetworkError =
-        !navigator.onLine ||
-        error.message === "Network error" ||
-        (error as HttpClientError).status === 0 ||
-        (error as HttpClientError & { code?: string }).code === "NETWORK_ERROR";
-
-      if (isNetworkError) {
+      if (isNetworkIssue(errorInfo, error)) {
         toast({
           variant: "destructive",
           title: "ネットワークエラー",
           description: "通信エラーが発生しました。接続を確認してください。",
         });
-      } else if (
-        error.message?.includes("timeout") ||
-        error.message?.includes("Timeout")
-      ) {
+        return;
+      }
+
+      if (isTimeoutIssue(errorInfo, error)) {
         toast({
           variant: "destructive",
           title: "タイムアウト",
           description:
             "リクエストがタイムアウトしました。しばらくしてから再度お試しください。",
         });
-      } else if (
-        error.message?.includes("500") ||
-        error.message?.includes("Server")
-      ) {
+        return;
+      }
+
+      if (isServerIssue(error)) {
         toast({
           variant: "destructive",
           title: "サーバーエラー",
           description:
             "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
         });
-      } else {
-        toast({
-          variant: "destructive",
-          title: "エラー",
-          description: errorMessage,
-        });
+        return;
       }
+
+      toast({
+        variant: "destructive",
+        title: "エラー",
+        description: errorMessage,
+      });
     },
   });
 
