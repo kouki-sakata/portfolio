@@ -24,8 +24,9 @@ public class CsrfHeaderFilter extends OncePerRequestFilter {
         CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
 
         // Add CSRF token to response header if it exists
+        // Use explicit header name to ensure CORS compatibility (must match setExposedHeaders)
         if (csrfToken != null) {
-            response.setHeader(csrfToken.getHeaderName(), csrfToken.getToken());
+            response.setHeader("X-XSRF-TOKEN", csrfToken.getToken());
         }
 
         filterChain.doFilter(request, response);
