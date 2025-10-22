@@ -1,4 +1,4 @@
-import type { InternalAxiosRequestConfig } from "axios";
+import type { AxiosResponse, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 
 export type CsrfInterceptorOptions = {
@@ -10,7 +10,11 @@ export type CsrfInterceptorOptions = {
 export type CsrfInterceptor = {
   request: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
   requestError: (error: Error) => never;
+  response: (response: AxiosResponse) => AxiosResponse;
 };
+
+// Store CSRF token in memory for cross-origin scenarios
+let csrfToken: string | null = null;
 
 export function createCsrfInterceptor(
   options: CsrfInterceptorOptions = {}
@@ -35,8 +39,8 @@ export function createCsrfInterceptor(
         return config;
       }
 
-      // Get CSRF token from cookie
-      const token = Cookies.get(cookieName);
+      // Try to get CSRF token from cookie (same-origin) or memory (cross-origin)
+      const token = Cookies.get(cookieName) || csrfToken;
 
       // Add token to headers if it exists
       if (token) {
@@ -44,6 +48,15 @@ export function createCsrfInterceptor(
       }
 
       return config;
+    },
+
+    response: (response: AxiosResponse): AxiosResponse => {
+      // Extract CSRF token from response header for cross-origin scenarios
+      const tokenFromHeader = response.headers[headerName.toLowerCase()];
+      if (tokenFromHeader && typeof tokenFromHeader === "string") {
+        csrfToken = tokenFromHeader;
+      }
+      return response;
     },
 
     requestError: (error: Error): never => {

@@ -114,6 +114,8 @@ public class SecurityConfig {
         configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
+        // Expose CSRF token header for cross-origin requests
+        configuration.setExposedHeaders(Arrays.asList("X-XSRF-TOKEN"));
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
@@ -162,6 +164,8 @@ public class SecurityConfig {
                 // Allow health endpoints, login, session, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
                 .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/debug/**")
             )
+            // Add CSRF token to response headers for cross-origin scenarios
+            .addFilterAfter(new CsrfHeaderFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
             .authorizeHttpRequests(authz -> authz
                 // API & Health endpoints only (SPA is hosted on Vercel)
                 .requestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/public/**").permitAll()
