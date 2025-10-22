@@ -44,14 +44,24 @@ public class SecurityConfig {
 
     /**
      * CSRF Token Repository を環境に応じて設定
+     * クロスサイトリクエスト（Vercel→Render）に対応するため SameSite=None を設定
      * 開発環境・テスト環境では Secure フラグを無効化し、HTTP でも Cookie が動作するようにする
      */
     private CookieCsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-        // 開発環境とテスト環境では Secure flag を無効化
+        // 開発環境とテスト環境では Secure flag を無効化、SameSite=None 設定
         if (ENV_DEV.equals(environment) || ENV_TEST.equals(environment)) {
-            repository.setCookieCustomizer(cookie -> cookie.secure(false));
+            repository.setCookieCustomizer(cookie -> cookie
+                .secure(false)
+                .sameSite("None")
+            );
+        } else {
+            // 本番環境: Secure=true & SameSite=None でクロスサイトリクエストに対応
+            repository.setCookieCustomizer(cookie -> cookie
+                .secure(true)
+                .sameSite("None")
+            );
         }
 
         return repository;
