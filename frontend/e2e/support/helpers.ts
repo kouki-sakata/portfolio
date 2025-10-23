@@ -29,10 +29,24 @@ export const waitForToast = async (
   message: string | RegExp,
   options?: { timeout?: number }
 ) => {
-  // 複数マッチする場合は最初の要素を取得
-  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(
-    options
-  );
+  const toastElement = page.getByText(message, { exact: false }).first();
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      // 複数マッチする場合は最初の要素を取得
+      await expect(toastElement).toBeVisible(options);
+      return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        lastError = error;
+        continue;
+      }
+      lastError = new Error(`Unexpected toast wait failure: ${String(error)}`);
+    }
+  }
+
+  throw lastError ?? new Error("トーストが見つかりませんでした");
 };
 
 /**
