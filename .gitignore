@@ -2,6 +2,8 @@
 CLAUDE.md
 .mcp.json
 .claude
+.*
+!.github
 
 # Compiled class files
 *.class
