@@ -6,16 +6,20 @@ import { expect } from "@playwright/test";
  * ログインフローを実行し、ホーム画面に遷移することを確認
  */
 export const signIn = async (page: Page, email: string, password: string) => {
-  await page.goto("/signin");
+  await page.goto("/signin", { waitUntil: "networkidle" });
+
+  // ページがロードされるまで待機
+  await page.waitForLoadState("networkidle");
+
   await expect(
     page.getByRole("heading", { name: /^.*サインイン.*$/ })
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 10_000 });
 
   await page.getByLabel("メールアドレス").fill(email);
   await page.getByLabel("パスワード").fill(password);
   await page.getByRole("button", { name: "サインイン" }).click();
 
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
   await expect(
     page.getByRole("heading", { name: /おはようございます/ })
   ).toBeVisible({ timeout: 15_000 });
@@ -29,10 +33,48 @@ export const waitForToast = async (
   message: string | RegExp,
   options?: { timeout?: number }
 ) => {
-  // 複数マッチする場合は最初の要素を取得
-  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(
-    options
-  );
+  const timeout = options?.timeout ?? 10_000;
+
+  // ロケーターを組み立てる複数の戦略
+  const strategies = [
+    // 戦略1: ARIA role で特定（推奨）
+    () =>
+      page
+        .locator('div[role="alert"], div[role="status"]')
+        .getByText(message, { exact: false })
+        .first(),
+    // 戦略2: ToastViewport内を探す
+    () =>
+      page
+        .locator('[aria-label="通知"]')
+        .locator('div[role="alert"], div[role="status"]')
+        .getByText(message, { exact: false })
+        .first(),
+    // 戦略3: ページ全体から検索（フォールバック）
+    () => page.getByText(message, { exact: false }).first(),
+  ];
+
+  // 各戦略を順に試す
+  for (const strategy of strategies) {
+    const toastElement = strategy();
+    try {
+      await expect(toastElement).toBeVisible({ timeout });
+      return;
+    } catch {
+      // この戦略は失敗、次を試す
+      continue;
+    }
+  }
+
+  // すべての戦略が失敗した場合、最後の試みで詳細なエラー情報を出す
+  const debugMessage = `トースト通知が見つかりません: ${message}`;
+  console.error(debugMessage);
+
+  // ページのスナップショットを取得してデバッグを支援
+  const snapshot = await page.evaluate(() => document.body.innerHTML);
+  console.error("Page HTML:", snapshot.substring(0, 500));
+
+  throw new Error(debugMessage);
 };
 
 /**

@@ -95,8 +95,8 @@ const isTimeoutIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
   error.message.includes("timeout") ||
   error.message.includes("Timeout");
 
-const isServerIssue = (error: Error): boolean =>
-  error.message.includes("500") || error.message.includes("Server");
+const isServerIssue = (errorInfo: ErrorInfo): boolean =>
+  errorInfo.code === "SERVER_ERROR" || (errorInfo.status ?? 0) >= 500;
 
 /**
  * 打刻用カスタムフック
@@ -148,11 +148,13 @@ export const useStamp = (
       const errorMessage = "打刻に失敗しました。再度お試しください。";
       setMessage(errorMessage);
 
-      if (isNetworkIssue(errorInfo, error)) {
+      // サーバーエラーを最初にチェック（500番台）
+      if (isServerIssue(errorInfo)) {
         toast({
           variant: "destructive",
-          title: "ネットワークエラー",
-          description: "通信エラーが発生しました。接続を確認してください。",
+          title: "サーバーエラー",
+          description:
+            "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
         });
         return;
       }
@@ -167,12 +169,11 @@ export const useStamp = (
         return;
       }
 
-      if (isServerIssue(error)) {
+      if (isNetworkIssue(errorInfo, error)) {
         toast({
           variant: "destructive",
-          title: "サーバーエラー",
-          description:
-            "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
+          title: "ネットワークエラー",
+          description: "通信エラーが発生しました。接続を確認してください。",
         });
         return;
       }

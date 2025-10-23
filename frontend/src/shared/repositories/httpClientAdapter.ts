@@ -11,6 +11,7 @@ import type {
 
 const REPOSITORY_ERROR_CODES = [
   "NETWORK_ERROR",
+  "SERVER_ERROR",
   "VALIDATION_ERROR",
   "NOT_FOUND",
   "UNAUTHORIZED",
@@ -102,7 +103,7 @@ export const createHttpClientAdapter = (): IHttpClient => {
     }
 
     if (error.status >= 500) {
-      return { ...repoError, code: "NETWORK_ERROR" } as RepositoryError;
+      return { ...repoError, code: "SERVER_ERROR" } as RepositoryError;
     }
 
     return repoError;
