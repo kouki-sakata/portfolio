@@ -33,48 +33,24 @@ export const waitForToast = async (
   message: string | RegExp,
   options?: { timeout?: number }
 ) => {
-  const timeout = options?.timeout ?? 10_000;
+  const toastElement = page.getByText(message, { exact: false }).first();
+  let lastError: Error | undefined;
 
-  // ロケーターを組み立てる複数の戦略
-  const strategies = [
-    // 戦略1: ARIA role で特定（推奨）
-    () =>
-      page
-        .locator('div[role="alert"], div[role="status"]')
-        .getByText(message, { exact: false })
-        .first(),
-    // 戦略2: ToastViewport内を探す
-    () =>
-      page
-        .locator('[aria-label="通知"]')
-        .locator('div[role="alert"], div[role="status"]')
-        .getByText(message, { exact: false })
-        .first(),
-    // 戦略3: ページ全体から検索（フォールバック）
-    () => page.getByText(message, { exact: false }).first(),
-  ];
-
-  // 各戦略を順に試す
-  for (const strategy of strategies) {
-    const toastElement = strategy();
+  for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      await expect(toastElement).toBeVisible({ timeout });
+      // 複数マッチする場合は最初の要素を取得
+      await expect(toastElement).toBeVisible(options);
       return;
-    } catch {
-      // この戦略は失敗、次を試す
-      continue;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        lastError = error;
+        continue;
+      }
+      lastError = new Error(`Unexpected toast wait failure: ${String(error)}`);
     }
   }
 
-  // すべての戦略が失敗した場合、最後の試みで詳細なエラー情報を出す
-  const debugMessage = `トースト通知が見つかりません: ${message}`;
-  console.error(debugMessage);
-
-  // ページのスナップショットを取得してデバッグを支援
-  const snapshot = await page.evaluate(() => document.body.innerHTML);
-  console.error("Page HTML:", snapshot.substring(0, 500));
-
-  throw new Error(debugMessage);
+  throw lastError ?? new Error("トーストが見つかりませんでした");
 };
 
 /**
