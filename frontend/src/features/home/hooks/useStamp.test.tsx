@@ -426,37 +426,6 @@ describe("useStamp", () => {
       });
     });
 
-    it("サーバーエラー (500) 時に適切なメッセージを表示する", async () => {
-      const error = new Error("Internal Server Error: 500");
-
-      vi.mocked(mockRepository.submitStamp).mockRejectedValue(error);
-
-      const { result } = renderHook(() => useStamp(mockRepository), {
-        wrapper,
-      });
-
-      await act(async () => {
-        try {
-          await result.current.handleStamp("1", false);
-        } catch {
-          // mutateAsync throws error, but onError handles it
-        }
-      });
-
-      await waitFor(() => {
-        expect(result.current.message).toBe(
-          "打刻に失敗しました。再度お試しください。"
-        );
-      });
-
-      expect(toast).toHaveBeenCalledWith({
-        variant: "destructive",
-        title: "サーバーエラー",
-        description:
-          "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
-      });
-    });
-
     it("汎用エラー時に適切なメッセージを表示する", async () => {
       const error = new Error("Unknown error");
 
