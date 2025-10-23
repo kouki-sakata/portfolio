@@ -2,6 +2,7 @@
 CLAUDE.md
 .mcp.json
 .claude
+.coderabbit.yml
 
 # Compiled class files
 *.class
@@ -124,3 +125,10 @@ frontend/.playwright/
 
 # Test seed files
 seed.spec.ts
+
+# Miyabi
+.miyabi.yml
+.worktrees/
+logs/
+reports/
+*.log

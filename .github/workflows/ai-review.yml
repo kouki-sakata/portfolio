@@ -1,0 +1,15 @@
+name: AI Review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify reviewers
+        run: echo "🚀 CodeRabbit, and Codex will automatically review this PR."

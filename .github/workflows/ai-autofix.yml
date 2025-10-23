@@ -1,0 +1,179 @@
+name: AI Auto-Fix (Factory/Droid Loop)
+on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  MAX_RUNS: "5"
+  HIGH_TAGS: "high,critical"   # 本文に含まれる重大度キーワード（小文字）
+
+jobs:
+  auto-fix:
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get associated PR
+        id: pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const prsResp = await github.request(run.pull_requests_url);
+            if (!prsResp.data.length) core.setFailed("No linked PR found");
+            const pr = prsResp.data[0];
+            core.setOutput("number", pr.number);
+            core.setOutput("branch", pr.head.ref);
+
+            // opt-in: require 'auto-fix' label
+            const labels = (pr.labels || []).map(l => l.name);
+            if (!labels.includes('auto-fix')) {
+              core.setFailed("PR is not opted-in (missing 'auto-fix' label).");
+            }
+
+      - name: Prevent infinite loop
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { data: runs } = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: context.workflow
+            });
+            const count = runs.workflow_runs.filter(r =>
+              r.head_branch === "${{ steps.pr.outputs.branch }}" &&
+              r.conclusion === "failure"
+            ).length;
+            if (count >= parseInt(process.env.MAX_RUNS)) {
+              core.setFailed(`Exceeded MAX_RUNS=${process.env.MAX_RUNS}`);
+            }
+
+      - name: Summarize failing CI (short)
+        id: cilog
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // ここで失敗要約を作ってDroidに渡す（必要なら artifacts 収集に拡張）
+            core.setOutput("summary", "CI failed. Fix lint/type/test for backend(frontend) as per CI rules.");
+
+      - name: Collect High/Critical review findings
+        id: hi
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prNumber = Number("${{ steps.pr.outputs.number }}");
+            const { owner, repo } = context.repo;
+            const highTags = process.env.HIGH_TAGS.split(',').map(s=>s.trim());
+            // PRレビューコメント
+            const rc = await github.rest.pulls.listReviewComments({owner, repo, pull_number: prNumber, per_page: 100});
+            // PRの通常コメントも確認（ツールによってはこちらに出ることがある）
+            const ic = await github.rest.issues.listComments({owner, repo, issue_number: prNumber, per_page: 100});
+
+            function isHigh(text) {
+              const t = (text || "").toLowerCase();
+              return highTags.some(tag => t.includes(tag));
+            }
+            function unresolvedFilter(items) {
+              return items.filter(c => {
+                const body = c.body || "";
+                if (!isHigh(body)) return false;
+                // 簡易: 'resolved' or '✅' が含まれていれば解決扱い
+                return !/resolved|fixed|✅/i.test(body);
+              });
+            }
+
+            const all = [...unresolvedFilter(rc.data), ...unresolvedFilter(ic.data)];
+            const fs = require('fs');
+            if (all.length === 0) {
+              core.setOutput("hasHigh", "false");
+              fs.writeFileSync('high_issues.md', "No High/Critical findings.");
+            } else {
+              core.setOutput("hasHigh", "true");
+              const lines = all.map(c => `- From @${c.user?.login}: ${c.html_url}\n  ${c.body?.slice(0, 1000)}`);
+              fs.writeFileSync('high_issues.md', `# High/Critical findings (unresolved)\n` + lines.join('\n'));
+            }
+
+      - name: Upload high_issues artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: high_issues
+          path: high_issues.md
+
+      # =======================
+      # Factory / Droid セクション
+      # ※※ ここは Factory 公式の CLI 導入手順に置き換えてください ※※
+      # =======================
+      - name: Install Factory Droid CLI
+        run: |
+          curl -fsSL https://app.factory.ai/cli | sh
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+          droid --version
+
+      - name: Prepare task for Droid
+        run: |
+          echo "## AUTO-FIX TASK" > droid_task.md
+          echo "" >> droid_task.md
+          echo "Goal: Fix failing CI and resolve ALL High/Critical findings WITHOUT bypassing tests/linters." >> droid_task.md
+          echo "" >> droid_task.md
+          echo "Repo layout:" >> droid_task.md
+          echo "- Backend: ./  (Spring Boot, Gradle)" >> droid_task.md
+          echo "- Frontend: ./frontend  (Vite/React/TypeScript)" >> droid_task.md
+          echo "" >> droid_task.md
+          echo "CI rules to pass:" >> droid_task.md
+          echo "- Backend: ./gradlew clean build" >> droid_task.md
+          echo "- Frontend: (cd frontend && npm ci && npm run lint && npm run typecheck && npm run test)" >> droid_task.md
+          echo "" >> droid_task.md
+          echo "CI summary:" >> droid_task.md
+          echo "${{ steps.cilog.outputs.summary }}" >> droid_task.md
+          echo "" >> droid_task.md
+          echo "High/Critical findings to resolve:" >> droid_task.md
+          cat high_issues.md >> droid_task.md
+          echo "" >> droid_task.md
+          echo "Constraints:" >> droid_task.md
+          echo "- Minimal, targeted changes; add/update tests if necessary." >> droid_task.md
+          echo "- Do NOT disable tests, typecheck, or linters." >> droid_task.md
+
+      - name: Run Droid to fix & push
+        env:
+          FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          git config user.name  "Droid Agent"
+          git config user.email "droidagent@factory.ai"
+
+          cat > prompt.txt <<'EOF'
+          You are a software engineering agent running in GitHub Actions.
+          Task: Fix the failing CI and resolve all High/Critical review findings for the current PR.
+          Steps:
+          1) Read droid_task.md for repo layout, CI rules, and unresolved findings.
+          2) Reproduce CI locally and fix:
+             - Backend: ./gradlew clean build
+             - Frontend: cd frontend && npm ci && npm run lint && npm run typecheck && npm run test
+          3) Apply minimal fixes in the correct dirs (backend ./ , frontend ./frontend).
+          4) Re-run the same commands until all pass locally.
+          5) Commit with message: "fix(ci): resolve high findings & pass CI (#${{ steps.pr.outputs.number }})"
+          6) Push to the PR branch: ${{ steps.pr.outputs.branch }}
+          Constraints:
+          - Never disable tests/linters; add/adjust tests when needed.
+          - Keep diffs small and focused; follow project style/ESLint/TypeScript rules.
+          EOF
+
+          # 実行：公式の非対話モード（例）に合わせてコマンドを置き換えてください
+          # 例) droid exec --auto high -f prompt.txt
+          echo "(RUN_DROID_HERE) droid exec --auto high -f prompt.txt"
+
+          # 念のため手動コミット/プッシュ（Droid側が済ませていれば no-op）
+          if [ -n "$(git status --porcelain)" ]; then
+            git add -A
+            git commit -m "fix(ci): resolve high findings & pass CI (#${{ steps.pr.outputs.number }})"
+            git push origin "${{ steps.pr.outputs.branch }}"
+          fi
