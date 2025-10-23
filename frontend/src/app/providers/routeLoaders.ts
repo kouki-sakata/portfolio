@@ -2,12 +2,15 @@ import type { QueryClient } from "@tanstack/react-query";
 import { redirect } from "react-router-dom";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
-import { hasStatus, type StatusError } from "@/app/utils/error";
 import { fetchSession } from "@/features/auth/api/session";
 import { fetchEmployees } from "@/features/employees/api";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { fetchNewsList } from "@/features/news/api/newsApi";
 import { fetchStampHistory } from "@/features/stampHistory/api";
+import {
+  hasStatus,
+  type StatusAwareError as StatusError,
+} from "@/shared/api/errors";
 import { authEvents } from "@/shared/api/events/authEvents";
 import { queryKeys } from "@/shared/utils/queryUtils";
 

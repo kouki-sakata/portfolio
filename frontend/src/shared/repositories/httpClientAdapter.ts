@@ -122,6 +122,19 @@ export const createHttpClientAdapter = (): IHttpClient => {
     throw handleUnexpectedError(error);
   };
 
+  /**
+   * GET リクエストを実行し、レスポンスを返す
+   *
+   * @remarks
+   * parseJson オプションで戻り値の型が変わる:
+   * - parseJson: true (デフォルト): T を返す
+   * - parseJson: false: void を返す (レスポンスボディを解析しない)
+   *
+   * @note
+   * 将来的には satisfies または Overload条件付き型でキャストの削減を検討。
+   * 現在はアサーションで型安全性を保証しており、テストで parseJson: false
+   * の動作を検証することが重要。
+   */
   const get = (async <T>(
     path: string,
     options?: HttpRequestOptions
@@ -142,6 +155,19 @@ export const createHttpClientAdapter = (): IHttpClient => {
     (path: string, options: NoParseHttpRequestOptions): Promise<void>;
   };
 
+  /**
+   * POST リクエストを実行し、レスポンスを返す
+   *
+   * @remarks
+   * parseJson オプションで戻り値の型が変わる:
+   * - parseJson: true (デフォルト): T を返す
+   * - parseJson: false: void を返す (レスポンスボディを解析しない)
+   *
+   * @note
+   * 将来的には satisfies または Overload条件付き型でキャストの削減を検討。
+   * 現在はアサーションで型安全性を保証しており、テストで parseJson: false
+   * の動作を検証することが重要。
+   */
   const post = (async <T>(
     path: string,
     body?: unknown,
@@ -171,6 +197,19 @@ export const createHttpClientAdapter = (): IHttpClient => {
     ): Promise<void>;
   };
 
+  /**
+   * PUT リクエストを実行し、レスポンスを返す
+   *
+   * @remarks
+   * parseJson オプションで戻り値の型が変わる:
+   * - parseJson: true (デフォルト): T を返す
+   * - parseJson: false: void を返す (レスポンスボディを解析しない)
+   *
+   * @note
+   * 将来的には satisfies または Overload条件付き型でキャストの削減を検討。
+   * 現在はアサーションで型安全性を保証しており、テストで parseJson: false
+   * の動作を検証することが重要。
+   */
   const put = (async <T>(
     path: string,
     body?: unknown,

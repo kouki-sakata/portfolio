@@ -1,6 +1,9 @@
 import { QueryCache } from "@tanstack/react-query";
 
-import { hasStatus, type StatusError } from "@/app/utils/error";
+import {
+  hasStatus,
+  type StatusAwareError as StatusError,
+} from "@/shared/api/errors";
 
 /**
  * エラーインターセプター設定
