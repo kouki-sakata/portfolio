@@ -75,6 +75,14 @@ export type HttpRequestOptions =
   | JsonHttpRequestOptions
   | NoParseHttpRequestOptions;
 
+/** Init object that carries body + JSON-parsing options */
+export type HttpRequestInitJson = JsonHttpRequestOptions & {
+  body?: unknown;
+};
+/** Init object that carries body + non-parsing options */
+export type HttpRequestInitNoParse = NoParseHttpRequestOptions & {
+  body?: unknown;
+};
 /**
  * リポジトリエラーコード定義
  */
