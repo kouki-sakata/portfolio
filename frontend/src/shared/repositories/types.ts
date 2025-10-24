@@ -8,9 +8,9 @@
  * 具象実装から抽象へ依存を逆転
  */
 export type IHttpClient = {
-  get<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+   get<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
   get(path: string, options: NoParseHttpRequestOptions): Promise<void>;
-  post<T>(
+  post<T = unknown>(
     path: string,
     body?: unknown,
     options?: JsonHttpRequestOptions
@@ -20,7 +20,7 @@ export type IHttpClient = {
     body: unknown,
     options: NoParseHttpRequestOptions
   ): Promise<void>;
-  put<T>(
+  put<T = unknown>(
     path: string,
     body?: unknown,
     options?: JsonHttpRequestOptions
@@ -30,7 +30,7 @@ export type IHttpClient = {
     body: unknown,
     options: NoParseHttpRequestOptions
   ): Promise<void>;
-  patch<T>(
+  patch<T = unknown>(
     path: string,
     body?: unknown,
     options?: JsonHttpRequestOptions
@@ -40,12 +40,16 @@ export type IHttpClient = {
     body: unknown,
     options: NoParseHttpRequestOptions
   ): Promise<void>;
-  delete<T>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  delete<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
   delete(path: string, options: NoParseHttpRequestOptions): Promise<void>;
 };
 
 /**
  * HTTPリクエストオプション
+ */
+
+/**
+ * parseJson === true のとき JSON をパースして T を返す
  */
 export type JsonHttpRequestOptions = {
   headers?: HeadersInit;
@@ -54,6 +58,9 @@ export type JsonHttpRequestOptions = {
   credentials?: RequestCredentials;
 };
 
+/**
+ * parseJson === false のとき本文をパースせず void を返す
+ */
 export type NoParseHttpRequestOptions = {
   headers?: HeadersInit;
   parseJson: false;
@@ -66,15 +73,31 @@ export type HttpRequestOptions =
   | NoParseHttpRequestOptions;
 
 /**
+ * リポジトリエラーコード定義
+ */
+export const REPOSITORY_ERROR_CODES = [
+  "NETWORK_ERROR",
+  "SERVER_ERROR",
+  "VALIDATION_ERROR",
+  "NOT_FOUND",
+  "UNAUTHORIZED",
+  "TIMEOUT",
+  "UNKNOWN",
+] as const;
+
+export type RepositoryErrorCode = (typeof REPOSITORY_ERROR_CODES)[number];
+
+export const isRepositoryErrorCode = (
+  value: unknown
+): value is RepositoryErrorCode =>
+  typeof value === "string" &&
+  REPOSITORY_ERROR_CODES.includes(value as RepositoryErrorCode);
+
+/**
  * リポジトリエラー
  */
 export interface RepositoryError extends Error {
-  code:
-    | "NETWORK_ERROR"
-    | "VALIDATION_ERROR"
-    | "NOT_FOUND"
-    | "UNAUTHORIZED"
-    | "UNKNOWN";
+  code: RepositoryErrorCode;
   status?: number;
   details?: unknown;
 }
