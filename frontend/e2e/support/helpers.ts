@@ -56,7 +56,7 @@ export const waitForToast = async (
 /**
  * アクセス拒否（403 or リダイレクト）を検証する
  */
-export const _expectAccessDenied = async (
+export const expectAccessDenied = async (
   page: Page,
   targetUrl: string,
   options?: { expectRedirect?: boolean; redirectUrl?: string | RegExp }
@@ -76,7 +76,7 @@ export const _expectAccessDenied = async (
 /**
  * エラーメッセージが表示されることを確認する
  */
-export const _expectErrorMessage = async (
+export const expectErrorMessage = async (
   page: Page,
   message: string | RegExp
 ) => {
@@ -88,7 +88,7 @@ export const _expectErrorMessage = async (
 /**
  * ページナビゲーションを実行して完了を待つ
  */
-export const _navigateAndWait = async (
+export const navigateAndWait = async (
   page: Page,
   linkName: string,
   expectedUrl: string | RegExp,
@@ -107,7 +107,7 @@ export const _navigateAndWait = async (
 /**
  * フォームフィールドを一括入力する
  */
-export const _fillFormFields = async (
+export const fillFormFields = async (
   page: Page,
   fields: Record<string, string>
 ) => {
@@ -119,7 +119,7 @@ export const _fillFormFields = async (
 /**
  * テーブル行を検索してアクション実行
  */
-export const _findTableRowAndClick = async (
+export const findTableRowAndClick = async (
   page: Page,
   searchText: string,
   buttonName: string
@@ -131,10 +131,7 @@ export const _findTableRowAndClick = async (
 /**
  * ダイアログを待機して受諾する
  */
-export const _acceptDialog = async (
-  page: Page,
-  action: () => Promise<void>
-) => {
+export const acceptDialog = async (page: Page, action: () => Promise<void>) => {
   await Promise.all([
     page.waitForEvent("dialog").then((dialog) => dialog.accept()),
     action(),
@@ -144,7 +141,7 @@ export const _acceptDialog = async (
 /**
  * コンソールエラーを収集するリスナーを設定
  */
-export const _setupConsoleErrorListener = (page: Page): string[] => {
+export const setupConsoleErrorListener = (page: Page): string[] => {
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") {
