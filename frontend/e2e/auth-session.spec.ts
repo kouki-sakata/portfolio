@@ -217,8 +217,8 @@ test.describe("認証・セッション管理の包括的テスト", () => {
       // auth-card__error クラスを持つ要素を明示的に検索
       // (strict mode違反を避けるため、正規表現ではなくクラスセレクターを使用)
       await expect(page.locator(".auth-card__error")).toContainText(
-         "メールアドレスまたはパスワードが正しくありません。"
-       );
+        "メールアドレスまたはパスワードが正しくありません。"
+      );
       // ログインページに留まる
       await expect(page).toHaveURL(/\/signin/);
     });
