@@ -2,8 +2,7 @@
 CLAUDE.md
 .mcp.json
 .claude
-.*
-!.github
+
 
 # Compiled class files
 *.class
@@ -130,6 +129,4 @@ seed.spec.ts
 # Miyabi
 .miyabi.yml
 .worktrees/
-logs/
 reports/
-*.log

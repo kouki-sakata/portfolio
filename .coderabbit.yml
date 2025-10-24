@@ -1,0 +1,8 @@
+review:
+  severity_format: "Severity: {{level}}"   # コメントに "Severity: High" などを含める
+  min_level: info
+  include_paths:
+    - src/**
+    - frontend/**
+  exclude_paths:
+    - docs/**

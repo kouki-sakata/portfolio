@@ -42,8 +42,7 @@ export const waitForToast = async (
     } catch (error: unknown) {
       if (error instanceof Error) {
         lastError = error;
-        continue;
-      }
+      } else {  
       lastError = new Error(`Unexpected toast wait failure: ${String(error)}`);
     }
   }
