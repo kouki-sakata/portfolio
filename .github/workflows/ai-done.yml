@@ -24,9 +24,10 @@ jobs:
             const { owner, repo } = context.repo;
             const rc = await github.rest.pulls.listReviewComments({ owner, repo, pull_number: pr.number, per_page: 100 });
             const ic = await github.rest.issues.listComments({ owner, repo, issue_number: pr.number, per_page: 100 });
-
-            const high = c => /high|critical/i.test(c.body || "");
-            const unresolved = c => high(c) && !/resolved|fixed|✅/i.test(c.body || "");
+            
+            const isHighOrCritical = (c) => /\b(high|critical)\b/i.test(c.body || "");
+            const hasResolvedFlag = (c) => /\b(resolved|fixed)\b/i.test(c.body || "") || /✅/.test(c.body || "");
+            const unresolved = (c) => isHighOrCritical(c) && !hasResolvedFlag(c);
             const remaining = [...rc.data, ...ic.data].filter(unresolved);
 
             if (remaining.length === 0) {
