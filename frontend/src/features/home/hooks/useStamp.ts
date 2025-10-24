@@ -50,6 +50,21 @@ const extractErrorInfo = (error: unknown): ErrorInfo => {
     return { message: error.message };
   }
 
+  if (error && typeof error === "object" && "code" in error) {
+    const plainError = error as {
+      code?: string;
+      status?: number;
+      message?: string;
+      details?: unknown;
+    };
+    return {
+      status: plainError.status,
+      code: plainError.code,
+      message: plainError.message,
+      details: plainError.details,
+    };
+  }
+
   return {};
 };
 
@@ -92,8 +107,8 @@ const isNetworkIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
 
 const isTimeoutIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
   errorInfo.code === "TIMEOUT" ||
-  error.message.includes("timeout") ||
-  error.message.includes("Timeout");
+  error.message?.includes("timeout") ||
+  error.message?.includes("Timeout");
 
 const isServerIssue = (errorInfo: ErrorInfo): boolean =>
   errorInfo.code === "SERVER_ERROR" || (errorInfo.status ?? 0) >= 500;
