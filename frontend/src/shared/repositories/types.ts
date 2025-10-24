@@ -8,7 +8,7 @@
  * 具象実装から抽象へ依存を逆転
  */
 export type IHttpClient = {
-   get<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  get<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
   get(path: string, options: NoParseHttpRequestOptions): Promise<void>;
   post<T = unknown>(
     path: string,
@@ -40,7 +40,10 @@ export type IHttpClient = {
     body: unknown,
     options: NoParseHttpRequestOptions
   ): Promise<void>;
-  delete<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  delete<T = unknown>(
+    path: string,
+    options?: JsonHttpRequestOptions
+  ): Promise<T>;
   delete(path: string, options: NoParseHttpRequestOptions): Promise<void>;
 };
 

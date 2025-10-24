@@ -384,7 +384,7 @@ describe("useStamp", () => {
 
       await waitFor(() => {
         expect(result.current.message).toBe(
-          "打刻に失敗しました。再度お試しください。"
+          "通信エラーが発生しました。接続を確認してください。"
         );
       });
 
@@ -414,7 +414,7 @@ describe("useStamp", () => {
 
       await waitFor(() => {
         expect(result.current.message).toBe(
-          "打刻に失敗しました。再度お試しください。"
+          "リクエストがタイムアウトしました。しばらくしてから再度お試しください。"
         );
       });
 

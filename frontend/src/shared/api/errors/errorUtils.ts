@@ -1,5 +1,5 @@
-import { isRepositoryErrorCode } from "@/shared/repositories/types";
 import type { RepositoryError } from "@/shared/repositories/types";
+import { isRepositoryErrorCode } from "@/shared/repositories/types";
 import { ApiError } from "./ApiError";
 
 /**
