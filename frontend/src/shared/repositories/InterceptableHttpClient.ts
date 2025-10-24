@@ -122,12 +122,12 @@ export class InterceptableHttpClient implements IHttpClient {
     );
   }
 
-  async post<T>(
+  post<T>(
     path: string,
     body?: unknown,
     options?: JsonHttpRequestOptions
   ): Promise<T>;
-  async post(
+  post(
     path: string,
     body: unknown,
     options: NoParseHttpRequestOptions
