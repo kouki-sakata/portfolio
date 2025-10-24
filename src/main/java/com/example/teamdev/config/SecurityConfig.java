@@ -180,14 +180,13 @@ public class SecurityConfig {
                      "/signin",
                      "/index.html",
                      "/assets/**",
-                    "/actuator/**",
-                    "/actuator/health",
-                    "/actuator/info", // 必要時のみ
                      "/api/auth/login",
                      "/api/auth/session",
                      "/api/auth/logout",
                      "/api/public/**"
                  ).permitAll()
+                // Actuator endpoints require authentication (401 entry point at line 216-218 will be effective)
+                .requestMatchers("/actuator/health").permitAll() // Health check endpoint for external monitoring
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
