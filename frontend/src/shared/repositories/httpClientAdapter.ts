@@ -7,22 +7,9 @@ import type {
   JsonHttpRequestOptions,
   NoParseHttpRequestOptions,
   RepositoryError,
+  RepositoryErrorCode,
 } from "./types";
-
-const REPOSITORY_ERROR_CODES = [
-  "NETWORK_ERROR",
-  "SERVER_ERROR",
-  "VALIDATION_ERROR",
-  "NOT_FOUND",
-  "UNAUTHORIZED",
-  "UNKNOWN",
-] as const;
-
-type RepositoryErrorCode = (typeof REPOSITORY_ERROR_CODES)[number];
-
-const isRepositoryErrorCode = (value: unknown): value is RepositoryErrorCode =>
-  typeof value === "string" &&
-  REPOSITORY_ERROR_CODES.includes(value as RepositoryErrorCode);
+import { isRepositoryErrorCode } from "./types";
 
 /**
  * HTTPエラーの型定義
@@ -34,7 +21,7 @@ const normalizeHeaders = (
     return;
   }
 
-  if (headers instanceof Headers) {
+  if (typeof Headers !== "undefined" && headers instanceof Headers) {
     const normalized: Record<string, string> = {};
     for (const [key, value] of headers.entries()) {
       normalized[key] = value;
@@ -70,6 +57,11 @@ const mapHttpOptionsToAxiosConfig = (
     config.withCredentials = options.credentials === "include";
   }
 
+  // parseJson === false の場合、axiosのデフォルトJSON変換を無効化
+  if (options.parseJson === false) {
+    config.transformResponse = [(data) => data];
+  }
+
   return config;
 };
 
@@ -85,6 +77,10 @@ export const createHttpClientAdapter = (): IHttpClient => {
       status: error.status,
       details: error.details,
     }) as RepositoryError;
+
+    if (error.code === "TIMEOUT") {
+      return { ...repoError, code: "TIMEOUT" } as RepositoryError;
+    }
 
     if (error.status === 0) {
       return { ...repoError, code: "NETWORK_ERROR" } as RepositoryError;

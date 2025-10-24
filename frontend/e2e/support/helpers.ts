@@ -6,10 +6,8 @@ import { expect } from "@playwright/test";
  * ログインフローを実行し、ホーム画面に遷移することを確認
  */
 export const signIn = async (page: Page, email: string, password: string) => {
-  await page.goto("/signin", { waitUntil: "networkidle" });
-
   // ページがロードされるまで待機
-  await page.waitForLoadState("networkidle");
+  await page.goto("/signin", { waitUntil: "networkidle" });
 
   await expect(
     page.getByRole("heading", { name: /^.*サインイン.*$/ })

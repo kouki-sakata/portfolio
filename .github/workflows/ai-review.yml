@@ -4,12 +4,15 @@ on:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
-  pull-requests: write
-  issues: write
+  contents: read
+  pull-requests: read
+  issues: read
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.pull_request.draft == false }}
     steps:
       - name: Notify reviewers
-        run: echo "🚀 CodeRabbit, and Codex will automatically review this PR."
+        run: echo "🚀 Automated review will run on this PR (ready_for_review)."
+

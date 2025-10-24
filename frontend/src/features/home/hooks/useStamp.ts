@@ -40,7 +40,7 @@ const extractErrorInfo = (error: unknown): ErrorInfo => {
     const repoError = error as RepositoryError & { status?: number };
     return {
       status: repoError.status,
-      code: repoError.code,
+      code: (error as { code?: string }).code,
       message: repoError.message,
       details: repoError.details,
     };
@@ -145,11 +145,11 @@ export const useStamp = (
         return; // 早期リターンで他のエラーハンドリングをスキップ
       }
 
-      const errorMessage = "打刻に失敗しました。再度お試しください。";
-      setMessage(errorMessage);
+      const errorMessage = "打刻に失敗しました。再度お試しください。";  
 
       // サーバーエラーを最初にチェック（500番台）
       if (isServerIssue(errorInfo)) {
+        setMessage("サーバーエラーが発生しました。しばらくしてから再度お試しください。");
         toast({
           variant: "destructive",
           title: "サーバーエラー",
@@ -160,6 +160,7 @@ export const useStamp = (
       }
 
       if (isTimeoutIssue(errorInfo, error)) {
+        setMessage("リクエストがタイムアウトしました。しばらくしてから再度お試しください。"); 
         toast({
           variant: "destructive",
           title: "タイムアウト",
@@ -170,6 +171,7 @@ export const useStamp = (
       }
 
       if (isNetworkIssue(errorInfo, error)) {
+        setMessage("通信エラーが発生しました。接続を確認してください。"); 
         toast({
           variant: "destructive",
           title: "ネットワークエラー",
@@ -178,6 +180,8 @@ export const useStamp = (
         return;
       }
 
+      // 上記いずれにも該当しない汎用エラー  
+      setMessage(errorMessage);
       toast({
         variant: "destructive",
         title: "エラー",

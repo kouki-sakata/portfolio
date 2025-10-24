@@ -176,16 +176,18 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // API & Health endpoints only (SPA is hosted on Vercel)
                 .requestMatchers(
-                    "/",
-                    "/signin",
-                    "/index.html",
-                    "/assets/**",
+                     "/",
+                     "/signin",
+                     "/index.html",
+                     "/assets/**",
                     "/actuator/**",
-                    "/api/auth/login",
-                    "/api/auth/session",
-                    "/api/auth/logout",
-                    "/api/public/**"
-                ).permitAll()
+                    "/actuator/health",
+                    "/actuator/info", // 必要時のみ
+                     "/api/auth/login",
+                     "/api/auth/session",
+                     "/api/auth/logout",
+                     "/api/public/**"
+                 ).permitAll()
                 .requestMatchers(
                     "/swagger-ui.html",
                     "/swagger-ui/**",
