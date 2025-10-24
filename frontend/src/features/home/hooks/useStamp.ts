@@ -99,12 +99,11 @@ const resolveConflictMessage = (errorInfo: ErrorInfo): string | null => {
 };
 
 const isNetworkIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
-  !navigator.onLine ||
+  (typeof navigator !== "undefined" && navigator.onLine === false) ||
   errorInfo.status === 0 ||
   errorInfo.code === "NETWORK_ERROR" ||
   errorInfo.message?.toLowerCase() === "network error" ||
   error.message === "Network Error";
-
 const isTimeoutIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
   errorInfo.code === "TIMEOUT" ||
   error.message?.includes("timeout") ||
