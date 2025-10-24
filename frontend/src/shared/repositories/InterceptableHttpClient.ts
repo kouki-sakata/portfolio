@@ -186,12 +186,12 @@ export class InterceptableHttpClient implements IHttpClient {
     );
   }
 
-  async patch<T>(
+  patch<T>(
     path: string,
     body?: unknown,
     options?: JsonHttpRequestOptions
   ): Promise<T>;
-  async patch(
+  patch(
     path: string,
     body: unknown,
     options: NoParseHttpRequestOptions
