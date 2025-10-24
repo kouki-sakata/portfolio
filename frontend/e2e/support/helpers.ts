@@ -42,8 +42,11 @@ export const waitForToast = async (
     } catch (error: unknown) {
       if (error instanceof Error) {
         lastError = error;
-      } else {  
-      lastError = new Error(`Unexpected toast wait failure: ${String(error)}`);
+      } else {
+        lastError = new Error(
+          `Unexpected toast wait failure: ${String(error)}`
+        );
+      }
     }
   }
 
@@ -53,7 +56,7 @@ export const waitForToast = async (
 /**
  * アクセス拒否（403 or リダイレクト）を検証する
  */
-export const expectAccessDenied = async (
+export const _expectAccessDenied = async (
   page: Page,
   targetUrl: string,
   options?: { expectRedirect?: boolean; redirectUrl?: string | RegExp }
@@ -73,7 +76,7 @@ export const expectAccessDenied = async (
 /**
  * エラーメッセージが表示されることを確認する
  */
-export const expectErrorMessage = async (
+export const _expectErrorMessage = async (
   page: Page,
   message: string | RegExp
 ) => {
@@ -85,7 +88,7 @@ export const expectErrorMessage = async (
 /**
  * ページナビゲーションを実行して完了を待つ
  */
-export const navigateAndWait = async (
+export const _navigateAndWait = async (
   page: Page,
   linkName: string,
   expectedUrl: string | RegExp,
@@ -104,7 +107,7 @@ export const navigateAndWait = async (
 /**
  * フォームフィールドを一括入力する
  */
-export const fillFormFields = async (
+export const _fillFormFields = async (
   page: Page,
   fields: Record<string, string>
 ) => {
@@ -116,7 +119,7 @@ export const fillFormFields = async (
 /**
  * テーブル行を検索してアクション実行
  */
-export const findTableRowAndClick = async (
+export const _findTableRowAndClick = async (
   page: Page,
   searchText: string,
   buttonName: string
@@ -128,7 +131,10 @@ export const findTableRowAndClick = async (
 /**
  * ダイアログを待機して受諾する
  */
-export const acceptDialog = async (page: Page, action: () => Promise<void>) => {
+export const _acceptDialog = async (
+  page: Page,
+  action: () => Promise<void>
+) => {
   await Promise.all([
     page.waitForEvent("dialog").then((dialog) => dialog.accept()),
     action(),
@@ -138,7 +144,7 @@ export const acceptDialog = async (page: Page, action: () => Promise<void>) => {
 /**
  * コンソールエラーを収集するリスナーを設定
  */
-export const setupConsoleErrorListener = (page: Page): string[] => {
+export const _setupConsoleErrorListener = (page: Page): string[] => {
   const errors: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error") {
