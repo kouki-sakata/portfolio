@@ -31,20 +31,22 @@ jobs:
             const remaining = [...rc.data, ...ic.data].filter(unresolved);
 
             if (remaining.length === 0) {
+            try {
               await github.rest.issues.createComment({
                 owner, repo, issue_number: pr.number,
                 body: "✅ CI passed & all High/Critical findings are resolved. Auto-fix complete."
               });
-              } catch (e) {
+            } catch (e) {
               if (e.status === 404) {
                 await github.rest.issues.createLabel({
                   owner, repo, name: "auto-fix:done", color: "0e8a16",
                   description: "All High/Critical findings resolved"
-                }).catch(() => {}); // 既存なら無視
+                }).catch(() => {});
                 await github.rest.issues.addLabels({
                   owner, repo, issue_number: pr.number, labels: ["auto-fix:done"]
                 });
               } else {
                 throw e;
               }
-             }
+            }
+            }

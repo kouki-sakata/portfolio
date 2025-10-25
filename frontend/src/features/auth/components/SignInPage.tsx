@@ -89,7 +89,11 @@ export const SignInPage = () => {
             )}
           </EnhancedFormField>
 
-          {error ? <p className="auth-card__error">{error}</p> : null}
+          {error ? (
+            <p className="auth-card__error" role="alert">
+              {error}
+            </p>
+          ) : null}
 
           <Button
             className="auth-card__submit"
