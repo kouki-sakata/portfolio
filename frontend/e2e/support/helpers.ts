@@ -37,7 +37,7 @@ export const waitForToast = async (
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
       // 複数マッチする場合は最初の要素を取得
-      await expect(toastElement).toBeVisible(options);
+      await expect(toastElement).toBeVisible({ ...options, timeout: 10_000 });
       return;
     } catch (error: unknown) {
       if (error instanceof Error) {

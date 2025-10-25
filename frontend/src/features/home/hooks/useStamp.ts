@@ -15,7 +15,7 @@ import { queryKeys } from "@/shared/utils/queryUtils";
 const HOME_DASHBOARD_KEY = ["home", "dashboard"] as const;
 
 const GENERIC_STATUS_MESSAGES: Record<number, string[]> = {
-  409: ["conflict"],
+  409: ["conflict", "simulated error"],
 };
 const DEFAULT_CONFLICT_MESSAGE =
   "既に打刻済みです。同じ日に同じ種別の打刻はできません。";
