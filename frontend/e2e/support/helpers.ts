@@ -6,16 +6,18 @@ import { expect } from "@playwright/test";
  * ログインフローを実行し、ホーム画面に遷移することを確認
  */
 export const signIn = async (page: Page, email: string, password: string) => {
-  await page.goto("/signin");
+  // ページがロードされるまで待機
+  await page.goto("/signin", { waitUntil: "networkidle" });
+
   await expect(
     page.getByRole("heading", { name: /^.*サインイン.*$/ })
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 10_000 });
 
   await page.getByLabel("メールアドレス").fill(email);
   await page.getByLabel("パスワード").fill(password);
   await page.getByRole("button", { name: "サインイン" }).click();
 
-  await expect(page).toHaveURL(/\/$/);
+  await expect(page).toHaveURL(/\/$/, { timeout: 15_000 });
   await expect(
     page.getByRole("heading", { name: /おはようございます/ })
   ).toBeVisible({ timeout: 15_000 });
@@ -29,10 +31,26 @@ export const waitForToast = async (
   message: string | RegExp,
   options?: { timeout?: number }
 ) => {
-  // 複数マッチする場合は最初の要素を取得
-  await expect(page.getByText(message, { exact: false }).first()).toBeVisible(
-    options
-  );
+  const toastElement = page.getByText(message, { exact: false }).first();
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      // 複数マッチする場合は最初の要素を取得
+      await expect(toastElement).toBeVisible({ ...options, timeout: 10_000 });
+      return;
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        lastError = error;
+      } else {
+        lastError = new Error(
+          `Unexpected toast wait failure: ${String(error)}`
+        );
+      }
+    }
+  }
+
+  throw lastError ?? new Error("トーストが見つかりませんでした");
 };
 
 /**

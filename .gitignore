@@ -2,8 +2,7 @@
 CLAUDE.md
 .mcp.json
 .claude
-.*
-!.github
+
 
 # Compiled class files
 *.class
@@ -126,3 +125,8 @@ frontend/.playwright/
 
 # Test seed files
 seed.spec.ts
+
+# Miyabi
+.miyabi.yml
+.worktrees/
+reports/

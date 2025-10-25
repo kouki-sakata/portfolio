@@ -1,8 +1,5 @@
 import type { StampRequest, StampResponse } from "@/features/home/types";
-import { httpClient } from "@/shared/api/httpClient";
+import { api } from "@/shared/api/axiosClient";
 
 export const submitStamp = async (payload: StampRequest) =>
-  httpClient<StampResponse>("/home/stamps", {
-    method: "POST",
-    body: JSON.stringify(payload),
-  });
+  api.post<StampResponse>("/home/stamps", payload);

@@ -8,45 +8,107 @@
  * 具象実装から抽象へ依存を逆転
  */
 export type IHttpClient = {
-  get<T>(path: string, options?: HttpRequestOptions): Promise<T>;
-  post<T>(
+  get<T = unknown>(path: string, options?: JsonHttpRequestOptions): Promise<T>;
+  get(path: string, options: NoParseHttpRequestOptions): Promise<void>;
+  post<T = unknown>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
-  put<T>(
+  post(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  put<T = unknown>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
-  patch<T>(
+  put(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  patch<T = unknown>(
     path: string,
     body?: unknown,
-    options?: HttpRequestOptions
+    options?: JsonHttpRequestOptions
   ): Promise<T>;
-  delete<T>(path: string, options?: HttpRequestOptions): Promise<T>;
+  patch(
+    path: string,
+    body: unknown,
+    options: NoParseHttpRequestOptions
+  ): Promise<void>;
+  delete<T = unknown>(
+    path: string,
+    options?: JsonHttpRequestOptions
+  ): Promise<T>;
+  delete(path: string, options: NoParseHttpRequestOptions): Promise<void>;
 };
 
 /**
  * HTTPリクエストオプション
  */
-export type HttpRequestOptions = {
+
+/**
+ * parseJson === true のとき JSON をパースして T を返す
+ */
+export type JsonHttpRequestOptions = {
   headers?: HeadersInit;
-  parseJson?: boolean;
+  parseJson?: true;
   signal?: AbortSignal;
   credentials?: RequestCredentials;
 };
 
 /**
+ * parseJson === false のとき本文をパースせず void を返す
+ */
+export type NoParseHttpRequestOptions = {
+  headers?: HeadersInit;
+  parseJson: false;
+  signal?: AbortSignal;
+  credentials?: RequestCredentials;
+};
+
+export type HttpRequestOptions =
+  | JsonHttpRequestOptions
+  | NoParseHttpRequestOptions;
+
+/** Init object that carries body + JSON-parsing options */
+export type HttpRequestInitJson = JsonHttpRequestOptions & {
+  body?: unknown;
+};
+/** Init object that carries body + non-parsing options */
+export type HttpRequestInitNoParse = NoParseHttpRequestOptions & {
+  body?: unknown;
+};
+/**
+ * リポジトリエラーコード定義
+ */
+export const REPOSITORY_ERROR_CODES = [
+  "NETWORK_ERROR",
+  "SERVER_ERROR",
+  "VALIDATION_ERROR",
+  "NOT_FOUND",
+  "UNAUTHORIZED",
+  "TIMEOUT",
+  "UNKNOWN",
+] as const;
+
+export type RepositoryErrorCode = (typeof REPOSITORY_ERROR_CODES)[number];
+
+export const isRepositoryErrorCode = (
+  value: unknown
+): value is RepositoryErrorCode =>
+  typeof value === "string" &&
+  REPOSITORY_ERROR_CODES.includes(value as RepositoryErrorCode);
+
+/**
  * リポジトリエラー
  */
 export interface RepositoryError extends Error {
-  code:
-    | "NETWORK_ERROR"
-    | "VALIDATION_ERROR"
-    | "NOT_FOUND"
-    | "UNAUTHORIZED"
-    | "UNKNOWN";
+  code: RepositoryErrorCode;
   status?: number;
   details?: unknown;
 }

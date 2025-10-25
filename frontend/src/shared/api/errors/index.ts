@@ -13,6 +13,8 @@ export {
   isUnexpectedError,
   isValidationError,
 } from "./error-classifier";
+export type { StatusAwareError } from "./errorUtils";
+export { hasStatus } from "./errorUtils";
 export { NetworkError } from "./NetworkError";
 export { UnexpectedError } from "./UnexpectedError";
 export { ValidationError } from "./ValidationError";

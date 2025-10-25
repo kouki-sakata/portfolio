@@ -7,8 +7,8 @@ import { fetchEmployees } from "@/features/employees/api";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { fetchNewsList } from "@/features/news/api/newsApi";
 import { fetchStampHistory } from "@/features/stampHistory/api";
+import { ApiError } from "@/shared/api/errors/ApiError";
 import { authEvents } from "@/shared/api/events/authEvents";
-import type { HttpClientError } from "@/shared/api/httpClient";
 import { queryKeys } from "@/shared/utils/queryUtils";
 import {
   employeeAdminRouteLoader,
@@ -174,8 +174,7 @@ describe("route loaders", () => {
 
   it("redirects to signin when session request returns 401", async () => {
     const queryClient = new QueryClient();
-    const unauthorizedError = new Error("Unauthorized") as HttpClientError;
-    unauthorizedError.status = 401;
+    const unauthorizedError = new ApiError("Unauthorized", 401);
 
     vi.mocked(fetchSession).mockRejectedValue(unauthorizedError);
     const unauthorizedSpy = vi.spyOn(authEvents, "emitUnauthorized");
@@ -200,8 +199,7 @@ describe("route loaders", () => {
 
   it("redirects to signin when news prefetch fails with 401", async () => {
     const queryClient = new QueryClient();
-    const unauthorizedError = new Error("Unauthorized") as HttpClientError;
-    unauthorizedError.status = 401;
+    const unauthorizedError = new ApiError("Unauthorized", 401);
 
     vi.mocked(fetchNewsList).mockRejectedValue(unauthorizedError);
     const unauthorizedSpy = vi.spyOn(authEvents, "emitUnauthorized");

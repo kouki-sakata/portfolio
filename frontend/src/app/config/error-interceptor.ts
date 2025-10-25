@@ -1,6 +1,9 @@
 import { QueryCache } from "@tanstack/react-query";
 
-import type { HttpClientError } from "@/shared/api/httpClient";
+import {
+  hasStatus,
+  type StatusAwareError as StatusError,
+} from "@/shared/api/errors";
 
 /**
  * エラーインターセプター設定
@@ -15,14 +18,6 @@ export type ErrorInterceptorConfig = {
 };
 
 /**
- * HTTPエラーかどうか判定
- */
-const isHttpError = (error: unknown): error is HttpClientError =>
-  error instanceof Error &&
-  "status" in error &&
-  typeof (error as HttpClientError).status === "number";
-
-/**
  * 401エラーハンドリング
  * 未認証エラー時に自動ログアウト・リダイレクトを実行
  */
@@ -30,11 +25,13 @@ export const handle401Error = async (
   error: unknown,
   config: ErrorInterceptorConfig
 ): Promise<void> => {
-  if (!isHttpError(error)) {
+  if (!hasStatus(error)) {
     return;
   }
 
-  if (error.status === 401) {
+  const statusError: StatusError = error;
+
+  if (statusError.status === 401) {
     try {
       // ログアウト処理を実行
       await config.onLogout();
@@ -60,8 +57,10 @@ export const createGlobalErrorHandler = (
     void handle401Error(error, config);
 
     // その他のエラー処理
-    if (isHttpError(error)) {
-      switch (error.status) {
+    if (hasStatus(error)) {
+      const statusError: StatusError = error;
+
+      switch (statusError.status) {
         case 403:
           break;
         case 404:

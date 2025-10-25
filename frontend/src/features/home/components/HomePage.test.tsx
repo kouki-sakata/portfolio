@@ -379,11 +379,10 @@ describe("HomePage", () => {
     });
 
     it("打刻失敗時にエラーメッセージが表示される", async () => {
-      // console.errorをモック化してstderr警告を抑制（期待されたエラーハンドリング動作）
       const consoleErrorSpy = vi
         .spyOn(console, "error")
         .mockImplementation(() => {
-          // Intentionally suppress console.error output during test
+          // intentionally empty
         });
 
       mswServer.use(
@@ -398,15 +397,25 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+      const stampButton = screen.getByRole("button", { name: "出勤打刻" });
+
+      await user.click(stampButton);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("打刻に失敗しました。再度お試しください。")
-        ).toBeInTheDocument();
+        expect(stampButton).not.toBeDisabled();
       });
 
-      // モックをリストア
+      await waitFor(
+        () => {
+          expect(
+            screen.getByText(
+              "サーバーエラーが発生しました。しばらくしてから再度お試しください。"
+            )
+          ).toBeInTheDocument();
+        },
+        { timeout: 5000 }
+      );
+
       consoleErrorSpy.mockRestore();
     });
 

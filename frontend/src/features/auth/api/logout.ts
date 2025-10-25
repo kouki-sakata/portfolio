@@ -1,8 +1,5 @@
-import { httpClient } from "@/shared/api/httpClient";
+import { api } from "@/shared/api/axiosClient";
 
 export const logout = async () => {
-  await httpClient<undefined>("/auth/logout", {
-    method: "POST",
-    parseJson: false,
-  });
+  await api.post<void>("/auth/logout");
 };

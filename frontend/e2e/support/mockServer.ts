@@ -284,7 +284,7 @@ export class AppMockServer {
       await route.fulfill({
         status: errorSim.status,
         ...buildJsonResponse({
-          message: errorSim.message ?? "Simulated error",
+          ...(errorSim.message ? { message: errorSim.message } : {}),
         }),
       });
       return;

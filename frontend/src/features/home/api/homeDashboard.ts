@@ -1,5 +1,5 @@
 import type { HomeDashboardResponse } from "@/features/home/types";
-import { httpClient } from "@/shared/api/httpClient";
+import { api } from "@/shared/api/axiosClient";
 
 export const getHomeDashboard = async () =>
-  httpClient<HomeDashboardResponse>("/home/overview");
+  api.get<HomeDashboardResponse>("/home/overview");

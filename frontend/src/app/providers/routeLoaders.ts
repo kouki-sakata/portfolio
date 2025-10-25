@@ -7,8 +7,11 @@ import { fetchEmployees } from "@/features/employees/api";
 import { getHomeDashboard } from "@/features/home/api/homeDashboard";
 import { fetchNewsList } from "@/features/news/api/newsApi";
 import { fetchStampHistory } from "@/features/stampHistory/api";
+import {
+  hasStatus,
+  type StatusAwareError as StatusError,
+} from "@/shared/api/errors";
 import { authEvents } from "@/shared/api/events/authEvents";
-import type { HttpClientError } from "@/shared/api/httpClient";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 export const homeRouteLoader = async (queryClient: QueryClient) =>
@@ -35,22 +38,18 @@ export const stampHistoryRouteLoader = async (queryClient: QueryClient) =>
     gcTime: QUERY_CONFIG.stampHistory.gcTime,
   });
 
-const isHttpClientError = (error: unknown): error is HttpClientError =>
-  typeof error === "object" &&
-  error !== null &&
-  "status" in error &&
-  typeof (error as { status?: unknown }).status === "number";
-
 const handleAuthRedirect = (error: unknown): never => {
-  if (isHttpClientError(error)) {
-    if (error.status === 401) {
+  if (hasStatus(error)) {
+    const statusError: StatusError = error;
+
+    if (statusError.status === 401) {
       authEvents.emitUnauthorized(
         "セッションが期限切れです。再度サインインしてください。"
       );
       throw redirect("/signin");
     }
 
-    if (error.status === 403) {
+    if (statusError.status === 403) {
       authEvents.emitForbidden("管理者権限が必要です。");
       throw redirect("/");
     }

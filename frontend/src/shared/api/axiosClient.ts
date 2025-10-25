@@ -74,10 +74,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
       csrfInterceptor.requestError
     );
     // Register response interceptor to extract CSRF token from headers
-    instance.interceptors.response.use(
-      csrfInterceptor.response,
-      undefined
-    );
+    instance.interceptors.response.use(csrfInterceptor.response, undefined);
   }
 
   // Add error handling interceptor
