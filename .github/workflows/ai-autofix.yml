@@ -22,7 +22,10 @@ env:
 
 jobs:
   auto-fix:
-    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    # PRにリンクされたworkflow_runでのみ実行（mainへの直接pushなどはスキップ）
+    if: |
+      github.event.workflow_run.conclusion == 'failure' &&
+      github.event.workflow_run.event == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
@@ -35,10 +38,20 @@ jobs:
           script: |
             const run = context.payload.workflow_run;
             const prsResp = await github.request(run.pull_requests_url);
-            if (!prsResp.data.length) core.setFailed("No linked PR found");
+
+            // PRリンクがない場合は正常終了（mainブランチへのpushなど）
+            if (!prsResp.data.length) {
+              core.notice("No linked PR found - skipping auto-fix (likely triggered from main branch)");
+              core.setOutput("number", "");
+              core.setOutput("branch", "");
+              core.setOutput("skip", "true");
+              return;
+            }
+
             const pr = prsResp.data[0];
             core.setOutput("number", pr.number);
             core.setOutput("branch", pr.head.ref);
+            core.setOutput("skip", "false");
 
             // opt-in: require 'auto-fix' label
             const labels = (pr.labels || []).map(l => l.name);
@@ -47,6 +60,7 @@ jobs:
             }
 
       - name: Prevent infinite loop
+        if: steps.pr.outputs.skip != 'true'
         uses: actions/github-script@v7
         with:
           script: |
@@ -65,6 +79,7 @@ jobs:
             }
 
       - name: Summarize failing CI (short)
+        if: steps.pr.outputs.skip != 'true'
         id: cilog
         uses: actions/github-script@v7
         with:
@@ -73,6 +88,7 @@ jobs:
             core.setOutput("summary", "CI failed. Fix lint/type/test for backend(frontend) as per CI rules.");
 
       - name: Collect High/Critical review findings
+        if: steps.pr.outputs.skip != 'true'
         id: hi
         uses: actions/github-script@v7
         with:
@@ -110,6 +126,7 @@ jobs:
             }
 
       - name: Upload high_issues artifact
+        if: steps.pr.outputs.skip != 'true'
         uses: actions/upload-artifact@v4
         with:
           name: high_issues
@@ -120,6 +137,7 @@ jobs:
       # ※※ ここは Factory 公式の CLI 導入手順に置き換えてください ※※
       # =======================
       - name: Install Factory Droid CLI
+        if: steps.pr.outputs.skip != 'true'
         run: |
           set -euo pipefail
           # Install Droid CLI from Factory AI official source
@@ -141,6 +159,7 @@ jobs:
           droid --version
 
       - name: Prepare task for Droid
+        if: steps.pr.outputs.skip != 'true'
         run: |
           echo "## AUTO-FIX TASK" > droid_task.md
           echo "" >> droid_task.md
@@ -165,6 +184,7 @@ jobs:
           echo "- Do NOT disable tests, typecheck, or linters." >> droid_task.md
 
       - name: Prepare Droid prompt
+        if: steps.pr.outputs.skip != 'true'
         run: |
           cat > prompt.txt <<'EOF'
           You are a software engineering agent running in GitHub Actions.
@@ -184,6 +204,7 @@ jobs:
           EOF
 
       - name: Run Droid to fix & push
+        if: steps.pr.outputs.skip != 'true'
         env:
           FACTORY_API_KEY: ${{ secrets.FACTORY_API_KEY }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
