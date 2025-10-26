@@ -168,7 +168,7 @@ const shouldSkipRequest = (
 
 const ensureMutableHeaders = (config: InternalAxiosRequestConfig) => {
   if (!config.headers) {
-    config.headers = {};
+    config.headers = new (require("axios").AxiosHeaders)();
   }
   return config.headers as Record<string, unknown> & {
     set?: (name: string, value: string) => void;
