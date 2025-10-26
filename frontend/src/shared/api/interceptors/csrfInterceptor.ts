@@ -49,13 +49,29 @@ export function createCsrfInterceptor(
     request: (
       config: InternalAxiosRequestConfig
     ): InternalAxiosRequestConfig => {
+      const typedConfig = config as InternalAxiosRequestConfig & {
+        [CSRF_RETRY_FLAG]?: boolean;
+      };
+      const forceOverride = Boolean(typedConfig[CSRF_RETRY_FLAG]);
+
       // Skip CSRF token for GET requests if configured
       if (skipGET && config.method?.toUpperCase() === "GET") {
         return config;
       }
 
-      // Don't override existing header
-      if (config.headers[headerName]) {
+      if (forceOverride && config.headers) {
+        const headers = config.headers as Record<string, unknown> & {
+          delete?: (name: string) => void;
+        };
+        if (typeof headers.delete === "function") {
+          headers.delete(headerName);
+        }
+        delete headers[headerName];
+        delete headers[headerNameLowerCase];
+      }
+
+      // Don't override existing header unless forced (retry case)
+      if (!forceOverride && config.headers && config.headers[headerName]) {
         return config;
       }
 
@@ -71,7 +87,18 @@ export function createCsrfInterceptor(
 
       // Add token to headers if it exists
       if (token) {
-        config.headers[headerName] = token;
+        if (!config.headers) {
+          config.headers = {};
+        }
+
+        const headers = config.headers as Record<string, unknown> & {
+          set?: (name: string, value: string) => void;
+        };
+        headers[headerName] = token;
+        headers[headerNameLowerCase] = token;
+        if (typeof headers.set === "function") {
+          headers.set(headerName, token);
+        }
       }
 
       return config;
@@ -82,6 +109,13 @@ export function createCsrfInterceptor(
       const tokenFromHeader = response.headers[headerNameLowerCase];
       if (tokenFromHeader && typeof tokenFromHeader === "string") {
         csrfToken = tokenFromHeader;
+      }
+
+      const responseConfig = response.config as InternalAxiosRequestConfig & {
+        [CSRF_RETRY_FLAG]?: boolean;
+      };
+      if (responseConfig && responseConfig[CSRF_RETRY_FLAG]) {
+        delete responseConfig[CSRF_RETRY_FLAG];
       }
       return response;
     },
@@ -138,7 +172,15 @@ export function createCsrfInterceptor(
         throw error;
       }
 
-      return axios.request(config);
+      return axios.request(config).then((result) => {
+        const retryConfig = result.config as InternalAxiosRequestConfig & {
+          [CSRF_RETRY_FLAG]?: boolean;
+        };
+        if (retryConfig && retryConfig[CSRF_RETRY_FLAG]) {
+          delete retryConfig[CSRF_RETRY_FLAG];
+        }
+        return result;
+      });
     },
 
     requestError: (error: Error): never => {
