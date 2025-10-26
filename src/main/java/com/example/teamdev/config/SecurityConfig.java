@@ -171,8 +171,8 @@ public class SecurityConfig {
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
                 .csrfTokenRequestHandler(createCsrfTokenRequestHandler())
-                // Allow health endpoints, login, session, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
-                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/session", "/api/auth/logout", "/api/debug/**")
+                // Allow health endpoints, login, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
+                .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
             // Add CSRF token to response headers for cross-origin scenarios
             .addFilterAfter(new CsrfHeaderFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
