@@ -77,9 +77,9 @@ describe("csrfInterceptor", () => {
       expect(result.headers["X-XSRF-TOKEN"]).toBeUndefined();
     });
 
-    it("should not override existing X-XSRF-TOKEN header", () => {
+    it("should not override existing X-XSRF-TOKEN header when token matches", () => {
       const existingToken = "existing-token";
-      const cookieToken = "cookie-token";
+      const cookieToken = "existing-token";
 
       mockConfig.headers["X-XSRF-TOKEN"] = existingToken;
       (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
@@ -109,6 +109,31 @@ describe("csrfInterceptor", () => {
       const secondConfig = csrfInterceptor.request({
         ...mockConfig,
         headers: {} as AxiosRequestHeaders,
+      });
+
+      expect(secondConfig.headers["X-XSRF-TOKEN"]).toBe(rotatedToken);
+    });
+
+    it("should overwrite existing header when cookie token changes", () => {
+      const initialToken = "token-a";
+      const rotatedToken = "token-b";
+
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(initialToken)
+        .mockReturnValueOnce(rotatedToken);
+
+      const firstConfig = csrfInterceptor.request({
+        ...mockConfig,
+        headers: {} as AxiosRequestHeaders,
+      });
+
+      expect(firstConfig.headers["X-XSRF-TOKEN"]).toBe(initialToken);
+
+      const secondConfig = csrfInterceptor.request({
+        ...mockConfig,
+        headers: {
+          "X-XSRF-TOKEN": initialToken,
+        } as unknown as AxiosRequestHeaders,
       });
 
       expect(secondConfig.headers["X-XSRF-TOKEN"]).toBe(rotatedToken);
