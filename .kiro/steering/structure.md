@@ -56,8 +56,9 @@ TeamDevelopBravo-main/
 │   ├── logManagement/ # 監査ログ・操作履歴
 │   ├── news/         # お知らせ管理
 │   │   ├── api/      # newsApi.ts（CRUD + バルク操作）
-│   │   ├── components/ # NewsManagementPage、NewsFormModal、NewsCard、DeleteConfirmDialog
-│   │   ├── hooks/    # useNews（Query/Mutation統合）、useNewsSelection（選択状態管理）
+│   │   ├── components/ # NewsManagementPage、NewsFormModal、BulkActionBar、DeleteConfirmDialog、PublishedNewsGrid
+│   │   ├── hooks/    # useNews（Query/Mutation統合）、useNewsSelection（選択状態管理）、useNewsColumns（テーブルカラム定義）
+│   │   ├── lib/      # newsViewModel.ts（View変換）、categoryBadge.ts（カテゴリ→Badge variant）
 │   │   └── types/    # bulk.ts（バルクAPI型定義）
 │   └── stampHistory/ # 打刻履歴管理
 │       ├── api/      # stampApi.ts（履歴取得、編集・削除、バッチ操作）
@@ -135,4 +136,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-20 (FeatureFlag UI基盤と共有エラーハンドリング構造を追記)*
+*Last Updated: 2025-10-26 (news機能のlib/ディレクトリとカラムフック構造を追記)*

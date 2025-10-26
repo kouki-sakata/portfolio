@@ -38,6 +38,18 @@ npm run generate:api # OpenAPI型生成
 
 ### フロントエンド設計パターン
 
+#### View Model変換パターン
+- **プレゼンテーション層変換**: APIレスポンス（`NewsResponse`）からUI専用モデル（`NewsViewModel`）への変換
+- **派生データ生成**: コンテンツ解析でタイトル・カテゴリを自動抽出（`deriveTitle`、`deriveCategory`）
+- **lib/ディレクトリ配置**: 各feature内で再利用可能なビジネスロジックをlibに集約
+- **カテゴリマッピング**: コンテンツ先頭の【カテゴリ】パターンを解析し、Badge variantに変換
+
+#### TanStack Table統合パターン
+- **カラム定義のフック化**: `useNewsColumns`でテーブル列定義をUI層から分離
+- **イベント伝播制御**: チェックボックス/ボタンの`stopPropagation`でテーブル行クリックと分離
+- **レスポンシブ対応**: モバイル（アイコンのみ）⇔デスクトップ（テキスト表示）の条件分岐
+- **複数ソート・フィルタ**: `DataTableColumnHeader`によるカラムごとのソート/フィルタ機能
+
 #### 選択状態管理の分離
 - **カスタムフック**: `useNewsSelection`パターンで選択ロジックをUI層から完全分離
 - **Set型管理**: 効率的なID管理（O(1)検索・追加・削除）
@@ -150,4 +162,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-20 (Feature Flag UIトグルとグローバルエラーハンドリングを反映)*
+*Last Updated: 2025-10-26 (View Model変換パターンとTanStack Table統合パターンを追加)*

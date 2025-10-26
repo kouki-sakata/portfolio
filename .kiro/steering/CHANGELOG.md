@@ -1,5 +1,42 @@
 # Steering Documents Changelog
 
+## 2025-10-26 (Update 29)
+
+### Updated Documents
+- `tech.md` - View Model変換パターンとTanStack Table統合パターンを追加
+- `structure.md` - news機能のlib/とカラムフック構造を詳細化
+- `product.md` - お知らせ管理UI完成版とE2Eテスト状況を更新
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **View Model変換パターンの確立**
+  - APIレスポンスからUI専用モデルへの変換レイヤー（`NewsViewModel`）
+  - コンテンツ解析による派生データ生成（タイトル、カテゴリの自動抽出）
+  - `lib/`ディレクトリによるビジネスロジック分離パターン
+  - カテゴリマッピング（`【カテゴリ】`パターン → Badge variant）
+
+- **TanStack Table統合パターンの文書化**
+  - カラム定義のカスタムフック化（`useNewsColumns`）でUI層からロジック分離
+  - イベント伝播制御によるテーブル行クリックとチェックボックス/ボタンの分離
+  - レスポンシブ対応パターン（モバイル/デスクトップ切り替え）
+  - 複数ソート・フィルタ機能統合（`DataTableColumnHeader`）
+
+- **お知らせ管理UI完成版の構造反映**
+  - テーブルベース管理画面へのリファクタリング完了（カードグリッド→Data Table）
+  - 公開中お知らせ専用セクション（`PublishedNewsGrid`）の追加
+  - Playwright E2Eテスト完備（`news-management.spec.ts`）
+
+### Impact
+- View Model変換パターンが確立され、API型とUI型の責務分離が明確化。他機能でも再利用可能
+- TanStack Table統合の標準パターンが文書化され、データ密度の高い管理画面実装の参照モデルとなる
+- lib/ディレクトリ配置方針が明確化され、ビジネスロジックの再利用性とテスタビリティが向上
+- お知らせ管理機能の全体構造が完成し、類似CRUD機能実装時の完全なリファレンスとして機能
+
+### Note
+お知らせ管理機能は 2025-10-17 の Update 25/27 でバックエンド実装とReact Queryパターンが文書化済み。本更新（Update 29）はその後のUI改善（テーブル化、View Model導入）により新たに確立されたフロントエンド設計パターンを追記するものです。
+
+---
+
 ## 2025-10-20 (Update 28)
 
 ### Updated Documents

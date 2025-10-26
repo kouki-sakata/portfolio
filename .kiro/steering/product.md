@@ -78,8 +78,9 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
+  - お知らせ管理 Playwright テスト完備（news-management.spec.ts）
 - 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
 - 📋 外部システム連携API、プッシュ通知、生体認証
 
 ---
-*Last Updated: 2025-10-20 (Feature Flag基盤とグローバルエラーハンドリングを反映)*
+*Last Updated: 2025-10-26 (お知らせ管理UI完成版とView Model/TanStack Tableパターンを反映)*
