@@ -54,53 +54,24 @@ export function createCsrfInterceptor(
       };
       const forceOverride = Boolean(typedConfig[CSRF_RETRY_FLAG]);
 
-      // Skip CSRF token for GET requests if configured
-      if (skipGET && config.method?.toUpperCase() === "GET") {
+      if (shouldSkipRequest(config, skipGET)) {
         return config;
       }
 
-      if (forceOverride && config.headers) {
-        const headers = config.headers as Record<string, unknown> & {
-          delete?: (name: string) => void;
-        };
-        if (typeof headers.delete === "function") {
-          headers.delete(headerName);
-        }
-        delete headers[headerName];
-        delete headers[headerNameLowerCase];
-      }
+      const headers = ensureMutableHeaders(config);
 
-      // Don't override existing header unless forced (retry case)
-      if (!forceOverride && config.headers && config.headers[headerName]) {
+      if (forceOverride) {
+        clearCsrfHeaders(headers, headerName, headerNameLowerCase);
+      } else if (hasExistingCsrfHeader(headers, headerName)) {
         return config;
       }
 
-      const cookieToken = Cookies.get(cookieName);
-
-      // Keep in-memory token in sync with latest cookie value
-      if (!csrfToken && cookieToken) {
-        csrfToken = cookieToken;
+      const token = resolveCsrfToken(cookieName);
+      if (!token) {
+        return config;
       }
 
-      // Prefer in-memory token (latest from server header), fall back to cookie
-      const token = csrfToken ?? cookieToken;
-
-      // Add token to headers if it exists
-      if (token) {
-        if (!config.headers) {
-          config.headers = {};
-        }
-
-        const headers = config.headers as Record<string, unknown> & {
-          set?: (name: string, value: string) => void;
-        };
-        headers[headerName] = token;
-        headers[headerNameLowerCase] = token;
-        if (typeof headers.set === "function") {
-          headers.set(headerName, token);
-        }
-      }
-
+      applyCsrfHeader(headers, headerName, headerNameLowerCase, token);
       return config;
     },
 
@@ -114,7 +85,7 @@ export function createCsrfInterceptor(
       const responseConfig = response.config as InternalAxiosRequestConfig & {
         [CSRF_RETRY_FLAG]?: boolean;
       };
-      if (responseConfig && responseConfig[CSRF_RETRY_FLAG]) {
+      if (responseConfig?.[CSRF_RETRY_FLAG]) {
         delete responseConfig[CSRF_RETRY_FLAG];
       }
       return response;
@@ -176,7 +147,7 @@ export function createCsrfInterceptor(
         const retryConfig = result.config as InternalAxiosRequestConfig & {
           [CSRF_RETRY_FLAG]?: boolean;
         };
-        if (retryConfig && retryConfig[CSRF_RETRY_FLAG]) {
+        if (retryConfig?.[CSRF_RETRY_FLAG]) {
           delete retryConfig[CSRF_RETRY_FLAG];
         }
         return result;
@@ -189,6 +160,63 @@ export function createCsrfInterceptor(
     },
   };
 }
+
+const shouldSkipRequest = (
+  config: InternalAxiosRequestConfig,
+  skipGET: boolean
+) => skipGET && config.method?.toUpperCase() === "GET";
+
+const ensureMutableHeaders = (config: InternalAxiosRequestConfig) => {
+  if (!config.headers) {
+    config.headers = {};
+  }
+  return config.headers as Record<string, unknown> & {
+    set?: (name: string, value: string) => void;
+    delete?: (name: string) => void;
+  };
+};
+
+const clearCsrfHeaders = (
+  headers: Record<string, unknown> & {
+    delete?: (name: string) => void;
+  },
+  headerName: string,
+  headerNameLowerCase: string
+) => {
+  if (typeof headers.delete === "function") {
+    headers.delete(headerName);
+  }
+  delete headers[headerName];
+  delete headers[headerNameLowerCase];
+};
+
+const hasExistingCsrfHeader = (
+  headers: Record<string, unknown>,
+  headerName: string
+) => Boolean(headers[headerName]);
+
+const resolveCsrfToken = (cookieName: string): string | null => {
+  const cookieToken = Cookies.get(cookieName);
+  if (!csrfToken && cookieToken) {
+    csrfToken = cookieToken;
+  }
+  return csrfToken ?? cookieToken ?? null;
+};
+
+const applyCsrfHeader = (
+  headers: Record<string, unknown> & {
+    set?: (name: string, value: string) => void;
+  },
+  headerName: string,
+  headerNameLowerCase: string,
+  token: string
+) => {
+  headers[headerName] = token;
+  headers[headerNameLowerCase] = token;
+  if (typeof headers.set === "function") {
+    headers.set(headerName, token);
+  }
+};
 
 // Create default interceptor instance
 export const defaultCsrfInterceptor = createCsrfInterceptor();
