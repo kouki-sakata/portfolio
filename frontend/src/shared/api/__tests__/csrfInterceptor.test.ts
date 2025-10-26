@@ -1,5 +1,5 @@
-import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
+import axios from "axios";
 import Cookies from "js-cookie";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -199,7 +199,7 @@ describe("csrfInterceptor", () => {
         },
       } as unknown as Parameters<ResponseErrorHandler>[0];
 
-      const result = await csrfInterceptor.responseError!(error);
+      const result = await csrfInterceptor.responseError?.(error);
 
       expect(mockedAxios.get).toHaveBeenCalledWith("/api/auth/session", {
         withCredentials: true,
@@ -228,9 +228,7 @@ describe("csrfInterceptor", () => {
         },
       } as unknown as Parameters<ResponseErrorHandler>[0];
 
-      await expect(
-        csrfInterceptor.responseError!(error)
-      ).rejects.toBe(error);
+      await expect(csrfInterceptor.responseError?.(error)).rejects.toBe(error);
 
       expect(mockedAxios.get).not.toHaveBeenCalled();
       expect(mockedAxios.request).not.toHaveBeenCalled();
@@ -251,9 +249,7 @@ describe("csrfInterceptor", () => {
 
       mockedAxios.get.mockRejectedValue(new Error("refresh failed"));
 
-      await expect(
-        csrfInterceptor.responseError!(error)
-      ).rejects.toBe(error);
+      await expect(csrfInterceptor.responseError?.(error)).rejects.toBe(error);
 
       expect(mockedAxios.request).not.toHaveBeenCalled();
     });

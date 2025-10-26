@@ -80,10 +80,7 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
         csrfInterceptor.responseError
       );
     } else {
-      instance.interceptors.response.use(
-        csrfInterceptor.response,
-        undefined
-      );
+      instance.interceptors.response.use(csrfInterceptor.response, undefined);
     }
   }
 

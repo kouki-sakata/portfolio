@@ -18,7 +18,6 @@ import { logout } from "@/features/auth/api/logout";
 import { fetchSession } from "@/features/auth/api/session";
 import { AuthContext } from "@/features/auth/context/internal/AuthContext";
 import { getSessionManager } from "@/features/auth/services/SessionManager";
-import { getStoredCsrfToken } from "@/shared/api/interceptors/csrfInterceptor";
 import type {
   LoginRequest,
   LoginResponse,
@@ -29,6 +28,7 @@ import type {
   EnhancedAuthContextValue,
   SessionInfo,
 } from "@/features/auth/types/auth-context.types";
+import { getStoredCsrfToken } from "@/shared/api/interceptors/csrfInterceptor";
 
 const AUTH_SESSION_KEY = ["auth", "session"] as const;
 const WARNING_THRESHOLD_MINUTES = 15; // セッション期限の15分前に警告

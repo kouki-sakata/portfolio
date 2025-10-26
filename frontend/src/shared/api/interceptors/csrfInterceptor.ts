@@ -89,7 +89,7 @@ export function createCsrfInterceptor(
     responseError: async (error) => {
       const { response, config } = error;
 
-      if (!response || !config) {
+      if (!(response && config)) {
         throw error;
       }
 
@@ -105,10 +105,10 @@ export function createCsrfInterceptor(
           const maybeMessage = (response.data as { message?: unknown }).message;
           return typeof maybeMessage === "string" ? maybeMessage : undefined;
         }
-        return undefined;
+        return;
       })();
 
-      if (!messageCandidate || !messageCandidate.toLowerCase().includes("csrf")) {
+      if (!messageCandidate?.toLowerCase().includes("csrf")) {
         throw error;
       }
 
@@ -123,9 +123,12 @@ export function createCsrfInterceptor(
       typedConfig[CSRF_RETRY_FLAG] = true;
 
       try {
-        const refreshResponse = await axios.get(resolveRefreshUrl(config.baseURL), {
-          withCredentials: true,
-        });
+        const refreshResponse = await axios.get(
+          resolveRefreshUrl(config.baseURL),
+          {
+            withCredentials: true,
+          }
+        );
 
         const refreshedToken = refreshResponse.headers?.[headerNameLowerCase];
         if (typeof refreshedToken === "string") {
