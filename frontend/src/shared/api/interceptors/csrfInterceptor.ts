@@ -196,11 +196,17 @@ const hasExistingCsrfHeader = (
 ) => Boolean(headers[headerName]);
 
 const resolveCsrfToken = (cookieName: string): string | null => {
-  const cookieToken = Cookies.get(cookieName);
-  if (!csrfToken && cookieToken) {
+  const cookieToken = Cookies.get(cookieName) ?? null;
+
+  if (cookieToken && cookieToken !== csrfToken) {
     csrfToken = cookieToken;
   }
-  return csrfToken ?? cookieToken ?? null;
+
+  if (!(cookieToken || csrfToken)) {
+    return null;
+  }
+
+  return csrfToken ?? cookieToken;
 };
 
 const applyCsrfHeader = (

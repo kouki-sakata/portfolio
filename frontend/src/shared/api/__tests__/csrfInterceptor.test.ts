@@ -1,4 +1,4 @@
-import type { InternalAxiosRequestConfig } from "axios";
+import type { AxiosRequestHeaders, InternalAxiosRequestConfig } from "axios";
 import axios from "axios";
 import Cookies from "js-cookie";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,7 +40,7 @@ describe("csrfInterceptor", () => {
     mockedAxios.request.mockReset();
     __resetCsrfTokenForTests();
     mockConfig = {
-      headers: {},
+      headers: {} as AxiosRequestHeaders,
       url: "/api/test",
       method: "POST",
     } as InternalAxiosRequestConfig;
@@ -89,6 +89,29 @@ describe("csrfInterceptor", () => {
       const result = csrfInterceptor.request(mockConfig);
 
       expect(result.headers["X-XSRF-TOKEN"]).toBe(existingToken);
+    });
+
+    it("should refresh in-memory token when cookie rotates", () => {
+      const initialToken = "initial-token";
+      const rotatedToken = "rotated-token";
+
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>)
+        .mockReturnValueOnce(initialToken)
+        .mockReturnValueOnce(rotatedToken);
+
+      const firstConfig = csrfInterceptor.request({
+        ...mockConfig,
+        headers: {} as AxiosRequestHeaders,
+      });
+
+      expect(firstConfig.headers["X-XSRF-TOKEN"]).toBe(initialToken);
+
+      const secondConfig = csrfInterceptor.request({
+        ...mockConfig,
+        headers: {} as AxiosRequestHeaders,
+      });
+
+      expect(secondConfig.headers["X-XSRF-TOKEN"]).toBe(rotatedToken);
     });
 
     it("should handle request error correctly", () => {
