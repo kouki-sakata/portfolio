@@ -1,4 +1,8 @@
-import type { AxiosResponse, InternalAxiosRequestConfig } from "axios";
+import axios, {
+  type AxiosError,
+  type AxiosResponse,
+  type InternalAxiosRequestConfig,
+} from "axios";
 import Cookies from "js-cookie";
 
 export type CsrfInterceptorOptions = {
@@ -11,10 +15,13 @@ export type CsrfInterceptor = {
   request: (config: InternalAxiosRequestConfig) => InternalAxiosRequestConfig;
   requestError: (error: Error) => never;
   response: (response: AxiosResponse) => AxiosResponse;
+  responseError?: (error: AxiosError) => Promise<AxiosResponse>;
 };
 
 // Store CSRF token in memory for cross-origin scenarios
 let csrfToken: string | null = null;
+
+const CSRF_RETRY_FLAG = Symbol("csrfRetryAttempted");
 
 export function createCsrfInterceptor(
   options: CsrfInterceptorOptions = {}
@@ -24,6 +31,19 @@ export function createCsrfInterceptor(
     headerName = "X-XSRF-TOKEN",
     skipGET = false,
   } = options;
+
+  const headerNameLowerCase = headerName.toLowerCase();
+
+  const resolveRefreshUrl = (baseURL?: string): string => {
+    if (!baseURL) {
+      return "/api/auth/session";
+    }
+
+    const normalizedBase = baseURL.endsWith("/")
+      ? baseURL.slice(0, -1)
+      : baseURL;
+    return `${normalizedBase}/auth/session`;
+  };
 
   return {
     request: (
@@ -39,8 +59,15 @@ export function createCsrfInterceptor(
         return config;
       }
 
-      // Try to get CSRF token from cookie (same-origin) or memory (cross-origin)
-      const token = Cookies.get(cookieName) || csrfToken;
+      const cookieToken = Cookies.get(cookieName);
+
+      // Keep in-memory token in sync with latest cookie value
+      if (!csrfToken && cookieToken) {
+        csrfToken = cookieToken;
+      }
+
+      // Prefer in-memory token (latest from server header), fall back to cookie
+      const token = csrfToken ?? cookieToken;
 
       // Add token to headers if it exists
       if (token) {
@@ -52,11 +79,63 @@ export function createCsrfInterceptor(
 
     response: (response: AxiosResponse): AxiosResponse => {
       // Extract CSRF token from response header for cross-origin scenarios
-      const tokenFromHeader = response.headers[headerName.toLowerCase()];
+      const tokenFromHeader = response.headers[headerNameLowerCase];
       if (tokenFromHeader && typeof tokenFromHeader === "string") {
         csrfToken = tokenFromHeader;
       }
       return response;
+    },
+
+    responseError: async (error) => {
+      const { response, config } = error;
+
+      if (!response || !config) {
+        throw error;
+      }
+
+      if (response.status !== 403) {
+        throw error;
+      }
+
+      const messageCandidate = (() => {
+        if (typeof response.data === "string") {
+          return response.data;
+        }
+        if (response.data && typeof response.data === "object") {
+          const maybeMessage = (response.data as { message?: unknown }).message;
+          return typeof maybeMessage === "string" ? maybeMessage : undefined;
+        }
+        return undefined;
+      })();
+
+      if (!messageCandidate || !messageCandidate.toLowerCase().includes("csrf")) {
+        throw error;
+      }
+
+      const typedConfig = config as InternalAxiosRequestConfig & {
+        [CSRF_RETRY_FLAG]?: boolean;
+      };
+
+      if (typedConfig[CSRF_RETRY_FLAG]) {
+        throw error;
+      }
+
+      typedConfig[CSRF_RETRY_FLAG] = true;
+
+      try {
+        const refreshResponse = await axios.get(resolveRefreshUrl(config.baseURL), {
+          withCredentials: true,
+        });
+
+        const refreshedToken = refreshResponse.headers?.[headerNameLowerCase];
+        if (typeof refreshedToken === "string") {
+          csrfToken = refreshedToken;
+        }
+      } catch (_refreshError) {
+        throw error;
+      }
+
+      return axios.request(config);
     },
 
     requestError: (error: Error): never => {
@@ -68,3 +147,9 @@ export function createCsrfInterceptor(
 
 // Create default interceptor instance
 export const defaultCsrfInterceptor = createCsrfInterceptor();
+
+export const getStoredCsrfToken = (): string | null => csrfToken;
+
+export const __resetCsrfTokenForTests = (): void => {
+  csrfToken = null;
+};

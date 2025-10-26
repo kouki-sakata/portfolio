@@ -1,7 +1,21 @@
+import axios from "axios";
 import type { InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { createCsrfInterceptor } from "../interceptors/csrfInterceptor";
+import {
+  __resetCsrfTokenForTests,
+  createCsrfInterceptor,
+} from "../interceptors/csrfInterceptor";
+
+vi.mock("axios", () => {
+  const axiosMock = vi.fn();
+  axiosMock.get = vi.fn();
+  axiosMock.request = vi.fn();
+  return {
+    __esModule: true,
+    default: axiosMock,
+  };
+});
 
 // Mock js-cookie
 vi.mock("js-cookie", () => ({
@@ -13,9 +27,16 @@ vi.mock("js-cookie", () => ({
 describe("csrfInterceptor", () => {
   let mockConfig: InternalAxiosRequestConfig;
   let csrfInterceptor: ReturnType<typeof createCsrfInterceptor>;
+  const mockedAxios = vi.mocked(axios, true);
+  type ResponseErrorHandler = NonNullable<
+    ReturnType<typeof createCsrfInterceptor>["responseError"]
+  >;
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockedAxios.get.mockReset();
+    mockedAxios.request.mockReset();
+    __resetCsrfTokenForTests();
     mockConfig = {
       headers: {},
       url: "/api/test",
@@ -27,6 +48,7 @@ describe("csrfInterceptor", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    __resetCsrfTokenForTests();
   });
 
   describe("request interceptor", () => {
@@ -149,6 +171,91 @@ describe("csrfInterceptor", () => {
 
       expect(Cookies.get).toHaveBeenCalled();
       expect(result.headers["X-XSRF-TOKEN"]).toBe(mockToken);
+    });
+  });
+
+  describe("response interceptor (error handling)", () => {
+    it("should refresh CSRF token and retry request on 403 CSRF error", async () => {
+      const retryResponse = { data: "ok" };
+
+      mockedAxios.get.mockResolvedValue({
+        headers: {
+          "x-xsrf-token": "refreshed-token",
+        },
+      } as never);
+      mockedAxios.request.mockResolvedValue(retryResponse as never);
+
+      const error = {
+        config: {
+          headers: {},
+          method: "POST",
+          baseURL: "/api",
+          url: "/api/home/stamps",
+        } as InternalAxiosRequestConfig,
+        response: {
+          status: 403,
+          data: { message: "Invalid CSRF Token" },
+          headers: {},
+        },
+      } as unknown as Parameters<ResponseErrorHandler>[0];
+
+      const result = await csrfInterceptor.responseError!(error);
+
+      expect(mockedAxios.get).toHaveBeenCalledWith("/api/auth/session", {
+        withCredentials: true,
+      });
+      expect(mockedAxios.request).toHaveBeenCalledWith(error.config);
+      expect(result).toBe(retryResponse);
+
+      (vi.mocked(Cookies.get) as ReturnType<typeof vi.fn>).mockReturnValue(
+        undefined
+      );
+      const followUpConfig = csrfInterceptor.request({
+        headers: {},
+        method: "POST",
+      } as InternalAxiosRequestConfig);
+
+      expect(followUpConfig.headers["X-XSRF-TOKEN"]).toBe("refreshed-token");
+    });
+
+    it("should not retry when 403 is unrelated to CSRF", async () => {
+      const error = {
+        config: mockConfig,
+        response: {
+          status: 403,
+          data: { message: "Forbidden" },
+          headers: {},
+        },
+      } as unknown as Parameters<ResponseErrorHandler>[0];
+
+      await expect(
+        csrfInterceptor.responseError!(error)
+      ).rejects.toBe(error);
+
+      expect(mockedAxios.get).not.toHaveBeenCalled();
+      expect(mockedAxios.request).not.toHaveBeenCalled();
+    });
+
+    it("should not retry more than once", async () => {
+      const error = {
+        config: {
+          ...mockConfig,
+          headers: {},
+        },
+        response: {
+          status: 403,
+          data: { message: "Invalid CSRF Token" },
+          headers: {},
+        },
+      } as unknown as Parameters<ResponseErrorHandler>[0];
+
+      mockedAxios.get.mockRejectedValue(new Error("refresh failed"));
+
+      await expect(
+        csrfInterceptor.responseError!(error)
+      ).rejects.toBe(error);
+
+      expect(mockedAxios.request).not.toHaveBeenCalled();
     });
   });
 });

@@ -18,6 +18,7 @@ import { logout } from "@/features/auth/api/logout";
 import { fetchSession } from "@/features/auth/api/session";
 import { AuthContext } from "@/features/auth/context/internal/AuthContext";
 import { getSessionManager } from "@/features/auth/services/SessionManager";
+import { getStoredCsrfToken } from "@/shared/api/interceptors/csrfInterceptor";
 import type {
   LoginRequest,
   LoginResponse,
@@ -54,6 +55,11 @@ const defaultConfig: AuthProviderConfig = {
 const getCsrfToken = (): string | null => {
   if (typeof document === "undefined") {
     return null;
+  }
+
+  const inMemoryToken = getStoredCsrfToken();
+  if (inMemoryToken) {
+    return inMemoryToken;
   }
 
   const token = document.cookie
