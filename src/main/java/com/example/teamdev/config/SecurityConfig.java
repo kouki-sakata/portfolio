@@ -2,6 +2,8 @@ package com.example.teamdev.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +47,7 @@ public class SecurityConfig {
 
     private static final String ENV_TEST = "test";
     private static final String ENV_DEV = "dev";
+    private static final Logger log = LoggerFactory.getLogger(SecurityConfig.class);
 
     @Value("${app.environment:production}")
     private String environment;
@@ -219,7 +222,13 @@ public class SecurityConfig {
                     spaLoginEntryPoint(),
                     new AntPathRequestMatcher("/**")
                 )
-                .accessDeniedHandler((request, response, accessDeniedException) -> response.sendError(HttpServletResponse.SC_FORBIDDEN))
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    log.warn("Access denied: method={}, uri={}, message={}",
+                        request.getMethod(),
+                        request.getRequestURI(),
+                        accessDeniedException.getMessage());
+                    response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                })
             )
             .securityContext(security -> security.securityContextRepository(securityContextRepository()))
             .sessionManagement(session -> session
