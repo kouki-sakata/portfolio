@@ -4,7 +4,7 @@
 
 ## 🌐 デプロイ先 & テストアカウント
 
-- **URL:** http://my-spring-app-env.eba-kmwuwpfp.ap-northeast-1.elasticbeanstalk.com/
+- **URL:** [portfolio-eight-ebon-25.vercel.app](https://portfolio-eight-ebon-25.vercel.app/)
 - **管理者:** `admin.user@example.com` / `AdminPass123!`
 - **一般ユーザー:** `test.user@example.com` / `TestPass123!`
 
@@ -21,33 +21,6 @@
 | **CI/CD** | GitHub Actions (lint/test/build/SonarCloud/OWASP Dependency Check) |
 | **コード品質** | Biome (lint/format), OpenAPI contract testing, E2E testing |
 
-![新しい React ホーム画面](frontend/public/img/home.png)
-
-## ⚡ 開発の必須ルール
-
-### TypeScript
-- **厳格な型付け**: `any` と `unknown` の使用は**厳禁**
-- **クラス使用制限**: `class` は必要不可欠な場合のみ（例: `Error` 継承によるカスタムエラー）
-
-### ライブラリ調査
-- **Context7 MCP必須**: ライブラリのAPI調査には**必ず Context7 MCP** を使用して最新の公式情報を取得
-
-### フロントエンド開発
-- **shadcn-ui@canary**: React 19 互換性のため canary版を使用（stable版ではない）
-- **インポートパス**: UIコンポーネントは `@/components/ui/*` からインポート（外部パッケージ不可）
-- **テスト駆動**: UI操作やブラウザ動作に関わるタスクは、`playwrightMCP` でテストを書いて検証
-
-### 言語プロトコル
-- **思考**: 英語で思考
-- **応答**: 日本語でユーザーに応答
-
-### タイムゾーン
-- **JST固定**: 打刻機能は**日本標準時（Asia/Tokyo）に固定**
-  - フロントエンド: Day.js の timezone plugin で `Asia/Tokyo` に固定
-  - バックエンド: `ZoneId.of("Asia/Tokyo")` で明示的にJSTとして解釈
-  - ブラウザのタイムゾーンに関係なく、常にJSTで時刻を記録
-- **制約事項**: 海外拠点での運用には適さない（JST以外の時刻を記録できない）
-
 ## ✨ 主な改善ポイント
 
 - **SPA 化**: React + TypeScript + React Query によるシングルページ構成。Spring MVC 側は API と SPA フォワーダーのみを提供
@@ -57,73 +30,6 @@
 - **コード品質向上**: Biome による統一的な lint/format、OpenAPI contract testing、包括的な E2E テスト
 
 ## 🏗️ アーキテクチャ詳細
-
-### バックエンド構造
-```
-src/main/java/com/example/teamdev/
-├── controller/api/              # REST API エンドポイント
-│   ├── AuthRestController       # 認証 (/api/auth/*)
-│   ├── EmployeeRestController   # 従業員管理 (/api/employees/*)
-│   ├── StampHistoryRestController  # 打刻履歴 (/api/stamps/*)
-│   ├── HomeRestController       # ホーム画面 (/api/home/*)
-│   └── FeatureFlagRestController   # 機能フラグ (/api/feature-flags/*)
-├── service/                     # ビジネスロジック層
-│   ├── AuthenticationService    # 認証サービス
-│   ├── EmployeeService         # 従業員管理サービス
-│   ├── StampService            # 打刻サービス
-│   └── stamp/                  # 打刻関連の専門サービス
-├── mapper/                      # MyBatis SQL マッパー
-├── entity/                      # エンティティクラス
-├── dto/                         # データ転送オブジェクト
-├── config/                      # Spring Security, CORS 等
-├── security/                    # セキュリティ関連
-└── util/                        # 共通ユーティリティ
-
-src/test/java/com/example/teamdev/
-├── integration/                 # 統合テスト（Testcontainers）
-├── service/                     # サービス層テスト
-├── mapper/                      # マッパーテスト
-└── security/                    # セキュリティテスト
-```
-
-### フロントエンド構造
-```
-frontend/src/
-├── app/                         # React Router 7 routes & layouts
-├── features/                    # 機能モジュール（Feature-Sliced Design）
-│   ├── auth/                   # 認証機能
-│   │   ├── api/               # API クライアント
-│   │   ├── components/        # 認証UI
-│   │   ├── context/           # AuthContext
-│   │   ├── hooks/             # useAuth, useLogin等
-│   │   ├── services/          # AuthService
-│   │   └── types/             # 型定義
-│   ├── employees/              # 従業員管理
-│   │   ├── api/               # 従業員API
-│   │   ├── components/        # テーブル、フォーム
-│   │   ├── hooks/             # useEmployees等
-│   │   └── schemas/           # Zodスキーマ
-│   ├── stampHistory/           # 打刻履歴
-│   │   ├── api/               # 打刻API
-│   │   ├── components/        # カレンダー、統計
-│   │   ├── hooks/             # useStampHistoryExport等
-│   │   └── lib/               # CSV生成、バッチ処理
-│   ├── home/                   # ホーム画面
-│   ├── news/                   # お知らせ
-│   └── logManagement/          # ログ管理
-├── shared/                      # 共通機能
-│   ├── api/                    # 共通API設定
-│   ├── components/             # 共通コンポーネント
-│   ├── error-handling/         # エラーハンドリング
-│   ├── hooks/                  # 共通フック
-│   ├── performance/            # パフォーマンス監視
-│   ├── repositories/           # リポジトリパターン
-│   ├── types/                  # 共通型定義
-│   └── utils/                  # ユーティリティ
-├── components/ui/               # shadcn-ui コンポーネント
-├── types/                       # OpenAPI生成型
-└── schemas/                     # Zodスキーマ
-```
 
 ### 認証アーキテクチャ
 - **セッション方式**: Spring Security セッションベース認証
@@ -159,7 +65,7 @@ docker-compose logs -f app
 #### 必要要件
 
 - Java 21 (Eclipse Temurin 推奨)
-- Node.js 20+
+- Node.js 22+
 - PostgreSQL 16
 
 #### 手順
@@ -170,7 +76,7 @@ git clone https://github.com/your-org/TeamDevelopBravo.git
 cd TeamDevelopBravo-main
 
 # 2. フロント依存をセットアップ
-npm install --prefix frontend
+npm ci --prefix frontend
 
 # 3. PostgreSQL を準備
 createdb teamdev_db
@@ -255,38 +161,6 @@ npm run generate:api --prefix frontend
 
 > `./gradlew test` は Testcontainers で PostgreSQL を起動するため、Docker が動作する環境で実行してください。
 
-## 🎯 Kiro Spec-Driven Workflow
-
-このプロジェクトは Kiro による仕様駆動開発を採用しています。
-
-### 主要コマンド
-
-```bash
-# 新機能の仕様を開始
-/kiro:spec-init [description]
-
-# 要件定義生成
-/kiro:spec-requirements [feature]
-
-# 技術設計作成（要件承認後）
-/kiro:spec-design [feature]
-
-# 実装タスク生成（設計承認後）
-/kiro:spec-tasks [feature]
-
-# 進捗確認
-/kiro:spec-status [feature]
-
-# プロジェクト全体のステアリング文書更新
-/kiro:steering
-```
-
-### アクティブなステアリングファイル
-
-- `.kiro/steering/product.md` - ビジネス目標
-- `.kiro/steering/tech.md` - 技術決定事項
-- `.kiro/steering/structure.md` - コードパターン
-
 ## 🎨 Biome 設定
 
 プロジェクトは Biome で統一的な lint/format を実施しています。
@@ -297,14 +171,6 @@ npm run generate:api --prefix frontend
 - **テストファイル** (`**/*.test.ts`, `**/e2e/**`): 複雑度制限なし、マジックナンバー許可
 - **生成ファイル** (`schemas/api.ts`, `types/**`): lint/format 無効
 - **Auth機能** (`features/auth/**`): 非同期操作のため `noVoid` 無効
-
-### Pre-commit検証
-
-Biome は Git hooks で自動実行されます。手動チェック：
-
-```bash
-npx biome ci ./frontend
-```
 
 ## 🗃️ PostgreSQL 移行ガイド
 
@@ -411,11 +277,3 @@ npm i -g ultracite && ultracite
 - MyBatis パラメータ化クエリ（SQL インジェクション対策）
 - Content Security Policy ヘッダー設定済み
 - CI で OWASP 依存関係スキャン実施
-
-## 📄 ライセンス
-
-社内利用を想定したプロジェクトのためライセンスは未定義です。外部公開する場合は各種依存ライセンスを確認のうえ適切なライセンスファイルを用意してください。
-
----
-
-フィードバックや改善提案は Issue / Pull Request で歓迎しています！
