@@ -33,6 +33,16 @@ vi.mock("@/features/auth/api/login");
 vi.mock("@/features/auth/api/logout");
 vi.mock("@/features/auth/api/session");
 vi.mock("@/features/auth/services/SessionManager");
+vi.mock("@/shared/api/interceptors/csrfInterceptor", async (importOriginal) => {
+  const actual =
+    await importOriginal<
+      typeof import("@/shared/api/interceptors/csrfInterceptor")
+    >();
+  return {
+    ...actual,
+    getStoredCsrfToken: vi.fn(() => null),
+  };
+});
 type QueryClientModule = typeof import("@/app/config/queryClient");
 
 vi.mock("@/app/config/queryClient", async (importOriginal) => {

@@ -28,6 +28,7 @@ import type {
   EnhancedAuthContextValue,
   SessionInfo,
 } from "@/features/auth/types/auth-context.types";
+import { getStoredCsrfToken } from "@/shared/api/interceptors/csrfInterceptor";
 
 const AUTH_SESSION_KEY = ["auth", "session"] as const;
 const WARNING_THRESHOLD_MINUTES = 15; // セッション期限の15分前に警告
@@ -54,6 +55,11 @@ const defaultConfig: AuthProviderConfig = {
 const getCsrfToken = (): string | null => {
   if (typeof document === "undefined") {
     return null;
+  }
+
+  const inMemoryToken = getStoredCsrfToken();
+  if (inMemoryToken) {
+    return inMemoryToken;
   }
 
   const token = document.cookie
