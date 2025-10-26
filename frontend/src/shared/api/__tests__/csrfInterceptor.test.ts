@@ -8,9 +8,11 @@ import {
 } from "../interceptors/csrfInterceptor";
 
 vi.mock("axios", () => {
-  const axiosMock = vi.fn();
-  axiosMock.get = vi.fn();
-  axiosMock.request = vi.fn();
+  const axiosFn = vi.fn();
+  const axiosMock = Object.assign(axiosFn, {
+    get: vi.fn(),
+    request: vi.fn(),
+  }) as unknown as typeof import("axios");
   return {
     __esModule: true,
     default: axiosMock,
