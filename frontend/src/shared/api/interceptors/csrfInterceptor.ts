@@ -59,16 +59,27 @@ export function createCsrfInterceptor(
       }
 
       const headers = ensureMutableHeaders(config);
+      const existingToken = readCsrfHeader(
+        headers,
+        headerName,
+        headerNameLowerCase
+      );
 
       if (forceOverride) {
         clearCsrfHeaders(headers, headerName, headerNameLowerCase);
-      } else if (hasExistingCsrfHeader(headers, headerName)) {
-        return config;
       }
 
       const token = resolveCsrfToken(cookieName);
       if (!token) {
         return config;
+      }
+
+      if (!forceOverride && existingToken === token) {
+        return config;
+      }
+
+      if (!forceOverride && existingToken && existingToken !== token) {
+        clearCsrfHeaders(headers, headerName, headerNameLowerCase);
       }
 
       applyCsrfHeader(headers, headerName, headerNameLowerCase, token);
@@ -190,10 +201,18 @@ const clearCsrfHeaders = (
   delete headers[headerNameLowerCase];
 };
 
-const hasExistingCsrfHeader = (
+const readCsrfHeader = (
   headers: Record<string, unknown>,
-  headerName: string
-) => Boolean(headers[headerName]);
+  headerName: string,
+  headerNameLowerCase: string
+) => {
+  const direct = headers[headerName];
+  if (typeof direct === "string") {
+    return direct;
+  }
+  const lowerCase = headers[headerNameLowerCase];
+  return typeof lowerCase === "string" ? lowerCase : undefined;
+};
 
 const resolveCsrfToken = (cookieName: string): string | null => {
   const cookieToken = Cookies.get(cookieName) ?? null;
