@@ -63,6 +63,29 @@ class AuthRestControllerIntegrationTest extends PostgresContainerSupport {
             .andExpect(jsonPath("$.employee").doesNotExist());
     }
 
+    @DisplayName("/api/auth/session issues CSRF cookie and header")
+    @Test
+    void sessionEndpointSetsCsrfArtifacts() throws Exception {
+        MvcResult result = mockMvc.perform(get("/api/auth/session"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+        var cookies = result.getResponse().getHeaders("Set-Cookie");
+        assertThat(cookies)
+            .as("Set-Cookie should include CSRF token")
+            .anyMatch(headerValue -> headerValue.contains("XSRF-TOKEN"));
+        assertThat(cookies)
+            .as("CSRF cookie should be SameSite=None")
+            .anyMatch(headerValue -> headerValue.contains("SameSite=None"));
+        assertThat(cookies)
+            .as("CSRF cookie should be scoped to root path")
+            .anyMatch(headerValue -> headerValue.contains("Path=/"));
+
+        assertThat(result.getResponse().getHeader("X-XSRF-TOKEN"))
+            .as("Response header should expose CSRF token")
+            .isNotNull();
+    }
+
     @DisplayName("Successful login returns employee summary and persists session")
     @Test
     void loginWithValidCredentialsCreatesSession() throws Exception {

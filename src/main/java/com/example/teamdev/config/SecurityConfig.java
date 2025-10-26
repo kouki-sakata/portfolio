@@ -175,7 +175,10 @@ public class SecurityConfig {
                 .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
             // Add CSRF token to response headers for cross-origin scenarios
-            .addFilterAfter(new CsrfHeaderFilter(), org.springframework.security.web.csrf.CsrfFilter.class)
+            .addFilterAfter(
+                new CsrfHeaderFilter(shouldUseSecureCookie(), "None", false, "/"),
+                org.springframework.security.web.csrf.CsrfFilter.class
+            )
             .authorizeHttpRequests(authz -> authz
                 // API & Health endpoints only (SPA is hosted on Vercel)
                 .requestMatchers(
@@ -272,5 +275,9 @@ public class SecurityConfig {
         ) throws IOException {
             redirectStrategy.sendRedirect(request, response, loginPath);
         }
+    }
+
+    private boolean shouldUseSecureCookie() {
+        return !(ENV_DEV.equals(environment) || ENV_TEST.equals(environment));
     }
 }
