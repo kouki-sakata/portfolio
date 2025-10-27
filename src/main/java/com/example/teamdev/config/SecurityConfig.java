@@ -78,18 +78,19 @@ public class SecurityConfig {
     }
 
     /**
-     * 環境に応じた CSRF トークンハンドラーを作成
-     * テスト環境では Spring Security Test との互換性を保つため標準ハンドラーを使用
-     * それ以外の環境では BREACH 攻撃対策を含むカスタムハンドラーを使用 (デフォルト)
+     * CSRF トークンハンドラーを作成
+     * すべての環境で標準ハンドラーを使用
      *
-     * @return 環境に応じた CsrfTokenRequestHandler
+     * XorCsrfTokenRequestAttributeHandler (BREACH攻撃対策) は Cookie ベースの
+     * トークンリポジトリと組み合わせると、Cookie の生トークンと Header の
+     * マスクトークンが不一致となり CSRF 検証が失敗するため使用しない。
+     * BREACH 攻撃対策は HTTPS + 圧縮無効化で対応。
+     *
+     * @return 標準の CsrfTokenRequestHandler
      */
     private CsrfTokenRequestHandler createCsrfTokenRequestHandler() {
-        if (ENV_TEST.equals(environment)) {
-            return new CsrfTokenRequestAttributeHandler();
-        }
-        // デフォルトは本番環境用 (セキュア)
-        return new CaseInsensitiveCsrfTokenRequestHandler();
+        // すべての環境で標準ハンドラーを使用
+        return new CsrfTokenRequestAttributeHandler();
     }
 
     @Bean
@@ -188,6 +189,7 @@ public class SecurityConfig {
                      "/api/auth/logout",
                      "/api/public/**"
                  ).permitAll()
+                .requestMatchers("/internal/health").permitAll()
                 // Actuator endpoints require authentication (401 entry point at line 216-218 will be effective)
                 .requestMatchers("/actuator/health").permitAll() // Health check endpoint for external monitoring
                 .requestMatchers(
