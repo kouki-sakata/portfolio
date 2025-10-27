@@ -5,8 +5,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseCookie;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,20 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 public class CsrfHeaderFilter extends OncePerRequestFilter {
 
-    private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
     private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
-
-    private final boolean secureCookie;
-    private final String sameSiteAttribute;
-    private final boolean httpOnly;
-    private final String cookiePath;
-
-    public CsrfHeaderFilter(boolean secureCookie, String sameSiteAttribute, boolean httpOnly, String cookiePath) {
-        this.secureCookie = secureCookie;
-        this.sameSiteAttribute = sameSiteAttribute;
-        this.httpOnly = httpOnly;
-        this.cookiePath = cookiePath;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
@@ -43,18 +28,6 @@ public class CsrfHeaderFilter extends OncePerRequestFilter {
         // Use explicit header name to ensure CORS compatibility (must match setExposedHeaders)
         if (csrfToken != null) {
             response.setHeader(CSRF_HEADER_NAME, csrfToken.getToken());
-
-            ResponseCookie.ResponseCookieBuilder cookieBuilder = ResponseCookie
-                .from(CSRF_COOKIE_NAME, csrfToken.getToken())
-                .httpOnly(httpOnly)
-                .secure(secureCookie)
-                .path(cookiePath);
-
-            if (sameSiteAttribute != null && !sameSiteAttribute.isBlank()) {
-                cookieBuilder.sameSite(sameSiteAttribute);
-            }
-
-            response.addHeader(HttpHeaders.SET_COOKIE, cookieBuilder.build().toString());
         }
 
         filterChain.doFilter(request, response);

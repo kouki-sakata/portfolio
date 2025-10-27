@@ -16,9 +16,9 @@
   実際は Cookie 側に `SameSite=None; Secure` が無いため、そもそもブラウザに保存されていなかった。
 - `Set-Cookie` がブラウザの current origin に紐づくため、DevTools では `https://teamdev-api.onrender.com` の Cookie ストレージを確認する必要がある。
 
-## 対応状況 (2025-10-26)
-- ✅ `CsrfHeaderFilter` を更新し、`XSRF-TOKEN` Cookie に `Path=/; SameSite=None` を強制付与。プロファイルに応じて `Secure` を切り替え（`dev`/`test` は `Secure=false`、その他は `Secure=true`）、`HttpOnly=false` を維持。
-- ✅ `SecurityConfig` から新しいフィルターを適用し、既存の SPA との互換性を担保。
+## 対応状況 (2025-10-27)
+- ✅ `CookieCsrfTokenRepository` に `SameSite=None` と環境別 `Secure` 属性を適用し、クロスサイトでも Cookie が保持されるようにした。
+- ✅ `CsrfHeaderFilter` はレスポンスヘッダー `X-XSRF-TOKEN` の付与に専念させ、Cookie は `CookieCsrfTokenRepository` に任せる構成へ整理。
 - ✅ `./gradlew test --tests com.example.teamdev.integration.AuthRestControllerIntegrationTest` を実行し、`Set-Cookie` ヘッダーに `SameSite=None` が含まれることを確認。
 - ☐ Render 環境での手動検証（DevTools で Cookie 属性を確認し、`POST /api/home/stamps` 等が 403 にならないことを確認）。
 
