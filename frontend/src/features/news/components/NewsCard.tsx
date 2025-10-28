@@ -81,7 +81,9 @@ export const NewsCard = ({
             <CardTitle className="font-semibold text-base">
               {news.newsDate}
             </CardTitle>
-            <Badge variant={status.variant}>{status.label}</Badge>
+            <Badge contrastLevel="aa" variant={status.variant}>
+              {status.label}
+            </Badge>
           </div>
         </div>
         <p className="text-muted-foreground text-sm">

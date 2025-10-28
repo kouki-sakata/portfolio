@@ -51,6 +51,7 @@ export const NewsDetailDialog = ({
             <div>
               <Badge
                 className="px-3 py-1 font-medium text-xs"
+                contrastLevel="aa"
                 variant={getNewsCategoryBadgeVariant(news.category)}
               >
                 {news.category}
@@ -76,6 +77,7 @@ export const NewsDetailDialog = ({
               </div>
               <Badge
                 className="text-xs"
+                contrastLevel="aa"
                 variant={news.releaseFlag ? "default" : "secondary"}
               >
                 {news.releaseFlag ? "公開" : "下書き"}

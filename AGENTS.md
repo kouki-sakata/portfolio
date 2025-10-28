@@ -87,7 +87,6 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Request reviewers from both Java and frontend maintainers whenever a change touches shared contracts or DTOs.
 
 ## Agent Workflow Notes
-- Always run `/init kiro` before implementation to sync the latest steering context.
 - Progress through `/kiro:spec-init`, `/kiro:spec-requirements`, `/kiro:spec-design`, and `/kiro:spec-tasks` sequentially; do not skip approval stages.
 - Fetch current library documentation through Context7 prior to coding, then confirm assumptions inside the spec tasks.
 - Conduct internal reasoning in English but deliver repository communications in Japanese, matching the project convention.
