@@ -139,4 +139,12 @@ describe("NewsCard", () => {
 
     expect(handleSelection).toHaveBeenCalledWith(news, true);
   });
+
+  it("ステータスバッジが高コントラスト表示のメタデータを持つ", () => {
+    render(<NewsCard news={newsSample()} onEdit={vi.fn()} />);
+
+    const badge = screen.getByText("公開中");
+
+    expect(badge).toHaveAttribute("data-contrast-level", "aa");
+  });
 });

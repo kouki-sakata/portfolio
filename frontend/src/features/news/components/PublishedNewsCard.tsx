@@ -24,7 +24,10 @@ export const PublishedNewsCard = ({
         <CardTitle className="line-clamp-2 font-semibold text-lg">
           {news.title}
         </CardTitle>
-        <Badge variant={getNewsCategoryBadgeVariant(news.category)}>
+        <Badge
+          contrastLevel="aa"
+          variant={getNewsCategoryBadgeVariant(news.category)}
+        >
           {news.category}
         </Badge>
       </div>

@@ -14,7 +14,7 @@ const badgeVariants = cva(
           "border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/30",
         destructive:
           "border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/30",
-        outline: "text-foreground",
+        outline: "border-border text-foreground",
       },
     },
     defaultVariants: {
@@ -25,11 +25,29 @@ const badgeVariants = cva(
 
 export interface BadgeProps
   extends React.HTMLAttributes<HTMLDivElement>,
-    VariantProps<typeof badgeVariants> {}
+    VariantProps<typeof badgeVariants> {
+  contrastLevel?: "default" | "aa" | "aaa";
+}
 
-function Badge({ className, variant, ...props }: BadgeProps) {
+function Badge({
+  className,
+  variant,
+  contrastLevel = "default",
+  ...props
+}: BadgeProps) {
+  const contrastClasses =
+    contrastLevel === "default"
+      ? undefined
+      : "ring-2 ring-offset-2 ring-offset-background ring-ring";
+
   return (
-    <div className={cn(badgeVariants({ variant }), className)} {...props} />
+    <div
+      className={cn(badgeVariants({ variant }), contrastClasses, className)}
+      data-contrast-level={
+        contrastLevel === "default" ? undefined : contrastLevel
+      }
+      {...props}
+    />
   );
 }
 

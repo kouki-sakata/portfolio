@@ -50,6 +50,9 @@ const defaultValues: NewsFormValues = {
   content: "",
 };
 
+const newsDateErrorId = "newsDate-error";
+const contentErrorId = "content-error";
+
 export const NewsFormModal = ({
   mode,
   news,
@@ -84,6 +87,25 @@ export const NewsFormModal = ({
     }
   }, [form, mode, news, open]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    if (typeof window === "undefined") {
+      form.setFocus("newsDate");
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      form.setFocus("newsDate");
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [form, open]);
+
   const isSubmitting =
     createMutation.isPending ||
     updateMutation.isPending ||
@@ -110,6 +132,10 @@ export const NewsFormModal = ({
   });
 
   const dialogTitle = mode === "create" ? "お知らせを作成" : "お知らせを編集";
+  const newsDateError = form.formState.errors.newsDate?.message;
+  const contentError = form.formState.errors.content?.message;
+  const newsDateDescribedBy = newsDateError ? newsDateErrorId : undefined;
+  const contentDescribedBy = contentError ? contentErrorId : undefined;
 
   return (
     <Dialog onOpenChange={(next) => !next && onClose()} open={open}>
@@ -125,14 +151,20 @@ export const NewsFormModal = ({
           <div className="space-y-2">
             <Label htmlFor="newsDate">お知らせ日付</Label>
             <Input
+              aria-describedby={newsDateDescribedBy}
               aria-invalid={form.formState.errors.newsDate ? "true" : "false"}
               id="newsDate"
               type="date"
               {...form.register("newsDate")}
             />
             {form.formState.errors.newsDate ? (
-              <p className="text-destructive text-sm">
-                {form.formState.errors.newsDate.message}
+              <p
+                aria-live="polite"
+                className="text-destructive text-sm"
+                id={newsDateErrorId}
+                role="alert"
+              >
+                {newsDateError}
               </p>
             ) : null}
           </div>
@@ -140,14 +172,20 @@ export const NewsFormModal = ({
           <div className="space-y-2">
             <Label htmlFor="content">内容</Label>
             <textarea
+              aria-describedby={contentDescribedBy}
               aria-invalid={form.formState.errors.content ? "true" : "false"}
               className="flex min-h-[160px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               id="content"
               {...form.register("content")}
             />
             {form.formState.errors.content ? (
-              <p className="text-destructive text-sm">
-                {form.formState.errors.content.message}
+              <p
+                aria-live="polite"
+                className="text-destructive text-sm"
+                id={contentErrorId}
+                role="alert"
+              >
+                {contentError}
               </p>
             ) : null}
           </div>

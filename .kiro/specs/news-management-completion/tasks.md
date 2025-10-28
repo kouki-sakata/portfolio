@@ -333,25 +333,25 @@
   - 部分的成功の処理
   - _Requirements: 11.6_
 
-- [ ] 8. アクセシビリティ強化（Phase 2 - Optional）
+- [x] 8. アクセシビリティ強化（Phase 2 - Optional）
   - ARIA属性追加
   - スクリーンリーダー対応
   - キーボードナビゲーション
   - _Requirements: 12.1-12.5_
 
-- [ ] 8.1 ARIA属性実装
+- [x] 8.1 ARIA属性実装
   - ボタン・リンクにaria-label追加
   - モーダルダイアログにrole="dialog"、aria-modal="true"設定
   - フォームエラーにaria-invalid、aria-describedby設定
   - _Requirements: 12.1, 12.2, 12.3_
 
-- [ ] 8.2 フォーカス管理実装
+- [x] 8.2 フォーカス管理実装
   - モーダル表示時のフォーカストラップ
   - キーボードナビゲーション（Tab、Shift+Tab）
   - ESCキーでモーダル閉じる
   - _Requirements: 12.4_
 
-- [ ] 8.3 カラーコントラスト検証
+- [x] 8.3 カラーコントラスト検証
   - WCAG 2.1 Level AA基準チェック
   - Lighthouse Accessibilityスコア100達成
   - _Requirements: 12.5_

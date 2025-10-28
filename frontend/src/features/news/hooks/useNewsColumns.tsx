@@ -118,7 +118,10 @@ export function useNewsColumns({
           }
 
           return (
-            <Badge variant={getNewsCategoryBadgeVariant(category)}>
+            <Badge
+              contrastLevel="aa"
+              variant={getNewsCategoryBadgeVariant(category)}
+            >
               {category}
             </Badge>
           );
@@ -138,7 +141,10 @@ export function useNewsColumns({
         cell: ({ row }) => {
           const isPublished = row.getValue("releaseFlag") as boolean;
           return (
-            <Badge variant={isPublished ? "default" : "secondary"}>
+            <Badge
+              contrastLevel="aa"
+              variant={isPublished ? "default" : "secondary"}
+            >
               {isPublished ? "公開中" : "下書き"}
             </Badge>
           );
@@ -194,6 +200,7 @@ export function useNewsColumns({
             <div className="flex items-center gap-1 md:gap-2">
               {onEdit && (
                 <Button
+                  aria-label="編集"
                   className="px-2 md:px-3"
                   onClick={(event) => {
                     event.stopPropagation();
@@ -214,6 +221,7 @@ export function useNewsColumns({
               )}
               {onDeleteClick && (
                 <Button
+                  aria-label="削除"
                   className="px-2 md:px-3"
                   onClick={(event) => {
                     event.stopPropagation();

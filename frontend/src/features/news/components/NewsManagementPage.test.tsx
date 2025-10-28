@@ -205,6 +205,24 @@ describe("NewsManagementPage", () => {
     expect(screen.getByText("selected:55")).toBeInTheDocument();
   });
 
+  it("テーブルのアクションボタンに aria-label が付与される", () => {
+    const news = sampleNews({ id: 101, content: "アクセシビリティ検証" });
+    mocks.useNewsQuery.mockReturnValue({
+      data: { news: [news] },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    render(<NewsManagementPage />);
+
+    const editButton = screen.getAllByRole("button", { name: "編集" })[0];
+    const deleteButton = screen.getAllByRole("button", { name: "削除" })[0];
+
+    expect(editButton).toHaveAttribute("aria-label", "編集");
+    expect(deleteButton).toHaveAttribute("aria-label", "削除");
+  });
+
   it("全選択後に一括削除ボタンを表示し、確定で選択状態をリセットする", async () => {
     const user = userEvent.setup();
     const items = [
