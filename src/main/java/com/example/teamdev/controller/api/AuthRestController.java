@@ -19,6 +19,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,15 +37,18 @@ public class AuthRestController {
     private final AuthenticationManager authenticationManager;
     private final SecurityContextRepository securityContextRepository;
     private final AuthSessionService authSessionService;
+    private final CsrfTokenRepository csrfTokenRepository;
 
     public AuthRestController(
         AuthenticationManager authenticationManager,
         SecurityContextRepository securityContextRepository,
-        AuthSessionService authSessionService
+        AuthSessionService authSessionService,
+        CsrfTokenRepository csrfTokenRepository
     ) {
         this.authenticationManager = authenticationManager;
         this.securityContextRepository = securityContextRepository;
         this.authSessionService = authSessionService;
+        this.csrfTokenRepository = csrfTokenRepository;
     }
 
     @Operation(summary = "ログイン", description = "メールとパスワードでログインし、セッションを開始します")
@@ -74,10 +78,12 @@ public class AuthRestController {
 
     @Operation(summary = "セッション状態取得", description = "現在の認証状態と従業員概要を返します")
     @GetMapping(value = "/session", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<SessionResponse> session(CsrfToken csrfToken) {
-        if (csrfToken != null) {
-            csrfToken.getToken();
-        }
+    public ResponseEntity<SessionResponse> session(
+        HttpServletRequest httpRequest,
+        HttpServletResponse httpResponse,
+        CsrfToken csrfToken
+    ) {
+        ensureCsrfToken(csrfToken, httpRequest, httpResponse);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null || !authentication.isAuthenticated() || "anonymousUser".equals(authentication.getPrincipal())) {
             return ResponseEntity.ok(new SessionResponse(false, null));
@@ -89,5 +95,20 @@ public class AuthRestController {
         }
 
         return ResponseEntity.ok(new SessionResponse(true, employeeSummary));
+    }
+
+    private void ensureCsrfToken(CsrfToken csrfToken, HttpServletRequest request, HttpServletResponse response) {
+        CsrfToken resolvedToken = csrfToken;
+        if (resolvedToken == null) {
+            resolvedToken = csrfTokenRepository.generateToken(request);
+        }
+
+        if (resolvedToken != null) {
+            // Access the value so DeferredCsrfToken resolves before persisting
+            resolvedToken.getToken();
+            request.setAttribute(CsrfToken.class.getName(), resolvedToken);
+            request.setAttribute("_csrf", resolvedToken);
+            csrfTokenRepository.saveToken(resolvedToken, request, response);
+        }
     }
 }

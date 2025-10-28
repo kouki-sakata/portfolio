@@ -57,7 +57,8 @@ public class SecurityConfig {
      * クロスサイトリクエスト（Vercel→Render）に対応するため SameSite=None を設定
      * 開発環境・テスト環境では Secure フラグを無効化し、HTTP でも Cookie が動作するようにする
      */
-    private CookieCsrfTokenRepository csrfTokenRepository() {
+    @Bean
+    public CookieCsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
         // 開発環境とテスト環境では Secure flag を無効化、SameSite=None 設定
@@ -88,7 +89,8 @@ public class SecurityConfig {
      *
      * @return 標準の CsrfTokenRequestHandler
      */
-    private CsrfTokenRequestHandler createCsrfTokenRequestHandler() {
+    @Bean
+    public CsrfTokenRequestHandler csrfTokenRequestHandler() {
         // すべての環境で標準ハンドラーを使用
         return new CsrfTokenRequestAttributeHandler();
     }
@@ -171,7 +173,7 @@ public class SecurityConfig {
             .cors(Customizer.withDefaults())
             .csrf(csrf -> csrf
                 .csrfTokenRepository(csrfTokenRepository())
-                .csrfTokenRequestHandler(createCsrfTokenRequestHandler())
+                .csrfTokenRequestHandler(csrfTokenRequestHandler())
                 // Allow health endpoints, login, logout, and debug endpoints without CSRF to ease SPA auth flow and E2E tests
                 .ignoringRequestMatchers("/actuator/**", "/api/auth/login", "/api/auth/logout", "/api/debug/**")
             )
