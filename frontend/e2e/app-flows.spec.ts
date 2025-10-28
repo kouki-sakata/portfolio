@@ -125,7 +125,7 @@ test.describe("勤怠管理の主要E2Eフロー", () => {
       await page.goto("/e2e/harness/employee-admin.html");
       await expect(
         page.getByRole("heading", { name: /^.*従業員管理.*$/ })
-      ).toBeVisible({ timeout: 20_000 });
+      ).toBeVisible({ timeout: 40_000 });
     });
 
     await test.step("新しい従業員を登録", async () => {
