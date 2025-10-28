@@ -18,9 +18,11 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ロールベースアクセス制御
 
 ### お知らせ・ログ管理
-- お知らせCRUD・公開切り替え・バルク操作（REST API完全実装）
+- お知らせCRUD・公開切り替え・バルク操作（管理者専用、REST API完全実装）
+- ロールベース表示（ADMIN: 全操作、EMPLOYEE: 閲覧のみ）
 - システムログ照会・検索・監査証跡
 - React Queryによる楽観的更新・キャッシュ管理
+- TanStack Table統合（ソート・フィルタ・行選択）
 
 ## 主要な価値提案
 
@@ -56,11 +58,15 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ✅ Biome統合、TanStack Table、OpenAPI型生成
 - ✅ React Query、MSW統合テスト、Playwright E2E
 - ✅ パフォーマンス監視（Lighthouse CI）
-- ✅ お知らせ管理機能完全実装（2025-10-17）
+- ✅ お知らせ管理機能完全実装（2025-10-28 最終更新）
   - REST API（CRUD、公開管理、バルク削除/公開切り替え）
-  - Reactコンポーネント（NewsManagementPage、選択状態管理）
-  - バルクAPI：部分成功対応、最大100件処理
-  - Zod バリデーション、React Query統合、包括的テスト完備
+  - ロールベースアクセス制御（@PreAuthorize、管理者専用）
+  - View Model変換パターン（API型→UI型、派生データ生成）
+  - TanStack Table統合（ソート・フィルタ・行選択、DataTable共通コンポーネント）
+  - 選択状態管理の分離（useNewsSelection、Set型による効率的管理）
+  - バルクAPI：部分成功対応、最大100件処理、失敗ID保持
+  - React Query楽観的更新（onMutate/onError/onSettled）
+  - Zod バリデーション（フロント/バック同期）、包括的テスト完備
 - ✅ 打刻履歴管理機能完全実装
   - REST API（履歴取得、編集・削除）
   - SOLID原則サービス分離（StampHistoryPersistence、OutTimeAdjuster等）
@@ -78,9 +84,10 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
-  - お知らせ管理 Playwright テスト完備（news-management.spec.ts）
+  - お知らせ管理 Playwright テスト（news-management.spec.ts、現在スキップ状態）
 - 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
 - 📋 外部システム連携API、プッシュ通知、生体認証
+- 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-10-26 (お知らせ管理UI完成版とView Model/TanStack Tableパターンを反映)*
+*Last Updated: 2025-10-28 (お知らせ管理機能完了状況を最終化、リッチテキストエディタは今後の計画へ)*

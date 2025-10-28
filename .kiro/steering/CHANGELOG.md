@@ -1,5 +1,56 @@
 # Steering Documents Changelog
 
+## 2025-10-28 (Update 30)
+
+### Updated Documents
+- `product.md` - お知らせ管理機能の完了状況を最終化、実装詳細を追記
+- `tech.md` - お知らせ管理の確立されたパターンを詳細化
+- `structure.md` - お知らせ機能の完全構造を反映
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **お知らせ管理機能の完了宣言**
+  - 2025-10-28時点でお知らせ管理機能が完全実装済みであることを明確化
+  - REST API、フロントエンド、テストの全実装が完了
+  - リッチテキストエディタは将来機能として計画に移動（現在はTextarea実装）
+
+- **ロールベースアクセス制御の明文化**
+  - `@PreAuthorize("hasRole('ADMIN')")`による管理者専用エンドポイント
+  - EMPLOYEE権限での閲覧のみアクセス（`/api/news/published`）
+  - SecurityUtil経由の操作者ID取得パターン
+
+- **フロントエンドパターンの詳細化**
+  - View Model変換パターン: 型拡張（`NewsViewModel = NewsResponse & {...}`）による型安全性の保持を追記
+  - TanStack Table統合: 共通DataTableコンポーネントの再利用パターンを明記
+  - 選択状態管理: TanStack TableのRowSelectionStateとアプリケーション側ID配列の双方向同期パターンを詳細化
+  - React Query楽観的更新: バルク操作の部分成功処理とトースト通知を追記
+
+- **バックエンドパターンの詳細化**
+  - Controller層での複数専門サービスの組み立てパターン（NewsRestController例）
+  - ファサードパターンの役割明確化（読み取り専用の統合ポイント）
+  - バルクAPIエラー戦略: ResponseStatusExceptionによるHTTPステータス制御を追記
+  - 専門サービスの命名規則（NewsManage*Service）と単一責任の徹底
+
+- **構造文書の詳細化**
+  - news/components配下の全コンポーネントを列挙（8コンポーネント）
+  - サービス層の専門サービス5つを明記（Registration/Release/Deletion/Bulk*）
+  - SOLID原則に基づくレイヤー責務の明確化
+
+### Impact
+- お知らせ管理機能が完全実装済みであることが明確になり、類似CRUD機能実装時の完全な参照モデルとして機能
+- ロールベースアクセス制御の実装パターンが確立され、他の管理機能への適用が容易化
+- View Model変換、TanStack Table統合、選択状態管理の実装パターンが詳細化され、再利用性が向上
+- Controller層でのサービス組み立てパターンが明文化され、SOLID原則に基づく設計指針が明確化
+- E2Eテストがスキップ状態であることが明記され、今後のテスト拡充タスクが可視化
+
+### Code Drift Warnings
+なし。コードベースと steering の内容は一致しています。
+
+### Note
+お知らせ管理機能は2025-10-17のUpdate 25/27で初回文書化、2025-10-26のUpdate 29でUI改善パターンを追記済み。本更新（Update 30）は機能完了宣言と実装パターンの最終詳細化を行い、リッチテキストエディタなど未実装の要素を今後の計画へ明確に分離しました。
+
+---
+
 ## 2025-10-26 (Update 29)
 
 ### Updated Documents
@@ -300,5 +351,5 @@ stampHistory機能は既に実装済みであり、本更新はコードベー�
 *古いエントリ（Update 1-17）はgit履歴で参照可能*
 
 ---
-*Last Updated: 2025-10-17*
+*Last Updated: 2025-10-28*
 *Inclusion Mode: Always Included*

@@ -27,7 +27,7 @@ TeamDevelopBravo-main/
 │   ├── 従業員: EmployeeService（ファサード）、QueryService、CommandService
 │   ├── 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService
 │   ├── 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter
-│   └── お知らせ: NewsManageService（ファサード）、各専門サービス
+│   └── お知らせ: NewsManageService（ファサード、読み取り専用）、NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
 ├── mapper/           # MyBatisマッパー
 ├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
 ├── entity/           # エンティティ（Employee、News、StampHistory、StampHistoryDisplay等）
@@ -54,11 +54,12 @@ TeamDevelopBravo-main/
 │   ├── employees/    # 従業員管理
 │   ├── home/         # ダッシュボード
 │   ├── logManagement/ # 監査ログ・操作履歴
-│   ├── news/         # お知らせ管理
-│   │   ├── api/      # newsApi.ts（CRUD + バルク操作）
-│   │   ├── components/ # NewsManagementPage、NewsFormModal、BulkActionBar、DeleteConfirmDialog、PublishedNewsGrid
-│   │   ├── hooks/    # useNews（Query/Mutation統合）、useNewsSelection（選択状態管理）、useNewsColumns（テーブルカラム定義）
-│   │   ├── lib/      # newsViewModel.ts（View変換）、categoryBadge.ts（カテゴリ→Badge variant）
+│   ├── news/         # お知らせ管理（完全実装済み）
+│   │   ├── api/      # newsApi.ts（CRUD + バルク操作REST呼び出し）
+│   │   ├── components/ # NewsManagementPage（メイン画面）、NewsFormModal（作成/編集）、BulkActionBar（バルク操作UI）、DeleteConfirmDialog（削除確認）、PublishedNewsGrid（公開中カード表示）、NewsDetailDialog（詳細表示）、NewsCard（カード表示）、PublishedNewsCard
+│   │   ├── hooks/    # useNews.ts（Query/Mutation統合、React Query）、useNewsColumns.tsx（テーブルカラム定義、イベントハンドラ注入）
+│   │   ├── lib/      # newsViewModel.ts（View変換、派生データ生成）、categoryBadge.ts（カテゴリ→Badge variant）
+│   │   ├── routes/   # NewsManagementRoute.tsx
 │   │   └── types/    # bulk.ts（バルクAPI型定義）
 │   └── stampHistory/ # 打刻履歴管理
 │       ├── api/      # stampApi.ts（履歴取得、編集・削除、バッチ操作）
@@ -100,11 +101,14 @@ TeamDevelopBravo-main/
 - **Controller**: REST API（Spring MVC）
   - record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）
   - Form Bridge パターン（`ListForm`/`NewsManageForm`でService接続）
-  - SecurityUtil経由で操作者ID取得
+  - SecurityUtil経由で操作者ID取得、`@PreAuthorize`でロール制御
+  - 複数専門サービスの注入と組み立て（例: NewsRestController）
 - **Service**: ビジネスロジック
-  - ファサードパターン（複雑性の隠蔽）
+  - ファサードパターン（複雑性の隠蔽、読み取り統合）
   - Query/Command分離（CQRS）
+  - 専門サービスの単一責任化（Registration/Release/Deletion/Bulk*）
 - **Mapper**: データアクセス（MyBatis）
+  - アノテーションベース（シンプルなクエリ）とXML定義（複雑なクエリ）の使い分け
 - **Entity/DTO**: データモデル（camelCase統一）
 
 ### フロントエンド
@@ -136,4 +140,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-26 (news機能のlib/ディレクトリとカラムフック構造を追記)*
+*Last Updated: 2025-10-28 (お知らせ管理機能の完全構造を反映、コンポーネント一覧を詳細化)*
