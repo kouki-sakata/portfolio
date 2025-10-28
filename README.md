@@ -1,279 +1,192 @@
 # TeamDevelop Bravo 勤怠管理システム
 
-モバイルフレンドリーな React + Spring Boot SPA 版の勤怠管理システムです。既存の Thymeleaf 実装を置き換え、PostgreSQL へのマイグレーションと合わせてフロントエンド／バックエンドを再構築しました。
+モバイルフレンドリーな React + Spring Boot SPA 版の勤怠管理システムです。
+
+*システムは現在改修中です
 
 ## 🌐 デプロイ先 & テストアカウント
-
 - **URL:** [portfolio-eight-ebon-25.vercel.app](https://portfolio-eight-ebon-25.vercel.app/)
-- **管理者:** `admin.user@example.com` / `AdminPass123!`
+- **管理者:** `test@gmail.com` / `testtest`
 - **一般ユーザー:** `test.user@example.com` / `TestPass123!`
 
-> ⚠️ 本番環境は移行作業中です。最新の UI はローカルまたはステージングで確認してください。
+## 📋 主な機能
+
+### 一般ユーザー向け
+- **打刻管理**: 出勤・退勤の記録（夜勤対応）
+- **打刻履歴**: 月別の勤怠履歴閲覧・年月絞り込み
+- **お知らせ**: ホーム画面でのお知らせ確認
+
+### 管理者向け
+- **従業員管理**: 従業員の登録・編集・削除
+- **お知らせ管理**: お知らせの作成・編集・公開管理
+- **ログ管理**: システム操作ログの閲覧
+
+### セキュリティ
+- セッションベース認証
+- ロール別アクセス制御（管理者/一般ユーザー）
+- CSRF トークン保護
 
 ## 🧰 技術スタック
 
-| レイヤー | 採用技術 |
-|:---------|:---------|
-| **フロントエンド** | React 19, TypeScript, Vite, React Router 7, React Query 5, shadcn-ui@canary, Vitest, Playwright, Biome |
-| **バックエンド** | Java 21, Spring Boot 3.4, Spring Security, MyBatis, Testcontainers |
-| **データベース** | PostgreSQL 16 (コンテナ・ローカル・本番共通) |
-| **ビルド/パッケージ** | Gradle 8.14.2, npm 10, Docker, Docker Compose |
-| **CI/CD** | GitHub Actions (lint/test/build/SonarCloud/OWASP Dependency Check) |
-| **コード品質** | Biome (lint/format), OpenAPI contract testing, E2E testing |
+### フロントエンド
+- **コア**: React 19.1.1, TypeScript 5.8.3, Vite 7.1.7
+- **ルーティング**: React Router 7.9.2
+- **状態管理**: React Query 5.90.2
+- **UI**: shadcn-ui@canary, Tailwind CSS 4.1.13, Radix UI
+- **フォーム**: React Hook Form 7.63.0 + Zod 3.25.76
+- **HTTP**: axios 1.12.2
+- **テスト**: Vitest 3.2.4, Playwright 1.49.1
+- **コード品質**: Biome 2.2.4
 
-## ✨ 主な改善ポイント
+### バックエンド
+- **コア**: Java 21, Spring Boot 3.4.3
+- **セキュリティ**: Spring Security 6.x (セッションベース認証)
+- **データアクセス**: MyBatis 3.0.4
+- **API ドキュメント**: Springdoc OpenAPI 2.6.0
+- **テスト**: JUnit 5, Testcontainers
 
-- **SPA 化**: React + TypeScript + React Query によるシングルページ構成。Spring MVC 側は API と SPA フォワーダーのみを提供
-- **認証の再設計**: `/api/auth` エンドポイントでセッションベースのログイン／ログアウト／セッション確認を実装。CSRF トークンは Cookie + `X-XSRF-TOKEN` で自動送出
-- **API 完全分離**: 従業員管理、打刻登録、打刻履歴を JSON API 化し、React から呼び出す構成へ移行
-- **PostgreSQL 移行**: MySQL 依存を排除し、Docker Compose／Testcontainers／CI すべてを Postgres 16 に統一
-- **コード品質向上**: Biome による統一的な lint/format、OpenAPI contract testing、包括的な E2E テスト
-
-## 🏗️ アーキテクチャ詳細
-
-### 認証アーキテクチャ
-- **セッション方式**: Spring Security セッションベース認証
-- **CSRF保護**: Cookie + `X-XSRF-TOKEN` ヘッダー
-- **セッションチェック**: `/api/auth/session` エンドポイント
-- **状態管理**: React Query によるクライアント側セッション管理
+### インフラ
+- **データベース**: PostgreSQL 16
+- **ビルド**: Gradle 8.14.2, Node.js 22.12.0
+- **コンテナ**: Docker, Docker Compose
+- **CI/CD**: GitHub Actions
 
 ## 🚀 セットアップ
 
-### 1. Docker Compose を使う（推奨）
+### 必要要件
+- Docker & Docker Compose
+- Java 21 以上（ローカル開発時）
+- Node.js 22 以上（ローカル開発時）
+
+### Docker Compose で起動
 
 ```bash
-# リポジトリ取得
-git clone https://github.com/your-org/TeamDevelopBravo.git
-cd TeamDevelopBravo-main
-
-# 環境変数テンプレートをコピー
-cp .env.example .env
-
-# コンテナ起動
+# アプリケーション起動
 docker-compose up -d
 
-# 初回のみログ確認
-docker-compose logs -f app
-```
+# アプリケーション停止
+docker-compose down
 
-- アプリ: http://localhost:8080
+**アクセス先:**
+- アプリケーション: http://localhost:8080
 - ヘルスチェック: http://localhost:8080/actuator/health
-- PostgreSQL: `localhost:5432` (`DOCKER_DB_USERNAME` / `DOCKER_DB_PASSWORD`)
+- Swagger UI (dev): http://localhost:8080/swagger-ui/index.html
 
-### 2. ローカルで直接実行
-
-#### 必要要件
-
-- Java 21 (Eclipse Temurin 推奨)
-- Node.js 22+
-- PostgreSQL 16
-
-#### 手順
-
-```bash
-# 1. リポジトリ取得
-git clone https://github.com/your-org/TeamDevelopBravo.git
-cd TeamDevelopBravo-main
-
-# 2. フロント依存をセットアップ
+# フロントエンド依存関係インストール
 npm ci --prefix frontend
 
-# 3. PostgreSQL を準備
-createdb teamdev_db
-psql -d teamdev_db -f src/main/resources/01_schema.sql
-psql -d teamdev_db -f src/main/resources/02_data.sql
-
-# 4. バックエンドを起動
-SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun
-
-# 5. （任意）Vite Dev Server を起動しホットリロード利用
+# （別ターミナル）フロントエンド開発サーバー起動
 npm run dev --prefix frontend
 ```
 
-> Vite Dev Server を併用する場合は、`frontend/.env.local` に `VITE_API_BASE_URL=http://localhost:8080/api` を設定してください。
+## 🏗️ アーキテクチャ
 
-## 🔐 環境変数 & シークレット管理
+### 認証システム
+- **方式**: Spring Security セッションベース認証
+- **CSRF 保護**: Cookie + `X-XSRF-TOKEN` ヘッダー（自動送信）
+- **セッション管理**: React Query によるクライアント側キャッシュ（8時間有効）
+- **API エンドポイント**:
+  - `POST /api/auth/login` - ログイン
+  - `POST /api/auth/logout` - ログアウト
+  - `GET /api/auth/session` - セッション確認
 
-| 変数 | 用途 | デフォルト | 備考 |
-|:-----|:-----|:-----------|:-----|
-| `DB_HOST` / `DB_PORT` / `DB_NAME` | PostgreSQL 接続先 | `localhost` / `5432` / `teamdev_db` | CI では `127.0.0.1` を利用 |
-| `DB_USERNAME` / `DB_PASSWORD` | DB 認証情報 | `user` / `password` | **本番では必ずシークレットストアに保管** |
-| `JWT_SECRET` | 認証トークン用シークレット | placeholder | 32〜64 文字以上を推奨 |
-| `ENCRYPTION_KEY` | アプリ内暗号化キー | placeholder | 32 文字以上 |
-| `LOG_LEVEL_*` | ログレベル | `INFO` 等 | 監査要件に応じて調整 |
-| `VITE_API_BASE_URL` | フロントエンドの API ルート | `/api` | Dev Server 利用時に上書き |
+詳細: [docs/authentication-system.md](docs/authentication-system.md)
 
-**運用のベストプラクティス**
+### データフロー
 
-1. **ローカル**: `.env` / `frontend/.env.local` に保存 (Git 管理外)
-2. **CI**: GitHub Secrets (`DB_PASSWORD`, `JWT_SECRET` など) で提供
-3. **本番**: AWS Secrets Manager 等を使用し、Elastic Beanstalk / ECS に注入
-
-## 🧪 テスト & ビルド
-
-### バックエンドテスト
-
-```bash
-# 全テスト実行（Testcontainers使用）
-./gradlew test
-
-# API集中テスト
-./gradlew apiTest
-
-# 単一テスト実行
-./gradlew test --tests "ClassName.methodName"
-
-# OpenAPI契約テスト
-./gradlew contractTest -PenableOpenApiContract
+```
+React コンポーネント
+  ↓ React Query hooks
+axios クライアント
+  ↓ HTTP (JSON)
+Spring RestController
+  ↓ Service層
+MyBatis Mapper
+  ↓ SQL
+PostgreSQL 16
 ```
 
-### フロントエンドテスト
+### フォルダ構成
 
-```bash
-# Lint + Format
-npm run lint:fix --prefix frontend
-
-# ユニットテスト（Vitest）
-npm run test --prefix frontend
-
-# 単一テストファイル
-npm run test --prefix frontend -- AuthService.test.tsx
-
-# E2Eテスト（Playwright）
-npm run test:e2e --prefix frontend
-
-# 初回Playwrightセットアップ
-npm run --prefix frontend playwright install --with-deps
+**バックエンド:**
+```
+src/main/java/com/example/teamdev/
+├── controller/api/      # REST API エンドポイント
+├── service/            # ビジネスロジック
+├── mapper/             # MyBatis マッパー
+├── model/              # Entity/DTO
+└── config/             # Spring 設定
 ```
 
-### ビルド
-
-```bash
-# 本番ビルド（フロントエンド自動ビルド含む）
-./gradlew build
-
-# フロントエンドのみビルド
-npm run build --prefix frontend
-
-# OpenAPI型定義再生成
-npm run generate:api --prefix frontend
+**フロントエンド:**
+```
+frontend/src/
+├── app/                # React Router 7 ルート定義
+├── features/           # 機能別モジュール (auth, employee, stamp)
+│   └── [feature]/
+│       ├── api/       # API クライアント関数
+│       ├── components/# 機能固有コンポーネント
+│       ├── hooks/     # React Query カスタムフック
+│       └── types/     # TypeScript 型定義
+├── components/ui/     # shadcn-ui コンポーネント
+├── shared/            # 共通ユーティリティ
+└── schemas/          # Zod スキーマ（自動生成）
 ```
 
-> `./gradlew test` は Testcontainers で PostgreSQL を起動するため、Docker が動作する環境で実行してください。
+## 🔐 環境変数
 
-## 🎨 Biome 設定
+主要な環境変数（詳細は `.env.example` を参照）:
 
-プロジェクトは Biome で統一的な lint/format を実施しています。
+| 変数 | 用途 | デフォルト |
+|:-----|:-----|:-----------|
+| `DB_HOST` | PostgreSQL ホスト | `localhost` |
+| `DB_PORT` | PostgreSQL ポート | `15432` |
+| `DB_NAME` | データベース名 | `teamdev_db` |
+| `DB_USERNAME` | DB ユーザー名 | `user` |
+| `DB_PASSWORD` | DB パスワード | `password` |
+| `JWT_SECRET` | JWT シークレット | 32文字以上推奨 |
+| `ENCRYPTION_KEY` | 暗号化キー | 32文字以上推奨 |
+| `SPRING_PROFILES_ACTIVE` | Spring プロファイル | `dev` / `test` / `prod` |
 
-### ファイル別ルール
+**運用:**
+- **ローカル**: `.env` ファイル（Git 管理外）
+- **CI**: GitHub Secrets
+- **本番**: Render 環境変数（render.yaml）
 
-- **UIコンポーネント** (`components/ui/**`): Radix UI 互換性のため緩和されたルール
-- **テストファイル** (`**/*.test.ts`, `**/e2e/**`): 複雑度制限なし、マジックナンバー許可
-- **生成ファイル** (`schemas/api.ts`, `types/**`): lint/format 無効
-- **Auth機能** (`features/auth/**`): 非同期操作のため `noVoid` 無効
+## 🧪 テスト戦略
 
-## 🗃️ PostgreSQL 移行ガイド
+### バックエンド
+- **単体テスト**: Service / Mapper 層のロジックテスト
+- **API テスト**: `@Tag("api")` による REST API 統合テスト
+- **契約テスト**: OpenAPI 仕様との整合性検証
+- **インフラ**: Testcontainers で PostgreSQL 自動起動
 
-MySQL からのデータ移行や既存環境の切り替え手順は [docs/postgres-migration-guide.md](docs/postgres-migration-guide.md) を参照してください。
+### フロントエンド
+- **ユニットテスト**: Vitest + React Testing Library
+- **E2E テスト**: Playwright でブラウザ自動化テスト
+- **型チェック**: TypeScript strict モード
+- **Lint**: Biome による統一的なコード品質管理
 
-- 事前チェックリスト
-- `pgloader` を使った移行例
-- 本番切り戻し戦略
-- GitHub Actions / Docker Compose の更新ポイント
+## 📦 ビルド & デプロイ
 
-## 🔍 Swagger(OpenAPI) を使った API テスト
+### 本番デプロイ
+- **バックエンド**: Render (render.yaml で自動デプロイ設定)
+- **フロントエンド**: Vercel (main ブランチ自動デプロイ)
 
-### 基本的な使い方
+## 🔒 セキュリティ
 
-1. バックエンドを起動: `SPRING_PROFILES_ACTIVE=dev ./gradlew bootRun`
-2. ブラウザで http://localhost:8080/swagger-ui/index.html を開く
-3. `Authorize` からテスト用の認証ヘッダーを設定
-4. `GET /api/auth/session` で CSRF トークンを取得
-5. `POST /api/auth/login` 等を実行してレスポンスを確認
-
-### 推奨開発フロー
-
-1. **Swagger で API の挙動を整理** → 統合テストを順次追加
-2. **API が安定したら** → React 側はサービス層モックやユニットテストでカバー強化
-3. **最後に Playwright E2E** → UI フロー（ログイン成功／失敗）を確認し全体整合性を取る
-
-## 🌱 プロファイル運用
-
-- `SPRING_PROFILES_ACTIVE=dev`: 開発向け。Swagger UI 有効、詳細ログ
-- `SPRING_PROFILES_ACTIVE=test`: テスト向け。Testcontainers 等を利用
-- `SPRING_PROFILES_ACTIVE=prod`: 本番向け。Swagger UI 無効、ログ抑制
-
-## 🚦 CI/CD パイプライン
-
-### ci.yml（メインパイプライン）
-
-- Node 22 + npm ci
-- `npm run lint` / `npm run test`（フロントエンド）
-- PostgreSQL サービスを起動して `./gradlew test`
-- `./gradlew build` / SonarCloud / Docker build
-
-### feature.yml（ブランチチェック）
-
-- ブランチ命名規則チェック
-- Quick test（コンパイル + 並列テスト）
-- セキュリティチェック（OWASP Dependency Check）
-- Docker ビルド検証
-
-## 🤖 Ultracite クイックスタート（推奨）
-
-Ultracite はタスクランナーとして主要コマンドを統合管理できます。
-
-```bash
-# 事前準備
-nvm install 22.12.0 && nvm use 22.12.0
-
-# 一時実行
-npx ultracite@latest
-
-# グローバルインストール
-npm i -g ultracite && ultracite
-```
-
-### 主要タスク
-
-- API集中テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew apiTest`
-- 全テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew test`
-- 契約テスト: `SPRING_PROFILES_ACTIVE=test ./gradlew -PenableOpenApiContract contractTest`
-- フロントLint/Unit: `npm run lint --prefix frontend` / `npm run test --prefix frontend`
-
-設定ファイル: `ultracite.config.json`
-詳細: `docs/ultracite-setup.md`
-
-## 🔑 重要な統合ポイント
-
-### API プロキシ
-
-- **開発**: Vite が `/api/*` を `localhost:8080` にプロキシ
-- **本番**: Spring が `/` から SPA を、`/api/*` から API を配信
-
-### データベースマイグレーション
-
-- スキーマ: `src/main/resources/01_schema.sql`
-- 初期データ: `src/main/resources/02_data.sql`
-- Testcontainers が起動時に自動適用
-
-### フロントエンドビルド統合
-
-- Gradle タスク `npmBuild` が `processResources` の前に実行
-- ビルド成果物は `src/main/resources/static/` にコピー
-- Spring Boot が単一の実行可能 JAR として配信
-
-## ⚡ パフォーマンス考慮事項
-
-- React Query キャッシングで API コール最小化
-- Spring Boot `@Cacheable` で高コスト操作をキャッシュ
-- HikariCP コネクションプーリング（デフォルト設定）
-- Vite コード分割で最適なバンドルサイズ
-
-## 🔒 セキュリティチェックリスト
-
-- CSRF トークンは状態変更操作で必須
-- BCrypt パスワードハッシュ with ソルト
+実装済みのセキュリティ対策:
+- CSRF トークン保護（状態変更操作）
+- BCrypt パスワードハッシュ（ソルト付き）
 - MyBatis パラメータ化クエリ（SQL インジェクション対策）
-- Content Security Policy ヘッダー設定済み
-- CI で OWASP 依存関係スキャン実施
+- Content Security Policy ヘッダー
+- OWASP Dependency Check（CI 自動実行）
+- セッション固定攻撃対策
+- セキュアな Cookie 設定（本番環境）
+
+詳細: [docs/SECURITY.md](docs/SECURITY.md)
+
+## 📚 ドキュメント
+
+- [認証システムの全体像](docs/authentication-system.md)
+- [セキュリティポリシー](docs/SECURITY.md)
