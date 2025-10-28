@@ -43,7 +43,7 @@ export const NewsDetailDialog = ({
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex max-h-[70vh] min-h-[300px] w-[600px] max-w-[70vw] flex-col gap-0 overflow-hidden p-0">
+      <DialogContent className="sm:-translate-x-1/2 sm:-translate-y-1/2 top-0 left-0 flex h-screen w-screen max-w-none translate-x-0 translate-y-0 flex-col overflow-hidden rounded-none bg-background p-0 sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[80vh] sm:w-full sm:max-w-2xl sm:rounded-lg">
         {/* ヘッダーセクション - 固定 */}
         <div className="flex-shrink-0 border-border border-b px-6 py-4">
           <DialogHeader className="space-y-3 text-left">
@@ -103,7 +103,7 @@ export const NewsDetailDialog = ({
         {/* フッターセクション - 固定 */}
         <div className="flex flex-shrink-0 flex-wrap justify-end gap-2 border-border border-t bg-muted/30 px-6 py-4">
           <Button
-            className="order-3 sm:order-1"
+            className="order-3 h-12 min-h-11 flex-1 sm:order-1 sm:h-9 sm:flex-none"
             onClick={() => onOpenChange(false)}
             size="sm"
             type="button"
@@ -114,7 +114,7 @@ export const NewsDetailDialog = ({
           </Button>
 
           <Button
-            className="order-1 sm:order-2"
+            className="order-1 h-12 min-h-11 flex-1 sm:order-2 sm:h-9 sm:flex-none"
             onClick={handleEdit}
             size="sm"
             type="button"
@@ -125,7 +125,7 @@ export const NewsDetailDialog = ({
           </Button>
 
           <Button
-            className="order-2 sm:order-3"
+            className="order-2 h-12 min-h-11 flex-1 sm:order-3 sm:h-9 sm:flex-none"
             onClick={handleDelete}
             size="sm"
             type="button"

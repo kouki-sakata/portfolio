@@ -128,6 +128,7 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
       {type === "single" && (
         <AlertDialogTrigger asChild>
           <Button
+            className="h-12 min-h-11 w-full flex-1 sm:h-9 sm:w-auto sm:flex-none"
             disabled={isPending}
             size="sm"
             type="button"
@@ -137,14 +138,23 @@ export const DeleteConfirmDialog = (props: DeleteConfirmDialogProps) => {
           </Button>
         </AlertDialogTrigger>
       )}
-      <AlertDialogContent>
+      <AlertDialogContent className="sm:-translate-x-1/2 sm:-translate-y-1/2 top-0 left-0 w-screen max-w-none translate-x-0 translate-y-0 rounded-none p-6 sm:top-1/2 sm:left-1/2 sm:w-full sm:max-w-md sm:rounded-lg">
         <AlertDialogHeader>
           <AlertDialogTitle>{title}</AlertDialogTitle>
           <AlertDialogDescription>{description}</AlertDialogDescription>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>キャンセル</AlertDialogCancel>
-          <AlertDialogAction disabled={isPending} onClick={handleDelete}>
+        <AlertDialogFooter className="gap-2">
+          <AlertDialogCancel
+            className="h-12 min-h-11 w-full sm:h-9 sm:w-auto"
+            disabled={isPending}
+          >
+            キャンセル
+          </AlertDialogCancel>
+          <AlertDialogAction
+            className="h-12 min-h-11 w-full sm:h-9 sm:w-auto"
+            disabled={isPending}
+            onClick={handleDelete}
+          >
             削除する
           </AlertDialogAction>
         </AlertDialogFooter>

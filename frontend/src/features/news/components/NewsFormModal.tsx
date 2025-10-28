@@ -139,7 +139,7 @@ export const NewsFormModal = ({
 
   return (
     <Dialog onOpenChange={(next) => !next && onClose()} open={open}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:-translate-x-1/2 sm:-translate-y-1/2 top-0 left-0 flex h-screen w-screen max-w-none translate-x-0 translate-y-0 flex-col overflow-y-auto rounded-none bg-background p-6 sm:top-1/2 sm:left-1/2 sm:h-auto sm:max-h-[90vh] sm:w-full sm:max-w-xl sm:rounded-lg">
         <DialogHeader>
           <DialogTitle>{dialogTitle}</DialogTitle>
           <DialogDescription>
@@ -147,7 +147,7 @@ export const NewsFormModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-6" onSubmit={handleSubmit}>
+        <form className="flex flex-1 flex-col gap-6" onSubmit={handleSubmit}>
           <div className="space-y-2">
             <Label htmlFor="newsDate">お知らせ日付</Label>
             <Input
@@ -190,8 +190,9 @@ export const NewsFormModal = ({
             ) : null}
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="gap-2 pt-2">
             <Button
+              className="h-12 min-h-11 sm:h-9"
               disabled={isSubmitting}
               onClick={onClose}
               type="button"
@@ -199,7 +200,11 @@ export const NewsFormModal = ({
             >
               キャンセル
             </Button>
-            <Button disabled={isSubmitting} type="submit">
+            <Button
+              className="h-12 min-h-11 sm:h-9"
+              disabled={isSubmitting}
+              type="submit"
+            >
               保存
             </Button>
           </DialogFooter>

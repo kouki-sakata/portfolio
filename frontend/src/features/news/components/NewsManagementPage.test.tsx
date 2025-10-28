@@ -96,6 +96,7 @@ const sampleNews = (overrides?: Partial<NewsViewModel>): NewsViewModel => {
 
 describe("NewsManagementPage", () => {
   beforeEach(() => {
+    vi.useRealTimers();
     mocks.useNewsQuery.mockReset();
     mocks.deleteMutate.mockReset();
     mocks.bulkDeleteMutate.mockReset();
@@ -113,6 +114,7 @@ describe("NewsManagementPage", () => {
 
   afterEach(() => {
     vi.clearAllMocks();
+    vi.useRealTimers();
   });
 
   it("ローディング時にスケルトンを表示する", () => {

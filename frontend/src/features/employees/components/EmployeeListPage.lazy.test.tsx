@@ -1,8 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, screen, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  waitFor,
+  waitForElementToBeRemoved,
+} from "@testing-library/react";
 import { lazy, type ReactNode, Suspense } from "react";
 import { MemoryRouter } from "react-router-dom";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Lazy load the component
 const LazyEmployeeListPage = lazy(() =>
@@ -63,6 +68,14 @@ const TestWrapper = ({ children }: { children: ReactNode }) => {
 };
 
 describe("EmployeeListPage Lazy Loading", () => {
+  beforeEach(() => {
+    vi.useRealTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("should render fallback while loading lazy component", () => {
     render(
       <TestWrapper>
@@ -86,12 +99,9 @@ describe("EmployeeListPage Lazy Loading", () => {
     );
 
     // Wait for Suspense fallback to be removed
-    await waitFor(
-      () => {
-        expect(screen.queryByTestId("loading")).not.toBeInTheDocument();
-      },
-      { timeout: 5000 }
-    );
+    await waitForElementToBeRemoved(() => screen.queryByTestId("loading"), {
+      timeout: 5000,
+    });
 
     // Wait for lazy component to load and render
     await waitFor(

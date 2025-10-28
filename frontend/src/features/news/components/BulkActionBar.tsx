@@ -61,6 +61,7 @@ export const BulkActionBar = ({
   const commonButtonProps = {
     disabled: publishMutation.isPending || unpublishMutation.isPending,
     size: "sm" as const,
+    className: "h-12 min-h-11 w-full sm:h-9 sm:w-auto",
   };
 
   return (
@@ -90,6 +91,7 @@ export const BulkActionBar = ({
           一括非公開
         </Button>
         <Button
+          className="h-12 min-h-11 w-full sm:h-9 sm:w-auto"
           disabled={commonButtonProps.disabled}
           onClick={onBulkDeleteClick}
           size="sm"

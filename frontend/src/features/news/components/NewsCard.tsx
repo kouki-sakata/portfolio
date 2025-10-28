@@ -95,11 +95,18 @@ export const NewsCard = ({
           {truncateContent(news.content)}
         </p>
       </CardContent>
-      <CardFooter className="flex flex-wrap gap-2">
-        <Button onClick={handleEdit} size="sm" type="button" variant="outline">
+      <CardFooter className="flex flex-wrap gap-3 sm:gap-2">
+        <Button
+          className="h-12 min-h-11 flex-1 sm:h-9 sm:flex-none"
+          onClick={handleEdit}
+          size="sm"
+          type="button"
+          variant="outline"
+        >
           編集
         </Button>
         <Button
+          className="h-12 min-h-11 flex-1 sm:h-9 sm:flex-none"
           disabled={toggleMutation.isPending}
           onClick={handleToggle}
           size="sm"

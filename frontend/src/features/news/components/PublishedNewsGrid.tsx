@@ -15,7 +15,7 @@ type PublishedNewsGridProps = {
 };
 
 const PublishedNewsGridSkeleton = () => (
-  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
     {Array.from({ length: 4 }).map((_, index) => (
       <div
         className="rounded-lg border p-4"
@@ -83,7 +83,7 @@ export const PublishedNewsGrid = ({
       </div>
 
       {/* 2x2グリッドレイアウト */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {publishedNews.map((item) => (
           <PublishedNewsCard key={item.id} news={item} />
         ))}

@@ -27,7 +27,7 @@ const NewsListSkeleton = () => (
   <div className="space-y-6">
     <div className="space-y-4">
       <Skeleton className="h-6 w-48" />
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 4 }).map((_, index) => (
           <Card
             className="flex h-full flex-col"
@@ -198,7 +198,11 @@ export const NewsManagementPage = () => {
             お知らせの作成・編集・公開管理を行います。
           </p>
         </div>
-        <Button onClick={handleOpenCreate} type="button">
+        <Button
+          className="h-12 min-h-11 px-6 sm:h-10"
+          onClick={handleOpenCreate}
+          type="button"
+        >
           新規作成
         </Button>
       </header>
@@ -211,7 +215,12 @@ export const NewsManagementPage = () => {
           <p className="text-muted-foreground">
             「新規作成」ボタンから最初のお知らせを登録してください。
           </p>
-          <Button onClick={handleOpenCreate} type="button" variant="secondary">
+          <Button
+            className="h-12 min-h-11 px-6 sm:h-10"
+            onClick={handleOpenCreate}
+            type="button"
+            variant="secondary"
+          >
             新規作成
           </Button>
         </section>
