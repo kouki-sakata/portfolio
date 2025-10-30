@@ -87,11 +87,7 @@ export const PublishedNewsGrid = ({
       {/* 2x2グリッドレイアウト */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {publishedNews.map((item) => (
-          <PublishedNewsCard
-            key={item.id}
-            news={item}
-            onSelect={onSelect}
-          />
+          <PublishedNewsCard key={item.id} news={item} onSelect={onSelect} />
         ))}
       </div>
     </section>

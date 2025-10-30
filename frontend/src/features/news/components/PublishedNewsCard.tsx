@@ -43,7 +43,8 @@ export const PublishedNewsCard = ({
       }
       className={cn(
         "flex h-full flex-col transition-shadow hover:shadow-md",
-        isInteractive && "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        isInteractive &&
+          "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         className
       )}
       onClick={isInteractive ? handleClick : undefined}

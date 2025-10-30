@@ -164,8 +164,7 @@ describe("NewsManagementPage", () => {
     const user = userEvent.setup();
     const news = sampleNews({
       id: 99,
-      content: "【一般】カード詳細\n詳細本文"
-        + "\n追加情報を確認してください。",
+      content: "【一般】カード詳細\n詳細本文\n追加情報を確認してください。",
     });
 
     mocks.useNewsQuery.mockReturnValue({
