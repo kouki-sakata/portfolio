@@ -160,6 +160,43 @@ describe("NewsManagementPage", () => {
     expect(releaseNotes.length).toBeGreaterThan(0);
   });
 
+  it("公開中カードクリックで詳細モーダルを表示する", async () => {
+    const user = userEvent.setup();
+    const news = sampleNews({
+      id: 99,
+      content: "【一般】カード詳細\n詳細本文"
+        + "\n追加情報を確認してください。",
+    });
+
+    mocks.useNewsQuery.mockReturnValue({
+      data: { news: [news] },
+      isLoading: false,
+      isError: false,
+      refetch: vi.fn(),
+    });
+
+    render(<NewsManagementPage />);
+
+    const cardButton = screen.getByRole("button", {
+      name: `${news.title}の詳細モーダルを開く`,
+    });
+
+    await user.click(cardButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    const detailDialog = screen.getByRole("dialog");
+
+    expect(within(detailDialog).getByText("カード詳細")).toBeInTheDocument();
+    expect(
+      within(detailDialog).getByText(/詳細本文/, {
+        selector: "p:not(.sr-only)",
+      })
+    ).toBeInTheDocument();
+  });
+
   it("新規作成ボタンクリックで作成モーダルが開く", async () => {
     const user = userEvent.setup();
     mocks.useNewsQuery.mockReturnValue({
@@ -195,14 +232,14 @@ describe("NewsManagementPage", () => {
     render(<NewsManagementPage />);
 
     const editButton = getFirstByRoleOrThrow(
-      screen.getAllByRole("button", { name: /編集/ }),
+      screen.getAllByLabelText("編集"),
       "編集ボタン"
     );
 
     await user.click(editButton);
 
-    expect(screen.getByText("mode:edit")).toBeInTheDocument();
-    expect(screen.getByText("selected:55")).toBeInTheDocument();
+    expect(await screen.findByText("mode:edit")).toBeInTheDocument();
+    expect(await screen.findByText("selected:55")).toBeInTheDocument();
   });
 
   it("テーブルのアクションボタンに aria-label が付与される", () => {

@@ -218,7 +218,11 @@ export const NewsManagementPage = () => {
       ) : (
         <>
           {/* 上部セクション: 公開中のお知らせグリッド */}
-          <PublishedNewsGrid isLoading={newsQuery.isLoading} news={newsItems} />
+          <PublishedNewsGrid
+            isLoading={newsQuery.isLoading}
+            news={newsItems}
+            onSelect={handleRowClick}
+          />
 
           {/* 下部セクション: 全データテーブル */}
           <section
