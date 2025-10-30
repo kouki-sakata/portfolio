@@ -12,6 +12,7 @@ import { PublishedNewsCard } from "./PublishedNewsCard";
 type PublishedNewsGridProps = {
   news: NewsResponse[];
   isLoading?: boolean;
+  onSelect?: (news: NewsViewModel) => void;
 };
 
 const PublishedNewsGridSkeleton = () => (
@@ -33,6 +34,7 @@ const PublishedNewsGridSkeleton = () => (
 export const PublishedNewsGrid = ({
   news,
   isLoading = false,
+  onSelect,
 }: PublishedNewsGridProps) => {
   // 公開中のお知らせのみフィルタリング（最大4件）
   const viewModelNews = useMemo<NewsViewModel[]>(
@@ -85,7 +87,7 @@ export const PublishedNewsGrid = ({
       {/* 2x2グリッドレイアウト */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {publishedNews.map((item) => (
-          <PublishedNewsCard key={item.id} news={item} />
+          <PublishedNewsCard key={item.id} news={item} onSelect={onSelect} />
         ))}
       </div>
     </section>
