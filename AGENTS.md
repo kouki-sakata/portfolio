@@ -90,3 +90,4 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Progress through `/kiro:spec-init`, `/kiro:spec-requirements`, `/kiro:spec-design`, and `/kiro:spec-tasks` sequentially; do not skip approval stages.
 - Fetch current library documentation through Context7 prior to coding, then confirm assumptions inside the spec tasks.
 - Conduct internal reasoning in English but deliver repository communications in Japanese, matching the project convention.
+When a shell command fails with “failed in sandbox”, use the permission request tool (with `with_escalated_permissions`) to ask the user for approval before retrying.

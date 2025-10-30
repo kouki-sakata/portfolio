@@ -61,11 +61,12 @@ public class SecurityConfig {
     public CookieCsrfTokenRepository csrfTokenRepository() {
         CookieCsrfTokenRepository repository = CookieCsrfTokenRepository.withHttpOnlyFalse();
 
-        // 開発環境とテスト環境では Secure flag を無効化、SameSite=None 設定
+        // 開発環境とテスト環境では Secure flag を無効化、SameSite=Lax 設定
+        // HTTP環境では SameSite=None が使用できないため Lax を使用
         if (ENV_DEV.equals(environment) || ENV_TEST.equals(environment)) {
             repository.setCookieCustomizer(cookie -> cookie
                 .secure(false)
-                .sameSite("None")
+                .sameSite("Lax")
             );
         } else {
             // 本番環境: Secure=true & SameSite=None でクロスサイトリクエストに対応
