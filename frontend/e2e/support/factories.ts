@@ -64,8 +64,10 @@ export const createNewsItem = (
   const now = new Date().toISOString();
   return {
     id: 1,
+    title: "テストニュース",
     content: "これはテスト用のニュース記事です。",
     newsDate: now.slice(0, 10),
+    label: "GENERAL",
     releaseFlag: false,
     updateDate: now,
     ...overrides,
@@ -89,8 +91,10 @@ export const createNewsItemList = (
     const isPublished = i < publishedCount;
     items.push({
       id,
+      title: `テストニュース${id}`,
       content: `これはテスト用のニュース記事${id}です。`,
       newsDate: now.slice(0, 10),
+      label: "GENERAL",
       releaseFlag: isPublished,
       updateDate: now,
     });

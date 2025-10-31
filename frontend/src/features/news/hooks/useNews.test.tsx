@@ -225,10 +225,118 @@ describe("useUpdateNewsMutation", () => {
       );
     });
 
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: newsQueryKeys.published() })
+      );
+    });
+
     expect(toast).toHaveBeenCalledWith({
       title: "お知らせを更新しました",
       description: "内容が最新の情報へと保存されました。",
     });
+  });
+
+  it("更新後にキャッシュを即時に同期する", async () => {
+    const payload: NewsUpdateRequest = {
+      newsDate: "2025-10-06",
+      title: "更新後タイトル",
+      content: "内容を更新しました",
+      releaseFlag: true,
+      label: "SYSTEM",
+    };
+
+    const initial = createNews({
+      id: 5,
+      title: "旧タイトル",
+      content: "旧コンテンツ",
+      label: "GENERAL",
+      releaseFlag: false,
+      newsDate: "2025-10-06",
+      updateDate: "2025-10-06T08:00:00Z",
+    });
+    const sibling = createNews({
+      id: 6,
+      newsDate: "2025-10-07",
+      updateDate: "2025-10-07T09:00:00Z",
+      releaseFlag: true,
+    });
+    const publishedOnly = createNews({
+      id: 99,
+      newsDate: "2025-10-09",
+      updateDate: "2025-10-09T09:00:00Z",
+      releaseFlag: true,
+    });
+
+    const updated = createNews({
+      id: initial.id,
+      newsDate: initial.newsDate,
+      title: payload.title,
+      content: payload.content,
+      label: payload.label,
+      releaseFlag: payload.releaseFlag,
+      updateDate: "2025-10-30T09:00:00Z",
+    });
+
+    mswServer.use(
+      http.options(`${API_BASE_URL}/news/${initial.id}`, () =>
+        HttpResponse.json(null, { status: 200 })
+      ),
+      http.put(`${API_BASE_URL}/news/${initial.id}`, async ({ request }) => {
+        await request.json();
+        return HttpResponse.json(updated, { status: 200 });
+      })
+    );
+
+    const { wrapper, queryClient } = createWrapper();
+
+    queryClient.setQueryData(
+      newsQueryKeys.list(),
+      getListData([sibling, initial])
+    );
+    queryClient.setQueryData(
+      newsQueryKeys.published(),
+      getListData([publishedOnly])
+    );
+
+    const { result } = renderHook(() => useUpdateNewsMutation(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ id: initial.id, data: payload });
+    });
+
+    await waitFor(() => {
+      const list = queryClient.getQueryData<NewsListResponse>(
+        newsQueryKeys.list()
+      );
+      expect(list?.news.find((item) => item.id === initial.id)).toMatchObject({
+        title: payload.title,
+        label: payload.label,
+        releaseFlag: payload.releaseFlag,
+      });
+    });
+
+    await waitFor(() => {
+      const published = queryClient.getQueryData<NewsListResponse>(
+        newsQueryKeys.published()
+      );
+      expect(published?.news.map((item) => item.id)).toContain(initial.id);
+    });
+
+    const list = queryClient.getQueryData<NewsListResponse>(
+      newsQueryKeys.list()
+    );
+    const published = queryClient.getQueryData<NewsListResponse>(
+      newsQueryKeys.published()
+    );
+
+    expect(list?.news.map((item) => item.id)).toEqual([sibling.id, initial.id]);
+    expect(published?.news.map((item) => item.id)).toEqual([
+      publishedOnly.id,
+      initial.id,
+    ]);
   });
 });
 

@@ -32,9 +32,12 @@ const DEFAULT_HOME_DASHBOARD: HomeDashboardResponse = {
   news: [
     {
       id: 1,
+      title: "本日の社内ミーティング",
       content: "本日の社内ミーティングは10:00に開始します。",
       newsDate: new Date().toISOString().slice(0, 10),
+      label: "GENERAL",
       releaseFlag: true,
+      updateDate: new Date().toISOString(),
     },
   ],
 };
@@ -113,7 +116,11 @@ const createHomeDashboardResponse = (
   employee: {
     ...user,
   },
-  news: dashboard.news,
+  news: dashboard.news.map((item, index) => ({
+    ...item,
+    title: item.title ?? `ダッシュボードお知らせ${index + 1}`,
+    label: item.label ?? "GENERAL",
+  })),
 });
 
 const DEFAULT_FLAGS: FeatureFlags = {
@@ -483,8 +490,10 @@ export class AppMockServer {
       const newItem: NewsResponse = {
         id: this.nextNewsId,
         newsDate: payload.newsDate,
+        title: payload.title,
         content: payload.content,
-        releaseFlag: false,
+        label: payload.label ?? "GENERAL",
+        releaseFlag: payload.releaseFlag ?? false,
         updateDate: new Date().toISOString(),
       };
       this.nextNewsId += 1;
@@ -522,7 +531,9 @@ export class AppMockServer {
       const updatedItem: NewsResponse = {
         ...this.newsItems[index],
         newsDate: payload.newsDate,
+        title: payload.title ?? this.newsItems[index]?.title,
         content: payload.content,
+        label: payload.label ?? this.newsItems[index]?.label ?? "GENERAL",
         updateDate: new Date().toISOString(),
       };
       this.newsItems = [
