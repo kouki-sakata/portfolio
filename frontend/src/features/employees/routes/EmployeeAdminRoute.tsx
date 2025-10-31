@@ -1,6 +1,6 @@
 import { lazy } from "react";
-import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 import { AdminGuard } from "@/shared/components/guards/AdminGuard";
+import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 
 // Lazy load EmployeeListPage for code splitting
 const EmployeeListPage = lazy(() =>

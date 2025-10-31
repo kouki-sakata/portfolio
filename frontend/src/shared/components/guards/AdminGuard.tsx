@@ -40,4 +40,3 @@ export const AdminGuard = ({ children }: AdminGuardProps) => {
 
   return <>{children}</>;
 };
-
