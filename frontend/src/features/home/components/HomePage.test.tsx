@@ -84,8 +84,7 @@ describe("HomePage", () => {
     return {
       id: overrides?.id ?? 1,
       newsDate: overrides?.newsDate ?? "2025-10-01",
-      title:
-        overrides?.title ?? "システムメンテナンスのお知らせ",
+      title: overrides?.title ?? "システムメンテナンスのお知らせ",
       content:
         overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
       label: overrides?.label ?? "SYSTEM",
@@ -96,7 +95,11 @@ describe("HomePage", () => {
 
   function setupPublishedNewsResponse(
     news: NewsListResponse["news"] = [
-      createPublishedNewsItem({ id: 1, newsDate: "2025-10-01", label: "SYSTEM" }),
+      createPublishedNewsItem({
+        id: 1,
+        newsDate: "2025-10-01",
+        label: "SYSTEM",
+      }),
       createPublishedNewsItem({
         id: 2,
         newsDate: "2025-09-25",

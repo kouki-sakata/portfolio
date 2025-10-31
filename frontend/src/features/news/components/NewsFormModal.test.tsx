@@ -101,7 +101,10 @@ describe("NewsFormModal", () => {
 
     await user.type(screen.getByLabelText("お知らせ日付"), "2025-10-21");
     await user.type(screen.getByLabelText("タイトル"), "既定値テスト");
-    await user.type(screen.getByLabelText("内容"), "既定ラベル処理の確認です。");
+    await user.type(
+      screen.getByLabelText("内容"),
+      "既定ラベル処理の確認です。"
+    );
 
     await user.click(screen.getByRole("button", { name: "保存" }));
 
@@ -149,9 +152,7 @@ describe("NewsFormModal", () => {
       screen.getByDisplayValue("秋の社内イベントのお知らせ")
     ).toBeInTheDocument();
     expect(screen.getByLabelText("一般")).toBeChecked();
-    expect(
-      screen.getByRole("switch", { name: "公開設定" })
-    ).not.toBeChecked();
+    expect(screen.getByRole("switch", { name: "公開設定" })).not.toBeChecked();
 
     const contentInput = screen.getByLabelText("内容");
     await user.clear(contentInput);

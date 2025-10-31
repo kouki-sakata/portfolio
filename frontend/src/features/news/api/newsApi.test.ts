@@ -29,14 +29,19 @@ import {
 
 const mockedApi = vi.mocked(api);
 
-const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: 1,
-  newsDate: "2025-10-01",
-  content: "本日18時よりシステムメンテナンスを実施します。",
-  releaseFlag: true,
-  updateDate: "2025-10-01T09:00:00Z",
-  ...overrides,
-});
+const sampleNews = (overrides?: Partial<NewsResponse>): NewsResponse => {
+  const base: NewsResponse = {
+    id: 1,
+    newsDate: "2025-10-01",
+    title: "システムメンテナンスのお知らせ",
+    content: "本日18時よりシステムメンテナンスを実施します。",
+    label: "GENERAL",
+    releaseFlag: true,
+    updateDate: "2025-10-01T09:00:00Z",
+  };
+
+  return { ...base, ...overrides };
+};
 
 describe("newsApi", () => {
   beforeEach(() => {
@@ -76,7 +81,10 @@ describe("newsApi", () => {
   it("creates a news entry", async () => {
     const payload: NewsCreateRequest = {
       newsDate: "2025-10-02",
+      title: "臨時メンテナンス",
       content: "臨時システムメンテナンスのお知らせ",
+      releaseFlag: true,
+      label: "GENERAL",
     };
     const created = sampleNews({ id: 99, newsDate: payload.newsDate });
     mockedApi.post.mockResolvedValue(created);
@@ -90,7 +98,10 @@ describe("newsApi", () => {
   it("updates an existing news entry", async () => {
     const payload: NewsUpdateRequest = {
       newsDate: "2025-10-05",
+      title: "更新済みメンテナンス",
       content: "更新されたお知らせ内容",
+      releaseFlag: true,
+      label: "SYSTEM",
     };
     const updated = sampleNews({ id: 7, ...payload });
     mockedApi.put.mockResolvedValue(updated);

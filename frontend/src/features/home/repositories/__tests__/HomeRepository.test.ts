@@ -27,8 +27,11 @@ describe("HomeRepository", () => {
           {
             id: 10,
             newsDate: "2025/10/01",
+            title: "休暇のお知らせ",
             content: "休暇のお知らせ",
+            label: "GENERAL",
             releaseFlag: true,
+            updateDate: "2025-10-01T00:00:00Z",
           },
         ],
       }),
@@ -60,7 +63,9 @@ describe("HomeRepository", () => {
           {
             id: 10,
             newsDate: "2025/10/01",
+            title: "休暇のお知らせ",
             content: "休暇のお知らせ",
+            label: "GENERAL",
           },
         ],
       }),

@@ -35,14 +35,19 @@ const toast = vi.mocked(toastFn);
 
 const API_BASE_URL = "http://localhost/api";
 
-const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: overrides?.id ?? 1,
-  newsDate: overrides?.newsDate ?? "2025-10-01",
-  content:
-    overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
-  releaseFlag: overrides?.releaseFlag ?? true,
-  updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
-});
+const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => {
+  const base: NewsResponse = {
+    id: 1,
+    newsDate: "2025-10-01",
+    title: "システムメンテナンスのお知らせ",
+    content: "本日18時よりシステムメンテナンスを実施します。",
+    label: "GENERAL",
+    releaseFlag: true,
+    updateDate: "2025-10-01T09:00:00Z",
+  };
+
+  return { ...base, ...overrides };
+};
 
 const createQueryClient = () =>
   new QueryClient({
@@ -129,7 +134,10 @@ describe("useCreateNewsMutation", () => {
   it("作成成功時にキャッシュを無効化しトーストを表示する", async () => {
     const payload: NewsCreateRequest = {
       newsDate: "2025-10-05",
+      title: "新機能リリース",
       content: "新機能リリースのお知らせ",
+      releaseFlag: true,
+      label: "GENERAL",
     };
 
     const created = createNews({ id: 99, ...payload, releaseFlag: false });
@@ -182,7 +190,10 @@ describe("useUpdateNewsMutation", () => {
   it("更新成功時に一覧を再取得する", async () => {
     const payload: NewsUpdateRequest = {
       newsDate: "2025-10-06",
+      title: "本文更新",
       content: "本文を更新しました",
+      releaseFlag: true,
+      label: "SYSTEM",
     };
 
     const updated = createNews({ id: 5, ...payload, releaseFlag: true });

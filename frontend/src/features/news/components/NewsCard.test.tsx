@@ -29,7 +29,9 @@ vi.mock("@/features/news/hooks/useNews", () => ({
 const newsSample = (): NewsResponse => ({
   id: 42,
   newsDate: "2025-10-10",
+  title: "重要メンテナンスのお知らせ",
   content: "重要メンテナンスのお知らせ",
+  label: "SYSTEM",
   releaseFlag: true,
   updateDate: "2025-10-10T12:00:00Z",
 });

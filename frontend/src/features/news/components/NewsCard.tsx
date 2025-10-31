@@ -43,6 +43,10 @@ export const NewsCard = ({
   const toggleMutation = useTogglePublishMutation();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
+  const formattedUpdateDate = news.updateDate
+    ? new Date(news.updateDate).toLocaleString("ja-JP")
+    : "未設定";
+
   const handleEdit = () => {
     onEdit?.(news);
   };
@@ -87,7 +91,7 @@ export const NewsCard = ({
           </div>
         </div>
         <p className="text-muted-foreground text-sm">
-          最終更新: {new Date(news.updateDate).toLocaleString("ja-JP")}
+          最終更新: {formattedUpdateDate}
         </p>
       </CardHeader>
       <CardContent className="flex-1">

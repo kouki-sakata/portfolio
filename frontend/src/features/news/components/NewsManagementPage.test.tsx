@@ -213,7 +213,11 @@ describe("NewsManagementPage", () => {
 
   it("編集ボタンで編集モードのモーダルが開く", async () => {
     const user = userEvent.setup();
-    const news = sampleNews({ id: 55, title: "編集対象", content: "編集対象本文" });
+    const news = sampleNews({
+      id: 55,
+      title: "編集対象",
+      content: "編集対象本文",
+    });
     mocks.useNewsQuery.mockReturnValue({
       data: { news: [news] },
       isLoading: false,
