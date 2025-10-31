@@ -103,34 +103,37 @@ export function useNewsColumns({
         },
       },
       {
-        accessorKey: "category",
+        accessorKey: "labelDisplay",
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="カテゴリ" />
         ),
         cell: ({ row }) => {
-          const category = row.getValue("category") as string;
-          if (!category) {
-            return (
-              <span className="text-muted-foreground italic">
-                カテゴリ未設定
-              </span>
-            );
-          }
+          const { label, labelDisplay } = row.original;
 
           return (
             <Badge
               contrastLevel="aa"
-              variant={getNewsCategoryBadgeVariant(category)}
+              variant={getNewsCategoryBadgeVariant(label)}
             >
-              {category}
+              {labelDisplay}
             </Badge>
           );
         },
-        filterFn: (row, id, value) => {
+        filterFn: (row, _id, value) => {
           if (value === "all") {
             return true;
           }
-          return row.getValue(id) === value;
+          const label = row.original.label;
+          if (value === "IMPORTANT" || value === "重要") {
+            return label === "IMPORTANT";
+          }
+          if (value === "SYSTEM" || value === "システム") {
+            return label === "SYSTEM";
+          }
+          if (value === "GENERAL" || value === "一般") {
+            return label === "GENERAL";
+          }
+          return row.original.labelDisplay === value;
         },
       },
       {

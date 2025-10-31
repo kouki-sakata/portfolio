@@ -26,6 +26,8 @@ describe("HomeRoute", () => {
       news: [],
     });
 
+    queryClient.setQueryData(queryKeys.news.published(), { news: [] });
+
     render(
       <QueryClientProvider client={queryClient}>
         <HomeRoute />

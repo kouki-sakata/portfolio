@@ -98,6 +98,27 @@ public final class AppConstants {
      */
     public static final class News {
         public static final int HOME_DISPLAY_LIMIT = 4;  // ホーム画面でのお知らせ表示件数上限
+        public static final int TITLE_MAX_LENGTH = 100;
+
+        public enum Label {
+            IMPORTANT,
+            SYSTEM,
+            GENERAL;
+
+            public static boolean isValid(String value) {
+                if (value == null) {
+                    return false;
+                }
+                for (Label label : values()) {
+                    if (label.name().equals(value)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        }
+
+        public static final String DEFAULT_LABEL = Label.GENERAL.name();
 
         private News() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

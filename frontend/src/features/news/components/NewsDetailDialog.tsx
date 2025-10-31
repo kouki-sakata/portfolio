@@ -52,9 +52,9 @@ export const NewsDetailDialog = ({
               <Badge
                 className="px-3 py-1 font-medium text-xs"
                 contrastLevel="aa"
-                variant={getNewsCategoryBadgeVariant(news.category)}
+                variant={getNewsCategoryBadgeVariant(news.label)}
               >
-                {news.category}
+                {news.labelDisplay}
               </Badge>
             </div>
 

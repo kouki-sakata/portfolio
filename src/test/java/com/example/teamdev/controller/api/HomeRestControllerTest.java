@@ -74,6 +74,8 @@ class HomeRestControllerTest {
             new HomeNewsItem(
                 1,
                 "メンテナンスのお知らせ",
+                "システムメンテナンスを実施します",
+                "SYSTEM",
                 "2025/10/10",
                 true
             )
@@ -81,6 +83,8 @@ class HomeRestControllerTest {
 
         mockMvc.perform(get("/api/home/overview").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
+            .andExpect(jsonPath("$.news[0].title").value("メンテナンスのお知らせ"))
+            .andExpect(jsonPath("$.news[0].label").value("SYSTEM"))
             .andExpect(jsonPath("$.news[0].releaseFlag").value(true))
             .andExpect(jsonPath("$.news[0].released").doesNotExist());
     }

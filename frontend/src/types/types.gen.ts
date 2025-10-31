@@ -95,9 +95,17 @@ export type HomeNewsItem = {
      */
     id: number;
     /**
+     * お知らせタイトル
+     */
+    title: string;
+    /**
      * お知らせ内容
      */
     content: string;
+    /**
+     * お知らせラベル
+     */
+    label: 'IMPORTANT' | 'SYSTEM' | 'GENERAL';
     /**
      * お知らせ日付（YYYY-MM-DD形式）
      */
@@ -118,9 +126,17 @@ export type NewsResponse = {
      */
     newsDate: string;
     /**
+     * お知らせタイトル
+     */
+    title: string;
+    /**
      * お知らせ内容（最大1000文字）
      */
     content: string;
+    /**
+     * お知らせラベル
+     */
+    label: 'IMPORTANT' | 'SYSTEM' | 'GENERAL';
     /**
      * 公開フラグ（true:公開, false:非公開）
      */
@@ -128,7 +144,7 @@ export type NewsResponse = {
     /**
      * 更新日時（ISO 8601形式）
      */
-    updateDate: string;
+    updateDate?: string;
 };
 
 export type NewsListResponse = {
@@ -144,9 +160,21 @@ export type NewsCreateRequest = {
      */
     newsDate: string;
     /**
+     * お知らせタイトル（1-100文字）
+     */
+    title: string;
+    /**
      * お知らせ内容（1-1000文字）
      */
     content: string;
+    /**
+     * お知らせラベル（未指定の場合はGENERALを適用）
+     */
+    label?: 'IMPORTANT' | 'SYSTEM' | 'GENERAL';
+    /**
+     * 公開フラグ（true: 公開, false: 下書き）
+     */
+    releaseFlag: boolean;
 };
 
 export type NewsUpdateRequest = {
@@ -155,9 +183,21 @@ export type NewsUpdateRequest = {
      */
     newsDate: string;
     /**
+     * お知らせタイトル（1-100文字）
+     */
+    title: string;
+    /**
      * お知らせ内容（1-1000文字）
      */
     content: string;
+    /**
+     * お知らせラベル（未指定の場合はGENERALを適用）
+     */
+    label?: 'IMPORTANT' | 'SYSTEM' | 'GENERAL';
+    /**
+     * 公開フラグ（true: 公開, false: 下書き）
+     */
+    releaseFlag: boolean;
 };
 
 export type NewsPublishRequest = {

@@ -3,7 +3,7 @@ import type { NewsResponse } from "@/types";
 
 export type HomeNewsItem = Pick<
   NewsResponse,
-  "id" | "content" | "newsDate" | "releaseFlag"
+  "id" | "title" | "content" | "label" | "newsDate" | "releaseFlag" | "updateDate"
 >;
 
 export type HomeDashboardResponse = {

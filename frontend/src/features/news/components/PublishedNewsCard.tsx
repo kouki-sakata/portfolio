@@ -59,9 +59,9 @@ export const PublishedNewsCard = ({
           </CardTitle>
           <Badge
             contrastLevel="aa"
-            variant={getNewsCategoryBadgeVariant(news.category)}
+            variant={getNewsCategoryBadgeVariant(news.label)}
           >
-            {news.category}
+            {news.labelDisplay}
           </Badge>
         </div>
         <div className="flex items-center gap-2 text-muted-foreground text-sm">
