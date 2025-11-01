@@ -1,36 +1,18 @@
 import type { NewsResponse } from "@/types";
 
-export type NewsViewModel = NewsResponse & {
-  /** 表示用タイトル（本文先頭行から生成） */
-  title: string;
-  /** 表示用カテゴリ（先頭の【カテゴリ】ラベルから生成） */
-  category: string;
-};
-
-const CATEGORY_PATTERN = /^【(?<category>[^】]+)】/u;
-
-const deriveCategory = (
-  content: string
-): {
-  category: string;
-  normalizedContent: string;
-} => {
-  const match = content.match(CATEGORY_PATTERN);
-  if (!match?.groups) {
-    return { category: "一般", normalizedContent: content };
-  }
-
-  const { category } = match.groups;
-  const normalizedContent = content.slice(match[0].length).trimStart();
-  return {
-    category: category || "一般",
-    normalizedContent,
-  };
+const LABEL_DISPLAY_MAP: Record<NewsResponse["label"], string> = {
+  IMPORTANT: "重要",
+  SYSTEM: "システム",
+  GENERAL: "一般",
 };
 
 const LINE_BREAK_PATTERN = /\r?\n/u;
 
-const deriveTitle = (content: string): string => {
+const normalizeTitle = (title: string | undefined, content: string): string => {
+  const trimmed = title?.trim();
+  if (trimmed) {
+    return trimmed;
+  }
   const firstLine = content.split(LINE_BREAK_PATTERN)[0] ?? "";
   if (!firstLine) {
     return "お知らせ";
@@ -38,15 +20,22 @@ const deriveTitle = (content: string): string => {
   return firstLine.length > 60 ? `${firstLine.slice(0, 60)}…` : firstLine;
 };
 
+export type NewsViewModel = NewsResponse & {
+  /** 日本語表示用のラベル */
+  labelDisplay: string;
+};
+
 export const toNewsViewModel = (news: NewsResponse): NewsViewModel => {
-  const { category, normalizedContent } = deriveCategory(news.content);
-  const title = deriveTitle(normalizedContent);
+  const labelCode: NewsResponse["label"] = news.label ?? "GENERAL";
+  const labelDisplay = LABEL_DISPLAY_MAP[labelCode];
+  const resolvedTitle = normalizeTitle(news.title, news.content);
 
   return {
     ...news,
-    title,
-    category,
-  };
+    title: resolvedTitle,
+    label: labelCode,
+    labelDisplay,
+  } satisfies NewsViewModel;
 };
 
 export const toNewsViewModelList = (

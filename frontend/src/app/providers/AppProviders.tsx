@@ -60,6 +60,7 @@ import {
   type AuthEventPayload,
   authEvents,
 } from "@/shared/api/events/authEvents";
+import { AdminGuard } from "@/shared/components/guards/AdminGuard";
 import { ComingSoon } from "@/shared/components/layout/ComingSoon";
 import { NotFoundRoute } from "@/shared/components/layout/NotFoundRoute";
 
@@ -158,10 +159,12 @@ const router = createBrowserRouter([
           {
             path: "admin/logs",
             element: (
-              <ComingSoon
-                description="ログ管理機能のReact移行を進行中です。"
-                title="操作ログ"
-              />
+              <AdminGuard>
+                <ComingSoon
+                  description="ログ管理機能のReact移行を進行中です。"
+                  title="操作ログ"
+                />
+              </AdminGuard>
             ),
           },
         ],

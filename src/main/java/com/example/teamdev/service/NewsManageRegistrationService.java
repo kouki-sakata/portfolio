@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.teamdev.entity.News;
 import com.example.teamdev.form.NewsManageForm;
 import com.example.teamdev.mapper.NewsMapper;
+import com.example.teamdev.constant.AppConstants;
 
 /**
  * お知らせ管理
@@ -42,13 +43,19 @@ public class NewsManageRegistrationService {
 		// フォームから日付を取得（LocalDate型）
 		LocalDate newsDate = LocalDate.parse(newsManageForm.getNewsDate());
 
-		//idが格納されている場合は更新
+		String title = newsManageForm.getTitle();
+		String label = normalizeLabel(newsManageForm.getLabel());
+		boolean releaseFlag = Boolean.TRUE.equals(newsManageForm.getReleaseFlag());
+
         Timestamp timestamp = Timestamp.from(clock.instant());
 
         if (id != null) {
             News entity = mapper.getById(id).orElseThrow(() -> new IllegalArgumentException("News not found: " + id));
             entity.setNewsDate(newsDate);
+            entity.setTitle(title);
             entity.setContent(newsManageForm.getContent());
+            entity.setLabel(label);
+            entity.setReleaseFlag(releaseFlag);
             entity.setUpdateDate(timestamp);
             mapper.upDate(entity);
             // 履歴記録
@@ -58,8 +65,9 @@ public class NewsManageRegistrationService {
             // idが格納されていない場合は新規登録
             News entity = new News();
             entity.setNewsDate(newsDate);
+            entity.setTitle(title);
             entity.setContent(newsManageForm.getContent());
-            boolean releaseFlag = false;
+            entity.setLabel(label);
             entity.setReleaseFlag(releaseFlag);
             entity.setUpdateDate(timestamp);
             mapper.save(entity);
@@ -67,5 +75,20 @@ public class NewsManageRegistrationService {
             logHistoryService.execute(2, 3, null, null, updateEmployeeId, timestamp);
             return entity;
         }
+	}
+
+	private String normalizeLabel(String label) {
+		if (label == null) {
+			return AppConstants.News.DEFAULT_LABEL;
+		}
+		String trimmed = label.trim();
+		if (trimmed.isEmpty()) {
+			return AppConstants.News.DEFAULT_LABEL;
+		}
+		String upper = trimmed.toUpperCase();
+		if (!AppConstants.News.Label.isValid(upper)) {
+			throw new IllegalArgumentException("Unsupported label: " + label);
+		}
+		return upper;
 	}
 }

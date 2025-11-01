@@ -36,13 +36,14 @@ class HomeNewsServiceTest {
     @DisplayName("公開済みニュースをHomeNewsItemに変換して返却する")
     @Test
     void executeReturnsHomeNewsItems() {
-        News entity = new News(
-            10,
-            LocalDate.parse("2025-10-10"),
-            "システムメンテナンスを実施します",
-            true,
-            Timestamp.from(Instant.parse("2025-10-09T12:34:56Z"))
-        );
+        News entity = new News();
+        entity.setId(10);
+        entity.setNewsDate(LocalDate.parse("2025-10-10"));
+        entity.setTitle("システムメンテナンスのお知らせ");
+        entity.setContent("システムメンテナンスを実施します");
+        entity.setLabel("IMPORTANT");
+        entity.setReleaseFlag(true);
+        entity.setUpdateDate(Timestamp.from(Instant.parse("2025-10-09T12:34:56Z")));
         when(newsMapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT))
             .thenReturn(List.of(entity));
 
@@ -53,7 +54,9 @@ class HomeNewsServiceTest {
             .first()
             .satisfies(item -> {
                 assertThat(item.id()).isEqualTo(10);
+                assertThat(item.title()).isEqualTo("システムメンテナンスのお知らせ");
                 assertThat(item.content()).isEqualTo("システムメンテナンスを実施します");
+                assertThat(item.label()).isEqualTo("IMPORTANT");
                 assertThat(item.newsDate()).isEqualTo("2025/10/10");
                 assertThat(item.releaseFlag()).isTrue();
             });
@@ -64,13 +67,14 @@ class HomeNewsServiceTest {
     @DisplayName("releaseFlagがnullの場合は例外を送出する")
     @Test
     void executeThrowsWhenReleaseFlagIsNull() {
-        News entity = new News(
-            20,
-            LocalDate.parse("2025-11-01"),
-            "公開判定が不明なお知らせ",
-            null,
-            Timestamp.from(Instant.parse("2025-11-01T00:00:00Z"))
-        );
+        News entity = new News();
+        entity.setId(20);
+        entity.setNewsDate(LocalDate.parse("2025-11-01"));
+        entity.setTitle("公開判定が不明なお知らせ");
+        entity.setContent("公開判定が不明なお知らせ");
+        entity.setLabel("GENERAL");
+        entity.setReleaseFlag(null);
+        entity.setUpdateDate(Timestamp.from(Instant.parse("2025-11-01T00:00:00Z")));
         when(newsMapper.getNewsByReleaseFlagTrueWithLimit(AppConstants.News.HOME_DISPLAY_LIMIT))
             .thenReturn(List.of(entity));
 

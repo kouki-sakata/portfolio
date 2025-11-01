@@ -155,7 +155,8 @@
     {
       "includes": [
         "**/shared/lib/validation-messages.ts",
-        "**/shared/lib/validation-messages.test.ts"
+        "**/shared/lib/validation-messages.test.ts",
+        "src/features/news/lib/newsViewModel.ts"
       ],
       "linter": {
         "rules": {

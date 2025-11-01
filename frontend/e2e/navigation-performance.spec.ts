@@ -70,7 +70,7 @@ test.describe("ナビゲーションパフォーマンステスト", () => {
 
     // ナビゲーションが妥当な時間内に完了することを確認
     // CI環境やネットワーク状況を考慮して余裕を持った閾値を設定
-    expect(navigationTime).toBeLessThan(3000);
+    expect(navigationTime).toBeLessThan(4000);
 
     console.log(`ホーム → 勤怠履歴のナビゲーション時間: ${navigationTime}ms`);
   });

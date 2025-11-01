@@ -13,9 +13,12 @@ import type { IHttpClient } from "@/shared/repositories/types";
  */
 const NewsItemSchema = z.object({
   id: z.number(),
+  title: z.string(),
   newsDate: z.string(),
+  label: z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]),
   content: z.string(),
   releaseFlag: z.boolean(),
+  updateDate: z.string().optional(),
 });
 
 const EmployeeSchema = z.object({

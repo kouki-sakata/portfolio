@@ -1,5 +1,6 @@
 package com.example.teamdev.controller.api;
 
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.news.NewsBulkDeleteRequest;
 import com.example.teamdev.dto.api.news.NewsBulkOperationResponse;
 import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
@@ -96,7 +97,14 @@ public class NewsRestController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<NewsResponse> create(@Valid @RequestBody NewsCreateRequest request) {
         Integer operatorId = requireCurrentEmployeeId();
-        NewsManageForm form = new NewsManageForm("", request.newsDate(), request.content());
+        NewsManageForm form = new NewsManageForm(
+            "",
+            request.newsDate(),
+            request.title(),
+            request.content(),
+            request.label(),
+            request.releaseFlag()
+        );
         News created = registrationService.execute(form, operatorId);
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
     }
@@ -110,7 +118,14 @@ public class NewsRestController {
     ) {
         requireExistingNews(id);
         Integer operatorId = requireCurrentEmployeeId();
-        NewsManageForm form = new NewsManageForm(String.valueOf(id), request.newsDate(), request.content());
+        NewsManageForm form = new NewsManageForm(
+            String.valueOf(id),
+            request.newsDate(),
+            request.title(),
+            request.content(),
+            request.label(),
+            request.releaseFlag()
+        );
         News updated = registrationService.execute(form, operatorId);
         return ResponseEntity.ok(toResponse(updated));
     }
@@ -262,10 +277,28 @@ public class NewsRestController {
         String updateDate = news.getUpdateDate() != null
             ? OffsetDateTime.ofInstant(news.getUpdateDate().toInstant(), ZoneOffset.UTC).toString()
             : null;
+        String newsDate = news.getNewsDate() != null ? news.getNewsDate().toString() : null;
+        String content = Optional.ofNullable(news.getContent()).orElse("");
+        String fallbackTitle = Optional.ofNullable(news.getContent())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .orElse("お知らせ");
+        String title = Optional.ofNullable(news.getTitle())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .orElse(fallbackTitle);
+        String label = Optional.ofNullable(news.getLabel())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .map(String::toUpperCase)
+            .filter(AppConstants.News.Label::isValid)
+            .orElse(AppConstants.News.DEFAULT_LABEL);
         return new NewsResponse(
             news.getId(),
-            news.getNewsDate() != null ? news.getNewsDate().toString() : null,
-            news.getContent(),
+            newsDate,
+            title,
+            content,
+            label,
             releaseFlag,
             updateDate
         );

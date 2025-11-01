@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,8 @@ import {
 } from "@/features/news/hooks/useNews";
 import type { NewsResponse } from "@/types";
 
+const newsLabelSchema = z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]);
+
 const newsFormSchema = z.object({
   newsDate: z
     .string()
@@ -30,10 +32,16 @@ const newsFormSchema = z.object({
     .refine((date) => !Number.isNaN(Date.parse(date)), {
       message: "有効な日付を入力してください",
     }),
+  title: z
+    .string()
+    .min(1, { message: "タイトルは必須です" })
+    .max(100, { message: "タイトルは100文字以内で入力してください" }),
   content: z
     .string()
     .min(1, { message: "内容は必須です" })
     .max(1000, { message: "内容は1000文字以内で入力してください" }),
+  label: newsLabelSchema,
+  releaseFlag: z.boolean(),
 });
 
 type NewsFormValues = z.infer<typeof newsFormSchema>;
@@ -45,12 +53,22 @@ type NewsFormModalProps = {
   onClose: () => void;
 };
 
+const labelOptions = [
+  { value: "IMPORTANT" as const, display: "重要" },
+  { value: "SYSTEM" as const, display: "システム" },
+  { value: "GENERAL" as const, display: "一般" },
+];
+
 const defaultValues: NewsFormValues = {
   newsDate: "",
+  title: "",
   content: "",
+  label: "GENERAL",
+  releaseFlag: false,
 };
 
 const newsDateErrorId = "newsDate-error";
+const titleErrorId = "title-error";
 const contentErrorId = "content-error";
 
 export const NewsFormModal = ({
@@ -77,7 +95,10 @@ export const NewsFormModal = ({
     if (mode === "edit" && news) {
       form.reset({
         newsDate: news.newsDate,
+        title: news.title ?? "",
         content: news.content,
+        label: news.label ?? "GENERAL",
+        releaseFlag: news.releaseFlag,
       });
       return;
     }
@@ -133,9 +154,13 @@ export const NewsFormModal = ({
 
   const dialogTitle = mode === "create" ? "お知らせを作成" : "お知らせを編集";
   const newsDateError = form.formState.errors.newsDate?.message;
+  const titleError = form.formState.errors.title?.message;
   const contentError = form.formState.errors.content?.message;
   const newsDateDescribedBy = newsDateError ? newsDateErrorId : undefined;
+  const titleDescribedBy = titleError ? titleErrorId : undefined;
   const contentDescribedBy = contentError ? contentErrorId : undefined;
+  const releaseFlagLabelId = "releaseFlag-label";
+  const releaseFlagValue = form.watch("releaseFlag");
 
   return (
     <Dialog onOpenChange={(next) => !next && onClose()} open={open}>
@@ -168,6 +193,98 @@ export const NewsFormModal = ({
               </p>
             ) : null}
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="title">タイトル</Label>
+            <Input
+              aria-describedby={titleDescribedBy}
+              aria-invalid={form.formState.errors.title ? "true" : "false"}
+              id="title"
+              maxLength={100}
+              {...form.register("title")}
+            />
+            {form.formState.errors.title ? (
+              <p
+                aria-live="polite"
+                className="text-destructive text-sm"
+                id={titleErrorId}
+                role="alert"
+              >
+                {titleError}
+              </p>
+            ) : null}
+          </div>
+
+          <Controller
+            control={form.control}
+            name="label"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label>ラベル</Label>
+                <div className="flex flex-wrap gap-4">
+                  {labelOptions.map((option) => (
+                    <label
+                      className="flex items-center gap-2"
+                      key={option.value}
+                    >
+                      <input
+                        checked={field.value === option.value}
+                        className="h-4 w-4 border-neutral-300 text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        name={field.name}
+                        onBlur={field.onBlur}
+                        onChange={() => field.onChange(option.value)}
+                        type="radio"
+                        value={option.value}
+                      />
+                      <span
+                        className={
+                          field.value === option.value ? "font-medium" : ""
+                        }
+                      >
+                        {option.display}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
+          />
+
+          <Controller
+            control={form.control}
+            name="releaseFlag"
+            render={({ field }) => (
+              <div className="space-y-2">
+                <Label htmlFor="releaseFlag" id={releaseFlagLabelId}>
+                  公開設定
+                </Label>
+                <div className="flex items-center justify-between rounded-md border border-neutral-200 px-3 py-2">
+                  <div>
+                    <p className="font-medium">
+                      {releaseFlagValue ? "公開中" : "下書き"}
+                    </p>
+                    <p className="text-muted-foreground text-xs">
+                      {releaseFlagValue
+                        ? "保存すると公開一覧に即時反映されます。"
+                        : "保存しても公開に切り替わりません。"}
+                    </p>
+                  </div>
+                  <input
+                    aria-checked={field.value}
+                    aria-labelledby={releaseFlagLabelId}
+                    checked={field.value}
+                    className="h-5 w-10 cursor-pointer appearance-none rounded-full border border-neutral-300 bg-neutral-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[checked=true]:bg-primary"
+                    data-checked={field.value ? "true" : "false"}
+                    id="releaseFlag"
+                    onBlur={field.onBlur}
+                    onChange={(event) => field.onChange(event.target.checked)}
+                    role="switch"
+                    type="checkbox"
+                  />
+                </div>
+              </div>
+            )}
+          />
 
           <div className="space-y-2">
             <Label htmlFor="content">内容</Label>

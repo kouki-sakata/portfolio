@@ -5,10 +5,13 @@ import java.time.LocalDate;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import com.example.teamdev.constant.AppConstants;
 
 /**
  * お知らせ情報エンティティ
@@ -35,6 +38,16 @@ public class News {
 	private LocalDate newsDate;
 
 	/**
+	 * タイトル
+	 * <p>
+	 * データベースカラム: title (VARCHAR(100))
+	 * </p>
+	 */
+	@NotBlank
+	@Size(max = AppConstants.News.TITLE_MAX_LENGTH)
+	private String title;
+
+	/**
 	 * 内容
 	 * <p>
 	 * データベースカラム: content (TEXT型, max 1000 characters)
@@ -43,6 +56,16 @@ public class News {
 	@NotBlank
 	@Size(max = 1000)
 	private String content;
+
+	/**
+	 * ラベル
+	 * <p>
+	 * データベースカラム: label (VARCHAR)
+	 * </p>
+	 */
+	@NotBlank
+	@Pattern(regexp = "^(IMPORTANT|SYSTEM|GENERAL)$")
+	private String label;
 
 	/**
 	 * 公開フラグ

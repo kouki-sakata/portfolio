@@ -34,11 +34,22 @@ export const HomePageRefactored = () => {
       .sort((a, b) => toTime(b.newsDate) - toTime(a.newsDate))
       .slice(0, 5)
       .map(
-        ({ id, newsDate, content, releaseFlag }): HomeNewsItem => ({
+        ({
           id,
           newsDate,
+          title,
           content,
+          label,
           releaseFlag,
+          updateDate,
+        }): HomeNewsItem => ({
+          id,
+          newsDate,
+          title,
+          content,
+          label,
+          releaseFlag,
+          updateDate,
         })
       );
   }, [publishedNewsQuery.data?.news]);

@@ -84,8 +84,10 @@ describe("HomePage", () => {
     return {
       id: overrides?.id ?? 1,
       newsDate: overrides?.newsDate ?? "2025-10-01",
+      title: overrides?.title ?? "システムメンテナンスのお知らせ",
       content:
         overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
+      label: overrides?.label ?? "SYSTEM",
       releaseFlag: overrides?.releaseFlag ?? true,
       updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
     };
@@ -93,11 +95,17 @@ describe("HomePage", () => {
 
   function setupPublishedNewsResponse(
     news: NewsListResponse["news"] = [
-      createPublishedNewsItem({ id: 1, newsDate: "2025-10-01" }),
+      createPublishedNewsItem({
+        id: 1,
+        newsDate: "2025-10-01",
+        label: "SYSTEM",
+      }),
       createPublishedNewsItem({
         id: 2,
         newsDate: "2025-09-25",
+        title: "給与明細の公開が完了しました",
         content: "給与明細の公開が完了しました。",
+        label: "GENERAL",
       }),
     ]
   ) {
@@ -119,15 +127,21 @@ describe("HomePage", () => {
     news: [
       {
         id: 1,
-        content: "システムメンテナンスのお知らせ",
+        title: "システムメンテナンスのお知らせ",
+        content: "本日18時よりシステムメンテナンスを実施します。",
         newsDate: "2024-01-15",
+        label: "SYSTEM",
         releaseFlag: true,
+        updateDate: "2024-01-15T09:00:00Z",
       },
       {
         id: 2,
+        title: "新機能がリリースされました",
         content: "新機能がリリースされました",
         newsDate: "2024-01-10",
+        label: "GENERAL",
         releaseFlag: true,
+        updateDate: "2024-01-10T09:00:00Z",
       },
     ],
   };

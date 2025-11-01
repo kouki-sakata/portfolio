@@ -2,6 +2,7 @@ import { lazy } from "react";
 import { useLoaderData } from "react-router-dom";
 
 import type { SessionResponse } from "@/features/auth/types";
+import { AdminGuard } from "@/shared/components/guards/AdminGuard";
 import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 
 const NewsManagementPage = lazy(() =>
@@ -14,8 +15,10 @@ export const NewsManagementRoute = () => {
   useLoaderData<SessionResponse>();
 
   return (
-    <PageSuspenseWrapper>
-      <NewsManagementPage />
-    </PageSuspenseWrapper>
+    <AdminGuard>
+      <PageSuspenseWrapper>
+        <NewsManagementPage />
+      </PageSuspenseWrapper>
+    </AdminGuard>
   );
 };

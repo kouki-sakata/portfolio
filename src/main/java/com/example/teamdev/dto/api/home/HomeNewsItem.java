@@ -5,7 +5,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public record HomeNewsItem(
     @Schema(description = "ニュースID", example = "1") Integer id,
+    @Schema(description = "タイトル", example = "システムメンテナンスのお知らせ") String title,
     @Schema(description = "本文", example = "システムメンテナンスを実施します") String content,
+    @Schema(description = "ラベル", example = "IMPORTANT", allowableValues = {"IMPORTANT", "SYSTEM", "GENERAL"}) String label,
     @Schema(description = "日付", example = "2025-01-01") String newsDate,
     @JsonProperty("releaseFlag")
     @Schema(description = "公開フラグ", example = "true") boolean releaseFlag

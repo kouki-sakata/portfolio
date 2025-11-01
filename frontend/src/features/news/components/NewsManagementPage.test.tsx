@@ -71,27 +71,18 @@ vi.mock("./NewsFormModal", () => ({
   ),
 }));
 
-const sampleNews = (overrides?: Partial<NewsViewModel>): NewsViewModel => {
-  const { title, category, ...rest } = overrides ?? {};
-
+const sampleNews = (overrides?: Partial<NewsResponse>): NewsViewModel => {
   const base: NewsResponse = {
-    id: rest.id ?? 1,
-    newsDate: rest.newsDate ?? "2025-10-10",
-    content:
-      rest.content ??
-      "【一般】リリースノート\n本日のリリース内容をご確認ください。",
-    releaseFlag: rest.releaseFlag ?? true,
-    updateDate: rest.updateDate ?? "2025-10-10T12:00:00Z",
+    id: overrides?.id ?? 1,
+    newsDate: overrides?.newsDate ?? "2025-10-10",
+    title: overrides?.title ?? "リリースノート",
+    content: overrides?.content ?? "本日のリリース内容をご確認ください。",
+    label: overrides?.label ?? "GENERAL",
+    releaseFlag: overrides?.releaseFlag ?? true,
+    updateDate: overrides?.updateDate ?? "2025-10-10T12:00:00Z",
   };
 
-  const view = toNewsViewModel(base);
-
-  return {
-    ...view,
-    ...rest,
-    ...(title !== undefined ? { title } : {}),
-    ...(category !== undefined ? { category } : {}),
-  } satisfies NewsViewModel;
+  return toNewsViewModel(base);
 };
 
 describe("NewsManagementPage", () => {
@@ -164,7 +155,9 @@ describe("NewsManagementPage", () => {
     const user = userEvent.setup();
     const news = sampleNews({
       id: 99,
-      content: "【一般】カード詳細\n詳細本文\n追加情報を確認してください。",
+      title: "カード詳細",
+      content: "詳細本文\n追加情報を確認してください。",
+      label: "GENERAL",
     });
 
     mocks.useNewsQuery.mockReturnValue({
@@ -220,7 +213,11 @@ describe("NewsManagementPage", () => {
 
   it("編集ボタンで編集モードのモーダルが開く", async () => {
     const user = userEvent.setup();
-    const news = sampleNews({ id: 55, content: "編集対象" });
+    const news = sampleNews({
+      id: 55,
+      title: "編集対象",
+      content: "編集対象本文",
+    });
     mocks.useNewsQuery.mockReturnValue({
       data: { news: [news] },
       isLoading: false,
@@ -242,7 +239,11 @@ describe("NewsManagementPage", () => {
   });
 
   it("テーブルのアクションボタンに aria-label が付与される", () => {
-    const news = sampleNews({ id: 101, content: "アクセシビリティ検証" });
+    const news = sampleNews({
+      id: 101,
+      title: "アクセシビリティ検証",
+      content: "アクセシビリティ検証本文",
+    });
     mocks.useNewsQuery.mockReturnValue({
       data: { news: [news] },
       isLoading: false,
@@ -262,8 +263,8 @@ describe("NewsManagementPage", () => {
   it("全選択後に一括削除ボタンを表示し、確定で選択状態をリセットする", async () => {
     const user = userEvent.setup();
     const items = [
-      sampleNews({ id: 301, content: "削除対象" }),
-      sampleNews({ id: 302, content: "残し" }),
+      sampleNews({ id: 301, title: "削除対象", content: "削除対象本文" }),
+      sampleNews({ id: 302, title: "残し", content: "残し本文" }),
     ];
 
     mocks.useNewsQuery.mockReturnValue({

@@ -35,14 +35,19 @@ const toast = vi.mocked(toastFn);
 
 const API_BASE_URL = "http://localhost/api";
 
-const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => ({
-  id: overrides?.id ?? 1,
-  newsDate: overrides?.newsDate ?? "2025-10-01",
-  content:
-    overrides?.content ?? "本日18時よりシステムメンテナンスを実施します。",
-  releaseFlag: overrides?.releaseFlag ?? true,
-  updateDate: overrides?.updateDate ?? "2025-10-01T09:00:00Z",
-});
+const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => {
+  const base: NewsResponse = {
+    id: 1,
+    newsDate: "2025-10-01",
+    title: "システムメンテナンスのお知らせ",
+    content: "本日18時よりシステムメンテナンスを実施します。",
+    label: "GENERAL",
+    releaseFlag: true,
+    updateDate: "2025-10-01T09:00:00Z",
+  };
+
+  return { ...base, ...overrides };
+};
 
 const createQueryClient = () =>
   new QueryClient({
@@ -129,7 +134,10 @@ describe("useCreateNewsMutation", () => {
   it("作成成功時にキャッシュを無効化しトーストを表示する", async () => {
     const payload: NewsCreateRequest = {
       newsDate: "2025-10-05",
+      title: "新機能リリース",
       content: "新機能リリースのお知らせ",
+      releaseFlag: true,
+      label: "GENERAL",
     };
 
     const created = createNews({ id: 99, ...payload, releaseFlag: false });
@@ -182,7 +190,10 @@ describe("useUpdateNewsMutation", () => {
   it("更新成功時に一覧を再取得する", async () => {
     const payload: NewsUpdateRequest = {
       newsDate: "2025-10-06",
+      title: "本文更新",
       content: "本文を更新しました",
+      releaseFlag: true,
+      label: "SYSTEM",
     };
 
     const updated = createNews({ id: 5, ...payload, releaseFlag: true });
@@ -214,10 +225,118 @@ describe("useUpdateNewsMutation", () => {
       );
     });
 
+    await waitFor(() => {
+      expect(invalidateSpy).toHaveBeenCalledWith(
+        expect.objectContaining({ queryKey: newsQueryKeys.published() })
+      );
+    });
+
     expect(toast).toHaveBeenCalledWith({
       title: "お知らせを更新しました",
       description: "内容が最新の情報へと保存されました。",
     });
+  });
+
+  it("更新後にキャッシュを即時に同期する", async () => {
+    const payload: NewsUpdateRequest = {
+      newsDate: "2025-10-06",
+      title: "更新後タイトル",
+      content: "内容を更新しました",
+      releaseFlag: true,
+      label: "SYSTEM",
+    };
+
+    const initial = createNews({
+      id: 5,
+      title: "旧タイトル",
+      content: "旧コンテンツ",
+      label: "GENERAL",
+      releaseFlag: false,
+      newsDate: "2025-10-06",
+      updateDate: "2025-10-06T08:00:00Z",
+    });
+    const sibling = createNews({
+      id: 6,
+      newsDate: "2025-10-07",
+      updateDate: "2025-10-07T09:00:00Z",
+      releaseFlag: true,
+    });
+    const publishedOnly = createNews({
+      id: 99,
+      newsDate: "2025-10-09",
+      updateDate: "2025-10-09T09:00:00Z",
+      releaseFlag: true,
+    });
+
+    const updated = createNews({
+      id: initial.id,
+      newsDate: initial.newsDate,
+      title: payload.title,
+      content: payload.content,
+      label: payload.label,
+      releaseFlag: payload.releaseFlag,
+      updateDate: "2025-10-30T09:00:00Z",
+    });
+
+    mswServer.use(
+      http.options(`${API_BASE_URL}/news/${initial.id}`, () =>
+        HttpResponse.json(null, { status: 200 })
+      ),
+      http.put(`${API_BASE_URL}/news/${initial.id}`, async ({ request }) => {
+        await request.json();
+        return HttpResponse.json(updated, { status: 200 });
+      })
+    );
+
+    const { wrapper, queryClient } = createWrapper();
+
+    queryClient.setQueryData(
+      newsQueryKeys.list(),
+      getListData([sibling, initial])
+    );
+    queryClient.setQueryData(
+      newsQueryKeys.published(),
+      getListData([publishedOnly])
+    );
+
+    const { result } = renderHook(() => useUpdateNewsMutation(), {
+      wrapper,
+    });
+
+    await act(async () => {
+      await result.current.mutateAsync({ id: initial.id, data: payload });
+    });
+
+    await waitFor(() => {
+      const list = queryClient.getQueryData<NewsListResponse>(
+        newsQueryKeys.list()
+      );
+      expect(list?.news.find((item) => item.id === initial.id)).toMatchObject({
+        title: payload.title,
+        label: payload.label,
+        releaseFlag: payload.releaseFlag,
+      });
+    });
+
+    await waitFor(() => {
+      const published = queryClient.getQueryData<NewsListResponse>(
+        newsQueryKeys.published()
+      );
+      expect(published?.news.map((item) => item.id)).toContain(initial.id);
+    });
+
+    const list = queryClient.getQueryData<NewsListResponse>(
+      newsQueryKeys.list()
+    );
+    const published = queryClient.getQueryData<NewsListResponse>(
+      newsQueryKeys.published()
+    );
+
+    expect(list?.news.map((item) => item.id)).toEqual([sibling.id, initial.id]);
+    expect(published?.news.map((item) => item.id)).toEqual([
+      publishedOnly.id,
+      initial.id,
+    ]);
   });
 });
 

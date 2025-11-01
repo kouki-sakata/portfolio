@@ -112,20 +112,23 @@ class NewsRestControllerTest {
     @Test
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void listAllNewsReturnsAdminView() throws Exception {
-        News news = new News(
-            1,
-            LocalDate.parse("2025-10-10"),
-            "システムメンテナンスを予定しています。",
-            true,
-            Timestamp.from(Instant.parse("2025-10-09T12:34:56Z"))
-        );
+        News news = new News();
+        news.setId(1);
+        news.setNewsDate(LocalDate.parse("2025-10-10"));
+        news.setTitle("システムメンテナンス");
+        news.setContent("システムメンテナンスを予定しています。");
+        news.setLabel("IMPORTANT");
+        news.setReleaseFlag(true);
+        news.setUpdateDate(Timestamp.from(Instant.parse("2025-10-09T12:34:56Z")));
         when(newsManageService.getAllNews()).thenReturn(List.of(news));
 
         mockMvc.perform(get("/api/news"))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.news[0].id").value(1))
             .andExpect(jsonPath("$.news[0].newsDate").value("2025-10-10"))
+            .andExpect(jsonPath("$.news[0].title").value("システムメンテナンス"))
             .andExpect(jsonPath("$.news[0].content").value("システムメンテナンスを予定しています。"))
+            .andExpect(jsonPath("$.news[0].label").value("IMPORTANT"))
             .andExpect(jsonPath("$.news[0].releaseFlag").value(true))
             .andExpect(jsonPath("$.news[0].updateDate").value("2025-10-09T12:34:56Z"));
     }
@@ -133,13 +136,14 @@ class NewsRestControllerTest {
     @DisplayName("GET /api/news/published returns published news without authentication")
     @Test
     void listPublishedNewsAllowsAnonymousAccess() throws Exception {
-        News news = new News(
-            2,
-            LocalDate.parse("2025-10-11"),
-            "公開済みのお知らせです。",
-            true,
-            Timestamp.from(Instant.parse("2025-10-11T08:00:00Z"))
-        );
+        News news = new News();
+        news.setId(2);
+        news.setNewsDate(LocalDate.parse("2025-10-11"));
+        news.setTitle("公開済みのお知らせ");
+        news.setContent("公開済みのお知らせです。");
+        news.setLabel("GENERAL");
+        news.setReleaseFlag(true);
+        news.setUpdateDate(Timestamp.from(Instant.parse("2025-10-11T08:00:00Z")));
         when(newsManageService.getPublishedNews()).thenReturn(List.of(news));
 
         mockMvc.perform(get("/api/news/published"))
@@ -152,16 +156,23 @@ class NewsRestControllerTest {
     @Test
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void createNewsReturnsCreatedPayload() throws Exception {
-        News created = new News(
-            5,
-            LocalDate.parse("2025-10-15"),
-            "新しいお知らせです。",
-            false,
-            Timestamp.from(Instant.parse("2025-10-15T09:00:00Z"))
-        );
+        News created = new News();
+        created.setId(5);
+        created.setNewsDate(LocalDate.parse("2025-10-15"));
+        created.setTitle("新規公開案内");
+        created.setContent("新しいお知らせです。");
+        created.setLabel("SYSTEM");
+        created.setReleaseFlag(true);
+        created.setUpdateDate(Timestamp.from(Instant.parse("2025-10-15T09:00:00Z")));
         when(registrationService.execute(any(NewsManageForm.class), eq(ADMIN_ID))).thenReturn(created);
 
-        NewsCreateRequest request = new NewsCreateRequest("2025-10-15", "新しいお知らせです。");
+        NewsCreateRequest request = new NewsCreateRequest(
+            "2025-10-15",
+            "新規公開案内",
+            "新しいお知らせです。",
+            "SYSTEM",
+            true
+        );
 
         mockMvc.perform(post("/api/news")
                 .with(csrf())
@@ -169,10 +180,12 @@ class NewsRestControllerTest {
                 .content(objectMapper.writeValueAsString(request)))
             .andExpect(status().isCreated())
             .andExpect(jsonPath("$.id").value(5))
-            .andExpect(jsonPath("$.releaseFlag").value(false));
+            .andExpect(jsonPath("$.title").value("新規公開案内"))
+            .andExpect(jsonPath("$.label").value("SYSTEM"))
+            .andExpect(jsonPath("$.releaseFlag").value(true));
 
         verify(registrationService).execute(
-            argThat(formMatches("", "2025-10-15", "新しいお知らせです。")),
+            argThat(formMatches("", "2025-10-15", "新規公開案内", "新しいお知らせです。", "SYSTEM", true)),
             eq(ADMIN_ID)
         );
     }
@@ -182,20 +195,23 @@ class NewsRestControllerTest {
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void updateNewsReturnsUpdatedPayload() throws Exception {
         int newsId = 9;
-        News existing = new News(
-            newsId,
-            LocalDate.parse("2025-10-01"),
-            "旧コンテンツ",
-            false,
-            Timestamp.from(Instant.parse("2025-10-01T10:00:00Z"))
-        );
-        News updated = new News(
-            newsId,
-            LocalDate.parse("2025-10-20"),
-            "更新後コンテンツ",
-            false,
-            Timestamp.from(Instant.parse("2025-10-20T11:11:11Z"))
-        );
+        News existing = new News();
+        existing.setId(newsId);
+        existing.setNewsDate(LocalDate.parse("2025-10-01"));
+        existing.setTitle("旧タイトル");
+        existing.setContent("旧コンテンツ");
+        existing.setLabel("GENERAL");
+        existing.setReleaseFlag(false);
+        existing.setUpdateDate(Timestamp.from(Instant.parse("2025-10-01T10:00:00Z")));
+
+        News updated = new News();
+        updated.setId(newsId);
+        updated.setNewsDate(LocalDate.parse("2025-10-20"));
+        updated.setTitle("更新後タイトル");
+        updated.setContent("更新後コンテンツ");
+        updated.setLabel("IMPORTANT");
+        updated.setReleaseFlag(true);
+        updated.setUpdateDate(Timestamp.from(Instant.parse("2025-10-20T11:11:11Z")));
 
         when(newsManageService.getById(newsId)).thenReturn(Optional.of(existing));
         when(registrationService.execute(any(NewsManageForm.class), eq(ADMIN_ID))).thenReturn(updated);
@@ -206,16 +222,22 @@ class NewsRestControllerTest {
                 .content("""
                     {
                       "newsDate": "2025-10-20",
-                      "content": "更新後コンテンツ"
+                      "title": "更新後タイトル",
+                      "content": "更新後コンテンツ",
+                      "label": "IMPORTANT",
+                      "releaseFlag": true
                     }
                     """))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(newsId))
             .andExpect(jsonPath("$.newsDate").value("2025-10-20"))
-            .andExpect(jsonPath("$.content").value("更新後コンテンツ"));
+            .andExpect(jsonPath("$.title").value("更新後タイトル"))
+            .andExpect(jsonPath("$.content").value("更新後コンテンツ"))
+            .andExpect(jsonPath("$.label").value("IMPORTANT"))
+            .andExpect(jsonPath("$.releaseFlag").value(true));
 
         verify(registrationService).execute(
-            argThat(formMatches(String.valueOf(newsId), "2025-10-20", "更新後コンテンツ")),
+            argThat(formMatches(String.valueOf(newsId), "2025-10-20", "更新後タイトル", "更新後コンテンツ", "IMPORTANT", true)),
             eq(ADMIN_ID)
         );
     }
@@ -225,13 +247,14 @@ class NewsRestControllerTest {
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void deleteNewsReturnsNoContent() throws Exception {
         int newsId = 7;
-        News existing = new News(
-            newsId,
-            LocalDate.parse("2025-09-01"),
-            "削除対象",
-            false,
-            Timestamp.from(Instant.parse("2025-09-01T09:00:00Z"))
-        );
+        News existing = new News();
+        existing.setId(newsId);
+        existing.setNewsDate(LocalDate.parse("2025-09-01"));
+        existing.setTitle("削除対象");
+        existing.setContent("削除対象");
+        existing.setLabel("GENERAL");
+        existing.setReleaseFlag(false);
+        existing.setUpdateDate(Timestamp.from(Instant.parse("2025-09-01T09:00:00Z")));
         when(newsManageService.getById(newsId)).thenReturn(Optional.of(existing));
 
         mockMvc.perform(delete("/api/news/{id}", newsId)
@@ -249,13 +272,14 @@ class NewsRestControllerTest {
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void togglePublishFlipsReleaseFlag() throws Exception {
         int newsId = 12;
-        News existing = new News(
-            newsId,
-            LocalDate.parse("2025-08-20"),
-            "下書きのお知らせ",
-            false,
-            Timestamp.from(Instant.parse("2025-08-20T08:30:00Z"))
-        );
+        News existing = new News();
+        existing.setId(newsId);
+        existing.setNewsDate(LocalDate.parse("2025-08-20"));
+        existing.setTitle("下書きのお知らせ");
+        existing.setContent("下書きのお知らせ");
+        existing.setLabel("GENERAL");
+        existing.setReleaseFlag(false);
+        existing.setUpdateDate(Timestamp.from(Instant.parse("2025-08-20T08:30:00Z")));
         when(newsManageService.getById(newsId)).thenReturn(Optional.of(existing));
 
         mockMvc.perform(patch("/api/news/{id}/publish", newsId)
@@ -289,7 +313,10 @@ class NewsRestControllerTest {
                 .content("""
                     {
                       "newsDate": "2025-10-20",
-                      "content": "未存在更新"
+                      "title": "存在しないお知らせ",
+                      "content": "未存在更新",
+                      "label": "GENERAL",
+                      "releaseFlag": false
                     }
                     """))
             .andExpect(status().isNotFound());
@@ -440,10 +467,20 @@ class NewsRestControllerTest {
             .andExpect(result -> assertThat(result.getResponse().getStatus()).isIn(401, 302));
     }
 
-    private ArgumentMatcher<NewsManageForm> formMatches(String id, String newsDate, String content) {
+    private ArgumentMatcher<NewsManageForm> formMatches(
+        String id,
+        String newsDate,
+        String title,
+        String content,
+        String label,
+        boolean releaseFlag
+    ) {
         return form -> form != null
             && ((id == null && form.getId() == null) || (id != null && id.equals(form.getId())))
             && newsDate.equals(form.getNewsDate())
-            && content.equals(form.getContent());
+            && title.equals(form.getTitle())
+            && content.equals(form.getContent())
+            && label.equals(form.getLabel())
+            && Boolean.valueOf(releaseFlag).equals(form.getReleaseFlag());
     }
 }

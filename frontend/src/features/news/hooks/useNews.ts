@@ -34,6 +34,58 @@ export const newsQueryKeys = {
   detail: (id: number) => queryKeys.news.detail(id),
 } as const;
 
+const sortNewsByDateDesc = (items: NewsResponse[]): NewsResponse[] =>
+  [...items].sort((a, b) => {
+    if (a.newsDate === b.newsDate) {
+      const aUpdated = a.updateDate ?? "";
+      const bUpdated = b.updateDate ?? "";
+      if (aUpdated === bUpdated) {
+        return b.id - a.id;
+      }
+      return bUpdated.localeCompare(aUpdated);
+    }
+    return b.newsDate.localeCompare(a.newsDate);
+  });
+
+const upsertNewsList = (
+  current: NewsListResponse | undefined,
+  item: NewsResponse
+): NewsListResponse => {
+  if (!current) {
+    return { news: [item] } satisfies NewsListResponse;
+  }
+
+  const existingIndex = current.news.findIndex((news) => news.id === item.id);
+  if (existingIndex === -1) {
+    return { news: sortNewsByDateDesc([...current.news, item]) };
+  }
+
+  const next = current.news.map((news) => (news.id === item.id ? item : news));
+  return { news: sortNewsByDateDesc(next) };
+};
+
+const syncPublishedList = (
+  current: NewsListResponse | undefined,
+  item: NewsResponse
+): NewsListResponse | undefined => {
+  if (!current) {
+    if (!item.releaseFlag) {
+      return current;
+    }
+    return { news: [item] } satisfies NewsListResponse;
+  }
+
+  const withoutItem = current.news.filter((news) => news.id !== item.id);
+
+  if (!item.releaseFlag) {
+    return { news: withoutItem } satisfies NewsListResponse;
+  }
+
+  return {
+    news: sortNewsByDateDesc([...withoutItem, item]),
+  } satisfies NewsListResponse;
+};
+
 export const useNewsQuery = () =>
   useQuery<NewsListResponse>({
     queryKey: newsQueryKeys.list(),
@@ -70,11 +122,21 @@ export const useCreateNewsMutation = () => {
 
   return useMutation<NewsResponse, unknown, NewsCreateRequest>({
     mutationFn: (payload: NewsCreateRequest) => createNews(payload),
-    onSuccess: async () => {
+    onSuccess: async (created) => {
       toast({
         title: "お知らせを登録しました",
         description: "登録済みのお知らせは即座に一覧へ反映されます。",
       });
+
+      queryClient.setQueryData<NewsListResponse>(
+        newsQueryKeys.list(),
+        (previous) => upsertNewsList(previous, created)
+      );
+
+      queryClient.setQueryData<NewsListResponse | undefined>(
+        newsQueryKeys.published(),
+        (previous) => syncPublishedList(previous, created)
+      );
 
       await queryClient.invalidateQueries({
         queryKey: newsQueryKeys.list(),
@@ -103,11 +165,21 @@ export const useUpdateNewsMutation = () => {
 
   return useMutation<NewsResponse, unknown, UpdateNewsVariables>({
     mutationFn: ({ id, data }: UpdateNewsVariables) => updateNews(id, data),
-    onSuccess: async () => {
+    onSuccess: async (updated) => {
       toast({
         title: "お知らせを更新しました",
         description: "内容が最新の情報へと保存されました。",
       });
+
+      queryClient.setQueryData<NewsListResponse>(
+        newsQueryKeys.list(),
+        (previous) => upsertNewsList(previous, updated)
+      );
+
+      queryClient.setQueryData<NewsListResponse | undefined>(
+        newsQueryKeys.published(),
+        (previous) => syncPublishedList(previous, updated)
+      );
 
       await queryClient.invalidateQueries({
         queryKey: newsQueryKeys.list(),

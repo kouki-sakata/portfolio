@@ -1,7 +1,5 @@
 import { lazy } from "react";
-import { Navigate } from "react-router-dom";
-
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { AdminGuard } from "@/shared/components/guards/AdminGuard";
 import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 
 // Lazy load EmployeeListPage for code splitting
@@ -11,16 +9,10 @@ const EmployeeListPage = lazy(() =>
   }))
 );
 
-export const EmployeeAdminRoute = () => {
-  const { user } = useAuth();
-
-  if (!user?.admin) {
-    return <Navigate replace to="/" />;
-  }
-
-  return (
+export const EmployeeAdminRoute = () => (
+  <AdminGuard>
     <PageSuspenseWrapper>
       <EmployeeListPage />
     </PageSuspenseWrapper>
-  );
-};
+  </AdminGuard>
+);

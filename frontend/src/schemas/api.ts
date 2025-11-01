@@ -54,7 +54,9 @@ const EmployeeDeleteRequest = z
 const HomeNewsItem = z
   .object({
     id: z.number().int(),
+    title: z.string().max(100),
     content: z.string(),
+    label: z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]),
     newsDate: z.string(),
     releaseFlag: z.boolean(),
   })
@@ -104,9 +106,11 @@ const NewsResponse = z
   .object({
     id: z.number().int(),
     newsDate: z.string(),
+    title: z.string().max(100),
     content: z.string().max(1000),
+    label: z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]),
     releaseFlag: z.boolean(),
-    updateDate: z.string().datetime({ offset: true }),
+    updateDate: z.string().datetime({ offset: true }).optional(),
   })
   .strict()
   .passthrough();
@@ -115,11 +119,23 @@ const NewsListResponse = z
   .strict()
   .passthrough();
 const NewsCreateRequest = z
-  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
+  .object({
+    newsDate: z.string(),
+    title: z.string().min(1).max(100),
+    content: z.string().min(1).max(1000),
+    label: z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]).optional(),
+    releaseFlag: z.boolean(),
+  })
   .strict()
   .passthrough();
 const NewsUpdateRequest = z
-  .object({ newsDate: z.string(), content: z.string().min(1).max(1000) })
+  .object({
+    newsDate: z.string(),
+    title: z.string().min(1).max(100),
+    content: z.string().min(1).max(1000),
+    label: z.enum(["IMPORTANT", "SYSTEM", "GENERAL"]).optional(),
+    releaseFlag: z.boolean(),
+  })
   .strict()
   .passthrough();
 const NewsPublishRequest = z

@@ -1,12 +1,15 @@
 export type NewsCategoryBadgeVariant = "destructive" | "default" | "secondary";
 
+const IMPORTANT_VALUES = new Set(["IMPORTANT", "重要"]);
+const SYSTEM_VALUES = new Set(["SYSTEM", "システム"]);
+
 export const getNewsCategoryBadgeVariant = (
-  category: string
+  label: string
 ): NewsCategoryBadgeVariant => {
-  if (category === "重要") {
+  if (IMPORTANT_VALUES.has(label)) {
     return "destructive";
   }
-  if (category === "システム") {
+  if (SYSTEM_VALUES.has(label)) {
     return "default";
   }
   return "secondary";

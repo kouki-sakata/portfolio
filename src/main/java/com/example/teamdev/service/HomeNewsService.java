@@ -43,7 +43,9 @@ public class HomeNewsService {
 
         return new HomeNewsItem(
             news.getId(),
+            news.getTitle(),
             news.getContent(),
+            news.getLabel(),
             formattedDate,
             releaseFlag
         );
