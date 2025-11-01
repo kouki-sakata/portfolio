@@ -1,5 +1,6 @@
 package com.example.teamdev.controller.api;
 
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.news.NewsBulkDeleteRequest;
 import com.example.teamdev.dto.api.news.NewsBulkOperationResponse;
 import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
@@ -276,12 +277,28 @@ public class NewsRestController {
         String updateDate = news.getUpdateDate() != null
             ? OffsetDateTime.ofInstant(news.getUpdateDate().toInstant(), ZoneOffset.UTC).toString()
             : null;
+        String newsDate = news.getNewsDate() != null ? news.getNewsDate().toString() : null;
+        String content = Optional.ofNullable(news.getContent()).orElse("");
+        String fallbackTitle = Optional.ofNullable(news.getContent())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .orElse("お知らせ");
+        String title = Optional.ofNullable(news.getTitle())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .orElse(fallbackTitle);
+        String label = Optional.ofNullable(news.getLabel())
+            .map(String::trim)
+            .filter(value -> !value.isEmpty())
+            .map(String::toUpperCase)
+            .filter(AppConstants.News.Label::isValid)
+            .orElse(AppConstants.News.DEFAULT_LABEL);
         return new NewsResponse(
             news.getId(),
-            news.getNewsDate() != null ? news.getNewsDate().toString() : null,
-            news.getTitle(),
-            news.getContent(),
-            news.getLabel(),
+            newsDate,
+            title,
+            content,
+            label,
             releaseFlag,
             updateDate
         );

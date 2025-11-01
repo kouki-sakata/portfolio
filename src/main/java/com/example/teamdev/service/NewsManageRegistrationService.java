@@ -60,7 +60,7 @@ public class NewsManageRegistrationService {
             mapper.upDate(entity);
             // 履歴記録
             logHistoryService.execute(2, 3, null, null, updateEmployeeId, timestamp);
-            return entity;
+            return mapper.getById(id).orElseThrow(() -> new IllegalStateException("News not found after update: " + id));
         } else {
             // idが格納されていない場合は新規登録
             News entity = new News();
@@ -71,17 +71,25 @@ public class NewsManageRegistrationService {
             entity.setReleaseFlag(releaseFlag);
             entity.setUpdateDate(timestamp);
             mapper.save(entity);
+            Integer generatedId = entity.getId();
+            if (generatedId == null) {
+                throw new IllegalStateException("Generated ID was not returned for the saved news.");
+            }
             // 履歴記録
             logHistoryService.execute(2, 3, null, null, updateEmployeeId, timestamp);
-            return entity;
+            return mapper.getById(generatedId).orElseThrow(() -> new IllegalStateException("News not found after save: " + generatedId));
         }
 	}
 
 	private String normalizeLabel(String label) {
-		if (label == null || label.isBlank()) {
+		if (label == null) {
 			return AppConstants.News.DEFAULT_LABEL;
 		}
-		String upper = label.toUpperCase();
+		String trimmed = label.trim();
+		if (trimmed.isEmpty()) {
+			return AppConstants.News.DEFAULT_LABEL;
+		}
+		String upper = trimmed.toUpperCase();
 		if (!AppConstants.News.Label.isValid(upper)) {
 			throw new IllegalArgumentException("Unsupported label: " + label);
 		}
