@@ -152,7 +152,7 @@ describe("NewsManagementPage", () => {
   });
 
   it("公開中カードクリックで詳細モーダルを表示する", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const news = sampleNews({
       id: 99,
       title: "カード詳細",
@@ -190,7 +190,7 @@ describe("NewsManagementPage", () => {
   });
 
   it("新規作成ボタンクリックで作成モーダルが開く", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     mocks.useNewsQuery.mockReturnValue({
       data: { news: [] },
       isLoading: false,
@@ -212,7 +212,7 @@ describe("NewsManagementPage", () => {
   });
 
   it("編集ボタンで編集モードのモーダルが開く", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const news = sampleNews({
       id: 55,
       title: "編集対象",
@@ -261,7 +261,7 @@ describe("NewsManagementPage", () => {
   });
 
   it("全選択後に一括削除ボタンを表示し、確定で選択状態をリセットする", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const items = [
       sampleNews({ id: 301, title: "削除対象", content: "削除対象本文" }),
       sampleNews({ id: 302, title: "残し", content: "残し本文" }),
@@ -323,7 +323,7 @@ describe("NewsManagementPage", () => {
   });
 
   it("選択状態で一括公開と一括非公開ボタンを表示しミューテーションを呼び出す", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ pointerEventsCheck: 0 });
     const items = [
       sampleNews({ id: 201, content: "成功", releaseFlag: false }),
       sampleNews({ id: 202, content: "失敗", releaseFlag: true }),
