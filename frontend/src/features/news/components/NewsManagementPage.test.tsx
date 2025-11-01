@@ -71,6 +71,54 @@ vi.mock("./NewsFormModal", () => ({
   ),
 }));
 
+vi.mock("./DeleteConfirmDialog", () => ({
+  // biome-ignore lint/style/useNamingConvention: vi.mockでは元コンポーネント名を維持する
+  DeleteConfirmDialog: ({
+    type,
+    news,
+    newsIds = [],
+    open,
+    onConfirm,
+    onOpenChange,
+  }: {
+    type: "single" | "bulk";
+    news?: NewsViewModel;
+    newsIds?: number[];
+    open: boolean;
+    onConfirm?: () => void;
+    onOpenChange: (open: boolean) => void;
+  }) => {
+    if (!open) {
+      return null;
+    }
+
+    const count = type === "single" ? 1 : newsIds.length;
+    const message =
+      type === "single"
+        ? "このお知らせを削除しますか？"
+        : `選択した${count}件のお知らせを削除しますか？`;
+
+    const handleConfirm = () => {
+      if (type === "bulk") {
+        void mocks.bulkDeleteMutate({ ids: newsIds });
+      } else if (type === "single" && news) {
+        void mocks.deleteMutate(news.id);
+      }
+      onConfirm?.();
+      onOpenChange(false);
+    };
+
+    return (
+      <div role="dialog">
+        <p>{message}</p>
+        <button onClick={handleConfirm} type="button">
+          削除する
+        </button>
+      </div>
+    );
+  },
+}));
+
 const sampleNews = (overrides?: Partial<NewsResponse>): NewsViewModel => {
   const base: NewsResponse = {
     id: overrides?.id ?? 1,

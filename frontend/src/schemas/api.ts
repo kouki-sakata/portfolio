@@ -102,17 +102,7 @@ const StampHistoryResponse = z
   })
   .strict()
   .passthrough();
-const StampUpdateRequest = z
-  .object({
-    inTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "inTime must match HH:mm format").optional(),
-    outTime: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, "outTime must match HH:mm format").optional(),
-  })
-  .refine(
-    (data) => data.inTime || data.outTime,
-    { message: "Either inTime or outTime must be provided" }
-  )
-  .strict()
-  .passthrough();
+const StampUpdateRequest = z.union([z.unknown(), z.unknown()]);
 const NewsResponse = z
   .object({
     id: z.number().int(),

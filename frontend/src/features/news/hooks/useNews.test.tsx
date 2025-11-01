@@ -1,13 +1,11 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
-import { HttpResponse, http } from "msw";
 import type { ReactNode } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import * as newsApi from "@/features/news/api/newsApi";
 import { toast as toastFn } from "@/hooks/use-toast";
-import { mswServer } from "@/test/msw/server";
 import type {
   NewsCreateRequest,
   NewsListResponse,
@@ -33,7 +31,9 @@ vi.mock("@/hooks/use-toast", () => ({
 
 const toast = vi.mocked(toastFn);
 
-const API_BASE_URL = "http://localhost/api";
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const createNews = (overrides?: Partial<NewsResponse>): NewsResponse => {
   const base: NewsResponse = {
@@ -81,11 +81,7 @@ describe("useNewsQuery", () => {
       createNews({ id: 10, releaseFlag: true, newsDate: "2025-10-02" }),
     ]);
 
-    mswServer.use(
-      http.get(`${API_BASE_URL}/news`, () =>
-        HttpResponse.json(response, { status: 200 })
-      )
-    );
+    vi.spyOn(newsApi, "fetchNewsList").mockResolvedValue(response);
 
     const { wrapper } = createWrapper();
 
@@ -105,11 +101,7 @@ describe("useNewsQuery", () => {
       createNews({ id: 20, releaseFlag: true, newsDate: "2025-10-03" }),
     ]);
 
-    mswServer.use(
-      http.get(`${API_BASE_URL}/news/published`, () =>
-        HttpResponse.json(response, { status: 200 })
-      )
-    );
+    vi.spyOn(newsApi, "fetchPublishedNews").mockResolvedValue(response);
 
     const { wrapper } = createWrapper();
 
@@ -142,15 +134,7 @@ describe("useCreateNewsMutation", () => {
 
     const created = createNews({ id: 99, ...payload, releaseFlag: false });
 
-    mswServer.use(
-      http.options(`${API_BASE_URL}/news`, () =>
-        HttpResponse.json(null, { status: 200 })
-      ),
-      http.post(`${API_BASE_URL}/news`, async ({ request }) => {
-        await request.json();
-        return HttpResponse.json(created, { status: 201 });
-      })
-    );
+    vi.spyOn(newsApi, "createNews").mockResolvedValue(created);
 
     const { wrapper, queryClient } = createWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -198,15 +182,7 @@ describe("useUpdateNewsMutation", () => {
 
     const updated = createNews({ id: 5, ...payload, releaseFlag: true });
 
-    mswServer.use(
-      http.options(`${API_BASE_URL}/news/5`, () =>
-        HttpResponse.json(null, { status: 200 })
-      ),
-      http.put(`${API_BASE_URL}/news/5`, async ({ request }) => {
-        await request.json();
-        return HttpResponse.json(updated, { status: 200 });
-      })
-    );
+    vi.spyOn(newsApi, "updateNews").mockResolvedValue(updated);
 
     const { wrapper, queryClient } = createWrapper();
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
@@ -278,15 +254,7 @@ describe("useUpdateNewsMutation", () => {
       updateDate: "2025-10-30T09:00:00Z",
     });
 
-    mswServer.use(
-      http.options(`${API_BASE_URL}/news/${initial.id}`, () =>
-        HttpResponse.json(null, { status: 200 })
-      ),
-      http.put(`${API_BASE_URL}/news/${initial.id}`, async ({ request }) => {
-        await request.json();
-        return HttpResponse.json(updated, { status: 200 });
-      })
-    );
+    vi.spyOn(newsApi, "updateNews").mockResolvedValue(updated);
 
     const { wrapper, queryClient } = createWrapper();
 
@@ -351,14 +319,7 @@ describe("useDeleteNewsMutation", () => {
       createNews({ id: 31, releaseFlag: false }),
     ]);
 
-    mswServer.use(
-      http.options(`${API_BASE_URL}/news/30`, () =>
-        HttpResponse.json(null, { status: 200 })
-      ),
-      http.delete(`${API_BASE_URL}/news/30`, () =>
-        HttpResponse.json({ message: "failed" }, { status: 500 })
-      )
-    );
+    vi.spyOn(newsApi, "deleteNews").mockRejectedValue(new Error("failed"));
 
     const { wrapper, queryClient } = createWrapper();
     queryClient.setQueryData(newsQueryKeys.list(), initialList);
@@ -648,11 +609,7 @@ describe("ニュース関連フックのキャッシュ設定", () => {
   it("ニュース一覧クエリが設計されたstaleTime/gcTimeを使用する", async () => {
     const response = getListData([createNews({ id: 50 })]);
 
-    mswServer.use(
-      http.get(`${API_BASE_URL}/news`, () =>
-        HttpResponse.json(response, { status: 200 })
-      )
-    );
+    vi.spyOn(newsApi, "fetchNewsList").mockResolvedValue(response);
 
     const { wrapper, queryClient } = createWrapper();
 
@@ -683,11 +640,7 @@ describe("ニュース関連フックのキャッシュ設定", () => {
   it("公開ニュースクエリがカスタムrefetchIntervalを適用できる", async () => {
     const response = getListData([createNews({ id: 60 })]);
 
-    mswServer.use(
-      http.get(`${API_BASE_URL}/news/published`, () =>
-        HttpResponse.json(response, { status: 200 })
-      )
-    );
+    vi.spyOn(newsApi, "fetchPublishedNews").mockResolvedValue(response);
 
     const { wrapper, queryClient } = createWrapper();
 
