@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses } from './types.gen';
+import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, DeleteStampData, DeleteStampErrors, DeleteStampResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses, UpdateStampData, UpdateStampErrors, UpdateStampResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -187,6 +187,46 @@ export const getStampHistory = <ThrowOnError extends boolean = false>(options?: 
         ],
         url: '/api/stamp-history',
         ...options
+    });
+};
+
+/**
+ * 打刻履歴削除
+ * 指定した打刻IDを削除
+ */
+export const deleteStamp = <ThrowOnError extends boolean = false>(options: Options<DeleteStampData, ThrowOnError>) => {
+    return (options.client ?? client).delete<DeleteStampResponses, DeleteStampErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/stamps/{id}',
+        ...options
+    });
+};
+
+/**
+ * 打刻履歴更新
+ * 指定した打刻IDの出勤/退勤時刻を更新
+ */
+export const updateStamp = <ThrowOnError extends boolean = false>(options: Options<UpdateStampData, ThrowOnError>) => {
+    return (options.client ?? client).put<UpdateStampResponses, UpdateStampErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/stamps/{id}',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
     });
 };
 

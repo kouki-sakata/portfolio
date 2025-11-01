@@ -1,8 +1,10 @@
 package com.example.teamdev.service;
 
 import com.example.teamdev.entity.StampDelete;
+import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.form.StampDeleteForm;
 import com.example.teamdev.mapper.StampDeleteMapper;
+import com.example.teamdev.mapper.StampHistoryMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +15,18 @@ import java.time.Clock;
 public class StampDeleteService {
 
     private final StampDeleteMapper stampDeleteMapper;
+    private final StampHistoryMapper stampHistoryMapper;
     private final LogHistoryRegistrationService logHistoryService;
     private final Clock clock;
 
     public StampDeleteService(
         StampDeleteMapper stampDeleteMapper,
+        StampHistoryMapper stampHistoryMapper,
         LogHistoryRegistrationService logHistoryService,
         Clock clock
     ) {
         this.stampDeleteMapper = stampDeleteMapper;
+        this.stampHistoryMapper = stampHistoryMapper;
         this.logHistoryService = logHistoryService;
         this.clock = clock;
     }
@@ -74,4 +79,32 @@ public class StampDeleteService {
         }
     }
 
+    /**
+     * 打刻記録をID単位で削除します。
+     *
+     * @param stampId          削除対象の打刻ID
+     * @param updateEmployeeId 操作を行う従業員ID
+     * @return 削除に成功した場合true
+     */
+    @Transactional
+    public boolean deleteStampById(Integer stampId, Integer updateEmployeeId) {
+        if (stampId == null) {
+            throw new IllegalArgumentException("stampId must not be null");
+        }
+
+        return stampHistoryMapper.getById(stampId)
+            .map(history -> performSingleDelete(history, updateEmployeeId))
+            .orElse(false);
+    }
+
+    private boolean performSingleDelete(StampHistory history, Integer updateEmployeeId) {
+        int deleted = stampHistoryMapper.deleteById(history.getId());
+        if (deleted == 0) {
+            return false;
+        }
+
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(5, 4, null, history.getEmployeeId(), updateEmployeeId, timestamp);
+        return true;
+    }
 }

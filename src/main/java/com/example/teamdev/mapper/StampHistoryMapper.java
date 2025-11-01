@@ -2,6 +2,7 @@ package com.example.teamdev.mapper;
 
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampHistoryDisplay;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -32,6 +33,9 @@ public interface StampHistoryMapper {
     //指定のidで1レコードを取得する
     @Select("SELECT * FROM stamp_history WHERE id = #{id}")
     Optional<StampHistory> getById(@Param("id") Integer id);
+
+    @Delete("DELETE FROM stamp_history WHERE id = #{id}")
+    int deleteById(@Param("id") Integer id);
 
     //打刻記録テーブルにレコードを挿入する
     void save(StampHistory entity);

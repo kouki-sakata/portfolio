@@ -102,6 +102,7 @@ const StampHistoryResponse = z
   })
   .strict()
   .passthrough();
+const StampUpdateRequest = z.union([z.unknown(), z.unknown()]);
 const NewsResponse = z
   .object({
     id: z.number().int(),
@@ -158,6 +159,7 @@ export const schemas = {
   StampResponse,
   StampHistoryEntryResponse,
   StampHistoryResponse,
+  StampUpdateRequest,
   NewsResponse,
   NewsListResponse,
   NewsCreateRequest,
@@ -504,6 +506,80 @@ const endpoints = makeApi([
       {
         status: 401,
         description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "put",
+    path: "/api/stamps/:id",
+    alias: "updateStamp",
+    description: `指定した打刻IDの出勤/退勤時刻を更新`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z.union([z.unknown(), z.unknown()]),
+      },
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 400,
+        description: `入力値が不正です`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 401,
+        description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 404,
+        description: `対象の打刻が見つかりません`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "delete",
+    path: "/api/stamps/:id",
+    alias: "deleteStamp",
+    description: `指定した打刻IDを削除`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "id",
+        type: "Path",
+        schema: z.number().int(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 401,
+        description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 403,
+        description: `権限がありません`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 404,
+        description: `対象の打刻が見つかりません`,
         schema: ErrorResponse,
       },
     ],
