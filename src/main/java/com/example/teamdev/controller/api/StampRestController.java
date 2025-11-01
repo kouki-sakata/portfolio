@@ -109,14 +109,11 @@ public class StampRestController {
         payload.put("month", target.getMonth());
         payload.put("day", target.getDay());
 
-        String effectiveInTime = resolveTimeValue(request.inTime(), target.getInTime());
-        String effectiveOutTime = resolveTimeValue(request.outTime(), target.getOutTime());
-
-        if (effectiveInTime != null) {
-            payload.put("inTime", effectiveInTime);
+        if (request.inTime() != null && !request.inTime().isBlank()) {
+            payload.put("inTime", request.inTime());
         }
-        if (effectiveOutTime != null) {
-            payload.put("outTime", effectiveOutTime);
+        if (request.outTime() != null && !request.outTime().isBlank()) {
+            payload.put("outTime", request.outTime());
         }
 
         return payload;
