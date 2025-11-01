@@ -107,11 +107,12 @@ describe("stampApi", () => {
     ]);
 
     expect(mockedApi.put).toHaveBeenCalledTimes(2);
-    expect(mockedApi.put).toHaveBeenNthCalledWith(1, "/stamp/1", {
-      data: { inTime: "09:00", outTime: "18:00" },
+    expect(mockedApi.put).toHaveBeenNthCalledWith(1, "/stamps/1", {
+      inTime: "09:00",
+      outTime: "18:00",
     });
-    expect(mockedApi.put).toHaveBeenNthCalledWith(2, "/stamp/2", {
-      data: { inTime: "10:00" },
+    expect(mockedApi.put).toHaveBeenNthCalledWith(2, "/stamps/2", {
+      inTime: "10:00",
     });
   });
 
@@ -121,8 +122,8 @@ describe("stampApi", () => {
     await deleteStampsBatch([3, 4, 5]);
 
     expect(mockedApi.delete).toHaveBeenCalledTimes(3);
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(1, "/stamp/3");
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(2, "/stamp/4");
-    expect(mockedApi.delete).toHaveBeenNthCalledWith(3, "/stamp/5");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(1, "/stamps/3");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(2, "/stamps/4");
+    expect(mockedApi.delete).toHaveBeenNthCalledWith(3, "/stamps/5");
   });
 });

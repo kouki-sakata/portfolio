@@ -229,6 +229,17 @@ export type StampResponse = {
     message: string;
 };
 
+export type StampUpdateRequest = unknown & {
+    /**
+     * 更新後の出勤時刻（HH:mm）
+     */
+    inTime?: string;
+    /**
+     * 更新後の退勤時刻（HH:mm）
+     */
+    outTime?: string;
+};
+
 export type StampHistoryResponse = {
     /**
      * 対象年
@@ -546,6 +557,80 @@ export type GetStampHistoryResponses = {
 };
 
 export type GetStampHistoryResponse = GetStampHistoryResponses[keyof GetStampHistoryResponses];
+
+export type DeleteStampData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/stamps/{id}';
+};
+
+export type DeleteStampErrors = {
+    /**
+     * 認証が必要です
+     */
+    401: ErrorResponse;
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+    /**
+     * 対象の打刻が見つかりません
+     */
+    404: ErrorResponse;
+};
+
+export type DeleteStampError = DeleteStampErrors[keyof DeleteStampErrors];
+
+export type DeleteStampResponses = {
+    /**
+     * 削除成功
+     */
+    204: void;
+};
+
+export type DeleteStampResponse = DeleteStampResponses[keyof DeleteStampResponses];
+
+export type UpdateStampData = {
+    body: StampUpdateRequest;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/api/stamps/{id}';
+};
+
+export type UpdateStampErrors = {
+    /**
+     * 入力値が不正です
+     */
+    400: ErrorResponse;
+    /**
+     * 認証が必要です
+     */
+    401: ErrorResponse;
+    /**
+     * 権限がありません
+     */
+    403: ErrorResponse;
+    /**
+     * 対象の打刻が見つかりません
+     */
+    404: ErrorResponse;
+};
+
+export type UpdateStampError = UpdateStampErrors[keyof UpdateStampErrors];
+
+export type UpdateStampResponses = {
+    /**
+     * 更新成功
+     */
+    204: void;
+};
+
+export type UpdateStampResponse = UpdateStampResponses[keyof UpdateStampResponses];
 
 export type GetAllNewsData = {
     body?: never;

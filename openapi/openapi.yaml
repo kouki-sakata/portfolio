@@ -273,6 +273,89 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/stamps/{id}:
+    put:
+      tags:
+        - Stamp
+      summary: 打刻履歴更新
+      description: 指定した打刻IDの出勤/退勤時刻を更新
+      operationId: updateStamp
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampUpdateRequest'
+      responses:
+        '204':
+          description: 更新成功
+        '400':
+          description: 入力値が不正です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 対象の打刻が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - Stamp
+      summary: 打刻履歴削除
+      description: 指定した打刻IDを削除
+      operationId: deleteStamp
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 削除成功
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: 権限がありません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 対象の打刻が見つかりません
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/news:
     get:
       tags:
@@ -768,6 +851,24 @@ components:
         message:
           type: string
           description: 打刻結果メッセージ
+    StampUpdateRequest:
+      type: object
+      properties:
+        inTime:
+          type: string
+          pattern: '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+          description: 更新後の出勤時刻（HH:mm）
+          example: '09:00'
+        outTime:
+          type: string
+          pattern: '^([0-1][0-9]|2[0-3]):[0-5][0-9]$'
+          description: 更新後の退勤時刻（HH:mm）
+          example: '18:00'
+      anyOf:
+        - required:
+            - inTime
+        - required:
+            - outTime
     StampHistoryResponse:
       type: object
       required:
