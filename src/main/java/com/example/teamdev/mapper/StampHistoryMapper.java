@@ -2,6 +2,7 @@ package com.example.teamdev.mapper;
 
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampHistoryDisplay;
+import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -16,7 +17,10 @@ import java.util.Optional;
 public interface StampHistoryMapper {
     //打刻記録テーブルから年・月・日・従業員IDが一致するレコードを取得する
     //※重複するレコードは存在しない前提のため1件取得
-    @Select("SELECT * FROM stamp_history WHERE year = #{year} AND month = #{month} and day = #{day} and employee_id = #{employee_id} LIMIT 1")
+    @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
+            + "out_time AS outTime, update_employee_id AS updateEmployeeId, update_date AS updateDate "
+            + "FROM stamp_history WHERE year = #{year} AND month = #{month} AND day = #{day} "
+            + "AND employee_id = #{employee_id} LIMIT 1")
     StampHistory getStampHistoryByYearMonthDayEmployeeId(String year,
             String month, String day, int employee_id);
 
@@ -30,8 +34,13 @@ public interface StampHistoryMapper {
     );
 
     //指定のidで1レコードを取得する
-    @Select("SELECT * FROM stamp_history WHERE id = #{id}")
+    @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
+            + "out_time AS outTime, update_employee_id AS updateEmployeeId, update_date AS updateDate "
+            + "FROM stamp_history WHERE id = #{id}")
     Optional<StampHistory> getById(@Param("id") Integer id);
+
+    @Delete("DELETE FROM stamp_history WHERE id = #{id}")
+    int deleteById(@Param("id") Integer id);
 
     //打刻記録テーブルにレコードを挿入する
     void save(StampHistory entity);

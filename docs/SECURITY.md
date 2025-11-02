@@ -41,7 +41,8 @@ Spring Boot (Java 21) / React (TypeScript) / PostgreSQL / Docker / CI/CD
 | `/api/auth/session` | なし | セッション確認 |
 | `/api/auth/logout` | なし | ログアウト |
 | `/api/home/**` | 認証済み | ホーム画面 |
-| `/api/stamps/**` | 認証済み | 打刻履歴 |
+| `/api/stamp-history` | 認証済み | 打刻履歴取得 |
+| `/api/stamps/**` | 認証済み | 打刻履歴更新・削除 |
 | `/api/admin/**` | `ROLE_ADMIN` | 管理機能 |
 | `/api/employees/**` | `ROLE_ADMIN` | 従業員管理 |
 

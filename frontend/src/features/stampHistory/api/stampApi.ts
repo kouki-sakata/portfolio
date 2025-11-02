@@ -91,7 +91,7 @@ export const updateStamp = async (
 ): Promise<void> => {
   const { id, inTime, outTime } = payload;
 
-  const data: { inTime?: string; outTime?: string } = {};
+  const data: Partial<Record<"inTime" | "outTime", string>> = {};
   if (inTime && inTime.length > 0) {
     data.inTime = inTime;
   }
@@ -100,7 +100,7 @@ export const updateStamp = async (
   }
 
   try {
-    await api.put<void>(`/stamp/${id}`, { data });
+    await api.put<void>(`/stamps/${id}`, data);
   } catch (error) {
     return handleApiError(error);
   }
@@ -110,7 +110,7 @@ export const deleteStamp = async (
   payload: DeleteStampRequest
 ): Promise<void> => {
   try {
-    await api.delete<void>(`/stamp/${payload.id}`);
+    await api.delete<void>(`/stamps/${payload.id}`);
   } catch (error) {
     return handleApiError(error);
   }
