@@ -7,7 +7,7 @@ import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 const Checkbox = React.forwardRef<
   React.ElementRef<typeof CheckboxPrimitive.Root>,
   React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
->(function Checkbox({ className, ...props }, ref) {
+>(function CheckboxComponent({ className, ...props }, ref) {
   return (
     <CheckboxPrimitive.Root
       className={cn(

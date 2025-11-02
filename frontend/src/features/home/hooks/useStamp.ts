@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import {
   createHomeRepository,
@@ -112,17 +112,35 @@ const isTimeoutIssue = (errorInfo: ErrorInfo, error: Error): boolean =>
 const isServerIssue = (errorInfo: ErrorInfo): boolean =>
   errorInfo.code === "SERVER_ERROR" || (errorInfo.status ?? 0) >= 500;
 
+export type StampStatusResult = "success" | "error" | "conflict";
+
+export type StampStatus = {
+  message: string;
+  submittedAt: string;
+  type: "1" | "2";
+  result: StampStatusResult;
+};
+
+export type UseStampOptions = {
+  timestampProvider?: () => string;
+  onStampCaptured?: (input: { iso: string; type: "1" | "2" }) => void;
+};
+
 /**
  * 打刻用カスタムフック
  * Single Responsibility: 打刻ロジックのみを管理
  */
 export const useStamp = (
-  repository: IHomeRepository = createHomeRepository()
+  repository: IHomeRepository = createHomeRepository(),
+  { timestampProvider, onStampCaptured }: UseStampOptions = {}
 ) => {
   const queryClient = useQueryClient();
-  const [message, setMessage] = useState<string | null>(null);
+  const [status, setStatus] = useState<StampStatus | null>(null);
   const [lastStampTime, setLastStampTime] = useState<Record<string, number>>(
     {}
+  );
+  const capturedStampRef = useRef<{ iso: string; type: "1" | "2" } | null>(
+    null
   );
 
   // 二重送信防止のための待機時間（ミリ秒）
@@ -131,7 +149,16 @@ export const useStamp = (
   const stampMutation = useMutation<StampResponse, Error, StampRequest>({
     mutationFn: (request: StampRequest) => repository.submitStamp(request),
     onSuccess: (response: StampResponse) => {
-      setMessage(response.message);
+      const captured = capturedStampRef.current;
+      const iso = captured?.iso ?? formatLocalTimestamp();
+      const type = captured?.type ?? "1";
+
+      setStatus({
+        message: response.message,
+        submittedAt: iso,
+        type,
+        result: "success",
+      });
       toast({
         title: "成功",
         description: response.message,
@@ -143,19 +170,29 @@ export const useStamp = (
       ]).catch(() => {
         // エラーハンドリングは不要（キャッシュ無効化の失敗は次回フェッチで解決）
       });
+      capturedStampRef.current = null;
     },
     onError: (error) => {
       const errorInfo = extractErrorInfo(error);
+      const captured = capturedStampRef.current;
+      const iso = captured?.iso ?? formatLocalTimestamp();
+      const type = captured?.type ?? "1";
 
       // 409 Conflict（重複打刻エラー）の特別処理
       const conflictMessage = resolveConflictMessage(errorInfo);
       if (conflictMessage) {
-        setMessage(conflictMessage);
+        setStatus({
+          message: conflictMessage,
+          submittedAt: iso,
+          type,
+          result: "conflict",
+        });
         toast({
           variant: "destructive",
           title: "重複打刻エラー",
           description: conflictMessage,
         });
+        capturedStampRef.current = null;
         return; // 早期リターンで他のエラーハンドリングをスキップ
       }
 
@@ -163,72 +200,129 @@ export const useStamp = (
 
       // サーバーエラーを最初にチェック（500番台）
       if (isServerIssue(errorInfo)) {
-        setMessage(
-          "サーバーエラーが発生しました。しばらくしてから再度お試しください。"
-        );
+        setStatus({
+          message:
+            "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
+          submittedAt: iso,
+          type,
+          result: "error",
+        });
         toast({
           variant: "destructive",
           title: "サーバーエラー",
           description:
             "サーバーエラーが発生しました。しばらくしてから再度お試しください。",
         });
+        capturedStampRef.current = null;
         return;
       }
 
       if (isTimeoutIssue(errorInfo, error)) {
-        setMessage(
-          "リクエストがタイムアウトしました。しばらくしてから再度お試しください。"
-        );
+        setStatus({
+          message:
+            "リクエストがタイムアウトしました。しばらくしてから再度お試しください。",
+          submittedAt: iso,
+          type,
+          result: "error",
+        });
         toast({
           variant: "destructive",
           title: "タイムアウト",
           description:
             "リクエストがタイムアウトしました。しばらくしてから再度お試しください。",
         });
+        capturedStampRef.current = null;
         return;
       }
 
       if (isNetworkIssue(errorInfo, error)) {
-        setMessage("通信エラーが発生しました。接続を確認してください。");
+        setStatus({
+          message: "通信エラーが発生しました。接続を確認してください。",
+          submittedAt: iso,
+          type,
+          result: "error",
+        });
         toast({
           variant: "destructive",
           title: "ネットワークエラー",
           description: "通信エラーが発生しました。接続を確認してください。",
         });
+        capturedStampRef.current = null;
         return;
       }
 
       // 上記いずれにも該当しない汎用エラー
-      setMessage(errorMessage);
+      setStatus({
+        message: errorMessage,
+        submittedAt: iso,
+        type,
+        result: "error",
+      });
       toast({
         variant: "destructive",
         title: "エラー",
         description: errorMessage,
       });
+      capturedStampRef.current = null;
     },
   });
 
-  const handleStamp = useCallback(
-    async (type: "1" | "2", nightWork: boolean) => {
-      // 二重送信防止チェック
-      const now = Date.now();
-      const lastTime = lastStampTime[type] || 0;
+  const shouldBlockStamp = useCallback(
+    (type: "1" | "2", now: number) => {
+      const lastTime = lastStampTime[type] ?? 0;
+      const elapsed = now - lastTime;
 
-      if (now - lastTime < DebounceMs) {
+      if (elapsed < DebounceMs) {
         const stampTypeName = type === "1" ? "出勤" : "退勤";
-        const waitSeconds = Math.ceil((DebounceMs - (now - lastTime)) / 1000);
+        const waitSeconds = Math.ceil((DebounceMs - elapsed) / 1000);
 
         toast({
           variant: "destructive",
           title: "二重送信防止",
           description: `短時間での連続${stampTypeName}打刻はできません。あと${waitSeconds}秒お待ちください。`,
         });
+        return true;
+      }
+
+      return false;
+    },
+    [lastStampTime]
+  );
+
+  const resolveTimestamp = useCallback(
+    (override?: string): string => {
+      if (override) {
+        return override;
+      }
+
+      if (!timestampProvider) {
+        return formatLocalTimestamp();
+      }
+
+      try {
+        const provided = timestampProvider();
+        return provided || formatLocalTimestamp();
+      } catch {
+        return formatLocalTimestamp();
+      }
+    },
+    [timestampProvider]
+  );
+
+  const handleStamp = useCallback(
+    async (type: "1" | "2", nightWork: boolean, isoOverride?: string) => {
+      const now = Date.now();
+
+      if (shouldBlockStamp(type, now)) {
         return;
       }
 
-      setMessage(null);
-      // JST固定で時刻を送信（海外アクセスでも正しい時刻を保証）
-      const timestamp = formatLocalTimestamp();
+      setStatus(null);
+
+      const timestamp = resolveTimestamp(isoOverride);
+
+      capturedStampRef.current = { iso: timestamp, type };
+      onStampCaptured?.({ iso: timestamp, type });
 
       await stampMutation.mutateAsync({
         stampType: type,
@@ -236,20 +330,19 @@ export const useStamp = (
         nightWorkFlag: nightWork ? "1" : "0",
       });
 
-      // 打刻成功後に最終打刻時刻を更新
       setLastStampTime((prev) => ({ ...prev, [type]: now }));
     },
-    [stampMutation, lastStampTime]
+    [onStampCaptured, resolveTimestamp, shouldBlockStamp, stampMutation]
   );
 
-  const clearMessage = useCallback(() => {
-    setMessage(null);
+  const clearStatus = useCallback(() => {
+    setStatus(null);
   }, []);
 
   return {
     handleStamp,
     isLoading: stampMutation.isPending,
-    message,
-    clearMessage,
+    status,
+    clearStatus,
   };
 };
