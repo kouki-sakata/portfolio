@@ -4,10 +4,12 @@ import { useMemo } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { getNewsCategoryBadgeVariant } from "@/features/news/lib/categoryBadge";
 import type { NewsViewModel } from "@/features/news/lib/newsViewModel";
-import { DataTableColumnHeader } from "@/shared/components/data-table";
+import {
+  DataTableColumnHeader,
+  DataTableSelectionCheckbox,
+} from "@/shared/components/data-table";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 const multiLineClampStyle = {
@@ -34,7 +36,7 @@ export function useNewsColumns({
       {
         id: "select",
         header: ({ table }) => (
-          <Checkbox
+          <DataTableSelectionCheckbox
             aria-label="全て選択"
             checked={
               table.getIsAllPageRowsSelected() ||
@@ -48,7 +50,7 @@ export function useNewsColumns({
           />
         ),
         cell: ({ row }) => (
-          <Checkbox
+          <DataTableSelectionCheckbox
             aria-label={`${row.original.newsDate}のお知らせを選択`}
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}

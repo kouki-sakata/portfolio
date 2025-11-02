@@ -164,7 +164,7 @@ export const StampHistoryPage = () => {
             <SelectContent>
               {years.map((yearOption) => (
                 <SelectItem key={yearOption} value={yearOption}>
-                  {yearOption}
+                  {yearOption}年
                 </SelectItem>
               ))}
             </SelectContent>

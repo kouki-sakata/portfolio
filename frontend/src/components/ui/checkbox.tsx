@@ -1,13 +1,13 @@
 import * as CheckboxPrimitive from "@radix-ui/react-checkbox";
-import type * as React from "react";
+import * as React from "react";
 
 import { cn } from "@/lib/utils";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
-function Checkbox({
-  className,
-  ...props
-}: React.ComponentProps<typeof CheckboxPrimitive.Root>) {
+const Checkbox = React.forwardRef<
+  React.ElementRef<typeof CheckboxPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Root>
+>(function Checkbox({ className, ...props }, ref) {
   return (
     <CheckboxPrimitive.Root
       className={cn(
@@ -15,6 +15,7 @@ function Checkbox({
         className
       )}
       data-slot="checkbox"
+      ref={ref}
       {...props}
     >
       <CheckboxPrimitive.Indicator
@@ -25,6 +26,6 @@ function Checkbox({
       </CheckboxPrimitive.Indicator>
     </CheckboxPrimitive.Root>
   );
-}
+});
 
 export { Checkbox };

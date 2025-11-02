@@ -1,9 +1,11 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import { useMemo } from "react";
 
-import { Checkbox } from "@/components/ui/checkbox";
 import type { EmployeeSummary } from "@/features/auth/types";
-import { DataTableColumnHeader } from "@/shared/components/data-table";
+import {
+  DataTableColumnHeader,
+  DataTableSelectionCheckbox,
+} from "@/shared/components/data-table";
 
 type UseEmployeeColumnsProps = {
   onEdit?: (employee: EmployeeSummary) => void;
@@ -19,7 +21,7 @@ export function useEmployeeColumns({
       {
         id: "select",
         header: ({ table }) => (
-          <Checkbox
+          <DataTableSelectionCheckbox
             aria-label="全て選択"
             checked={
               table.getIsAllPageRowsSelected() ||
@@ -31,7 +33,7 @@ export function useEmployeeColumns({
           />
         ),
         cell: ({ row }) => (
-          <Checkbox
+          <DataTableSelectionCheckbox
             aria-label="行を選択"
             checked={row.getIsSelected()}
             onCheckedChange={(value) => row.toggleSelected(!!value)}
