@@ -1,5 +1,5 @@
+import { Clock } from "lucide-react";
 import { memo, useState } from "react";
-
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,9 +12,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { HomeClockState } from "@/features/home/hooks/useHomeClock";
 import type { StampStatus } from "@/features/home/hooks/useStamp";
-import { formatClockDate, formatClockTime } from "@/features/home/lib/clockFormat";
+import {
+  formatClockDate,
+  formatClockTime,
+} from "@/features/home/lib/clockFormat";
 import { cn } from "@/lib/utils";
-import { Clock } from "lucide-react";
 
 /**
  * StampCardのProps
@@ -78,21 +80,28 @@ export const StampCard = memo(
     }
 
     const isClockError = clockState.status === "error";
-    const timeText = !isClockError && clockState.isoNow
-      ? formatClockTime(clockState.isoNow)
-      : undefined;
-    const dateText = !isClockError && clockState.isoNow
-      ? formatClockDate(clockState.isoNow)
-      : undefined;
+    const timeText =
+      !isClockError && clockState.isoNow
+        ? formatClockTime(clockState.isoNow)
+        : undefined;
+    const dateText =
+      !isClockError && clockState.isoNow
+        ? formatClockDate(clockState.isoNow)
+        : undefined;
 
     return (
-      <Card className={cn("w-full border border-slate-100 shadow-[0_20px_45px_-25px_rgba(15,23,42,0.35)]", className)}>
+      <Card
+        className={cn(
+          "w-full border border-slate-100 shadow-[0_20px_45px_-25px_rgba(15,23,42,0.35)]",
+          className
+        )}
+      >
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between gap-4">
-            <CardTitle className="text-xl font-semibold text-slate-900">
+            <CardTitle className="font-semibold text-slate-900 text-xl">
               ワンクリック打刻
             </CardTitle>
-            <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
+            <div className="flex items-center gap-2 font-medium text-slate-800 text-sm">
               <Checkbox
                 aria-label="夜勤扱い"
                 checked={nightWork}
@@ -100,26 +109,28 @@ export const StampCard = memo(
                 id="nightwork"
                 onCheckedChange={(checked) => setNightWork(checked === true)}
               />
-              夜勤扱い
-            </label>
+              <label className="cursor-pointer" htmlFor="nightwork">
+                夜勤扱い
+              </label>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="flex flex-col items-center gap-4 text-center">
             {isClockError ? (
-              <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+              <p className="rounded-lg bg-amber-50 px-4 py-3 font-medium text-amber-700 text-sm">
                 {clockState.displayText}
               </p>
             ) : (
               <>
                 <div className="flex items-center gap-3">
                   <Clock aria-hidden className="size-8 text-blue-500" />
-                  <span className="font-mono text-4xl font-semibold tracking-tight text-blue-500 sm:text-5xl">
+                  <span className="font-mono font-semibold text-4xl text-blue-500 tracking-tight sm:text-5xl">
                     {timeText ?? clockState.displayText}
                   </span>
                 </div>
                 {dateText ? (
-                  <p className="text-sm font-medium text-slate-600 sm:text-base">
+                  <p className="font-medium text-slate-600 text-sm sm:text-base">
                     {dateText}
                   </p>
                 ) : null}
