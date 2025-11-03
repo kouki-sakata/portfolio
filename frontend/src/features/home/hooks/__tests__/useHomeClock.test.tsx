@@ -1,8 +1,10 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const formatClockDisplayMock = vi.fn((iso: string) => `formatted:${iso}`);
-const formatLocalTimestampMock = vi.fn();
+const { formatClockDisplayMock, formatLocalTimestampMock } = vi.hoisted(() => ({
+  formatClockDisplayMock: vi.fn((iso: string) => `formatted:${iso}`),
+  formatLocalTimestampMock: vi.fn(),
+}));
 
 vi.mock("@/features/home/lib/clockFormat", () => ({
   formatClockDisplay: formatClockDisplayMock,
