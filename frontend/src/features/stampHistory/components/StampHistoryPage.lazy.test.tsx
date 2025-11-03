@@ -5,7 +5,6 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("./MonthlyStatsCard", () => ({
-  // biome-ignore lint/style/useNamingConvention: mocking named export
   MonthlyStatsCard: () => <h2>月次統計</h2>,
 }));
 

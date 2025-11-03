@@ -47,7 +47,7 @@ const ProfilePageSkeleton = () => (
       {Array.from({ length: 3 }, (_, index) => (
         <div
           className="h-32 animate-pulse rounded-lg bg-muted/30"
-          key={index}
+          key={`page-skeleton-${index}`}
         />
       ))}
     </div>
@@ -100,7 +100,7 @@ export const ProfilePage = ({
             {overviewCard}
             <div
               className={cn(
-                "rounded-lg border border-dashed border-border/40 bg-muted/10 p-4 text-xs text-muted-foreground",
+                "rounded-lg border border-border/40 border-dashed bg-muted/10 p-4 text-muted-foreground text-xs",
                 overview ? "block" : "hidden"
               )}
             >
@@ -108,9 +108,7 @@ export const ProfilePage = ({
             </div>
           </div>
           <div className="space-y-4">
-            <h2 className="font-semibold text-lg text-foreground">
-              活動履歴
-            </h2>
+            <h2 className="font-semibold text-foreground text-lg">活動履歴</h2>
             <ProfileActivityTable
               entries={activity.entries}
               loading={activity.loading}
@@ -123,7 +121,7 @@ export const ProfilePage = ({
         </div>
       )}
 
-      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+      <Dialog onOpenChange={setEditOpen} open={editOpen}>
         <DialogContent aria-label="プロフィール編集" className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>プロフィールを編集</DialogTitle>
@@ -140,7 +138,7 @@ export const ProfilePage = ({
             }}
           />
           {metadataSubmitting ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               変更内容を保存しています…
             </p>
           ) : null}

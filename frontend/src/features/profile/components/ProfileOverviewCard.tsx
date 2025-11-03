@@ -109,7 +109,7 @@ export const ProfileOverviewCard = ({
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <CardTitle className="text-balance text-xl font-semibold">
+            <CardTitle className="text-balance font-semibold text-xl">
               プロフィール
             </CardTitle>
             <CardDescription className="text-muted-foreground text-sm">
@@ -136,10 +136,10 @@ export const ProfileOverviewCard = ({
                 className="rounded-lg border border-border/50 bg-muted/30 p-3"
                 key={key}
               >
-                <dt className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                <dt className="font-medium text-muted-foreground text-xs uppercase tracking-wider">
                   {label}
                 </dt>
-                <dd className="mt-2 text-sm font-semibold text-foreground">
+                <dd className="mt-2 font-semibold text-foreground text-sm">
                   {value ?? "未設定"}
                 </dd>
               </div>
@@ -148,22 +148,20 @@ export const ProfileOverviewCard = ({
         </dl>
         <div aria-hidden="true" className="h-px w-full bg-border/60" />
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold text-foreground">
-            活動メモ
-          </h3>
+          <h3 className="font-semibold text-foreground text-sm">活動メモ</h3>
           {normalizeField(overview.activityNote) ? (
-            <p className="whitespace-pre-wrap rounded-md border border-border/40 bg-background px-3 py-2 text-sm leading-relaxed text-muted-foreground">
+            <p className="whitespace-pre-wrap rounded-md border border-border/40 bg-background px-3 py-2 text-muted-foreground text-sm leading-relaxed">
               {ensureString(overview.activityNote)}
             </p>
           ) : (
-            <p className="rounded-md border border-dashed border-border/40 bg-muted/20 px-3 py-6 text-center text-sm text-muted-foreground">
+            <p className="rounded-md border border-border/40 border-dashed bg-muted/20 px-3 py-6 text-center text-muted-foreground text-sm">
               活動メモはまだ登録されていません。プロフィール編集から記録できます。
             </p>
           )}
         </section>
       </CardContent>
       <CardFooter className="pt-4">
-        <div className="flex w-full flex-col gap-2 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
+        <div className="flex w-full flex-col gap-2 text-muted-foreground text-xs md:flex-row md:items-center md:justify-between">
           <span data-testid="profile-overview-hint">
             氏名・メールはシステム管理者が更新します。
           </span>

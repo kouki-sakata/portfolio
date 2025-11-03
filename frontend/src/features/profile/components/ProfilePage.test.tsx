@@ -1,13 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-
-import {
-  type ProfileActivityEntryViewModel,
-  type ProfileMetadataFormValues,
-  type ProfileOverviewViewModel,
-} from "@/features/profile/types";
 import { ProfilePage } from "@/features/profile/components/ProfilePage";
+import type {
+  ProfileActivityEntryViewModel,
+  ProfileMetadataFormValues,
+  ProfileOverviewViewModel,
+} from "@/features/profile/types";
 
 const overview: ProfileOverviewViewModel = {
   fullName: "坂田 晃輝",
@@ -20,8 +19,8 @@ const overview: ProfileOverviewViewModel = {
 };
 
 const metadata: ProfileMetadataFormValues = {
-  address: overview.address,
-  department: overview.department,
+  address: overview.address ?? "",
+  department: overview.department ?? "",
   employeeNumber: overview.employeeNumber ?? "",
   activityNote: overview.activityNote ?? "",
 };
@@ -52,8 +51,8 @@ describe("ProfilePage", () => {
         }}
         loadingOverview
         metadata={metadata}
-        overview={null}
         onMetadataSubmit={vi.fn()}
+        overview={null}
       />
     );
 
@@ -74,12 +73,14 @@ describe("ProfilePage", () => {
           totalCount: 1,
         }}
         metadata={metadata}
-        overview={overview}
         onMetadataSubmit={handleSubmit}
+        overview={overview}
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "プロフィールを編集する" }));
+    await user.click(
+      screen.getByRole("button", { name: "プロフィールを編集する" })
+    );
     expect(
       await screen.findByRole("form", { name: "プロフィール編集フォーム" })
     ).toBeVisible();

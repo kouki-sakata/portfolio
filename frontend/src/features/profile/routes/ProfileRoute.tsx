@@ -13,10 +13,7 @@ import type {
   ProfileOverviewViewModel,
 } from "@/features/profile/types";
 
-const FIELD_LABEL: Record<
-  keyof ProfileMetadataFormValues,
-  string
-> = {
+const FIELD_LABEL: Record<keyof ProfileMetadataFormValues, string> = {
   address: "住所",
   department: "部署",
   employeeNumber: "社員番号",
@@ -37,18 +34,18 @@ const generateActivityEntry = (
   const beforeSnapshot: Record<string, string | null> = {};
   const afterSnapshot: Record<string, string | null> = {};
 
-  (Object.keys(before) as Array<keyof ProfileMetadataFormValues>).forEach(
-    (key) => {
-      const previous = toNullable(before[key]);
-      const next = toNullable(after[key]);
+  for (const key of Object.keys(before) as Array<
+    keyof ProfileMetadataFormValues
+  >) {
+    const previous = toNullable(before[key]);
+    const next = toNullable(after[key]);
 
-      if (previous !== next) {
-        changedFields.push(key);
-        beforeSnapshot[key] = previous;
-        afterSnapshot[key] = next;
-      }
+    if (previous !== next) {
+      changedFields.push(key);
+      beforeSnapshot[key] = previous;
+      afterSnapshot[key] = next;
     }
-  );
+  }
 
   if (changedFields.length === 0) {
     return null;
@@ -78,13 +75,13 @@ const generateActivityEntry = (
 };
 
 export const ProfileRoute = () => {
-  const [overview, setOverview] =
-    useState<ProfileOverviewViewModel | null>(sampleOverview);
+  const [overview, setOverview] = useState<ProfileOverviewViewModel | null>(
+    sampleOverview
+  );
   const [metadata, setMetadata] =
     useState<ProfileMetadataFormValues>(sampleMetadata);
-  const [activityEntries, setActivityEntries] = useState<
-    ProfileActivityEntryViewModel[]
-  >(sampleActivity);
+  const [activityEntries, setActivityEntries] =
+    useState<ProfileActivityEntryViewModel[]>(sampleActivity);
   const [pagination, setPagination] = useState<PaginationState>({
     pageIndex: 0,
     pageSize: 5,
@@ -96,7 +93,7 @@ export const ProfileRoute = () => {
     return activityEntries.slice(start, end);
   }, [activityEntries, pagination.pageIndex, pagination.pageSize]);
 
-  const handleMetadataSubmit = async (values: ProfileMetadataFormValues) => {
+  const handleMetadataSubmit = (values: ProfileMetadataFormValues) => {
     setMetadata(values);
 
     if (overview) {
@@ -133,11 +130,11 @@ export const ProfileRoute = () => {
         totalCount: activityEntries.length,
       }}
       metadata={metadata}
-      overview={overview}
       onActivityPageChange={(state) => {
         setPagination(state);
       }}
       onMetadataSubmit={handleMetadataSubmit}
+      overview={overview}
     />
   );
 };

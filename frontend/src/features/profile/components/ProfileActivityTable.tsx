@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/shared/components/data-table/DataTable";
 import type { ProfileActivityEntryViewModel } from "@/features/profile/types";
+import { DataTable } from "@/shared/components/data-table/DataTable";
 import { cn } from "@/shared/utils/cn";
 
 const formatDateTime = (isoLike: string): string => {
@@ -77,8 +77,7 @@ export const ProfileActivityTable = ({
       {
         accessorKey: "occurredAt",
         header: "操作日時",
-        cell: ({ getValue }) =>
-          formatDateTime(String(getValue() ?? "")),
+        cell: ({ getValue }) => formatDateTime(String(getValue() ?? "")),
       },
       {
         accessorKey: "actor",
@@ -103,7 +102,7 @@ export const ProfileActivityTable = ({
         accessorKey: "summary",
         header: "概要",
         cell: ({ getValue }) => (
-          <span className="line-clamp-2 text-sm text-foreground">
+          <span className="line-clamp-2 text-foreground text-sm">
             {String(getValue() ?? "")}
           </span>
         ),
@@ -132,9 +131,9 @@ export const ProfileActivityTable = ({
     []
   );
 
-  const handlePaginationChange = (updater: PaginationState | ((
-    old: PaginationState
-  ) => PaginationState)) => {
+  const handlePaginationChange = (
+    updater: PaginationState | ((old: PaginationState) => PaginationState)
+  ) => {
     if (!onPaginationChange) {
       return;
     }
@@ -147,14 +146,11 @@ export const ProfileActivityTable = ({
 
   if (loading) {
     return (
-      <div
-        className="space-y-3"
-        data-testid="profile-activity-skeleton"
-      >
+      <div className="space-y-3" data-testid="profile-activity-skeleton">
         {Array.from({ length: 4 }, (_, index) => (
           <div
             className="h-12 animate-pulse rounded-md bg-muted/60"
-            key={index}
+            key={`activity-skeleton-${index}`}
           />
         ))}
       </div>
@@ -163,7 +159,7 @@ export const ProfileActivityTable = ({
 
   if (!entries.length) {
     return (
-      <div className="rounded-lg border border-dashed border-border/60 bg-muted/10 p-6 text-center text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border/60 border-dashed bg-muted/10 p-6 text-center text-muted-foreground text-sm">
         活動履歴はまだありません
       </div>
     );
@@ -182,19 +178,16 @@ export const ProfileActivityTable = ({
       />
 
       {selectedEntry ? (
-        <Card
-          aria-live="polite"
-          className="border border-primary/30 shadow-sm"
-        >
+        <Card aria-live="polite" className="border border-primary/30 shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">
+            <CardTitle className="font-semibold text-lg">
               変更された項目
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <dl className="grid gap-4 md:grid-cols-2">
               <div>
-                <dt className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                <dt className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
                   変更前
                 </dt>
                 <dd className="mt-2 space-y-2 text-sm">
@@ -210,7 +203,7 @@ export const ProfileActivityTable = ({
                           )}
                           key={`before-${field}`}
                         >
-                          <span className="block text-xs font-medium uppercase tracking-wide text-muted-foreground/80">
+                          <span className="block font-medium text-muted-foreground/80 text-xs uppercase tracking-wide">
                             {field}
                           </span>
                           <span>{value ?? "未設定"}</span>
@@ -221,7 +214,7 @@ export const ProfileActivityTable = ({
                 </dd>
               </div>
               <div>
-                <dt className="text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                <dt className="font-medium text-muted-foreground text-xs uppercase tracking-widest">
                   変更後
                 </dt>
                 <dd className="mt-2 space-y-2 text-sm">
@@ -237,7 +230,7 @@ export const ProfileActivityTable = ({
                           )}
                           key={`after-${field}`}
                         >
-                          <span className="block text-xs font-medium uppercase tracking-wide text-primary">
+                          <span className="block font-medium text-primary text-xs uppercase tracking-wide">
                             {field}
                           </span>
                           <span>{value ?? "未設定"}</span>
@@ -248,14 +241,15 @@ export const ProfileActivityTable = ({
                 </dd>
               </div>
             </dl>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               選択したレコード: {formatDateTime(selectedEntry.occurredAt)} に{" "}
-              {selectedEntry.actor} が {OPERATION_LABEL[selectedEntry.operationType]} を実行
+              {selectedEntry.actor} が{" "}
+              {OPERATION_LABEL[selectedEntry.operationType]} を実行
             </p>
           </CardContent>
         </Card>
       ) : (
-        <div className="rounded-lg border border-dashed border-border/50 bg-muted/10 p-4 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-border/50 border-dashed bg-muted/10 p-4 text-muted-foreground text-sm">
           詳細を確認したい行をクリックすると差分が表示されます。
         </div>
       )}

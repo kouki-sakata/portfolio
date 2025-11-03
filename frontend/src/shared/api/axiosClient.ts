@@ -50,7 +50,6 @@ export function createApiClient(options: ApiClientOptions = {}): AxiosInstance {
     withCredentials: true,
     headers: {
       "Content-Type": "application/json",
-      // biome-ignore lint/style/useNamingConvention: HTTP header name
       Accept: "application/json",
     },
     ...axiosConfig,

@@ -8,7 +8,6 @@ const { formatClockDisplayMock, formatLocalTimestampMock } = vi.hoisted(() => ({
 
 vi.mock("@/features/home/lib/clockFormat", () => ({
   formatClockDisplay: formatClockDisplayMock,
-  // biome-ignore lint/style/useNamingConvention: ライブラリ側の公開定数名に合わせる
   CLOCK_FALLBACK_MESSAGE:
     "現在時刻を取得できません。端末時計を確認してください。",
 }));

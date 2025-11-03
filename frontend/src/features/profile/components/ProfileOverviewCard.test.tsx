@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import { vi } from "vitest";
-
-import type { ProfileOverviewViewModel } from "@/features/profile/types";
+import { describe, expect, it, vi } from "vitest";
 import { ProfileOverviewCard } from "@/features/profile/components/ProfileOverviewCard";
+import type { ProfileOverviewViewModel } from "@/features/profile/types";
 
 const baseProfile: ProfileOverviewViewModel = {
   fullName: "坂田 晃輝",
@@ -30,10 +29,10 @@ describe("ProfileOverviewCard", () => {
     expect(screen.getByText("EMP-0001")).toBeVisible();
     expect(screen.getByText("プロダクト開発部")).toBeVisible();
     expect(screen.getByText("大阪府大阪市北区梅田1-1-1")).toBeVisible();
-    expect(screen.getByText("React/Javaの担当。フロントとバックの橋渡し。")).toBeVisible();
     expect(
-      screen.getByText("最終更新: 2025年11月02日 12:34")
+      screen.getByText("React/Javaの担当。フロントとバックの橋渡し。")
     ).toBeVisible();
+    expect(screen.getByText("最終更新: 2025年11月02日 12:34")).toBeVisible();
   });
 
   it("未設定のフィールドには未設定ラベルと案内を表示する", () => {

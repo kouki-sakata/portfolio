@@ -48,7 +48,6 @@ vi.mock("@/features/news/hooks/useNews", () => ({
 }));
 
 vi.mock("./NewsFormModal", () => ({
-  // biome-ignore lint/style/useNamingConvention: vi.mockでは元のコンポーネント名を使用する必要がある
   NewsFormModal: ({
     mode,
     open,
@@ -72,7 +71,6 @@ vi.mock("./NewsFormModal", () => ({
 }));
 
 vi.mock("./DeleteConfirmDialog", () => ({
-  // biome-ignore lint/style/useNamingConvention: vi.mockでは元コンポーネント名を維持する
   DeleteConfirmDialog: ({
     type,
     news,

@@ -1,9 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-
-import type { ProfileActivityEntryViewModel } from "@/features/profile/types";
 import { ProfileActivityTable } from "@/features/profile/components/ProfileActivityTable";
+import type { ProfileActivityEntryViewModel } from "@/features/profile/types";
 
 const activityEntries: ProfileActivityEntryViewModel[] = [
   {
@@ -41,14 +40,12 @@ describe("ProfileActivityTable", () => {
       />
     );
 
-    expect(screen.getAllByText("住所を更新")[0]).toBeVisible();
-    expect(screen.getAllByText("プロフィールを閲覧")[0]).toBeVisible();
+    expect(screen.getByText("住所を更新")).toBeVisible();
+    expect(screen.getByText("プロフィールを閲覧")).toBeVisible();
 
-    await user.click(screen.getAllByText("住所を更新")[0]);
+    await user.click(screen.getByText("住所を更新"));
 
-    expect(
-      await screen.findByText("変更された項目")
-    ).toBeVisible();
+    expect(await screen.findByText("変更された項目")).toBeVisible();
     expect(
       screen.getByText("大阪府大阪市北区梅田1-1-1", { exact: false })
     ).toBeVisible();
@@ -59,7 +56,12 @@ describe("ProfileActivityTable", () => {
 
   it("データがない場合は空状態メッセージを表示する", () => {
     render(
-      <ProfileActivityTable entries={[]} page={0} pageSize={10} totalCount={0} />
+      <ProfileActivityTable
+        entries={[]}
+        page={0}
+        pageSize={10}
+        totalCount={0}
+      />
     );
 
     expect(screen.getByText("活動履歴はまだありません")).toBeVisible();
@@ -83,14 +85,24 @@ describe("ProfileActivityTable", () => {
     const user = userEvent.setup();
     const handlePagination = vi.fn();
 
+    const baseEntry = activityEntries[0];
+    if (!baseEntry) {
+      throw new Error("activityEntries must contain at least one entry");
+    }
+
+    const paginatedEntries: ProfileActivityEntryViewModel[] = Array.from(
+      { length: 12 },
+      (_, index) => ({
+        ...baseEntry,
+        id: `${index}`,
+        occurredAt: `2025-11-0${(index % 5) + 1}T09:00:00+09:00`,
+        summary: `更新 ${index}`,
+      })
+    );
+
     render(
       <ProfileActivityTable
-        entries={Array.from({ length: 12 }, (_, index) => ({
-          ...activityEntries[0],
-          id: `${index}`,
-          occurredAt: `2025-11-0${(index % 5) + 1}T09:00:00+09:00`,
-          summary: `更新 ${index}`,
-        }))}
+        entries={paginatedEntries}
         onPaginationChange={handlePagination}
         page={0}
         pageSize={5}
@@ -100,9 +112,12 @@ describe("ProfileActivityTable", () => {
 
     const nextButtons = screen.getAllByRole("button", { name: "次のページへ" });
     expect(nextButtons.length).toBeGreaterThan(0);
-    const nextButton = nextButtons[0];
+    const nextButton = nextButtons[0]!;
     await user.click(nextButton);
 
-    expect(handlePagination).toHaveBeenCalledWith({ pageIndex: 1, pageSize: 5 });
+    expect(handlePagination).toHaveBeenCalledWith({
+      pageIndex: 1,
+      pageSize: 5,
+    });
   });
 });

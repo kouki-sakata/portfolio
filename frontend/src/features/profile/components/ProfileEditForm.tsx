@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { ProfileMetadataFormValues } from "@/features/profile/types";
 
+// biome-ignore lint/suspicious/noControlCharactersInRegex: XSS対策のため制御文字を意図的に検出
 const FORBIDDEN_CHAR_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F<>]/;
 
 const createFieldSchema = (
@@ -145,19 +146,15 @@ export const ProfileEditForm = ({
       <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:justify-end">
         {onCancel ? (
           <Button
+            disabled={isSubmitting}
             onClick={onCancel}
             type="button"
             variant="outline"
-            disabled={isSubmitting}
           >
             キャンセル
           </Button>
         ) : null}
-        <Button
-          disabled={isSubmitting}
-          type="submit"
-          variant="default"
-        >
+        <Button disabled={isSubmitting} type="submit" variant="default">
           {isSubmitting ? (
             <span className="inline-flex items-center gap-2">
               <span

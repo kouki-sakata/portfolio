@@ -1,9 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-
-import type { ProfileMetadataFormValues } from "@/features/profile/types";
 import { ProfileEditForm } from "@/features/profile/components/ProfileEditForm";
+import type { ProfileMetadataFormValues } from "@/features/profile/types";
 
 const defaultValues: ProfileMetadataFormValues = {
   address: "大阪府大阪市北区梅田1-1-1",
@@ -75,14 +74,12 @@ describe("ProfileEditForm", () => {
 
   it("送信中はボタンを無効化しスピナーを表示する", async () => {
     const user = userEvent.setup();
-    const handleSubmit = vi
-      .fn()
-      .mockImplementation(
-        () =>
-          new Promise<void>((resolve) => {
-            setTimeout(resolve, 50);
-          })
-      );
+    const handleSubmit = vi.fn().mockImplementation(
+      () =>
+        new Promise<void>((resolve) => {
+          setTimeout(resolve, 50);
+        })
+    );
 
     render(
       <ProfileEditForm defaultValues={defaultValues} onSubmit={handleSubmit} />

@@ -28,7 +28,7 @@ const navigationGroups: NavigationGroup[] = [
         id: "profile",
         label: "プロフィール",
         href: "/profile",
-        icon: "user",
+        icon: "users",
       },
       {
         id: "history",

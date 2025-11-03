@@ -12,8 +12,16 @@
         "useNamingConvention": {
           "level": "error",
           "options": {
-            "strictCase": false
+            "strictCase": false,
             // APIレスポンスのsnake_case、大文字定数を許可
+            "conventions": [
+              {
+                "selector": {
+                  "kind": "objectLiteralProperty"
+                },
+                "formats": ["camelCase", "PascalCase", "CONSTANT_CASE"]
+              }
+            ]
           }
         },
         "useFilenamingConvention": {
@@ -156,7 +164,15 @@
       "includes": [
         "**/shared/lib/validation-messages.ts",
         "**/shared/lib/validation-messages.test.ts",
-        "src/features/news/lib/newsViewModel.ts"
+        "src/features/news/lib/newsViewModel.ts",
+        "frontend/e2e/support/factories.ts",
+        "frontend/src/features/home/hooks/__tests__/useHomeClock.test.tsx",
+        "frontend/src/features/news/components/NewsManagementPage.test.tsx",
+        "frontend/src/features/stampHistory/components/StampHistoryPage.lazy.test.tsx",
+        "frontend/src/shared/api/axiosClient.ts",
+        "frontend/src/shared/components/layout/__tests__/AppSidebar.test.tsx",
+        "frontend/src/shared/components/layout/__tests__/MobileNavigation.test.tsx",
+        "frontend/src/shared/lib/env.ts"
       ],
       "linter": {
         "rules": {
@@ -194,6 +210,20 @@
           "suspicious": {
             "noUnknownAtRules": "off"
             // Tailwind CSS v4の@themeディレクティブを許可
+          }
+        }
+      }
+    },
+    {
+      "includes": [
+        "**/features/profile/components/ProfileActivityTable.tsx",
+        "**/features/profile/components/ProfilePage.tsx"
+      ],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+            // スケルトンUIは静的で順序変更がないため、indexをkeyとして使用
           }
         }
       }
