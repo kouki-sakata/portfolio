@@ -774,9 +774,7 @@ describe("HomePage", () => {
 
       await waitFor(() => {
         // shadcn/uiのCardは特定のクラスを持つ
-        const cards = container.querySelectorAll(
-          ".rounded-xl.border.border-neutral-200"
-        );
+        const cards = container.querySelectorAll(".rounded-xl.border");
         expect(cards).toHaveLength(2);
       });
     });
