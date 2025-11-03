@@ -15,6 +15,7 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 ### 従業員・ダッシュボード
 - TanStack Tableによる高性能検索・ソート
 - レスポンシブダッシュボード（お知らせ・打刻統合）
+- ホームダッシュボードのリアルタイム時刻パネル（JST固定クロック + 打刻カード連携）
 - ロールベースアクセス制御
 
 ### お知らせ・ログ管理
@@ -73,6 +74,10 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - カスタムフック統合（useStampHistoryExport）
   - CSV/TSV/Excel-CSVバッチエクスポート（大量データ対応）
   - 月次統計計算、編集・削除ダイアログ、包括的テスト完備
+- ✅ ホーム打刻クロック機能（2025-11-03 更新）
+  - useHomeClockでJSTタイムゾーン固定のISOタイムスタンプを生成
+  - HomeClockPanelとStampCardで打刻直前の時刻キャプチャを共有し、API送信とUI表示の時刻差を最小化
+  - クロック更新に失敗した場合はフェールオーバーメッセージへ切替え、操作をガイド
 - ✅ モダンUI Feature Flag レイヤー整備（2025-10-20）
   - `/api/public/feature-flags` エンドポイント + FeatureFlagService でプロファイル別フラグを提供
   - FeatureFlagProvider + UI Wrapper で shadcn/ui とカスタムUIを安全にトグル
@@ -90,4 +95,4 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-10-28 (お知らせ管理機能完了状況を最終化、リッチテキストエディタは今後の計画へ)*
+*Last Updated: 2025-11-03 (ホーム打刻クロックとタイムスタンプ連携を反映)*

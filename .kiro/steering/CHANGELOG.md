@@ -1,5 +1,34 @@
 # Steering Documents Changelog
 
+## 2025-11-03 (Update 31)
+
+### Updated Documents
+- `product.md` - ホーム打刻クロック機能と実装状況を追記
+- `tech.md` - ホーム時刻同期、AdminGuard、打刻更新APIの技術指針を追加
+- `structure.md` - AdminGuardの配置とホーム時刻同期パターンを反映
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **ホーム打刻クロックの標準化**
+  - `useHomeClock` と `HomeClockPanel` によるJST固定タイムスタンプ供給とフェールオーバー処理を記録
+  - StampCardの `captureTimestamp` 連携でUI表示とAPI送信の時刻を同期するパターンを明文化
+- **ルートガード/アクセス制御の前段強化**
+  - `shared/components/guards/AdminGuard` の役割を構造・技術両面で追加し、ニュース/従業員/ログ画面の前段保護を指針化
+- **打刻更新APIの再編**
+  - `/api/stamps/{id}` PUT/DELETE の導線を技術指針に反映し、既存値フォールバックと `StampEditService` オーケストレーションの整合性を説明
+- **ドキュメントドリフトの修正**
+  - 廃止済みの `InterceptableHttpClient` 記述を削除し、`defaultHttpClient` のエラー正規化を明示
+
+### Impact
+- フロントとバックで共有する時刻処理とアクセス制御の基盤が明文化され、新規機能が既存パターンに揃えやすくなった
+- 打刻APIの単体更新／削除に関する指針が追加され、今後のステップ実装とテスト設計が簡素化
+
+### Code Drift Warnings
+- なし
+
+### Note
+- ホーム打刻クロックは 2025-11-03 commit (`feat-home-clock-display`) を反映。AdminGuard導入は 2025-10-31 の `b2c6e82` を参照。
+
 ## 2025-10-28 (Update 30)
 
 ### Updated Documents

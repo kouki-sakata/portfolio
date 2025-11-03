@@ -48,6 +48,7 @@ npm run generate:api # OpenAPI型生成
 #### TanStack Table統合パターン（News機能で確立）
 - **カラム定義のフック化**: `useNewsColumns`でテーブル列定義をUI層から分離し、コールバック注入でイベントハンドリング
 - **イベント伝播制御**: チェックボックス/ボタンの`stopPropagation`でテーブル行クリックと分離
+- **選択チェックUI標準化**: `DataTableSelectionCheckbox`でヒットエリア/フォーカスリング/イベント抑止を共通化
 - **レスポンシブ対応**: モバイル（アイコンのみ）⇔デスクトップ（テキスト表示）の条件分岐
 - **複数ソート・フィルタ**: `DataTableColumnHeader`によるカラムごとのソート/フィルタ機能
 - **共通DataTableコンポーネント**: `shared/components/data-table`で再利用可能なテーブル実装を提供
@@ -66,10 +67,22 @@ npm run generate:api # OpenAPI型生成
 - **複数キャッシュキー同時無効化**: list + published等、関連キャッシュの同期更新
 - **バルク操作の部分成功処理**: 成功/失敗を個別集計し、UIに反映（失敗IDのみ選択保持）
 
+#### ホーム打刻クロック同期パターン（2025-11-03 追加）
+- **JST固定の時刻生成**: `useHomeClock` が `formatLocalTimestamp`（Day.js + timezone）を利用して常に `Asia/Tokyo` のISOタイムスタンプを供給し、海外端末でも正しい打刻時間を維持
+- **UI/ロジックの分離**: `HomeClockPanel` が表示責務、`StampCard` が打刻操作責務を担い、`captureTimestamp` コールバックで時刻を共有
+- **フェールオーバー処理**: タイムゾーン計算に失敗した場合は `CLOCK_FALLBACK_MESSAGE` を表示し、`status: "error"` でボタン押下時のガードを提供
+- **遅延の吸収**: 打刻ボタン押下時に `captureTimestamp` を必ず呼び、APIレスポンス遅延があってもUI表示とサーバー送信が同じ時刻で同期
+
 #### Feature Flag UIトグルとフォールバック
 - `FeatureFlagProvider` + `FeatureFlagContext` が `/api/public/feature-flags` から取得した値をローカルストレージと同期し、起動直後から安定したフラグ状態を提供。
 - `shared/components/ui-wrapper/*` が shadcn/ui コンポーネントを安全にラップし、旗が無効な環境でもカスタムのフォールバック UI に自動切替（段階的ロールアウトやレガシー互換を両立）。
 - `NavigationProgress` と `AppLayout` が Feature Flag で切り替わる UI に対しても共通のナビゲーション UX（モバイルドロワー、ヘッダー）を維持。
+
+#### AdminGuardによるルート保護（2025-10-31 導入）
+- **認証取得中のUX**: `useAuth` の `loading` 状態ではフルスクリーン `LoadingSpinner` を表示し、ガード内で早期 return。
+- **権限分岐**: 未認証は `/signin` へ、非管理者は `/` へ `Navigate` でサーバーラウンドトリップなしに遷移。
+- **再利用性**: `AdminGuard` を `NewsManagementRoute` や `EmployeeAdminRoute` にラップし、Admin専用ページを統一ガードで保護。
+- **アクセシビリティ**: 子要素は変換せず Fragment を返すため、ガードは DOM 構造を汚染せず既存レイアウトを維持。
 
 #### グローバルエラーハンドリングとイベント連携
 - `shared/error-handling/GlobalErrorHandler` が API 例外を識別（認証/権限/ネットワーク/バリデーション）し、Toast 表示とロギングを一元管理。
@@ -79,7 +92,7 @@ npm run generate:api # OpenAPI型生成
 #### Repository + HTTPアダプター
 - `shared/repositories/IHttpClient` で HTTP 層を抽象化し、`httpClientAdapter` が fetch ベースクライアントを Repository から切り離す。
 - 各 Repository（`AuthRepository`, `HomeRepository` 等）は Zod スキーマで API 応答を検証し、依存逆転の原則 (DIP) を満たしたテスト容易な構造。
-- `InterceptableHttpClient` とインターセプター型が将来のロギング/認証ヘッダー拡張に備えた拡張ポイントとして定義済み。
+- `defaultHttpClient` が axios レスポンスを RepositoryError（`TIMEOUT`/`NETWORK_ERROR`/`SERVER_ERROR` など）に正規化し、UI へ安定したエラーハンドリング契約を提供。
 
 ## バックエンド
 
@@ -95,6 +108,7 @@ npm run generate:api # OpenAPI型生成
   - **XML定義**: 複雑な更新ロジック（`bulkUpdate*`、条件分岐、複数カラム更新）
   - **一括操作**: `<foreach>`で動的IN句生成（`deleteByIds`、`bulkUpdateReleaseFlag`）
 - **ResultMap定義**: snake_case→camelCase変換を一元管理、型安全なマッピング
+- **列マッピングの明示**: `StampHistoryMapper` では `SELECT *` を避け、各カラムを明示し `AS` でDTOプロパティへマッピング（2025-11-01 リファクタ）
 
 ### サービス層アーキテクチャ（SOLID原則）
 - **ファサードパターン**: EmployeeService、NewsManageService（読み取り専用の統合ポイント）
@@ -109,6 +123,7 @@ npm run generate:api # OpenAPI型生成
 
 ### API層の実装パターン
 - **REST Controller層**: record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）で入力検証
+- **単体更新API**: `/api/stamps/{id}` PUT/DELETE が `StampRestController` の `resolveTimeValue` で未入力フィールドを既存値にフォールバックし、`StampEditService` のオーケストレーションと整合
 - **認証・認可**: `SecurityUtil#getCurrentEmployeeId()`で操作者取得、`@PreAuthorize`でロール制御（例: `hasRole('ADMIN')`）
 - **Form Bridge パターン**: 既存のForm型（`ListForm`, `NewsManageForm`, `HomeForm`）でService層と接続
 - **型同期**: OpenAPI 3.0スキーマ → `@hey-api/openapi-ts`でTypeScript型自動生成
@@ -169,4 +184,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-10-28 (お知らせ管理機能の完全実装を反映、パターン詳細化)*
+*Last Updated: 2025-11-03 (ホーム打刻クロック、AdminGuard、打刻更新APIの指針を追加)*

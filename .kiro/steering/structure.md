@@ -93,7 +93,14 @@ TeamDevelopBravo-main/
 - `shared/components/ui-wrapper/*` は shadcn/ui コンポーネントにフォールバック実装を被せ、段階的ロールアウトを可能にする Feature Flag トグル層。
 - `shared/error-handling/` は `GlobalErrorHandler`・`ErrorBoundary`・`error-logger` を備え、API 例外を分類して Toast とロギングに反映するグローバルハンドリングを担う。
 - `shared/repositories/` は `IHttpClient` インターフェース＋アダプターによる Repository パターンを提供し、Zod バリデーション付きの `AuthRepository` や `HomeRepository` が依存逆転で再利用。
+- `shared/components/guards/AdminGuard` が `useAuth` の状態でルートを分岐し、管理者専用画面（ニュース管理・従業員管理・ログ画面等）をフロントエンド側でも保護。
 - `shared/components/layout/` に AppShell / Sidebar / Header / ComingSoon などの骨格 UI を集約し、AppLayout や各ページから再利用できる。
+
+### ホームダッシュボードの時刻同期パターン
+- `features/home/hooks/useHomeClock` が1秒間隔でJST固定のISOタイムスタンプとエラーフラグを供給し、StampCardへ `captureTimestamp` として提供。
+- `features/home/lib/clockFormat` が Day.js timezone/utc を初期化し、日時・日付・時刻の表示整形を一箇所に集約。
+- `shared/utils/date` の `formatLocalTimestamp` を全レイヤーで共有し、ホーム打刻・API更新・トースト表示に同一時刻ソースを使用。
+- Clockパネルがフェールオーバー時に警告バナーへ切り替わることで、ユーザーが端末時刻のズレを認識できる。
 
 ## レイヤードアーキテクチャ
 
@@ -140,4 +147,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-10-28 (お知らせ管理機能の完全構造を反映、コンポーネント一覧を詳細化)*
+*Last Updated: 2025-11-03 (ホーム時刻同期パターンとAdminGuard構成を追加)*
