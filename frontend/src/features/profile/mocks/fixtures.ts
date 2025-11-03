@@ -1,10 +1,10 @@
 import type {
+  ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
-  ProfileOverviewViewModel,
 } from "@/features/profile/types";
 
-export const sampleOverview: ProfileOverviewViewModel = {
+export const sampleOverview: ExtendedProfileOverviewViewModel = {
   fullName: "坂田 晃輝",
   email: "sakata@example.com",
   employeeNumber: "EMP-0001",
@@ -12,6 +12,16 @@ export const sampleOverview: ProfileOverviewViewModel = {
   address: "大阪府大阪市北区梅田1-1-1",
   updatedAt: "2025-11-02T12:34:56+09:00",
   activityNote: "React/Javaの担当。フロントとバックの橋渡し。",
+  status: "active",
+  joinedAt: "2024-07-01",
+  manager: "田中 太郎",
+  workStyle: "hybrid",
+  schedule: {
+    start: "09:30",
+    end: "18:30",
+    breakMinutes: 60,
+  },
+  location: "大阪/梅田 (JST)",
 };
 
 export const sampleMetadata: ProfileMetadataFormValues = {
@@ -19,6 +29,12 @@ export const sampleMetadata: ProfileMetadataFormValues = {
   department: sampleOverview.department ?? "",
   employeeNumber: sampleOverview.employeeNumber ?? "",
   activityNote: sampleOverview.activityNote ?? "",
+  location: sampleOverview.location,
+  manager: sampleOverview.manager ?? "",
+  workStyle: sampleOverview.workStyle,
+  scheduleStart: sampleOverview.schedule.start,
+  scheduleEnd: sampleOverview.schedule.end,
+  scheduleBreakMinutes: sampleOverview.schedule.breakMinutes,
 };
 
 export const sampleActivity: ProfileActivityEntryViewModel[] = [

@@ -8,9 +8,9 @@ import {
   sampleOverview,
 } from "@/features/profile/mocks/fixtures";
 import type {
+  ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
-  ProfileOverviewViewModel,
 } from "@/features/profile/types";
 
 const FIELD_LABEL: Record<keyof ProfileMetadataFormValues, string> = {
@@ -18,11 +18,17 @@ const FIELD_LABEL: Record<keyof ProfileMetadataFormValues, string> = {
   department: "部署",
   employeeNumber: "社員番号",
   activityNote: "活動メモ",
+  location: "勤務地",
+  manager: "上長",
+  workStyle: "勤務形態",
+  scheduleStart: "始業時刻",
+  scheduleEnd: "終業時刻",
+  scheduleBreakMinutes: "休憩時間",
 };
 
-const toNullable = (value: string): string | null => {
-  const trimmed = value.trim();
-  return trimmed.length > 0 ? trimmed : null;
+const toNullable = (value: string | number): string | null => {
+  const stringValue = String(value).trim();
+  return stringValue.length > 0 ? stringValue : null;
 };
 
 const generateActivityEntry = (
@@ -75,9 +81,8 @@ const generateActivityEntry = (
 };
 
 export const ProfileRoute = () => {
-  const [overview, setOverview] = useState<ProfileOverviewViewModel | null>(
-    sampleOverview
-  );
+  const [overview, setOverview] =
+    useState<ExtendedProfileOverviewViewModel | null>(sampleOverview);
   const [metadata, setMetadata] =
     useState<ProfileMetadataFormValues>(sampleMetadata);
   const [activityEntries, setActivityEntries] =
@@ -104,6 +109,14 @@ export const ProfileRoute = () => {
         department: toNullable(values.department),
         address: toNullable(values.address),
         activityNote: toNullable(values.activityNote),
+        location: values.location,
+        manager: toNullable(values.manager),
+        workStyle: values.workStyle,
+        schedule: {
+          start: values.scheduleStart,
+          end: values.scheduleEnd,
+          breakMinutes: values.scheduleBreakMinutes,
+        },
         updatedAt: now,
       });
     }

@@ -9,6 +9,12 @@ const defaultValues: ProfileMetadataFormValues = {
   department: "プロダクト開発部",
   employeeNumber: "EMP-0001",
   activityNote: "React/Javaの担当。フロントとバックの橋渡し。",
+  location: "大阪/梅田 (JST)",
+  manager: "田中 太郎",
+  workStyle: "hybrid",
+  scheduleStart: "09:30",
+  scheduleEnd: "18:30",
+  scheduleBreakMinutes: 60,
 };
 
 describe("ProfileEditForm", () => {
@@ -24,7 +30,7 @@ describe("ProfileEditForm", () => {
     await user.clear(departmentInput);
     await user.type(departmentInput, " 開発推進部 ");
 
-    await user.click(screen.getByRole("button", { name: "更新する" }));
+    await user.click(screen.getByRole("button", { name: "保存" }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith({
@@ -45,7 +51,7 @@ describe("ProfileEditForm", () => {
     await user.clear(employeeNumberInput);
     await user.type(employeeNumberInput, "A".repeat(300));
 
-    await user.click(screen.getByRole("button", { name: "更新する" }));
+    await user.click(screen.getByRole("button", { name: "保存" }));
 
     expect(
       await screen.findByText("社員番号は256文字以内で入力してください")
@@ -64,7 +70,7 @@ describe("ProfileEditForm", () => {
     await user.clear(addressInput);
     await user.type(addressInput, "東京都<script>alert(1)</script>");
 
-    await user.click(screen.getByRole("button", { name: "更新する" }));
+    await user.click(screen.getByRole("button", { name: "保存" }));
 
     expect(handleSubmit).not.toHaveBeenCalled();
     expect(
@@ -85,7 +91,7 @@ describe("ProfileEditForm", () => {
       <ProfileEditForm defaultValues={defaultValues} onSubmit={handleSubmit} />
     );
 
-    const submitButton = screen.getByRole("button", { name: "更新する" });
+    const submitButton = screen.getByRole("button", { name: "保存" });
     await user.click(submitButton);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);

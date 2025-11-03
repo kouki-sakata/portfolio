@@ -1,25 +1,26 @@
 import type { PaginationState } from "@tanstack/react-table";
+import { Pencil } from "lucide-react";
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { ProfileActivityTable } from "@/features/profile/components/ProfileActivityTable";
 import { ProfileEditForm } from "@/features/profile/components/ProfileEditForm";
 import { ProfileOverviewCard } from "@/features/profile/components/ProfileOverviewCard";
 import type {
+  ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
-  ProfileOverviewViewModel,
 } from "@/features/profile/types";
-import { cn } from "@/shared/utils/cn";
 
 export type ProfilePageProps = {
-  overview: ProfileOverviewViewModel | null;
+  overview: ExtendedProfileOverviewViewModel | null;
   metadata: ProfileMetadataFormValues;
   loadingOverview?: boolean;
   metadataSubmitting?: boolean;
@@ -35,22 +36,14 @@ export type ProfilePageProps = {
 };
 
 const ProfilePageSkeleton = () => (
-  <div
-    className="grid gap-6 md:grid-cols-[2fr_3fr]"
-    data-testid="profile-page-skeleton"
-  >
-    <div className="space-y-4">
-      <div className="h-8 w-40 animate-pulse rounded bg-muted/70" />
-      <div className="h-48 animate-pulse rounded-lg bg-muted/40" />
-    </div>
-    <div className="space-y-4">
-      {Array.from({ length: 3 }, (_, index) => (
-        <div
-          className="h-32 animate-pulse rounded-lg bg-muted/30"
-          key={`page-skeleton-${index}`}
-        />
-      ))}
-    </div>
+  <div className="space-y-6" data-testid="profile-page-skeleton">
+    <div className="h-8 w-40 animate-pulse rounded bg-muted/70" />
+    {Array.from({ length: 3 }, (_, index) => (
+      <div
+        className="h-32 animate-pulse rounded-lg bg-muted/30"
+        key={`page-skeleton-${index}`}
+      />
+    ))}
   </div>
 );
 
@@ -72,41 +65,37 @@ export const ProfilePage = ({
       return null;
     }
 
-    return (
-      <ProfileOverviewCard
-        onEdit={() => setEditOpen(true)}
-        overview={overview}
-        variant="standard"
-      />
-    );
+    return <ProfileOverviewCard overview={overview} />;
   }, [overview]);
 
   return (
-    <section className="space-y-8">
-      <header className="space-y-2">
-        <h1 className="font-semibold text-2xl text-foreground md:text-3xl">
-          プロフィール管理
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          基本情報の確認と更新、活動履歴の追跡ができます。
-        </p>
-      </header>
+    <div className="mx-auto w-full max-w-7xl space-y-6 p-4 md:p-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-semibold text-2xl text-foreground tracking-tight md:text-3xl">
+            ユーザ情報
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            勤怠・プロフィールの管理
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button
+            className="rounded-2xl"
+            onClick={() => setEditOpen(true)}
+            variant="default"
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            編集
+          </Button>
+        </div>
+      </div>
 
       {shouldRenderSkeleton ? (
         <ProfilePageSkeleton />
       ) : (
-        <div className="grid gap-6 md:grid-cols-[2fr_3fr]">
-          <div className="space-y-6">
-            {overviewCard}
-            <div
-              className={cn(
-                "rounded-lg border border-border/40 border-dashed bg-muted/10 p-4 text-muted-foreground text-xs",
-                overview ? "block" : "hidden"
-              )}
-            >
-              氏名・メールアドレスは認証情報と連動しており、管理者のみが変更可能です。
-            </div>
-          </div>
+        <div className="grid grid-cols-1 gap-6">
+          {overviewCard}
           <div className="space-y-4">
             <h2 className="font-semibold text-foreground text-lg">活動履歴</h2>
             <ProfileActivityTable
@@ -121,14 +110,14 @@ export const ProfilePage = ({
         </div>
       )}
 
-      <Dialog onOpenChange={setEditOpen} open={editOpen}>
-        <DialogContent aria-label="プロフィール編集" className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>プロフィールを編集</DialogTitle>
-            <DialogDescription>
-              住所や部署、社員番号、活動メモを更新できます。入力内容は保存後すぐに反映されます。
-            </DialogDescription>
-          </DialogHeader>
+      <Sheet onOpenChange={setEditOpen} open={editOpen}>
+        <SheetContent className="sm:max-w-xl">
+          <SheetHeader>
+            <SheetTitle>プロフィール編集</SheetTitle>
+            <SheetDescription>
+              基本情報・勤務体系を更新できます
+            </SheetDescription>
+          </SheetHeader>
           <ProfileEditForm
             defaultValues={metadata}
             onCancel={() => setEditOpen(false)}
@@ -142,8 +131,8 @@ export const ProfilePage = ({
               変更内容を保存しています…
             </p>
           ) : null}
-        </DialogContent>
-      </Dialog>
-    </section>
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };

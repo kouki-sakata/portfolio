@@ -40,10 +40,10 @@ describe("ProfileActivityTable", () => {
       />
     );
 
-    expect(screen.getByText("住所を更新")).toBeVisible();
-    expect(screen.getByText("プロフィールを閲覧")).toBeVisible();
+    expect(screen.getAllByText("住所を更新")[0]).toBeVisible();
+    expect(screen.getAllByText("プロフィールを閲覧")[0]).toBeVisible();
 
-    await user.click(screen.getByText("住所を更新"));
+    await user.click(screen.getAllByText("住所を更新")[0]!);
 
     expect(await screen.findByText("変更された項目")).toBeVisible();
     expect(

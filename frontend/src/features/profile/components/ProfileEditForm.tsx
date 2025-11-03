@@ -6,6 +6,13 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import type { ProfileMetadataFormValues } from "@/features/profile/types";
 
@@ -48,6 +55,14 @@ const profileMetadataSchema = z.object({
   department: createFieldSchema(256, "部署"),
   employeeNumber: createFieldSchema(256, "社員番号"),
   activityNote: createFieldSchema(1000, "活動メモ", true),
+  location: createFieldSchema(256, "勤務地"),
+  manager: createFieldSchema(256, "上長"),
+  workStyle: z.enum(["remote", "hybrid", "onsite"]),
+  scheduleStart: z
+    .string()
+    .regex(/^\d{2}:\d{2}$/, "HH:MM形式で入力してください"),
+  scheduleEnd: z.string().regex(/^\d{2}:\d{2}$/, "HH:MM形式で入力してください"),
+  scheduleBreakMinutes: z.number().min(0, "0以上の数値を入力してください"),
 });
 
 export type ProfileEditFormProps = {
@@ -80,10 +95,10 @@ export const ProfileEditForm = ({
   return (
     <form
       aria-label="プロフィール編集フォーム"
-      className="space-y-6"
+      className="grid gap-4 py-4"
       onSubmit={handleSubmit}
     >
-      <fieldset className="grid gap-6" disabled={isSubmitting}>
+      <fieldset className="grid gap-4" disabled={isSubmitting}>
         <div className="grid gap-2">
           <Label htmlFor="profile-department">部署</Label>
           <Input
@@ -127,8 +142,110 @@ export const ProfileEditForm = ({
           ) : null}
         </div>
 
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="profile-location">勤務地</Label>
+            <Input
+              id="profile-location"
+              {...form.register("location")}
+              placeholder="例: 大阪/梅田 (JST)"
+            />
+            {form.formState.errors.location ? (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.location.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="profile-manager">上長</Label>
+            <Input
+              id="profile-manager"
+              {...form.register("manager")}
+              placeholder="例: 田中 太郎"
+            />
+            {form.formState.errors.manager ? (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.manager.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="profile-work-style">勤務形態</Label>
+            <Select
+              defaultValue={defaultValues.workStyle}
+              onValueChange={(value) =>
+                form.setValue(
+                  "workStyle",
+                  value as "remote" | "hybrid" | "onsite"
+                )
+              }
+            >
+              <SelectTrigger id="profile-work-style">
+                <SelectValue placeholder="選択" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="remote">フルリモート</SelectItem>
+                <SelectItem value="hybrid">ハイブリッド</SelectItem>
+                <SelectItem value="onsite">出社</SelectItem>
+              </SelectContent>
+            </Select>
+            {form.formState.errors.workStyle ? (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.workStyle.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="profile-schedule-start">始業</Label>
+            <Input
+              id="profile-schedule-start"
+              {...form.register("scheduleStart")}
+              placeholder="09:30"
+            />
+            {form.formState.errors.scheduleStart ? (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.scheduleStart.message}
+              </p>
+            ) : null}
+          </div>
+
+          <div className="grid gap-2">
+            <Label htmlFor="profile-schedule-end">終業</Label>
+            <Input
+              id="profile-schedule-end"
+              {...form.register("scheduleEnd")}
+              placeholder="18:30"
+            />
+            {form.formState.errors.scheduleEnd ? (
+              <p className="text-destructive text-sm">
+                {form.formState.errors.scheduleEnd.message}
+              </p>
+            ) : null}
+          </div>
+        </div>
+
         <div className="grid gap-2">
-          <Label htmlFor="profile-activity-note">活動メモ</Label>
+          <Label htmlFor="profile-break-minutes">休憩(分)</Label>
+          <Input
+            id="profile-break-minutes"
+            type="number"
+            {...form.register("scheduleBreakMinutes", { valueAsNumber: true })}
+            placeholder="60"
+          />
+          {form.formState.errors.scheduleBreakMinutes ? (
+            <p className="text-destructive text-sm">
+              {form.formState.errors.scheduleBreakMinutes.message}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="grid gap-2">
+          <Label htmlFor="profile-activity-note">メモ</Label>
           <Textarea
             id="profile-activity-note"
             {...form.register("activityNote")}
@@ -143,9 +260,23 @@ export const ProfileEditForm = ({
         </div>
       </fieldset>
 
-      <div className="flex flex-col-reverse items-stretch gap-3 sm:flex-row sm:justify-end">
+      <div className="flex items-center gap-2">
+        <Button className="rounded-2xl" disabled={isSubmitting} type="submit">
+          {isSubmitting ? (
+            <span className="inline-flex items-center gap-2">
+              <span
+                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+                data-testid="spinner"
+              />
+              保存中…
+            </span>
+          ) : (
+            "保存"
+          )}
+        </Button>
         {onCancel ? (
           <Button
+            className="rounded-2xl"
             disabled={isSubmitting}
             onClick={onCancel}
             type="button"
@@ -154,19 +285,6 @@ export const ProfileEditForm = ({
             キャンセル
           </Button>
         ) : null}
-        <Button disabled={isSubmitting} type="submit" variant="default">
-          {isSubmitting ? (
-            <span className="inline-flex items-center gap-2">
-              <span
-                className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-                data-testid="spinner"
-              />
-              更新中…
-            </span>
-          ) : (
-            "更新する"
-          )}
-        </Button>
       </div>
     </form>
   );

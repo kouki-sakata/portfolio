@@ -3,12 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ProfilePage } from "@/features/profile/components/ProfilePage";
 import type {
+  ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
-  ProfileOverviewViewModel,
 } from "@/features/profile/types";
 
-const overview: ProfileOverviewViewModel = {
+const overview: ExtendedProfileOverviewViewModel = {
   fullName: "坂田 晃輝",
   email: "sakata@example.com",
   employeeNumber: "EMP-0001",
@@ -16,6 +16,16 @@ const overview: ProfileOverviewViewModel = {
   address: "大阪府大阪市北区梅田1-1-1",
   updatedAt: "2025-11-02T12:34:56+09:00",
   activityNote: "React/Javaの担当。フロントとバックの橋渡し。",
+  status: "active",
+  joinedAt: "2024-07-01",
+  manager: "田中 太郎",
+  workStyle: "hybrid",
+  schedule: {
+    start: "09:30",
+    end: "18:30",
+    breakMinutes: 60,
+  },
+  location: "大阪/梅田 (JST)",
 };
 
 const metadata: ProfileMetadataFormValues = {
@@ -23,6 +33,12 @@ const metadata: ProfileMetadataFormValues = {
   department: overview.department ?? "",
   employeeNumber: overview.employeeNumber ?? "",
   activityNote: overview.activityNote ?? "",
+  location: overview.location,
+  manager: overview.manager ?? "",
+  workStyle: overview.workStyle,
+  scheduleStart: overview.schedule.start,
+  scheduleEnd: overview.schedule.end,
+  scheduleBreakMinutes: overview.schedule.breakMinutes,
 };
 
 const activity: ProfileActivityEntryViewModel[] = [
@@ -78,16 +94,14 @@ describe("ProfilePage", () => {
       />
     );
 
-    await user.click(
-      screen.getByRole("button", { name: "プロフィールを編集する" })
-    );
+    await user.click(screen.getByRole("button", { name: "編集" }));
     expect(
       await screen.findByRole("form", { name: "プロフィール編集フォーム" })
     ).toBeVisible();
 
     await user.clear(screen.getByLabelText("部署"));
     await user.type(screen.getByLabelText("部署"), "開発推進部");
-    await user.click(screen.getByRole("button", { name: "更新する" }));
+    await user.click(screen.getByRole("button", { name: "保存" }));
 
     await waitFor(() => {
       expect(handleSubmit).toHaveBeenCalledWith(
