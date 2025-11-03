@@ -4,18 +4,29 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
+import {
+  type HomeClockState,
+  useHomeClock,
+} from "@/features/home/hooks/useHomeClock";
 import type {
   HomeDashboardResponse,
   StampResponse,
 } from "@/features/home/types";
 import { newsQueryKeys } from "@/features/news/hooks/useNews";
+import { formatLocalTimestamp } from "@/shared/utils/date";
 import { mswServer } from "@/test/msw/server";
 import type { NewsListResponse } from "@/types";
 import { HomePageRefactored as HomePage } from "./HomePageRefactored";
 
+vi.mock("@/features/home/hooks/useHomeClock", () => ({
+  useHomeClock: vi.fn(),
+}));
+
 describe("HomePage", () => {
   let queryClient: QueryClient;
+  let clockState: HomeClockState;
+  let captureTimestampMock: HomeClockState["captureTimestamp"];
+  let resetErrorMock: HomeClockState["resetError"];
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -24,6 +35,18 @@ describe("HomePage", () => {
         mutations: { retry: false },
       },
     });
+
+    captureTimestampMock = vi.fn(() => formatLocalTimestamp());
+    resetErrorMock = vi.fn();
+    clockState = {
+      displayText: "モック現在時刻 09:15:42",
+      isoNow: "2025-11-02T09:15:42+09:00",
+      status: "ready",
+      lastCaptured: undefined,
+      captureTimestamp: captureTimestampMock,
+      resetError: resetErrorMock,
+    };
+    vi.mocked(useHomeClock).mockReturnValue(clockState);
 
     mswServer.use(
       http.get("/api/public/feature-flags", () => HttpResponse.json({}))
@@ -71,6 +94,66 @@ describe("HomePage", () => {
       expect(
         screen.queryByRole("link", { name: "お知らせ管理へ" })
       ).not.toBeInTheDocument();
+    });
+  });
+
+  describe("時計表示", () => {
+    it("ホーム画面に現在時刻が表示される", async () => {
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.json(mockDashboardData)
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("home-clock-panel")).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("home-clock-panel")).toHaveTextContent(
+        "モック現在時刻 09:15:42"
+      );
+    });
+
+    it("ローディング時にも時計が表示される", () => {
+      mswServer.use(
+        http.get(
+          "http://localhost/api/home/overview",
+          () =>
+            new Promise(() => {
+              /* pending */
+            })
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      expect(screen.getByTestId("home-clock-panel")).toBeInTheDocument();
+    });
+
+    it("エラー時にも時計が表示される", async () => {
+      vi.mocked(useHomeClock).mockReturnValue({
+        ...clockState,
+        status: "error",
+        displayText: "現在時刻を取得できません。端末時計を確認してください。",
+      });
+
+      mswServer.use(
+        http.get("http://localhost/api/home/overview", () =>
+          HttpResponse.text("error", { status: 500 })
+        )
+      );
+
+      renderWithQueryClient(<HomePage />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("ダッシュボードを読み込めませんでした。")
+        ).toBeInTheDocument();
+      });
+
+      expect(screen.getByTestId("home-clock-panel")).toBeInTheDocument();
     });
   });
 
@@ -691,9 +774,7 @@ describe("HomePage", () => {
 
       await waitFor(() => {
         // shadcn/uiのCardは特定のクラスを持つ
-        const cards = container.querySelectorAll(
-          ".rounded-xl.border.border-neutral-200"
-        );
+        const cards = container.querySelectorAll(".rounded-xl.border");
         expect(cards).toHaveLength(2);
       });
     });
