@@ -1,0 +1,100 @@
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { describe, expect, it, vi } from "vitest";
+
+import type { ProfileMetadataFormValues } from "@/features/profile/types";
+import { ProfileEditForm } from "@/features/profile/components/ProfileEditForm";
+
+const defaultValues: ProfileMetadataFormValues = {
+  address: "大阪府大阪市北区梅田1-1-1",
+  department: "プロダクト開発部",
+  employeeNumber: "EMP-0001",
+  activityNote: "React/Javaの担当。フロントとバックの橋渡し。",
+};
+
+describe("ProfileEditForm", () => {
+  it("入力値をトリムしつつ送信ハンドラに渡す", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ProfileEditForm defaultValues={defaultValues} onSubmit={handleSubmit} />
+    );
+
+    const departmentInput = screen.getByLabelText("部署");
+    await user.clear(departmentInput);
+    await user.type(departmentInput, " 開発推進部 ");
+
+    await user.click(screen.getByRole("button", { name: "更新する" }));
+
+    await waitFor(() => {
+      expect(handleSubmit).toHaveBeenCalledWith({
+        ...defaultValues,
+        department: "開発推進部",
+      });
+    });
+  });
+
+  it("最大文字数制限を超えるとエラーメッセージを表示する", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <ProfileEditForm defaultValues={defaultValues} onSubmit={vi.fn()} />
+    );
+
+    const employeeNumberInput = screen.getByLabelText("社員番号");
+    await user.clear(employeeNumberInput);
+    await user.type(employeeNumberInput, "A".repeat(300));
+
+    await user.click(screen.getByRole("button", { name: "更新する" }));
+
+    expect(
+      await screen.findByText("社員番号は256文字以内で入力してください")
+    ).toBeVisible();
+  });
+
+  it("禁止文字を含む場合は送信をブロックする", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi.fn();
+
+    render(
+      <ProfileEditForm defaultValues={defaultValues} onSubmit={handleSubmit} />
+    );
+
+    const addressInput = screen.getByLabelText("住所");
+    await user.clear(addressInput);
+    await user.type(addressInput, "東京都<script>alert(1)</script>");
+
+    await user.click(screen.getByRole("button", { name: "更新する" }));
+
+    expect(handleSubmit).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText("スクリプトや制御文字は入力できません")
+    ).toBeVisible();
+  });
+
+  it("送信中はボタンを無効化しスピナーを表示する", async () => {
+    const user = userEvent.setup();
+    const handleSubmit = vi
+      .fn()
+      .mockImplementation(
+        () =>
+          new Promise<void>((resolve) => {
+            setTimeout(resolve, 50);
+          })
+      );
+
+    render(
+      <ProfileEditForm defaultValues={defaultValues} onSubmit={handleSubmit} />
+    );
+
+    const submitButton = screen.getByRole("button", { name: "更新する" });
+    await user.click(submitButton);
+
+    expect(handleSubmit).toHaveBeenCalledTimes(1);
+    expect(submitButton).toBeDisabled();
+    expect(
+      submitButton.querySelector("[data-testid='spinner']")
+    ).toBeInTheDocument();
+  });
+});

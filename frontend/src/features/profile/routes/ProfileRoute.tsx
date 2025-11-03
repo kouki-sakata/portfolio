@@ -1,0 +1,143 @@
+import type { PaginationState } from "@tanstack/react-table";
+import { useMemo, useState } from "react";
+
+import { ProfilePage } from "@/features/profile/components/ProfilePage";
+import {
+  sampleActivity,
+  sampleMetadata,
+  sampleOverview,
+} from "@/features/profile/mocks/fixtures";
+import type {
+  ProfileActivityEntryViewModel,
+  ProfileMetadataFormValues,
+  ProfileOverviewViewModel,
+} from "@/features/profile/types";
+
+const FIELD_LABEL: Record<
+  keyof ProfileMetadataFormValues,
+  string
+> = {
+  address: "住所",
+  department: "部署",
+  employeeNumber: "社員番号",
+  activityNote: "活動メモ",
+};
+
+const toNullable = (value: string): string | null => {
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
+
+const generateActivityEntry = (
+  actor: string,
+  before: ProfileMetadataFormValues,
+  after: ProfileMetadataFormValues
+): ProfileActivityEntryViewModel | null => {
+  const changedFields: Array<keyof ProfileMetadataFormValues> = [];
+  const beforeSnapshot: Record<string, string | null> = {};
+  const afterSnapshot: Record<string, string | null> = {};
+
+  (Object.keys(before) as Array<keyof ProfileMetadataFormValues>).forEach(
+    (key) => {
+      const previous = toNullable(before[key]);
+      const next = toNullable(after[key]);
+
+      if (previous !== next) {
+        changedFields.push(key);
+        beforeSnapshot[key] = previous;
+        afterSnapshot[key] = next;
+      }
+    }
+  );
+
+  if (changedFields.length === 0) {
+    return null;
+  }
+
+  const summary = `${changedFields
+    .map((field) => FIELD_LABEL[field])
+    .join("・")}を更新`;
+
+  const id =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID()
+      : `${Date.now()}`;
+
+  const now = new Date().toISOString();
+
+  return {
+    id,
+    occurredAt: now,
+    actor,
+    operationType: "UPDATE",
+    summary,
+    changedFields: changedFields.map((field) => field as string),
+    beforeSnapshot,
+    afterSnapshot,
+  };
+};
+
+export const ProfileRoute = () => {
+  const [overview, setOverview] =
+    useState<ProfileOverviewViewModel | null>(sampleOverview);
+  const [metadata, setMetadata] =
+    useState<ProfileMetadataFormValues>(sampleMetadata);
+  const [activityEntries, setActivityEntries] = useState<
+    ProfileActivityEntryViewModel[]
+  >(sampleActivity);
+  const [pagination, setPagination] = useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 5,
+  });
+
+  const paginatedEntries = useMemo(() => {
+    const start = pagination.pageIndex * pagination.pageSize;
+    const end = start + pagination.pageSize;
+    return activityEntries.slice(start, end);
+  }, [activityEntries, pagination.pageIndex, pagination.pageSize]);
+
+  const handleMetadataSubmit = async (values: ProfileMetadataFormValues) => {
+    setMetadata(values);
+
+    if (overview) {
+      const now = new Date().toISOString();
+      setOverview({
+        ...overview,
+        employeeNumber: toNullable(values.employeeNumber),
+        department: toNullable(values.department),
+        address: toNullable(values.address),
+        activityNote: toNullable(values.activityNote),
+        updatedAt: now,
+      });
+    }
+
+    const entry = generateActivityEntry(
+      overview?.fullName ?? "不明なユーザー",
+      metadata,
+      values
+    );
+
+    if (entry) {
+      setActivityEntries((prev) => [entry, ...prev]);
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    }
+  };
+
+  return (
+    <ProfilePage
+      activity={{
+        entries: paginatedEntries,
+        loading: false,
+        page: pagination.pageIndex,
+        pageSize: pagination.pageSize,
+        totalCount: activityEntries.length,
+      }}
+      metadata={metadata}
+      overview={overview}
+      onActivityPageChange={(state) => {
+        setPagination(state);
+      }}
+      onMetadataSubmit={handleMetadataSubmit}
+    />
+  );
+};
