@@ -112,7 +112,11 @@ describe("ProfileActivityTable", () => {
 
     const nextButtons = screen.getAllByRole("button", { name: "次のページへ" });
     expect(nextButtons.length).toBeGreaterThan(0);
-    const nextButton = nextButtons[0]!;
+    const nextButton = nextButtons[0];
+    if (!nextButton) {
+      throw new Error("pagination next button should be rendered");
+    }
+
     await user.click(nextButton);
 
     expect(handlePagination).toHaveBeenCalledWith({
