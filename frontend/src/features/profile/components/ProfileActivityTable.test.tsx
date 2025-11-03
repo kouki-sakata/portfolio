@@ -43,7 +43,11 @@ describe("ProfileActivityTable", () => {
     expect(screen.getAllByText("住所を更新")[0]).toBeVisible();
     expect(screen.getAllByText("プロフィールを閲覧")[0]).toBeVisible();
 
-    await user.click(screen.getAllByText("住所を更新")[0]!);
+    const updateButton = screen.getAllByText("住所を更新")[0];
+    if (!updateButton) {
+      throw new Error("Update button not found");
+    }
+    await user.click(updateButton);
 
     expect(await screen.findByText("変更された項目")).toBeVisible();
     expect(

@@ -51,3 +51,32 @@ export type ExtendedProfileOverviewViewModel = ProfileOverviewViewModel & {
   schedule: WorkSchedule;
   location: string;
 };
+
+export type MonthlyTrendPoint = {
+  month: string;
+  totalHours: number;
+  overtimeHours: number;
+};
+
+export type AttendanceSummaryViewModel = {
+  currentMonth: {
+    totalHours: number;
+    overtimeHours: number;
+    lateCount: number;
+    paidLeaveHours: number;
+  };
+  trendData: MonthlyTrendPoint[];
+};
+
+export type MonthlyAttendanceViewModel = {
+  month: string;
+  totalHours: number;
+  overtimeHours: number;
+  lateCount: number;
+  paidLeaveHours: number;
+};
+
+export type ProfileStatisticsData = {
+  summary: AttendanceSummaryViewModel;
+  monthly: MonthlyAttendanceViewModel[];
+};

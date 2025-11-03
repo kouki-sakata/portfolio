@@ -8,6 +8,13 @@ const DEFAULT_API_BASE_URL = "http://localhost/api";
 
 vi.stubEnv("VITE_API_BASE_URL", DEFAULT_API_BASE_URL);
 
+// Mock ResizeObserver for Recharts
+global.ResizeObserver = vi.fn().mockImplementation(() => ({
+  observe: vi.fn(),
+  unobserve: vi.fn(),
+  disconnect: vi.fn(),
+}));
+
 beforeAll(() => {
   mswServer.listen({ onUnhandledRequest: "error" });
 });

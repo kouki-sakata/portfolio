@@ -2,6 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ProfilePage } from "@/features/profile/components/ProfilePage";
+import { sampleStatistics } from "@/features/profile/mocks/profileStatistics";
 import type {
   ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
@@ -69,6 +70,7 @@ describe("ProfilePage", () => {
         metadata={metadata}
         onMetadataSubmit={vi.fn()}
         overview={null}
+        statistics={null}
       />
     );
 
@@ -91,6 +93,7 @@ describe("ProfilePage", () => {
         metadata={metadata}
         onMetadataSubmit={handleSubmit}
         overview={overview}
+        statistics={sampleStatistics}
       />
     );
 
@@ -108,5 +111,26 @@ describe("ProfilePage", () => {
         expect.objectContaining({ department: "開発推進部" })
       );
     });
+  });
+
+  it("統計データが提供されている場合はサマリカードを表示する", () => {
+    render(
+      <ProfilePage
+        activity={{
+          entries: [],
+          loading: false,
+          page: 0,
+          pageSize: 10,
+          totalCount: 0,
+        }}
+        metadata={metadata}
+        onMetadataSubmit={vi.fn()}
+        overview={overview}
+        statistics={sampleStatistics}
+      />
+    );
+
+    expect(screen.getByText("勤怠サマリ")).toBeVisible();
+    expect(screen.getByText("月次詳細")).toBeVisible();
   });
 });

@@ -12,11 +12,14 @@ import {
 } from "@/components/ui/sheet";
 import { ProfileActivityTable } from "@/features/profile/components/ProfileActivityTable";
 import { ProfileEditForm } from "@/features/profile/components/ProfileEditForm";
+import { ProfileMonthlyDetailCard } from "@/features/profile/components/ProfileMonthlyDetailCard";
 import { ProfileOverviewCard } from "@/features/profile/components/ProfileOverviewCard";
+import { ProfileSummaryCard } from "@/features/profile/components/ProfileSummaryCard";
 import type {
   ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
+  ProfileStatisticsData,
 } from "@/features/profile/types";
 
 export type ProfilePageProps = {
@@ -24,6 +27,8 @@ export type ProfilePageProps = {
   metadata: ProfileMetadataFormValues;
   loadingOverview?: boolean;
   metadataSubmitting?: boolean;
+  statistics: ProfileStatisticsData | null;
+  loadingStatistics?: boolean;
   activity: {
     entries: ProfileActivityEntryViewModel[];
     loading: boolean;
@@ -48,13 +53,15 @@ const ProfilePageSkeleton = () => (
 );
 
 export const ProfilePage = ({
-  overview,
-  metadata,
-  loadingOverview = false,
-  metadataSubmitting = false,
   activity,
-  onMetadataSubmit,
+  loadingOverview = false,
+  loadingStatistics = false,
+  metadata,
+  metadataSubmitting = false,
   onActivityPageChange,
+  onMetadataSubmit,
+  overview,
+  statistics,
 }: ProfilePageProps) => {
   const [editOpen, setEditOpen] = useState(false);
 
@@ -96,6 +103,17 @@ export const ProfilePage = ({
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {overviewCard}
+
+          <ProfileSummaryCard
+            loading={loadingStatistics}
+            summary={statistics?.summary ?? null}
+          />
+
+          <ProfileMonthlyDetailCard
+            loading={loadingStatistics}
+            monthlyData={statistics?.monthly ?? []}
+          />
+
           <div className="space-y-4">
             <h2 className="font-semibold text-foreground text-lg">活動履歴</h2>
             <ProfileActivityTable

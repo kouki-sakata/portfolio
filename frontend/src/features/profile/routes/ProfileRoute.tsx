@@ -7,6 +7,7 @@ import {
   sampleMetadata,
   sampleOverview,
 } from "@/features/profile/mocks/fixtures";
+import { sampleStatistics } from "@/features/profile/mocks/profileStatistics";
 import type {
   ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
@@ -148,6 +149,7 @@ export const ProfileRoute = () => {
       }}
       onMetadataSubmit={handleMetadataSubmit}
       overview={overview}
+      statistics={sampleStatistics}
     />
   );
 };
