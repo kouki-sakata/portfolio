@@ -76,27 +76,31 @@ export const ProfileEditForm = ({
   onSubmit,
   onCancel,
 }: ProfileEditFormProps) => {
-  const form = useForm<ProfileMetadataFormValues>({
+  const {
+    handleSubmit,
+    register,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<ProfileMetadataFormValues>({
     resolver: zodResolver(profileMetadataSchema),
     defaultValues,
     mode: "onSubmit",
   });
 
   useEffect(() => {
-    form.reset(defaultValues);
-  }, [defaultValues, form]);
+    reset(defaultValues);
+  }, [defaultValues, reset]);
 
-  const handleSubmit = form.handleSubmit(async (values) => {
+  const handleFormSubmit = handleSubmit(async (values) => {
     await onSubmit(values);
   });
-
-  const isSubmitting = form.formState.isSubmitting;
 
   return (
     <form
       aria-label="プロフィール編集フォーム"
       className="grid gap-4 py-4"
-      onSubmit={handleSubmit}
+      onSubmit={handleFormSubmit}
     >
       <fieldset className="grid gap-4" disabled={isSubmitting}>
         <div className="grid gap-2">
@@ -104,12 +108,12 @@ export const ProfileEditForm = ({
           <Input
             data-testid="department-input"
             id="profile-department"
-            {...form.register("department")}
+            {...register("department")}
             placeholder="例: プロダクト開発部"
           />
-          {form.formState.errors.department ? (
+          {errors.department ? (
             <p className="text-destructive text-sm">
-              {form.formState.errors.department.message}
+              {errors.department.message}
             </p>
           ) : null}
         </div>
@@ -118,12 +122,12 @@ export const ProfileEditForm = ({
           <Label htmlFor="profile-employee-number">社員番号</Label>
           <Input
             id="profile-employee-number"
-            {...form.register("employeeNumber")}
+            {...register("employeeNumber")}
             placeholder="例: EMP-0001"
           />
-          {form.formState.errors.employeeNumber ? (
+          {errors.employeeNumber ? (
             <p className="text-destructive text-sm">
-              {form.formState.errors.employeeNumber.message}
+              {errors.employeeNumber.message}
             </p>
           ) : null}
         </div>
@@ -132,13 +136,11 @@ export const ProfileEditForm = ({
           <Label htmlFor="profile-address">住所</Label>
           <Input
             id="profile-address"
-            {...form.register("address")}
+            {...register("address")}
             placeholder="例: 東京都千代田区丸の内1-1-1"
           />
-          {form.formState.errors.address ? (
-            <p className="text-destructive text-sm">
-              {form.formState.errors.address.message}
-            </p>
+          {errors.address ? (
+            <p className="text-destructive text-sm">{errors.address.message}</p>
           ) : null}
         </div>
 
@@ -147,12 +149,12 @@ export const ProfileEditForm = ({
             <Label htmlFor="profile-location">勤務地</Label>
             <Input
               id="profile-location"
-              {...form.register("location")}
+              {...register("location")}
               placeholder="例: 大阪/梅田 (JST)"
             />
-            {form.formState.errors.location ? (
+            {errors.location ? (
               <p className="text-destructive text-sm">
-                {form.formState.errors.location.message}
+                {errors.location.message}
               </p>
             ) : null}
           </div>
@@ -161,12 +163,12 @@ export const ProfileEditForm = ({
             <Label htmlFor="profile-manager">上長</Label>
             <Input
               id="profile-manager"
-              {...form.register("manager")}
+              {...register("manager")}
               placeholder="例: 田中 太郎"
             />
-            {form.formState.errors.manager ? (
+            {errors.manager ? (
               <p className="text-destructive text-sm">
-                {form.formState.errors.manager.message}
+                {errors.manager.message}
               </p>
             ) : null}
           </div>
@@ -178,10 +180,7 @@ export const ProfileEditForm = ({
             <Select
               defaultValue={defaultValues.workStyle}
               onValueChange={(value) =>
-                form.setValue(
-                  "workStyle",
-                  value as "remote" | "hybrid" | "onsite"
-                )
+                setValue("workStyle", value as "remote" | "hybrid" | "onsite")
               }
             >
               <SelectTrigger id="profile-work-style">
@@ -193,9 +192,9 @@ export const ProfileEditForm = ({
                 <SelectItem value="onsite">出社</SelectItem>
               </SelectContent>
             </Select>
-            {form.formState.errors.workStyle ? (
+            {errors.workStyle ? (
               <p className="text-destructive text-sm">
-                {form.formState.errors.workStyle.message}
+                {errors.workStyle.message}
               </p>
             ) : null}
           </div>
@@ -204,12 +203,12 @@ export const ProfileEditForm = ({
             <Label htmlFor="profile-schedule-start">始業</Label>
             <Input
               id="profile-schedule-start"
-              {...form.register("scheduleStart")}
+              {...register("scheduleStart")}
               placeholder="09:30"
             />
-            {form.formState.errors.scheduleStart ? (
+            {errors.scheduleStart ? (
               <p className="text-destructive text-sm">
-                {form.formState.errors.scheduleStart.message}
+                {errors.scheduleStart.message}
               </p>
             ) : null}
           </div>
@@ -218,12 +217,12 @@ export const ProfileEditForm = ({
             <Label htmlFor="profile-schedule-end">終業</Label>
             <Input
               id="profile-schedule-end"
-              {...form.register("scheduleEnd")}
+              {...register("scheduleEnd")}
               placeholder="18:30"
             />
-            {form.formState.errors.scheduleEnd ? (
+            {errors.scheduleEnd ? (
               <p className="text-destructive text-sm">
-                {form.formState.errors.scheduleEnd.message}
+                {errors.scheduleEnd.message}
               </p>
             ) : null}
           </div>
@@ -234,12 +233,12 @@ export const ProfileEditForm = ({
           <Input
             id="profile-break-minutes"
             type="number"
-            {...form.register("scheduleBreakMinutes", { valueAsNumber: true })}
+            {...register("scheduleBreakMinutes", { valueAsNumber: true })}
             placeholder="60"
           />
-          {form.formState.errors.scheduleBreakMinutes ? (
+          {errors.scheduleBreakMinutes ? (
             <p className="text-destructive text-sm">
-              {form.formState.errors.scheduleBreakMinutes.message}
+              {errors.scheduleBreakMinutes.message}
             </p>
           ) : null}
         </div>
@@ -248,13 +247,13 @@ export const ProfileEditForm = ({
           <Label htmlFor="profile-activity-note">メモ</Label>
           <Textarea
             id="profile-activity-note"
-            {...form.register("activityNote")}
+            {...register("activityNote")}
             placeholder="担当領域や連絡事項を記録できます"
             rows={4}
           />
-          {form.formState.errors.activityNote ? (
+          {errors.activityNote ? (
             <p className="text-destructive text-sm">
-              {form.formState.errors.activityNote.message}
+              {errors.activityNote.message}
             </p>
           ) : null}
         </div>

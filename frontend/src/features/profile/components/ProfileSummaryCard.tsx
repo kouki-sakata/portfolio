@@ -29,6 +29,13 @@ export type ProfileSummaryCardProps = {
   className?: string;
 };
 
+const SUMMARY_CARD_SKELETON_KEYS = [
+  "summary-card-skeleton-1",
+  "summary-card-skeleton-2",
+  "summary-card-skeleton-3",
+  "summary-card-skeleton-4",
+] as const;
+
 const ProfileSummaryCardSkeleton = () => (
   <Card>
     <CardHeader>
@@ -37,8 +44,8 @@ const ProfileSummaryCardSkeleton = () => (
     </CardHeader>
     <CardContent className="space-y-6">
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
-          <Card className="p-4" key={`skeleton-${i}`}>
+        {SUMMARY_CARD_SKELETON_KEYS.map((key) => (
+          <Card className="p-4" key={key}>
             <div className="space-y-2">
               <Skeleton className="h-3 w-20" />
               <Skeleton className="h-7 w-16" />

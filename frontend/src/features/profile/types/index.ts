@@ -46,7 +46,7 @@ export type ExtendedProfileOverviewViewModel = ProfileOverviewViewModel & {
   avatarUrl?: string;
   status: UserStatus;
   joinedAt: string;
-  manager?: string;
+  manager: string | null;
   workStyle: WorkStyle;
   schedule: WorkSchedule;
   location: string;

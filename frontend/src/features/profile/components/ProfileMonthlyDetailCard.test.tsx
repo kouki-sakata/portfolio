@@ -45,7 +45,9 @@ describe("ProfileMonthlyDetailCard", () => {
   });
 
   it("ローディング中はスケルトンを表示する", () => {
-    const { container } = render(<ProfileMonthlyDetailCard loading monthlyData={[]} />);
+    const { container } = render(
+      <ProfileMonthlyDetailCard loading monthlyData={[]} />
+    );
 
     const skeletons = container.querySelectorAll("[data-slot='skeleton']");
     expect(skeletons.length).toBeGreaterThan(0);

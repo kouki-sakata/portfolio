@@ -38,6 +38,14 @@ export type ProfileMonthlyDetailCardProps = {
   className?: string;
 };
 
+const MONTHLY_DETAIL_SKELETON_KEYS = [
+  "monthly-detail-skeleton-1",
+  "monthly-detail-skeleton-2",
+  "monthly-detail-skeleton-3",
+  "monthly-detail-skeleton-4",
+  "monthly-detail-skeleton-5",
+] as const;
+
 const ProfileMonthlyDetailCardSkeleton = () => (
   <Card>
     <CardHeader>
@@ -47,8 +55,8 @@ const ProfileMonthlyDetailCardSkeleton = () => (
     <CardContent className="space-y-6">
       <Skeleton className="h-56 w-full" />
       <div className="space-y-2">
-        {Array.from({ length: 5 }, (_, i) => (
-          <Skeleton className="h-12 w-full" key={`skeleton-${i}`} />
+        {MONTHLY_DETAIL_SKELETON_KEYS.map((key) => (
+          <Skeleton className="h-12 w-full" key={key} />
         ))}
       </div>
     </CardContent>
