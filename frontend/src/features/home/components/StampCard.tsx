@@ -10,11 +10,11 @@ import {
 } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Skeleton } from "@/components/ui/skeleton";
-import { HomeClockPanel } from "@/features/home/components/HomeClockPanel";
 import type { HomeClockState } from "@/features/home/hooks/useHomeClock";
 import type { StampStatus } from "@/features/home/hooks/useStamp";
-import { formatClockTime } from "@/features/home/lib/clockFormat";
+import { formatClockDate, formatClockTime } from "@/features/home/lib/clockFormat";
 import { cn } from "@/lib/utils";
+import { Clock } from "lucide-react";
 
 /**
  * StampCardのProps
@@ -59,10 +59,14 @@ export const StampCard = memo(
           className={cn("w-full", className)}
           data-testid="stamp-card-skeleton"
         >
-          <CardHeader>
-            <Skeleton className="h-6 w-32" />
+          <CardHeader className="pb-4">
+            <Skeleton className="h-6 w-36" />
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-6">
+            <div className="flex flex-col items-center gap-3 py-2">
+              <Skeleton className="h-12 w-48" />
+              <Skeleton className="h-4 w-40" />
+            </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <Skeleton className="h-12 w-full" />
               <Skeleton className="h-12 w-full" />
@@ -73,14 +77,22 @@ export const StampCard = memo(
       );
     }
 
+    const isClockError = clockState.status === "error";
+    const timeText = !isClockError && clockState.isoNow
+      ? formatClockTime(clockState.isoNow)
+      : undefined;
+    const dateText = !isClockError && clockState.isoNow
+      ? formatClockDate(clockState.isoNow)
+      : undefined;
+
     return (
-      <Card className={cn("w-full", className)}>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="font-semibold text-lg text-slate-900">
+      <Card className={cn("w-full border border-slate-100 shadow-[0_20px_45px_-25px_rgba(15,23,42,0.35)]", className)}>
+        <CardHeader className="pb-4">
+          <div className="flex items-start justify-between gap-4">
+            <CardTitle className="text-xl font-semibold text-slate-900">
               ワンクリック打刻
             </CardTitle>
-            <div className="flex items-center space-x-2">
+            <label className="flex items-center gap-2 text-sm font-medium text-slate-800">
               <Checkbox
                 aria-label="夜勤扱い"
                 checked={nightWork}
@@ -88,20 +100,35 @@ export const StampCard = memo(
                 id="nightwork"
                 onCheckedChange={(checked) => setNightWork(checked === true)}
               />
-              <label
-                className="font-medium text-slate-800 text-sm leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                htmlFor="nightwork"
-              >
-                夜勤扱い
-              </label>
-            </div>
+              夜勤扱い
+            </label>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <HomeClockPanel state={clockState} variant="card" />
+        <CardContent className="space-y-6">
+          <div className="flex flex-col items-center gap-4 text-center">
+            {isClockError ? (
+              <p className="rounded-lg bg-amber-50 px-4 py-3 text-sm font-medium text-amber-700">
+                {clockState.displayText}
+              </p>
+            ) : (
+              <>
+                <div className="flex items-center gap-3">
+                  <Clock aria-hidden className="size-8 text-blue-500" />
+                  <span className="font-mono text-4xl font-semibold tracking-tight text-blue-500 sm:text-5xl">
+                    {timeText ?? clockState.displayText}
+                  </span>
+                </div>
+                {dateText ? (
+                  <p className="text-sm font-medium text-slate-600 sm:text-base">
+                    {dateText}
+                  </p>
+                ) : null}
+              </>
+            )}
+          </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Button
-              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100/50 focus-visible:ring-slate-300 disabled:translate-y-0"
+              className="hover:-translate-y-0.5 w-full border border-slate-200 bg-white text-slate-800 shadow-sm transition-transform hover:bg-slate-50 focus-visible:ring-slate-200 disabled:translate-y-0"
               disabled={isLoading}
               onClick={() => handleStamp("1")}
               size="lg"
@@ -110,7 +137,7 @@ export const StampCard = memo(
               出勤打刻
             </Button>
             <Button
-              className="hover:-translate-y-0.5 w-full border border-slate-300 bg-white text-slate-700 shadow-sm transition-all hover:bg-slate-100/50 focus-visible:ring-slate-300 disabled:translate-y-0"
+              className="hover:-translate-y-0.5 w-full border border-slate-200 bg-white text-slate-800 shadow-sm transition-transform hover:bg-slate-50 focus-visible:ring-slate-200 disabled:translate-y-0"
               disabled={isLoading}
               onClick={() => handleStamp("2")}
               size="lg"

@@ -100,7 +100,6 @@ export const HomePageRefactored = () => {
   return (
     <section className="home container mx-auto px-4 py-6">
       <HomeHero
-        clockState={clockState}
         firstName={data.employee.firstName}
         lastName={data.employee.lastName}
       />
@@ -133,10 +132,9 @@ export const HomePageRefactored = () => {
 type HomeHeroProps = {
   firstName: string;
   lastName: string;
-  clockState: HomeClockState;
 };
 
-const HomeHero = ({ lastName, firstName, clockState }: HomeHeroProps) => (
+const HomeHero = ({ lastName, firstName }: HomeHeroProps) => (
   <header className="home-hero mb-8 space-y-4">
     <h1 className="home-hero__title mb-2 font-bold text-2xl text-gray-900 md:text-3xl">
       おはようございます、{lastName} {firstName} さん
@@ -144,7 +142,6 @@ const HomeHero = ({ lastName, firstName, clockState }: HomeHeroProps) => (
     <p className="home-hero__subtitle text-gray-600">
       今日も素敵な一日を過ごしましょう。
     </p>
-    <HomeClockPanel state={clockState} variant="hero" />
   </header>
 );
 

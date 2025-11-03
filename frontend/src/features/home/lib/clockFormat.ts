@@ -11,6 +11,7 @@ export const CLOCK_FALLBACK_MESSAGE =
   "現在時刻を取得できません。端末時計を確認してください。";
 
 const DISPLAY_FORMAT = "YYYY年MM月DD日(dd) HH:mm:ss";
+const DATE_FORMAT = "YYYY年MM月DD日(dd)";
 const TIME_FORMAT = "HH:mm:ss";
 const TIMEZONE = "Asia/Tokyo";
 const INVALID_ISO_ERROR = "clock-format-invalid-iso";
@@ -29,3 +30,6 @@ export const formatClockDisplay = (iso: string): string =>
 
 export const formatClockTime = (iso: string): string =>
   parseIso(iso).format(TIME_FORMAT);
+
+export const formatClockDate = (iso: string): string =>
+  parseIso(iso).format(DATE_FORMAT);
