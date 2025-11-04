@@ -12,7 +12,8 @@ CREATE TABLE employee (
     email VARCHAR(255) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     admin_flag INTEGER NOT NULL,
-    update_date TIMESTAMP WITHOUT TIME ZONE
+    update_date TIMESTAMP WITHOUT TIME ZONE,
+    profile_metadata JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
 CREATE TABLE log_history (
@@ -22,7 +23,8 @@ CREATE TABLE log_history (
     stamp_time TIMESTAMP WITHOUT TIME ZONE,
     employee_id INTEGER REFERENCES employee(id),
     update_employee_id INTEGER,
-    update_date TIMESTAMP WITHOUT TIME ZONE
+    update_date TIMESTAMP WITHOUT TIME ZONE,
+    detail JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
 CREATE TABLE news (

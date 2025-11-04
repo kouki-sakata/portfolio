@@ -39,9 +39,13 @@ public class LogHistory {
 	/**
 	 * 更新従業員ID
 	 */
-	private Integer update_employee_id;
-	/**
-	 * 更新日時
-	 */
-	private Timestamp update_date;
+    private Integer update_employee_id;
+    /**
+     * 更新日時
+     */
+    private Timestamp update_date;
+    /**
+     * 詳細JSON
+     */
+    private String detail;
 }
