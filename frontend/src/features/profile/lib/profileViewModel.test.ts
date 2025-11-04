@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-
+import type { ProfileActivityResponse } from "@/features/profile/api/profileApi";
 import {
   createActivityViewModel,
   createMetadataFormValues,
@@ -33,7 +33,7 @@ const profileResponse = {
   },
 };
 
-const activityResponse = {
+const activityResponse: ProfileActivityResponse = {
   page: 0,
   size: 20,
   totalPages: 1,
@@ -50,7 +50,7 @@ const activityResponse = {
       afterSnapshot: { address: "新住所" },
     },
   ],
-};
+} satisfies ProfileActivityResponse;
 
 describe("profileViewModel", () => {
   it("creates overview view model", () => {
@@ -84,5 +84,48 @@ describe("profileViewModel", () => {
     }
     expect(first.operationType).toBe("UPDATE");
     expect(first.changedFields).toStrictEqual(["address"]);
+  });
+
+  it("normalizes blanks and unknown work styles in overview", () => {
+    const overview = createOverviewViewModel({
+      ...profileResponse,
+      metadata: {
+        ...profileResponse.metadata,
+        address: "  ",
+        activityNote: "",
+        workStyle: "unknown",
+        status: "",
+        manager: "",
+      },
+    });
+
+    expect(overview.address).toBeNull();
+    expect(overview.activityNote).toBeNull();
+    expect(overview.workStyle).toBe("onsite");
+    expect(overview.status).toBe("active");
+    expect(overview.manager).toBeNull();
+  });
+
+  it("returns empty snapshots when activity detail is missing", () => {
+    const baseItem = activityResponse.items[0];
+    if (!baseItem) {
+      throw new Error("activityResponse should contain at least one item");
+    }
+
+    const { entries } = createActivityViewModel({
+      ...activityResponse,
+      items: [
+        {
+          ...baseItem,
+          beforeSnapshot: undefined as unknown as Record<string, string | null>,
+          afterSnapshot: undefined as unknown as Record<string, string | null>,
+          operationType: "unknown",
+        },
+      ],
+    });
+    const first = entries[0];
+    expect(first?.beforeSnapshot).toEqual({});
+    expect(first?.afterSnapshot).toEqual({});
+    expect(first?.operationType).toBe("UPDATE");
   });
 });

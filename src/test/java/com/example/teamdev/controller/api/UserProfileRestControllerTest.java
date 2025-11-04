@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -13,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.teamdev.config.SecurityConfig;
+import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.profile.ProfileAppService;
@@ -115,6 +117,58 @@ class UserProfileRestControllerTest {
         verifyNoMoreInteractions(profileAppService);
     }
 
+    @DisplayName("GET /api/profile/{employeeId} は管理者権限で他者プロフィールを返す")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL, roles = "ADMIN")
+    void getProfileForAdminReturnsAggregate() throws Exception {
+        Employee admin = new Employee(
+            7000,
+            "管理者",
+            "太郎",
+            EMPLOYEE_EMAIL,
+            "encoded",
+            AppConstants.Employee.ADMIN_FLAG_ADMIN,
+            Timestamp.from(Instant.parse("2025-11-01T00:00:00Z"))
+        );
+        when(employeeMapper.getEmployeeByEmail(EMPLOYEE_EMAIL)).thenReturn(admin);
+
+        ProfileAggregate aggregate = new ProfileAggregate(
+            new ProfileEmployeeSummary(5000, "従業員 次郎", "target@example.com", false, "2025-11-01T00:30:00Z"),
+            new ProfileMetadataDocument(
+                "東京都",
+                "サポート部",
+                "EMP-5000",
+                "備考",
+                "東京/丸の内",
+                "上長 太郎",
+                "onsite",
+                new ProfileWorkScheduleDocument("09:00", "18:00", 60),
+                "active",
+                "2024-04-01",
+                ""
+            )
+        );
+        when(profileAppService.loadProfileForAdmin(5000, 7000)).thenReturn(aggregate);
+
+        mockMvc.perform(get("/api/profile/5000"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.employee.id").value(5000))
+            .andExpect(jsonPath("$.metadata.department").value("サポート部"));
+
+        verify(profileAppService).loadProfileForAdmin(5000, 7000);
+        verifyNoMoreInteractions(profileAppService);
+    }
+
+    @DisplayName("GET /api/profile/{employeeId} は一般権限では403を返す")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void getProfileForAdminRejectsNonAdmin() throws Exception {
+        mockMvc.perform(get("/api/profile/5000"))
+            .andExpect(status().isForbidden());
+
+        verifyNoInteractions(profileAppService);
+    }
+
     @DisplayName("PATCH /api/profile/me/metadata は更新コマンドをサービスへ渡す")
     @Test
     @WithMockUser(username = EMPLOYEE_EMAIL)
@@ -170,6 +224,28 @@ class UserProfileRestControllerTest {
         assertThat(captured.schedule().breakMinutes()).isEqualTo(45);
     }
 
+    @DisplayName("PATCH /api/profile/me/metadata は休憩時間が上限超過の場合400を返す")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void patchSelfMetadataRejectsInvalidBreakMinutes() throws Exception {
+        mockMvc.perform(
+                patch("/api/profile/me/metadata")
+                    .with(csrf())
+                    .contentType("application/json")
+                    .content("""
+                        {
+                          "address": "大阪府",
+                          "department": "DX推進室",
+                          "scheduleBreakMinutes": 999
+                        }
+                        """
+                    )
+            )
+            .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(profileAppService);
+    }
+
     @DisplayName("GET /api/profile/me/activity はページングされた活動履歴を返す")
     @Test
     @WithMockUser(username = EMPLOYEE_EMAIL)
@@ -200,5 +276,15 @@ class UserProfileRestControllerTest {
             .andExpect(jsonPath("$.items[0].changedFields[0]").value("address"));
 
         verify(profileAppService).listActivities(eq(9000), eq(9000), any());
+    }
+
+    @DisplayName("GET /api/profile/me/activity は不正な日付フォーマットを拒否する")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void getSelfActivityRejectsInvalidDate() throws Exception {
+        mockMvc.perform(get("/api/profile/me/activity").param("from", "not-a-date"))
+            .andExpect(status().isBadRequest());
+
+        verifyNoInteractions(profileAppService);
     }
 }

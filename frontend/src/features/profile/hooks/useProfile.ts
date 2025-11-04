@@ -47,15 +47,21 @@ type ProfileActivityResult = {
   size: number;
 };
 
+const toProfileOverviewResult = (
+  response: ProfileResponse
+): ProfileOverviewResult => ({
+  overview: createOverviewViewModel(response),
+  metadataForm: createMetadataFormValues(response.metadata),
+  raw: response,
+});
+
 export const useProfileOverviewQuery = () =>
-  useQuery<ProfileResponse, Error, ProfileOverviewResult>({
+  useQuery<ProfileOverviewResult, Error>({
     queryKey: profileKeys.overview(),
-    queryFn: fetchProfile,
-    select: (response): ProfileOverviewResult => ({
-      overview: createOverviewViewModel(response),
-      metadataForm: createMetadataFormValues(response.metadata),
-      raw: response,
-    }),
+    queryFn: async () => {
+      const response = await fetchProfile();
+      return toProfileOverviewResult(response);
+    },
   });
 
 export const useProfileActivityQuery = (params: ProfileActivityQuery) =>
@@ -80,11 +86,10 @@ export const useUpdateProfileMetadata = () => {
     mutationFn: (payload: ProfileMetadataUpdatePayload) =>
       updateProfileMetadata(payload),
     onSuccess: (data) => {
-      queryClient.setQueryData(profileKeys.overview(), {
-        overview: createOverviewViewModel(data),
-        metadataForm: createMetadataFormValues(data.metadata),
-        raw: data,
-      });
+      queryClient.setQueryData(
+        profileKeys.overview(),
+        toProfileOverviewResult(data)
+      );
     },
   });
 };

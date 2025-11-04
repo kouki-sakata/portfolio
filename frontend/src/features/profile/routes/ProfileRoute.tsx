@@ -65,6 +65,7 @@ export const ProfileRoute = () => {
           scheduleEnd: values.scheduleEnd,
           scheduleBreakMinutes: values.scheduleBreakMinutes,
         });
+        await overviewQuery.refetch();
         await activityQuery.refetch();
       }}
       overview={overviewQuery.data?.overview ?? null}

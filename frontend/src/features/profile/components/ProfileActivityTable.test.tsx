@@ -43,7 +43,7 @@ describe("ProfileActivityTable", () => {
     expect(screen.getAllByText("住所を更新")[0]).toBeVisible();
     expect(screen.getAllByText("プロフィールを閲覧")[0]).toBeVisible();
 
-    const updateButton = screen.getAllByText("住所を更新")[0];
+    const [updateButton] = screen.getAllByText("住所を更新");
     if (!updateButton) {
       throw new Error("Update button not found");
     }
@@ -127,5 +127,27 @@ describe("ProfileActivityTable", () => {
       pageIndex: 1,
       pageSize: 5,
     });
+  });
+
+  it("差分ハイライトを展開した状態をスナップショットとして保持する", async () => {
+    const user = userEvent.setup();
+
+    const { container } = render(
+      <ProfileActivityTable
+        entries={activityEntries}
+        page={0}
+        pageSize={10}
+        totalCount={activityEntries.length}
+      />
+    );
+
+    const [updateButton] = screen.getAllByText("住所を更新");
+    if (!updateButton) {
+      throw new Error("Update button not found");
+    }
+    await user.click(updateButton);
+    await screen.findByText("変更された項目");
+
+    expect(container).toMatchSnapshot();
   });
 });
