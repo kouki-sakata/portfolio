@@ -47,7 +47,7 @@ public class ProfileActivityQueryService {
         SqlClause clause = buildClause(employeeId, query.from(), query.to());
 
         long total = jdbcTemplate.queryForObject(
-            "SELECT COUNT(*) " + clause.whereClause(),
+            "SELECT COUNT(*) FROM log_history lh " + clause.whereClause(),
             Long.class,
             clause.toParameterArray()
         );
@@ -68,10 +68,11 @@ public class ProfileActivityQueryService {
     }
 
     private SqlClause buildClause(int employeeId, Optional<Instant> from, Optional<Instant> to) {
-        StringBuilder builder = new StringBuilder("FROM log_history lh WHERE lh.display_name = ? AND lh.employee_id = ?");
+        StringBuilder builder = new StringBuilder("WHERE lh.display_name = ? AND lh.employee_id = ? AND lh.operation_type != ?");
         List<Object> params = new java.util.ArrayList<>();
         params.add(AppConstants.LogHistory.FUNCTION_PROFILE);
         params.add(employeeId);
+        params.add(AppConstants.LogHistory.OPERATION_PROFILE_VIEW);
 
         from.ifPresent(value -> {
             builder.append(" AND lh.update_date >= ?");
