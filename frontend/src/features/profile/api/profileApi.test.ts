@@ -74,7 +74,7 @@ describe("profileApi", () => {
 
     const result = await fetchProfile();
 
-    expect(mockedApi.get).toHaveBeenCalledWith("/profile/me", undefined);
+    expect(mockedApi.get).toHaveBeenCalledWith("/profile/me");
     expect(result).toStrictEqual(sampleProfile);
   });
 
@@ -93,8 +93,7 @@ describe("profileApi", () => {
 
     expect(mockedApi.patch).toHaveBeenCalledWith(
       "/profile/me/metadata",
-      payload,
-      undefined
+      payload
     );
     expect(result).toStrictEqual(sampleProfile);
   });

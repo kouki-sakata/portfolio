@@ -3,11 +3,11 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProfile,
   fetchProfileActivity,
-  updateProfileMetadata,
   type ProfileActivityQuery,
   type ProfileActivityResponse,
   type ProfileMetadataUpdatePayload,
   type ProfileResponse,
+  updateProfileMetadata,
 } from "@/features/profile/api/profileApi";
 import {
   createActivityViewModel,
@@ -23,14 +23,15 @@ import type {
 const profileKeys = {
   all: ["profile"] as const,
   overview: () => [...profileKeys.all, "overview"] as const,
-  activity: (params: ProfileActivityQuery) => [
-    ...profileKeys.all,
-    "activity",
-    params.page ?? 0,
-    params.size ?? 20,
-    params.from ?? null,
-    params.to ?? null,
-  ] as const,
+  activity: (params: ProfileActivityQuery) =>
+    [
+      ...profileKeys.all,
+      "activity",
+      params.page ?? 0,
+      params.size ?? 20,
+      params.from ?? null,
+      params.to ?? null,
+    ] as const,
 };
 
 type ProfileOverviewResult = {

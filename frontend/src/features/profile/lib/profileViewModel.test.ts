@@ -78,7 +78,10 @@ describe("profileViewModel", () => {
 
     expect(totalCount).toBe(1);
     expect(entries).toHaveLength(1);
-    const first = entries[0]!;
+    const first = entries[0];
+    if (!first) {
+      throw new Error("First entry is undefined");
+    }
     expect(first.operationType).toBe("UPDATE");
     expect(first.changedFields).toStrictEqual(["address"]);
   });

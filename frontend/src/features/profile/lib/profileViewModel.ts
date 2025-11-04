@@ -17,15 +17,23 @@ const toNullable = (value: string | null | undefined): string | null => {
   return trimmed.length === 0 ? null : trimmed;
 };
 
-const toWorkStyle = (value: string | null | undefined): "remote" | "hybrid" | "onsite" => {
+const toWorkStyle = (
+  value: string | null | undefined
+): "remote" | "hybrid" | "onsite" => {
   const normalized = (value ?? "onsite").toLowerCase();
-  if (normalized === "remote" || normalized === "hybrid" || normalized === "onsite") {
+  if (
+    normalized === "remote" ||
+    normalized === "hybrid" ||
+    normalized === "onsite"
+  ) {
     return normalized;
   }
   return "onsite";
 };
 
-const toStatus = (value: string | null | undefined): "active" | "leave" | "inactive" => {
+const toStatus = (
+  value: string | null | undefined
+): "active" | "leave" | "inactive" => {
   const normalized = (value ?? "active").toLowerCase();
   if (normalized === "leave" || normalized === "inactive") {
     return normalized;
@@ -100,6 +108,9 @@ const normalizeSnapshot = (
     return {};
   }
   return Object.fromEntries(
-    Object.entries(snapshot).map(([key, value]) => [key, toNullable(value ?? undefined)])
+    Object.entries(snapshot).map(([key, value]) => [
+      key,
+      toNullable(value ?? undefined),
+    ])
   );
 };

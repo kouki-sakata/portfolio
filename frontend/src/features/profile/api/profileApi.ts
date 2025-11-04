@@ -75,18 +75,15 @@ export type ProfileActivityQuery = {
   to?: string;
 };
 
-export const fetchProfile = async (): Promise<ProfileResponse> => {
-  return api.get<ProfileResponse>("/profile/me");
-};
+export const fetchProfile = async (): Promise<ProfileResponse> =>
+  api.get<ProfileResponse>("/profile/me");
 
 export const updateProfileMetadata = async (
   payload: ProfileMetadataUpdatePayload
-): Promise<ProfileResponse> => {
-  return api.patch<ProfileResponse>("/profile/me/metadata", payload);
-};
+): Promise<ProfileResponse> =>
+  api.patch<ProfileResponse>("/profile/me/metadata", payload);
 
 export const fetchProfileActivity = async (
   params: ProfileActivityQuery = {}
-): Promise<ProfileActivityResponse> => {
-  return api.get<ProfileActivityResponse>("/profile/me/activity", { params });
-};
+): Promise<ProfileActivityResponse> =>
+  api.get<ProfileActivityResponse>("/profile/me/activity", { params });

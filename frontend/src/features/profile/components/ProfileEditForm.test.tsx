@@ -95,9 +95,11 @@ describe("ProfileEditForm", () => {
     await user.click(submitButton);
 
     expect(handleSubmit).toHaveBeenCalledTimes(1);
-    expect(submitButton).toBeDisabled();
-    expect(
-      submitButton.querySelector("[data-testid='spinner']")
-    ).toBeInTheDocument();
+    await waitFor(() => {
+      expect(submitButton).toBeDisabled();
+      expect(
+        submitButton.querySelector("[data-testid='spinner']")
+      ).toBeInTheDocument();
+    });
   });
 });
