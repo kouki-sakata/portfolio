@@ -6,6 +6,8 @@ import com.example.teamdev.service.profile.ProfileMetadataRepository;
 import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.example.teamdev.service.profile.model.ProfileWorkScheduleDocument;
 import com.example.teamdev.testconfig.PostgresContainerSupport;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.time.Instant;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,6 +33,9 @@ class ProfileMetadataRepositoryTest extends PostgresContainerSupport {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUpEmployee() {
@@ -65,7 +70,7 @@ class ProfileMetadataRepositoryTest extends PostgresContainerSupport {
 
     @DisplayName("メタデータの保存でJSONBと更新日時が更新される")
     @Test
-    void saveShouldPersistMetadataAndTouchTimestamp() {
+    void saveShouldPersistMetadataAndTouchTimestamp() throws Exception {
         ProfileMetadataDocument payload = new ProfileMetadataDocument(
             "東京都千代田区",
             "開発部",
@@ -88,13 +93,13 @@ class ProfileMetadataRepositoryTest extends PostgresContainerSupport {
             EMPLOYEE_ID
         );
 
-        assertThat(storedJson)
-            .contains("\"address\":\"東京都千代田区\"")
-            .contains("\"workStyle\":\"remote\"")
-            .contains("\"breakMinutes\":45")
-            .contains("\"status\":\"leave\"")
-            .contains("\"joinedAt\":\"2024-04-01\"")
-            .contains("\"avatarUrl\":\"https://cdn.example.com/avatar.png\"");
+        JsonNode root = objectMapper.readTree(storedJson);
+        assertThat(root.path("address").asText()).isEqualTo("東京都千代田区");
+        assertThat(root.path("workStyle").asText()).isEqualTo("remote");
+        assertThat(root.path("status").asText()).isEqualTo("leave");
+        assertThat(root.path("joinedAt").asText()).isEqualTo("2024-04-01");
+        assertThat(root.path("avatarUrl").asText()).isEqualTo("https://cdn.example.com/avatar.png");
+        assertThat(root.path("schedule").path("breakMinutes").asInt()).isEqualTo(45);
 
         Timestamp updatedAt = jdbcTemplate.queryForObject(
             "SELECT update_date FROM employee WHERE id = ?",
