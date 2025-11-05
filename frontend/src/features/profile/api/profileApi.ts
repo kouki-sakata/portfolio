@@ -117,5 +117,6 @@ export type ProfileStatisticsResponse = {
   monthly: MonthlyAttendanceDto[];
 };
 
-export const fetchProfileStatistics = async (): Promise<ProfileStatisticsResponse> =>
-  api.get<ProfileStatisticsResponse>("/profile/me/statistics");
+export const fetchProfileStatistics =
+  async (): Promise<ProfileStatisticsResponse> =>
+    api.get<ProfileStatisticsResponse>("/profile/me/statistics");

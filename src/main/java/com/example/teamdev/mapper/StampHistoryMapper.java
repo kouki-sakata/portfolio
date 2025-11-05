@@ -1,5 +1,6 @@
 package com.example.teamdev.mapper;
 
+import com.example.teamdev.entity.MonthlyAttendanceStats;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampHistoryDisplay;
 import org.apache.ibatis.annotations.Delete;
@@ -47,4 +48,17 @@ public interface StampHistoryMapper {
 
     // 追加：打刻記録テーブルのレコードを更新する
     void update(StampHistory entity);
+
+    /**
+     * 指定期間の月次勤怠統計を取得する
+     * @param employeeId 従業員ID
+     * @param startMonth 開始年月（YYYY-MM形式）
+     * @param endMonth 終了年月（YYYY-MM形式）
+     * @return 月次勤怠統計のリスト
+     */
+    List<MonthlyAttendanceStats> findMonthlyStatistics(
+            @Param("employeeId") int employeeId,
+            @Param("startMonth") String startMonth,
+            @Param("endMonth") String endMonth
+    );
 }

@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MiniStat } from "@/features/profile/components/MiniStat";
+import { CHART_GRID_CONFIG } from "@/features/profile/constants/chartStyles";
 import type { AttendanceSummaryViewModel } from "@/features/profile/types";
 import { cn } from "@/shared/utils/cn";
 
@@ -68,7 +69,7 @@ export const ProfileSummaryCard = ({
       return [];
     }
     return summary.trendData.map((d) => ({
-      month: `${d.month}月`,
+      month: `${d.month.slice(5)}`,
       totalHours: d.totalHours,
       overtimeHours: d.overtimeHours,
     }));
@@ -140,11 +141,7 @@ export const ProfileSummaryCard = ({
               data={chartData}
               margin={{ bottom: 5, left: 0, right: 20, top: 5 }}
             >
-              <CartesianGrid
-                stroke="hsl(var(--border))"
-                strokeDasharray="3 3"
-                strokeOpacity={0.3}
-              />
+              <CartesianGrid {...CHART_GRID_CONFIG} />
               <XAxis
                 axisLine={{ stroke: "hsl(var(--border))" }}
                 dataKey="month"
@@ -152,16 +149,10 @@ export const ProfileSummaryCard = ({
               />
               <YAxis
                 axisLine={{ stroke: "hsl(var(--border))" }}
-                label={{
-                  angle: -90,
-                  position: "insideLeft",
-                  value: "時間(h)",
-                }}
                 tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "0.5rem",
                 }}
@@ -173,7 +164,6 @@ export const ProfileSummaryCard = ({
                 dataKey="totalHours"
                 dot={{ r: 4 }}
                 name="総労働時間"
-                stroke="hsl(var(--primary))"
                 strokeWidth={2}
                 type="monotone"
               />

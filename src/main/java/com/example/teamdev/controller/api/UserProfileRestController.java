@@ -1,5 +1,7 @@
 package com.example.teamdev.controller.api;
 
+import com.example.teamdev.dto.api.profile.AttendanceSummaryResponse;
+import com.example.teamdev.dto.api.profile.MonthlyAttendanceResponse;
 import com.example.teamdev.dto.api.profile.ProfileActivityItemResponse;
 import com.example.teamdev.dto.api.profile.ProfileActivityResponse;
 import com.example.teamdev.dto.api.profile.ProfileEmployeeResponse;
@@ -7,6 +9,7 @@ import com.example.teamdev.dto.api.profile.ProfileMetadataResponse;
 import com.example.teamdev.dto.api.profile.ProfileMetadataUpdateRequest;
 import com.example.teamdev.dto.api.profile.ProfileResponse;
 import com.example.teamdev.dto.api.profile.ProfileScheduleResponse;
+import com.example.teamdev.dto.api.profile.ProfileStatisticsResponse;
 import com.example.teamdev.service.profile.ProfileAppService;
 import com.example.teamdev.service.profile.model.ProfileActivityEntry;
 import com.example.teamdev.service.profile.model.ProfileActivityPage;
@@ -14,6 +17,7 @@ import com.example.teamdev.service.profile.model.ProfileActivityQuery;
 import com.example.teamdev.service.profile.model.ProfileAggregate;
 import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.example.teamdev.service.profile.model.ProfileMetadataUpdateCommand;
+import com.example.teamdev.service.profile.model.ProfileStatisticsData;
 import com.example.teamdev.service.profile.model.ProfileWorkScheduleDocument;
 import com.example.teamdev.util.SecurityUtil;
 import jakarta.validation.Valid;
@@ -108,6 +112,13 @@ public class UserProfileRestController {
         return ResponseEntity.ok(toResponse(result));
     }
 
+    @GetMapping("/me/statistics")
+    public ResponseEntity<ProfileStatisticsResponse> getSelfStatistics() {
+        int currentId = requireCurrentEmployeeId();
+        ProfileStatisticsData data = profileAppService.getProfileStatistics(currentId, currentId);
+        return ResponseEntity.ok(toStatisticsResponse(data));
+    }
+
     private ProfileMetadataUpdateCommand toCommand(ProfileMetadataUpdateRequest request) {
         ProfileWorkScheduleDocument schedule = new ProfileWorkScheduleDocument(
             request.scheduleStart(),
@@ -185,6 +196,45 @@ public class UserProfileRestController {
             entry.beforeSnapshot(),
             entry.afterSnapshot()
         );
+    }
+
+    private ProfileStatisticsResponse toStatisticsResponse(ProfileStatisticsData data) {
+        // トレンドデータの変換
+        List<AttendanceSummaryResponse.MonthlyTrendResponse> trendResponses = data.summary().trend().stream()
+            .map(trend -> new AttendanceSummaryResponse.MonthlyTrendResponse(
+                trend.month(),
+                trend.totalHours(),
+                trend.overtimeHours()
+            ))
+            .toList();
+
+        // 当月データの変換
+        AttendanceSummaryResponse.CurrentMonthData currentMonthData =
+            new AttendanceSummaryResponse.CurrentMonthData(
+                data.summary().totalHours(),
+                data.summary().overtimeHours(),
+                data.summary().lateCount(),
+                data.summary().paidLeaveHours()
+            );
+
+        // サマリーレスポンスの構築
+        AttendanceSummaryResponse summaryResponse = new AttendanceSummaryResponse(
+            currentMonthData,
+            trendResponses
+        );
+
+        // 月次データの変換
+        List<MonthlyAttendanceResponse> monthlyResponses = data.monthly().stream()
+            .map(monthly -> new MonthlyAttendanceResponse(
+                monthly.month(),
+                monthly.totalHours(),
+                monthly.overtimeHours(),
+                monthly.lateCount(),
+                monthly.paidLeaveHours()
+            ))
+            .toList();
+
+        return new ProfileStatisticsResponse(summaryResponse, monthlyResponses);
     }
 
     private Optional<Instant> parseInstant(String value) {
