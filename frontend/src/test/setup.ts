@@ -6,14 +6,16 @@ import { mswServer } from "@/test/msw/server";
 
 // Radix UIの動的IDを正規化するスナップショットシリアライザー
 // CI環境とローカル環境でIDが異なる問題を解決
+// 正規表現をトップレベルで定義してパフォーマンスを最適化
+const RADIX_ID_REGEX = /radix-[a-z0-9«»]+/i;
+const RADIX_ID_REGEX_GLOBAL = /radix-[a-z0-9«»]+/gi;
+
 expect.addSnapshotSerializer({
-  test: (val) => {
-    return typeof val === "string" && /radix-[a-z0-9«»]+/i.test(val);
-  },
+  test: (val) => typeof val === "string" && RADIX_ID_REGEX.test(val),
   print: (val) => {
     const normalized = String(val).replace(
-      /radix-[a-z0-9«»]+/gi,
-      "radix-NORMALIZED-ID",
+      RADIX_ID_REGEX_GLOBAL,
+      "radix-NORMALIZED-ID"
     );
     return `"${normalized}"`;
   },
