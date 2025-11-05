@@ -7,7 +7,9 @@ import com.example.teamdev.dto.api.profile.ProfileMetadataResponse;
 import com.example.teamdev.dto.api.profile.ProfileMetadataUpdateRequest;
 import com.example.teamdev.dto.api.profile.ProfileResponse;
 import com.example.teamdev.dto.api.profile.ProfileScheduleResponse;
+import com.example.teamdev.dto.api.profile.ProfileStatisticsResponse;
 import com.example.teamdev.service.profile.ProfileAppService;
+import com.example.teamdev.service.profile.ProfileAttendanceStatisticsService;
 import com.example.teamdev.service.profile.model.ProfileActivityEntry;
 import com.example.teamdev.service.profile.model.ProfileActivityPage;
 import com.example.teamdev.service.profile.model.ProfileActivityQuery;
@@ -39,9 +41,14 @@ import org.springframework.web.server.ResponseStatusException;
 public class UserProfileRestController {
 
     private final ProfileAppService profileAppService;
+    private final ProfileAttendanceStatisticsService statisticsService;
 
-    public UserProfileRestController(ProfileAppService profileAppService) {
+    public UserProfileRestController(
+        ProfileAppService profileAppService,
+        ProfileAttendanceStatisticsService statisticsService
+    ) {
         this.profileAppService = profileAppService;
+        this.statisticsService = statisticsService;
     }
 
     @GetMapping("/me")
@@ -106,6 +113,13 @@ public class UserProfileRestController {
             )
         );
         return ResponseEntity.ok(toResponse(result));
+    }
+
+    @GetMapping("/me/statistics")
+    public ResponseEntity<ProfileStatisticsResponse> getSelfStatistics() {
+        int currentId = requireCurrentEmployeeId();
+        ProfileStatisticsResponse statistics = statisticsService.getStatistics(currentId);
+        return ResponseEntity.ok(statistics);
     }
 
     private ProfileMetadataUpdateCommand toCommand(ProfileMetadataUpdateRequest request) {
