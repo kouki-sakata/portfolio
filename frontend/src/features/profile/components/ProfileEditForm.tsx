@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -88,12 +88,31 @@ export const ProfileEditForm = ({
     mode: "onSubmit",
   });
 
+  const isMountedRef = useRef(true);
+  const [isPendingSubmit, setIsPendingSubmit] = useState(false);
+  const isProcessing = isSubmitting || isPendingSubmit;
+
   useEffect(() => {
     reset(defaultValues);
   }, [defaultValues, reset]);
 
+  useEffect(
+    () => () => {
+      isMountedRef.current = false;
+    },
+    []
+  );
+
   const handleFormSubmit = handleSubmit(async (values) => {
-    await onSubmit(values);
+    setIsPendingSubmit(true);
+
+    try {
+      await onSubmit(values);
+    } finally {
+      if (isMountedRef.current) {
+        setIsPendingSubmit(false);
+      }
+    }
   });
 
   return (
@@ -102,7 +121,7 @@ export const ProfileEditForm = ({
       className="grid gap-4 py-4"
       onSubmit={handleFormSubmit}
     >
-      <fieldset className="grid gap-4" disabled={isSubmitting}>
+      <fieldset className="grid gap-4" disabled={isProcessing}>
         <div className="grid gap-2">
           <Label htmlFor="profile-department">部署</Label>
           <Input
@@ -260,8 +279,8 @@ export const ProfileEditForm = ({
       </fieldset>
 
       <div className="flex items-center gap-2">
-        <Button className="rounded-2xl" disabled={isSubmitting} type="submit">
-          {isSubmitting ? (
+        <Button className="rounded-2xl" disabled={isProcessing} type="submit">
+          {isProcessing ? (
             <span className="inline-flex items-center gap-2">
               <span
                 className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
@@ -276,7 +295,7 @@ export const ProfileEditForm = ({
         {onCancel ? (
           <Button
             className="rounded-2xl"
-            disabled={isSubmitting}
+            disabled={isProcessing}
             onClick={onCancel}
             type="button"
             variant="outline"
