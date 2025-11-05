@@ -62,14 +62,16 @@
             stamp_time,
             employee_id,
             update_employee_id,
-            update_date
+            update_date,
+            detail
         ) VALUES (
             #{display_name},
             #{operation_type},
             #{stamp_time},
             #{employee_id},
             #{update_employee_id},
-            #{update_date}
+            #{update_date},
+            CAST(COALESCE(#{detail}, '{}') AS jsonb)
         )
     </insert>
 

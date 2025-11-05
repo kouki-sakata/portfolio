@@ -25,6 +25,12 @@ const navigationGroups: NavigationGroup[] = [
         icon: "home",
       },
       {
+        id: "profile",
+        label: "プロフィール",
+        href: "/profile",
+        icon: "user-circle",
+      },
+      {
         id: "history",
         label: "勤怠履歴",
         href: "/stamp-history",

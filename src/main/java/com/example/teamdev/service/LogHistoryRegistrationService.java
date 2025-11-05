@@ -40,6 +40,7 @@ public class LogHistoryRegistrationService {
             entity.setEmployee_id(employeeId);
             entity.setUpdate_employee_id(update_employee_id);
             entity.setUpdate_date(update_date);
+            entity.setDetail("{}");
             mapper.save(entity);
         }
     }

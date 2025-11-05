@@ -2,7 +2,7 @@
 CLAUDE.md
 .mcp.json
 .claude
-
+*__snapshots__/
 
 # Compiled class files
 *.class

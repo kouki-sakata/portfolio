@@ -51,6 +51,7 @@ public final class AppConstants {
         public static final int FUNCTION_STAMP = 1;        // 打刻機能
         public static final int FUNCTION_NEWS = 2;         // お知らせ機能
         public static final int FUNCTION_EMPLOYEE = 3;     // 従業員機能
+        public static final int FUNCTION_PROFILE = 6;      // プロフィール機能
         
         // 操作種別ID
         public static final int OPERATION_ATTENDANCE = 1;  // 出勤
@@ -58,6 +59,8 @@ public final class AppConstants {
         public static final int OPERATION_REGISTER = 3;    // 登録
         public static final int OPERATION_DELETE = 4;      // 削除
         public static final int OPERATION_RELEASE = 5;     // 公開
+        public static final int OPERATION_PROFILE_VIEW = 6;    // プロフィール閲覧
+        public static final int OPERATION_PROFILE_UPDATE = 7;  // プロフィール更新
 
         private LogHistory() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

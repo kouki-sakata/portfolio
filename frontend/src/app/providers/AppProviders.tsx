@@ -55,6 +55,12 @@ const NewsManagementRoute = lazy(() =>
   }))
 );
 
+const ProfileRoute = lazy(() =>
+  import("@/features/profile/routes/ProfileRoute").then((module) => ({
+    default: module.ProfileRoute,
+  }))
+);
+
 import { useToast } from "@/hooks/use-toast";
 import {
   type AuthEventPayload,
@@ -136,6 +142,10 @@ const router = createBrowserRouter([
             path: "stamp-history",
             element: <StampHistoryRoute />,
             loader: () => stampHistoryRouteLoader(queryClient),
+          },
+          {
+            path: "profile",
+            element: <ProfileRoute />,
           },
           {
             path: "news-management",

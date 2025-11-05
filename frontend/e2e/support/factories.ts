@@ -125,13 +125,9 @@ export const TEST_CREDENTIALS = {
  * 打刻タイプ
  */
 export const STAMP_TYPES = {
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   ATTENDANCE: "1", // 出勤
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   DEPARTURE: "2", // 退勤
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   BREAK_START: "3", // 休憩開始
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   BREAK_END: "4", // 休憩終了
 } as const;
 
@@ -139,9 +135,7 @@ export const STAMP_TYPES = {
  * 深夜勤務フラグ
  */
 export const NIGHT_WORK_FLAGS = {
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   OFF: "0",
-  // biome-ignore lint/style/useNamingConvention: E2E test constant
   ON: "1",
 } as const;
 

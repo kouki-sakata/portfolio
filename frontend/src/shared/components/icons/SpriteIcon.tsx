@@ -28,6 +28,7 @@ import { __iconNode as edit } from "lucide-react/dist/esm/icons/square-pen";
 import { __iconNode as sun } from "lucide-react/dist/esm/icons/sun";
 import { __iconNode as trash2 } from "lucide-react/dist/esm/icons/trash-2";
 import { __iconNode as alertTriangle } from "lucide-react/dist/esm/icons/triangle-alert";
+import { __iconNode as userCircle } from "lucide-react/dist/esm/icons/user-round";
 import { __iconNode as users } from "lucide-react/dist/esm/icons/users";
 import { __iconNode as x } from "lucide-react/dist/esm/icons/x";
 import { createElement, type SVGAttributes } from "react";
@@ -86,6 +87,7 @@ const spriteIconDefinitionsInternal = {
   "sliders-horizontal": slidersHorizontal,
   sun,
   "trash-2": trash2,
+  "user-circle": userCircle,
   users,
   x,
 } as const satisfies Record<string, IconNode>;

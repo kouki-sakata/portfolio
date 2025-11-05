@@ -316,6 +316,7 @@ describe("HomePage", () => {
 
   describe("打刻カードの機能", () => {
     beforeEach(async () => {
+      setupPublishedNewsResponse();
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
           HttpResponse.json(mockDashboardData)
