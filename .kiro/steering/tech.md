@@ -45,6 +45,15 @@ npm run generate:api # OpenAPI型生成
 - **カテゴリマッピング**: コンテンツ先頭の【カテゴリ】パターンを解析し、Badge variantに変換
 - **型安全性**: 元のAPIレスポンス型を拡張（`NewsViewModel = NewsResponse & { ... }`）し、型の一貫性を保持
 
+#### ProfileのView Model変換パターン（2025-11-03 確立）
+- **複数変換関数パターン**: 用途別に3つの変換関数を提供
+  - `createOverviewViewModel`: API → UI表示用モデル（閲覧画面）
+  - `createMetadataFormValues`: API → フォーム編集用モデル（編集画面）
+  - `createActivityViewModel`: アクティビティAPI → テーブル表示用モデル（履歴画面）
+- **型安全な正規化**: Nullable値のデフォルト処理（`toNullable`, `toWorkStyle`, `toStatus`）
+- **Enum制約**: `workStyle`, `status` など限定値をTypeScript型で保証
+- **スナップショット正規化**: 監査ログの before/after スナップショットを null-safe に変換
+
 #### TanStack Table統合パターン（News機能で確立）
 - **カラム定義のフック化**: `useNewsColumns`でテーブル列定義をUI層から分離し、コールバック注入でイベントハンドリング
 - **イベント伝播制御**: チェックボックス/ボタンの`stopPropagation`でテーブル行クリックと分離
@@ -121,6 +130,35 @@ npm run generate:api # OpenAPI型生成
   - お知らせ: NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
 - **Controller層での組み立て**: NewsRestController が複数の専門サービスを注入し、エンドポイントごとに適切なサービスを呼び出す
 
+### DDDアプローチの段階的導入（Profile機能で確立、2025-11-03）
+
+**注**: 既存機能（News, StampHistory）はMyBatis + 従来型Serviceパターンを継続使用。Profile機能は新しいDDDアプローチの実験場として位置づけ。
+
+#### Application Service層
+- **ProfileAppService**: ユースケースをオーケストレーション、トランザクション境界を制御
+- **責務**: 権限チェック → データ取得 → ドメインロジック適用 → 永続化 → 監査ログ記録
+- **依存関係**: Repository、専門サービス（ActivityQueryService、AuditService）、Clock
+
+#### Domain Model層（service/profile/model/）
+- **Aggregate**: `ProfileAggregate`（ルートエンティティ、トランザクション境界）
+- **Value Objects**: `ProfileMetadataDocument`、`ProfileWorkScheduleDocument`（不変、値による等価性）
+- **Command/Query Objects**: `ProfileMetadataUpdateCommand`（ユーザー意図）、`ProfileActivityQuery`（検索条件）
+- **Change Tracking**: `ProfileChangeSet`（変更差分記録、監査証跡）
+- **Page Objects**: `ProfileActivityPage`（ページネーション結果）
+
+#### Repository層
+- **ProfileMetadataRepository**: ドメインモデルの永続化・復元を担当
+- **JdbcTemplate経由でPostgreSQL JSONB直接操作**（MyBatisマッパー不使用）
+- **DocumentパターンでJSONBスキーマを型安全に管理**（JSON ↔ ドメインモデル変換をカプセル化）
+
+#### アクセス制御と監査
+- **enforceAccessメソッド**: 自己アクセス/管理者権限を検証（BusinessルールをApplication Service層で実施）
+- **ProfileAuditService**: 閲覧・更新イベントを`profile_activity_log`テーブルに記録（JSONB活用）
+
+#### DDDを採用すべきタイミング
+- ✅ 複雑なビジネスルール、頻繁に変わる要件、監査証跡が重要、柔軟なデータ構造
+- ❌ シンプルなCRUD、安定したスキーマ、単純なクエリ → 従来型（MyBatis）を継続
+
 ### API層の実装パターン
 - **REST Controller層**: record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）で入力検証
 - **単体更新API**: `/api/stamps/{id}` PUT/DELETE が `StampRestController` の `resolveTimeValue` で未入力フィールドを既存値にフォールバックし、`StampEditService` のオーケストレーションと整合
@@ -184,4 +222,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-03 (ホーム打刻クロック、AdminGuard、打刻更新APIの指針を追加)*
+*Last Updated: 2025-11-05 (Profile機能のDDDアーキテクチャとView Model変換パターンを反映)*

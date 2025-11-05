@@ -27,7 +27,9 @@ TeamDevelopBravo-main/
 │   ├── 従業員: EmployeeService（ファサード）、QueryService、CommandService
 │   ├── 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService
 │   ├── 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter
-│   └── お知らせ: NewsManageService（ファサード、読み取り専用）、NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
+│   ├── お知らせ: NewsManageService（ファサード、読み取り専用）、NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
+│   └── プロフィール（service/profile/）: ProfileAppService、ProfileActivityQueryService、ProfileAuditService、ProfileMetadataRepository
+│       └── model/: ProfileAggregate、ProfileMetadataDocument、ProfileWorkScheduleDocument、ProfileChangeSet、ProfileActivityPage等（DDDドメインモデル）
 ├── mapper/           # MyBatisマッパー
 ├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
 ├── entity/           # エンティティ（Employee、News、StampHistory、StampHistoryDisplay等）
@@ -61,13 +63,20 @@ TeamDevelopBravo-main/
 │   │   ├── lib/      # newsViewModel.ts（View変換、派生データ生成）、categoryBadge.ts（カテゴリ→Badge variant）
 │   │   ├── routes/   # NewsManagementRoute.tsx
 │   │   └── types/    # bulk.ts（バルクAPI型定義）
-│   └── stampHistory/ # 打刻履歴管理
-│       ├── api/      # stampApi.ts（履歴取得、編集・削除、バッチ操作）
-│       ├── components/ # StampHistoryPage、MonthlyStatsCard、EditStampDialog、DeleteStampDialog、ExportDialog
-│       ├── hooks/    # useStampHistoryExport（CSV/TSV/Excel-CSVエクスポート）
-│       ├── lib/      # batch-processor、csv-generator、blob-downloader、summary
-│       ├── routes/   # StampHistoryRoute
-│       └── types/    # index.ts（MonthlyStats、ExportConfig、CSV型定義）
+│   ├── stampHistory/ # 打刻履歴管理
+│   │   ├── api/      # stampApi.ts（履歴取得、編集・削除、バッチ操作）
+│   │   ├── components/ # StampHistoryPage、MonthlyStatsCard、EditStampDialog、DeleteStampDialog、ExportDialog
+│   │   ├── hooks/    # useStampHistoryExport（CSV/TSV/Excel-CSVエクスポート）
+│   │   ├── lib/      # batch-processor、csv-generator、blob-downloader、summary
+│   │   ├── routes/   # StampHistoryRoute
+│   │   └── types/    # index.ts（MonthlyStats、ExportConfig、CSV型定義）
+│   └── profile/      # プロフィール管理（DDD対応フロント）
+│       ├── api/      # profileApi.ts（REST呼び出し）
+│       ├── components/ # ProfilePage、ProfileEditForm、ProfileOverviewCard、ProfileSummaryCard、ProfileMonthlyDetailCard、ProfileActivityTable、MiniStat（8コンポーネント、全てテスト完備）
+│       ├── hooks/    # useProfile.ts（React Query統合）
+│       ├── lib/      # profileViewModel.ts（3つの変換関数: createOverviewViewModel、createMetadataFormValues、createActivityViewModel）
+│       ├── routes/   # ProfileRoute.tsx
+│       └── types/    # index.ts（UI型定義）
 ├── shared/           # 共通コンポーネント
 │   ├── api/          # API共通設定、エラークラス
 │   ├── components/   # layout、loading
@@ -147,4 +156,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-11-03 (ホーム時刻同期パターンとAdminGuard構成を追加)*
+*Last Updated: 2025-11-05 (Profile機能のDDD構造とView Model変換パターンを反映)*

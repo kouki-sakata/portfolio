@@ -25,6 +25,13 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - React Queryによる楽観的更新・キャッシュ管理
 - TanStack Table統合（ソート・フィルタ・行選択）
 
+### プロフィール管理
+- ユーザープロフィール閲覧・編集（従業員自身/管理者）
+- メタデータ管理（JSONB格納、部署・住所・勤務スタイル・勤務時間等）
+- アクティビティ履歴（閲覧・更新の監査証跡、ページネーション対応）
+- ロールベースアクセス制御（自身は閲覧・編集可、管理者は全員アクセス可）
+- DDD（Domain-Driven Design）アーキテクチャによる柔軟な実装
+
 ## 主要な価値提案
 
 ### 技術的優位性
@@ -86,6 +93,15 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - GlobalErrorHandler + Toast + error-logger による例外分類と通知整流
   - authEvents + QueryClient エラーフックで 401/403 を自動リダイレクト & セッションリセット
   - RouteLoader でプリフェッチと権限制御（redirect + トースト）を共通化
+- ✅ プロフィール管理機能完全実装（2025-11-03 最終更新）
+  - DDD（Domain-Driven Design）アーキテクチャの採用
+  - Application Service層（ProfileAppService）によるユースケース制御
+  - Domain Model層（Aggregate、Value Objects、Command/Query Objects）
+  - Repository層（JSONB直接操作、MyBatis不使用）
+  - View Model変換パターン（3つの変換関数: Overview/Form/Activity）
+  - アクティビティ履歴のページネーション対応
+  - 変更差分追跡（ProfileChangeSet）と監査ログ記録
+  - 包括的テストカバレッジ（8コンポーネントすべてにテスト完備）
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
@@ -95,4 +111,4 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-11-03 (ホーム打刻クロックとタイムスタンプ連携を反映)*
+*Last Updated: 2025-11-05 (プロフィール管理機能とDDDアーキテクチャを反映)*

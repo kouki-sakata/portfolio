@@ -1,5 +1,57 @@
 # Steering Documents Changelog
 
+## 2025-11-05 (Update 32)
+
+### Updated Documents
+- `product.md` - プロフィール管理機能の完全実装を追記
+- `tech.md` - DDDアーキテクチャとProfileのView Model変換パターンを追加
+- `structure.md` - Profile機能のDDD構造を反映
+- `CHANGELOG.md` - 本更新を記録
+
+### Key Changes
+- **プロフィール管理機能の完全実装**
+  - 2025-11-03時点でプロフィール管理機能（PR #98）が完全実装済みであることを文書化
+  - REST API、フロントエンド、テストの全実装が完了（8コンポーネント全てにテスト完備）
+  - DDD（Domain-Driven Design）アーキテクチャの初導入事例として記録
+
+- **DDDアプローチの段階的導入を明文化**
+  - **Application Service層**: `ProfileAppService`によるユースケースオーケストレーション
+  - **Domain Model層**: `service/profile/model/`配下にAggregate、Value Objects、Command/Query Objectsを配置
+  - **Repository層**: `ProfileMetadataRepository`がJdbcTemplate経由でPostgreSQL JSONBを直接操作（MyBatis不使用）
+  - **アクセス制御**: `enforceAccess`メソッドで自己アクセス/管理者権限を検証
+  - **監査ログ**: `ProfileAuditService`で閲覧・更新イベントを記録
+
+- **アーキテクチャ進化の二重性を記録**
+  - 既存機能（News, StampHistory）: MyBatis + 従来型Serviceパターンを継続
+  - Profile機能: DDD + Repository + Application Serviceの新しいアプローチ
+  - DDDを採用すべきタイミングの判断基準を明記（複雑なビジネスルール、柔軟なデータ構造等）
+
+- **ProfileのView Model変換パターンの確立**
+  - 複数変換関数パターン: 用途別に3つの変換関数（Overview/Form/Activity）を提供
+  - 型安全な正規化: Nullable値のデフォルト処理（`toNullable`, `toWorkStyle`, `toStatus`）
+  - Enum制約: `workStyle`, `status`など限定値をTypeScript型で保証
+  - スナップショット正規化: 監査ログのbefore/afterスナップショットをnull-safe変換
+
+- **ドメインモデル配置の新パターン**
+  - `service/profile/model/`配下にドメインモデルを集約（従来の`entity/`や`dto/`とは異なる役割）
+  - 9つのドメインモデル: Aggregate, Value Objects, Command/Query Objects, Change Tracking, Page Objects
+  - DocumentパターンでJSONBスキーマを型安全に管理
+
+### Impact
+- DDD実装の参照モデルとして、今後の複雑な機能実装時の設計指針が確立
+- MyBatisとRepositoryパターンの使い分け基準が明確化され、適切なアーキテクチャ選択が可能に
+- JSONB活用のドキュメントストアパターンが実証され、柔軟なスキーマ要件への対応手法を獲得
+- View Model変換パターンが複数変換関数パターンに進化し、画面種別ごとの最適化が可能に
+- アーキテクチャの段階的移行戦略が文書化され、レガシー/モダンパターンの共存が正当化
+
+### Code Drift Warnings
+なし。コードベースと steering の内容は一致しています。
+
+### Note
+プロフィール管理機能は2025-11-03のPR #98でマージ完了。本更新（Update 32）はProfile機能のDDDアーキテクチャとアーキテクチャ進化戦略を詳細化し、今後の複雑な機能開発における設計指針を確立しました。既存機能は従来型パターンを維持し、新規の複雑な機能にはDDDアプローチを検討するという二重アーキテクチャの共存戦略を明文化しています。
+
+---
+
 ## 2025-11-03 (Update 31)
 
 ### Updated Documents
