@@ -70,15 +70,13 @@ export const ProfileSummaryCard = ({
   }));
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || loading || !summary) {
       return;
     }
-
     const element = chartContainerRef.current;
     if (!element) {
       return;
     }
-
     const update = () => {
       const rect = element.getBoundingClientRect();
       const measuredWidth = rect.width > 0 ? rect.width : element.clientWidth;
@@ -88,18 +86,15 @@ export const ProfileSummaryCard = ({
       const nextHeight = measuredHeight > 0 ? measuredHeight : 256;
       setChartSize({ width: nextWidth, height: nextHeight });
     };
-
     update();
-
     if (typeof ResizeObserver === "function") {
       const observer = new ResizeObserver(() => update());
       observer.observe(element);
       return () => observer.disconnect();
     }
-
     const timeoutId = window.setTimeout(update, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [loading, summary]);
 
   const extractMonth = useCallback((value: string): string => {
     const segments = value.split("-");
