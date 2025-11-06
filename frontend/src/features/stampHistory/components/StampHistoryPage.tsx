@@ -12,6 +12,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
@@ -215,93 +223,74 @@ export const StampHistoryPage = () => {
       </SuspenseWrapper>
 
       <div className="mt-6">
-        <div className="rounded-md border">
-          <div className="overflow-x-auto">
-            <table className="w-full border-separate">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    日付
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    曜日
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    出勤時刻
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    退勤時刻
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    更新日時
-                  </th>
-                  <th className="px-4 py-3 text-left font-medium text-sm">
-                    操作
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {data.entries.length === 0 ? (
-                  <tr>
-                    <td
-                      className="px-4 py-8 text-center text-muted-foreground"
-                      colSpan={6}
-                    >
-                      対象期間の打刻はありません。
-                    </td>
-                  </tr>
-                ) : (
-                  data.entries.map((entry) => (
-                    <tr
-                      className="hover:bg-muted/50"
-                      key={`${entry.year}-${entry.month}-${entry.day}`}
-                    >
-                      <td className="px-4 py-3">
-                        {entry.year}/{entry.month}/{entry.day}
-                      </td>
-                      <td className="px-4 py-3">{entry.dayOfWeek}</td>
-                      <td className="px-4 py-3">{entry.inTime ?? "-"}</td>
-                      <td className="px-4 py-3">{entry.outTime ?? "-"}</td>
-                      <td className="px-4 py-3 text-muted-foreground text-sm">
-                        {entry.updateDate ?? "-"}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex gap-2">
-                          <Button
-                            disabled={!entry.id}
-                            onClick={() => handleEdit(entry)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <SpriteIcon
-                              className="h-4 w-4"
-                              decorative
-                              name="edit"
-                            />
-                            <span className="sr-only">編集</span>
-                          </Button>
-                          <Button
-                            disabled={!entry.id}
-                            onClick={() => handleDelete(entry)}
-                            size="sm"
-                            variant="ghost"
-                          >
-                            <SpriteIcon
-                              className="h-4 w-4"
-                              decorative
-                              name="trash-2"
-                            />
-                            <span className="sr-only">削除</span>
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>日付</TableHead>
+              <TableHead>曜日</TableHead>
+              <TableHead>出勤時刻</TableHead>
+              <TableHead>退勤時刻</TableHead>
+              <TableHead>更新日時</TableHead>
+              <TableHead>操作</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.entries.length === 0 ? (
+              <TableRow>
+                <TableCell
+                  className="py-8 text-center text-muted-foreground"
+                  colSpan={6}
+                >
+                  対象期間の打刻はありません。
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.entries.map((entry) => (
+                <TableRow key={`${entry.year}-${entry.month}-${entry.day}`}>
+                  <TableCell>
+                    {entry.year}/{entry.month}/{entry.day}
+                  </TableCell>
+                  <TableCell>{entry.dayOfWeek}</TableCell>
+                  <TableCell>{entry.inTime ?? "-"}</TableCell>
+                  <TableCell>{entry.outTime ?? "-"}</TableCell>
+                  <TableCell className="text-muted-foreground text-sm">
+                    {entry.updateDate ?? "-"}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        disabled={!entry.id}
+                        onClick={() => handleEdit(entry)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <SpriteIcon
+                          className="h-4 w-4"
+                          decorative
+                          name="edit"
+                        />
+                        <span className="sr-only">編集</span>
+                      </Button>
+                      <Button
+                        disabled={!entry.id}
+                        onClick={() => handleDelete(entry)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <SpriteIcon
+                          className="h-4 w-4"
+                          decorative
+                          name="trash-2"
+                        />
+                        <span className="sr-only">削除</span>
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
 
       <EditStampDialog

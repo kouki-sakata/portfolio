@@ -87,3 +87,36 @@ export const fetchProfileActivity = async (
   params: ProfileActivityQuery = {}
 ): Promise<ProfileActivityResponse> =>
   api.get<ProfileActivityResponse>("/profile/me/activity", { params });
+
+export type MonthlyTrendDto = {
+  month: string;
+  totalHours: number;
+  overtimeHours: number;
+};
+
+export type AttendanceSummaryDto = {
+  currentMonth: {
+    totalHours: number;
+    overtimeHours: number;
+    lateCount: number;
+    paidLeaveHours: number;
+  };
+  trendData: MonthlyTrendDto[];
+};
+
+export type MonthlyAttendanceDto = {
+  month: string;
+  totalHours: number;
+  overtimeHours: number;
+  lateCount: number;
+  paidLeaveHours: number;
+};
+
+export type ProfileStatisticsResponse = {
+  summary: AttendanceSummaryDto;
+  monthly: MonthlyAttendanceDto[];
+};
+
+export const fetchProfileStatistics =
+  async (): Promise<ProfileStatisticsResponse> =>
+    api.get<ProfileStatisticsResponse>("/profile/me/statistics");

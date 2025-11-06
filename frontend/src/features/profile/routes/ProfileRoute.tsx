@@ -5,6 +5,7 @@ import { ProfilePage } from "@/features/profile/components/ProfilePage";
 import {
   useProfileActivityQuery,
   useProfileOverviewQuery,
+  useProfileStatisticsQuery,
   useUpdateProfileMetadata,
 } from "@/features/profile/hooks/useProfile";
 import type { ProfileMetadataFormValues } from "@/features/profile/types";
@@ -33,6 +34,7 @@ export const ProfileRoute = () => {
     page: pagination.pageIndex,
     size: pagination.pageSize,
   });
+  const statisticsQuery = useProfileStatisticsQuery();
   const updateMutation = useUpdateProfileMetadata();
 
   const metadataForm = overviewQuery.data?.metadataForm ?? DEFAULT_FORM;
@@ -47,6 +49,7 @@ export const ProfileRoute = () => {
         totalCount: activityQuery.data?.totalCount ?? 0,
       }}
       loadingOverview={overviewQuery.isLoading}
+      loadingStatistics={statisticsQuery.isLoading}
       metadata={metadataForm}
       metadataSubmitting={updateMutation.isPending}
       onActivityPageChange={(state) => {
@@ -69,7 +72,7 @@ export const ProfileRoute = () => {
         await activityQuery.refetch();
       }}
       overview={overviewQuery.data?.overview ?? null}
-      statistics={null}
+      statistics={statisticsQuery.data ?? null}
     />
   );
 };

@@ -71,4 +71,55 @@
             update_date = #{updateDate}
         WHERE id = #{id}
     </update>
+
+    <!--月次勤怠統計を取得する-->
+    <select id="findMonthlyStatistics" resultType="com.example.teamdev.entity.MonthlyAttendanceStats">
+        SELECT
+            to_char(DATE_TRUNC('month', CONCAT(sh.year, '-', sh.month, '-01')::date), 'YYYY-MM') AS month,
+            COALESCE(
+                ROUND(
+                    SUM(
+                        CASE
+                            WHEN sh.out_time IS NOT NULL THEN
+                                EXTRACT(EPOCH FROM (sh.out_time - sh.in_time)) / 3600.0
+                                - COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                            ELSE 0
+                        END
+                    )::numeric, 2
+                ), 0
+            ) AS totalHours,
+            COALESCE(
+                ROUND(
+                    GREATEST(
+                        SUM(
+                            CASE
+                                WHEN sh.out_time IS NOT NULL THEN
+                                    EXTRACT(EPOCH FROM (sh.out_time - sh.in_time)) / 3600.0
+                                    - COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                ELSE 0
+                            END
+                        ) - 160.0, 0
+                    )::numeric, 2
+                ), 0
+            ) AS overtimeHours,
+            COALESCE(
+                SUM(
+                    CASE
+                        WHEN sh.in_time IS NOT NULL
+                            AND (e.profile_metadata->>'schedule')::jsonb->>'start' IS NOT NULL
+                            AND CAST(to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS TIME)
+                                > CAST((e.profile_metadata->>'schedule')::jsonb->>'start' AS TIME)
+                        THEN 1
+                        ELSE 0
+                    END
+                )::integer, 0
+            ) AS lateCount
+        FROM stamp_history sh
+        INNER JOIN employee e ON sh.employee_id = e.id
+        WHERE sh.employee_id = #{employeeId}
+            AND to_char(CONCAT(sh.year, '-', sh.month, '-01')::date, 'YYYY-MM') >= #{startMonth}
+            AND to_char(CONCAT(sh.year, '-', sh.month, '-01')::date, 'YYYY-MM') <![CDATA[<=]]> #{endMonth}
+        GROUP BY to_char(DATE_TRUNC('month', CONCAT(sh.year, '-', sh.month, '-01')::date), 'YYYY-MM')
+        ORDER BY month ASC
+    </select>
 </mapper>

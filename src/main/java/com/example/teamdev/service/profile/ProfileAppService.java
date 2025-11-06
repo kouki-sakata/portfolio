@@ -2,6 +2,8 @@ package com.example.teamdev.service.profile;
 
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
+import com.example.teamdev.entity.MonthlyAttendanceStats;
+import com.example.teamdev.mapper.StampHistoryMapper;
 import com.example.teamdev.service.EmployeeQueryService;
 import com.example.teamdev.service.profile.model.ProfileActivityPage;
 import com.example.teamdev.service.profile.model.ProfileActivityQuery;
@@ -11,9 +13,12 @@ import com.example.teamdev.service.profile.model.ProfileEmployeeSummary;
 import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.example.teamdev.service.profile.model.ProfileMetadataUpdateCommand;
 import com.example.teamdev.service.profile.model.ProfileWorkScheduleDocument;
+import com.example.teamdev.service.profile.model.ProfileStatisticsData;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.Instant;
+import java.time.YearMonth;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -38,6 +43,7 @@ public class ProfileAppService {
     private final ProfileMetadataRepository metadataRepository;
     private final ProfileActivityQueryService activityQueryService;
     private final ProfileAuditService auditService;
+    private final StampHistoryMapper stampHistoryMapper;
     private final Clock clock;
 
     public ProfileAppService(
@@ -45,12 +51,14 @@ public class ProfileAppService {
         ProfileMetadataRepository metadataRepository,
         ProfileActivityQueryService activityQueryService,
         ProfileAuditService auditService,
+        StampHistoryMapper stampHistoryMapper,
         Clock clock
     ) {
         this.employeeQueryService = employeeQueryService;
         this.metadataRepository = metadataRepository;
         this.activityQueryService = activityQueryService;
         this.auditService = auditService;
+        this.stampHistoryMapper = stampHistoryMapper;
         this.clock = clock;
     }
 
@@ -95,6 +103,82 @@ public class ProfileAppService {
             ? query
             : new ProfileActivityQuery(0, 20, Optional.empty(), Optional.empty());
         return activityQueryService.fetch(targetEmployeeId, effectiveQuery);
+    }
+
+    /**
+     * プロフィール統計データを取得する。
+     * 直近6ヶ月の勤怠統計を計算する。
+     *
+     * @param operatorId 操作者ID
+     * @param targetEmployeeId 対象従業員ID
+     * @return 統計データ
+     */
+    public ProfileStatisticsData getProfileStatistics(int operatorId, int targetEmployeeId) {
+        Employee operator = requireEmployee(operatorId);
+        Employee target = requireEmployee(targetEmployeeId);
+        enforceAccess(operator, target, false);
+
+        // 直近6ヶ月の範囲を計算
+        YearMonth currentMonth = YearMonth.now(clock);
+        YearMonth startMonth = currentMonth.minusMonths(5);
+
+        String startMonthStr = startMonth.toString(); // "YYYY-MM"
+        String endMonthStr = currentMonth.toString();
+
+        // DBから月次統計を取得
+        List<MonthlyAttendanceStats> stats = stampHistoryMapper.findMonthlyStatistics(
+            targetEmployeeId, startMonthStr, endMonthStr
+        );
+
+        return buildStatisticsData(stats, currentMonth);
+    }
+
+    private ProfileStatisticsData buildStatisticsData(
+        List<MonthlyAttendanceStats> stats,
+        YearMonth currentMonth
+    ) {
+        // 当月データを抽出
+        MonthlyAttendanceStats currentStats = stats.stream()
+            .filter(s -> s.getMonth().equals(currentMonth.toString()))
+            .findFirst()
+            .orElse(new MonthlyAttendanceStats(
+                currentMonth.toString(),
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                0
+            ));
+
+        // トレンドデータを構築（直近6ヶ月）
+        List<ProfileStatisticsData.MonthlyTrendData> trend = stats.stream()
+            .map(s -> new ProfileStatisticsData.MonthlyTrendData(
+                s.getMonth(),
+                s.getTotalHours(),
+                s.getOvertimeHours()
+            ))
+            .toList();
+
+        // サマリーデータを構築
+        ProfileStatisticsData.AttendanceSummaryData summary =
+            new ProfileStatisticsData.AttendanceSummaryData(
+                currentStats.getTotalHours(),
+                currentStats.getOvertimeHours(),
+                currentStats.getLateCount(),
+                BigDecimal.ZERO, // 有給消化は現在未実装のため0
+                trend
+            );
+
+        // 月次データを構築
+        List<ProfileStatisticsData.MonthlyAttendanceData> monthly = stats.stream()
+            .map(s -> new ProfileStatisticsData.MonthlyAttendanceData(
+                s.getMonth(),
+                s.getTotalHours(),
+                s.getOvertimeHours(),
+                s.getLateCount(),
+                BigDecimal.ZERO // 有給消化は現在未実装のため0
+            ))
+            .toList();
+
+        return new ProfileStatisticsData(summary, monthly);
     }
 
     private Employee requireEmployee(int employeeId) {

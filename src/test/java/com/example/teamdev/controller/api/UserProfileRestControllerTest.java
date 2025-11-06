@@ -18,6 +18,7 @@ import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.profile.ProfileAppService;
+import com.example.teamdev.service.profile.ProfileAttendanceStatisticsService;
 import com.example.teamdev.service.profile.model.ProfileActivityEntry;
 import com.example.teamdev.service.profile.model.ProfileActivityPage;
 import com.example.teamdev.service.profile.model.ProfileAggregate;
@@ -66,6 +67,9 @@ class UserProfileRestControllerTest {
 
     @MockBean
     private EmployeeMapper employeeMapper;
+
+    @MockBean
+    private ProfileAttendanceStatisticsService statisticsService;
 
     @Captor
     private ArgumentCaptor<ProfileMetadataUpdateCommand> commandCaptor;

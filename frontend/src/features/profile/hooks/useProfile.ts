@@ -3,10 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   fetchProfile,
   fetchProfileActivity,
+  fetchProfileStatistics,
   type ProfileActivityQuery,
   type ProfileActivityResponse,
   type ProfileMetadataUpdatePayload,
   type ProfileResponse,
+  type ProfileStatisticsResponse,
   updateProfileMetadata,
 } from "@/features/profile/api/profileApi";
 import {
@@ -18,6 +20,7 @@ import type {
   ExtendedProfileOverviewViewModel,
   ProfileActivityEntryViewModel,
   ProfileMetadataFormValues,
+  ProfileStatisticsData,
 } from "@/features/profile/types";
 
 const profileKeys = {
@@ -32,6 +35,7 @@ const profileKeys = {
       params.from ?? null,
       params.to ?? null,
     ] as const,
+  statistics: () => [...profileKeys.all, "statistics"] as const,
 };
 
 type ProfileOverviewResult = {
@@ -78,6 +82,19 @@ export const useProfileActivityQuery = (params: ProfileActivityQuery) =>
         size: response.size,
       };
     },
+  });
+
+export const useProfileStatisticsQuery = () =>
+  useQuery<ProfileStatisticsResponse, Error, ProfileStatisticsData>({
+    queryKey: profileKeys.statistics(),
+    queryFn: fetchProfileStatistics,
+    select: (response): ProfileStatisticsData => ({
+      summary: {
+        currentMonth: response.summary.currentMonth,
+        trendData: response.summary.trendData,
+      },
+      monthly: response.monthly,
+    }),
   });
 
 export const useUpdateProfileMetadata = () => {

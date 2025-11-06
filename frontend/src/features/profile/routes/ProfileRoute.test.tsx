@@ -8,6 +8,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type {
   ProfileActivityResponse,
   ProfileResponse,
+  ProfileStatisticsResponse,
 } from "@/features/profile/api/profileApi";
 import { mswServer } from "@/test/msw/server";
 import { TestAuthProvider } from "@/test/test-utils";
@@ -77,6 +78,69 @@ const activityResponse: ProfileActivityResponse = {
   ],
 };
 
+const statisticsResponse: ProfileStatisticsResponse = {
+  summary: {
+    currentMonth: {
+      totalHours: 165,
+      overtimeHours: 10,
+      lateCount: 0,
+      paidLeaveHours: 8,
+    },
+    trendData: [
+      { month: "05", totalHours: 160, overtimeHours: 5 },
+      { month: "06", totalHours: 168, overtimeHours: 8 },
+      { month: "07", totalHours: 155, overtimeHours: 3 },
+      { month: "08", totalHours: 172, overtimeHours: 12 },
+      { month: "09", totalHours: 162, overtimeHours: 7 },
+      { month: "10", totalHours: 165, overtimeHours: 10 },
+    ],
+  },
+  monthly: [
+    {
+      month: "2025-05",
+      totalHours: 160,
+      overtimeHours: 5,
+      lateCount: 0,
+      paidLeaveHours: 0,
+    },
+    {
+      month: "2025-06",
+      totalHours: 168,
+      overtimeHours: 8,
+      lateCount: 1,
+      paidLeaveHours: 0,
+    },
+    {
+      month: "2025-07",
+      totalHours: 155,
+      overtimeHours: 3,
+      lateCount: 0,
+      paidLeaveHours: 16,
+    },
+    {
+      month: "2025-08",
+      totalHours: 172,
+      overtimeHours: 12,
+      lateCount: 0,
+      paidLeaveHours: 0,
+    },
+    {
+      month: "2025-09",
+      totalHours: 162,
+      overtimeHours: 7,
+      lateCount: 0,
+      paidLeaveHours: 8,
+    },
+    {
+      month: "2025-10",
+      totalHours: 165,
+      overtimeHours: 10,
+      lateCount: 0,
+      paidLeaveHours: 8,
+    },
+  ],
+};
+
 describe("ProfileRoute", () => {
   let lastPatchPayload: Record<string, unknown> | null = null;
   let currentOverview: ProfileResponse;
@@ -97,6 +161,9 @@ describe("ProfileRoute", () => {
         }
         return HttpResponse.json({ ...activityResponse, items: [] });
       }),
+      http.get("http://localhost/api/profile/me/statistics", () =>
+        HttpResponse.json(statisticsResponse)
+      ),
       http.patch(
         "http://localhost/api/profile/me/metadata",
         async ({ request }) => {

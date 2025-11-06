@@ -29,6 +29,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { CHART_GRID_CONFIG } from "@/features/profile/constants/chartStyles";
 import type { MonthlyAttendanceViewModel } from "@/features/profile/types";
 import { cn } from "@/shared/utils/cn";
 
@@ -124,11 +125,7 @@ export const ProfileMonthlyDetailCard = ({
               data={chartData}
               margin={{ bottom: 5, left: 0, right: 20, top: 5 }}
             >
-              <CartesianGrid
-                stroke="hsl(var(--border))"
-                strokeDasharray="3 3"
-                strokeOpacity={0.3}
-              />
+              <CartesianGrid {...CHART_GRID_CONFIG} />
               <XAxis
                 axisLine={{ stroke: "hsl(var(--border))" }}
                 dataKey="month"
@@ -136,16 +133,10 @@ export const ProfileMonthlyDetailCard = ({
               />
               <YAxis
                 axisLine={{ stroke: "hsl(var(--border))" }}
-                label={{
-                  angle: -90,
-                  position: "insideLeft",
-                  value: "時間(h)",
-                }}
                 tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 12 }}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--popover))",
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "0.5rem",
                 }}
