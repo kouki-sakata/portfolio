@@ -2,12 +2,12 @@ package com.example.teamdev.service.profile;
 
 import com.example.teamdev.dto.api.profile.AttendanceSummaryResponse;
 import com.example.teamdev.dto.api.profile.MonthlyAttendanceResponse;
-import com.example.teamdev.dto.api.profile.MonthlyTrendResponse;
 import com.example.teamdev.dto.api.profile.ProfileStatisticsResponse;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.mapper.StampHistoryMapper;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
@@ -51,21 +51,21 @@ public class ProfileAttendanceStatisticsService {
         // 今月のデータ
         MonthlyAttendanceData currentMonthData = last6Months.get(last6Months.size() - 1);
 
-        // CurrentMonthStatsを構築
-        AttendanceSummaryResponse.CurrentMonthStats currentStats =
-            new AttendanceSummaryResponse.CurrentMonthStats(
-                currentMonthData.totalHours,
-                currentMonthData.overtimeHours,
+        // CurrentMonthDataを構築
+        AttendanceSummaryResponse.CurrentMonthData currentStats =
+            new AttendanceSummaryResponse.CurrentMonthData(
+                BigDecimal.valueOf(currentMonthData.totalHours),
+                BigDecimal.valueOf(currentMonthData.overtimeHours),
                 currentMonthData.lateCount,
-                currentMonthData.paidLeaveHours
+                BigDecimal.valueOf(currentMonthData.paidLeaveHours)
             );
 
         // TrendDataを構築（月の部分のみ "05", "06" 形式）
-        List<MonthlyTrendResponse> trendData = last6Months.stream()
-            .map(data -> new MonthlyTrendResponse(
+        List<AttendanceSummaryResponse.MonthlyTrendResponse> trendData = last6Months.stream()
+            .map(data -> new AttendanceSummaryResponse.MonthlyTrendResponse(
                 String.format("%02d", data.month.getMonthValue()),
-                data.totalHours,
-                data.overtimeHours
+                BigDecimal.valueOf(data.totalHours),
+                BigDecimal.valueOf(data.overtimeHours)
             ))
             .toList();
 
@@ -75,10 +75,10 @@ public class ProfileAttendanceStatisticsService {
         List<MonthlyAttendanceResponse> monthly = last6Months.stream()
             .map(data -> new MonthlyAttendanceResponse(
                 data.month.format(DateTimeFormatter.ofPattern("yyyy-MM")),
-                data.totalHours,
-                data.overtimeHours,
+                BigDecimal.valueOf(data.totalHours),
+                BigDecimal.valueOf(data.overtimeHours),
                 data.lateCount,
-                data.paidLeaveHours
+                BigDecimal.valueOf(data.paidLeaveHours)
             ))
             .toList();
 
