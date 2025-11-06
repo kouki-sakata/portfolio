@@ -64,10 +64,7 @@ export const ProfileSummaryCard = ({
   summary,
 }: ProfileSummaryCardProps) => {
   const chartContainerRef = useRef<HTMLDivElement | null>(null);
-  const [chartSize, setChartSize] = useState(() => ({
-    width: typeof window === "undefined" ? 600 : 0,
-    height: typeof window === "undefined" ? 256 : 0,
-  }));
+  const [chartSize, setChartSize] = useState({ width: 600, height: 256 });
 
   useEffect(() => {
     if (typeof window === "undefined" || loading || !summary) {
