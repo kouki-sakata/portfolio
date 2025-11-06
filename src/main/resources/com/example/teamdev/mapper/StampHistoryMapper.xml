@@ -90,15 +90,16 @@
             ) AS totalHours,
             COALESCE(
                 ROUND(
-                    GREATEST(
-                        SUM(
+                    SUM(
+                        GREATEST(
                             CASE
                                 WHEN sh.out_time IS NOT NULL THEN
                                     EXTRACT(EPOCH FROM (sh.out_time - sh.in_time)) / 3600.0
                                     - COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                    - 8.0
                                 ELSE 0
-                            END
-                        ) - 160.0, 0
+                            END, 0
+                        )
                     )::numeric, 2
                 ), 0
             ) AS overtimeHours,
