@@ -143,6 +143,47 @@ const NewsPublishRequest = z
   .object({ releaseFlag: z.boolean() })
   .strict()
   .passthrough();
+const AttendanceSummaryCurrentMonth = z
+  .object({
+    totalHours: z.number(),
+    overtimeHours: z.number(),
+    lateCount: z.number().int(),
+    paidLeaveHours: z.number(),
+  })
+  .strict()
+  .passthrough();
+const AttendanceSummaryTrendItem = z
+  .object({
+    month: z.string(),
+    totalHours: z.number(),
+    overtimeHours: z.number(),
+  })
+  .strict()
+  .passthrough();
+const AttendanceSummaryResponse = z
+  .object({
+    currentMonth: AttendanceSummaryCurrentMonth,
+    trendData: z.array(AttendanceSummaryTrendItem),
+  })
+  .strict()
+  .passthrough();
+const MonthlyAttendanceResponse = z
+  .object({
+    month: z.string(),
+    totalHours: z.number(),
+    overtimeHours: z.number(),
+    lateCount: z.number().int(),
+    paidLeaveHours: z.number(),
+  })
+  .strict()
+  .passthrough();
+const ProfileStatisticsResponse = z
+  .object({
+    summary: AttendanceSummaryResponse,
+    monthly: z.array(MonthlyAttendanceResponse),
+  })
+  .strict()
+  .passthrough();
 
 export const schemas = {
   LoginRequest,
@@ -165,6 +206,11 @@ export const schemas = {
   NewsCreateRequest,
   NewsUpdateRequest,
   NewsPublishRequest,
+  AttendanceSummaryCurrentMonth,
+  AttendanceSummaryTrendItem,
+  AttendanceSummaryResponse,
+  MonthlyAttendanceResponse,
+  ProfileStatisticsResponse,
 };
 
 const endpoints = makeApi([
@@ -482,6 +528,21 @@ const endpoints = makeApi([
     description: `公開フラグがtrueのお知らせを日付降順で取得（認証不要）`,
     requestFormat: "json",
     response: NewsListResponse,
+  },
+  {
+    method: "get",
+    path: "/api/profile/me/statistics",
+    alias: "getSelfProfileStatistics",
+    description: `ログイン中の従業員について、直近6か月の勤怠統計サマリと月次詳細を返します。`,
+    requestFormat: "json",
+    response: ProfileStatisticsResponse,
+    errors: [
+      {
+        status: 401,
+        description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+    ],
   },
   {
     method: "get",

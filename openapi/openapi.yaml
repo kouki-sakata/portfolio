@@ -25,6 +25,8 @@ tags:
     description: 打刻履歴 API
   - name: News Management
     description: お知らせ管理 API
+  - name: Profile
+    description: プロフィール API
 paths:
   /api/auth/login:
     post:
@@ -542,6 +544,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/profile/me/statistics:
+    get:
+      tags:
+        - Profile
+      summary: 自身の勤怠統計取得
+      description: ログイン中の従業員について、直近6か月の勤怠統計サマリと月次詳細を返します。
+      operationId: getSelfProfileStatistics
+      security:
+        - sessionAuth: []
+      responses:
+        '200':
+          description: 勤怠統計取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProfileStatisticsResponse'
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     LoginRequest:
@@ -820,6 +844,108 @@ components:
           type: boolean
           description: "公開フラグ（true: 公開, false: 非公開）"
           example: true
+    ProfileStatisticsResponse:
+      type: object
+      required:
+        - summary
+        - monthly
+      properties:
+        summary:
+          $ref: '#/components/schemas/AttendanceSummaryResponse'
+        monthly:
+          type: array
+          items:
+            $ref: '#/components/schemas/MonthlyAttendanceResponse'
+          description: 過去6か月分の月次勤怠データ
+    AttendanceSummaryResponse:
+      type: object
+      required:
+        - currentMonth
+        - trendData
+      properties:
+        currentMonth:
+          $ref: '#/components/schemas/AttendanceSummaryCurrentMonth'
+        trendData:
+          type: array
+          items:
+            $ref: '#/components/schemas/AttendanceSummaryTrendItem'
+          description: 直近6か月の勤怠トレンド
+    AttendanceSummaryCurrentMonth:
+      type: object
+      required:
+        - totalHours
+        - overtimeHours
+        - lateCount
+        - paidLeaveHours
+      properties:
+        totalHours:
+          type: number
+          format: double
+          description: 月間総労働時間（時間）
+          example: 168.5
+        overtimeHours:
+          type: number
+          format: double
+          description: 月間残業時間（時間）
+          example: 12
+        lateCount:
+          type: integer
+          format: int32
+          description: 月間の遅刻回数
+          example: 1
+        paidLeaveHours:
+          type: number
+          format: double
+          description: 有給消化時間（時間）
+          example: 8
+    AttendanceSummaryTrendItem:
+      type: object
+      required:
+        - month
+        - totalHours
+        - overtimeHours
+      properties:
+        month:
+          type: string
+          description: 月（YYYY-MM形式）
+          example: "2025-10"
+        totalHours:
+          type: number
+          format: double
+          description: 月間総労働時間（時間）
+        overtimeHours:
+          type: number
+          format: double
+          description: 月間残業時間（時間）
+    MonthlyAttendanceResponse:
+      type: object
+      required:
+        - month
+        - totalHours
+        - overtimeHours
+        - lateCount
+        - paidLeaveHours
+      properties:
+        month:
+          type: string
+          description: 月（YYYY-MM形式）
+          example: "2025-10"
+        totalHours:
+          type: number
+          format: double
+          description: 月間総労働時間（時間）
+        overtimeHours:
+          type: number
+          format: double
+          description: 月間残業時間（時間）
+        lateCount:
+          type: integer
+          format: int32
+          description: 遅刻回数
+        paidLeaveHours:
+          type: number
+          format: double
+          description: 有給消化時間（時間）
     StampRequest:
       type: object
       required:

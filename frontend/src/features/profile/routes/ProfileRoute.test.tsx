@@ -87,12 +87,12 @@ const statisticsResponse: ProfileStatisticsResponse = {
       paidLeaveHours: 8,
     },
     trendData: [
-      { month: "05", totalHours: 160, overtimeHours: 5 },
-      { month: "06", totalHours: 168, overtimeHours: 8 },
-      { month: "07", totalHours: 155, overtimeHours: 3 },
-      { month: "08", totalHours: 172, overtimeHours: 12 },
-      { month: "09", totalHours: 162, overtimeHours: 7 },
-      { month: "10", totalHours: 165, overtimeHours: 10 },
+      { month: "2025-05", totalHours: 160, overtimeHours: 5 },
+      { month: "2025-06", totalHours: 168, overtimeHours: 8 },
+      { month: "2025-07", totalHours: 155, overtimeHours: 3 },
+      { month: "2025-08", totalHours: 172, overtimeHours: 12 },
+      { month: "2025-09", totalHours: 162, overtimeHours: 7 },
+      { month: "2025-10", totalHours: 165, overtimeHours: 10 },
     ],
   },
   monthly: [
@@ -141,6 +141,23 @@ const statisticsResponse: ProfileStatisticsResponse = {
   ],
 };
 
+const createWrapper = () => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: { retry: false },
+      mutations: { retry: false },
+    },
+  });
+
+  const Wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <TestAuthProvider useMemoryRouter>{children}</TestAuthProvider>
+    </QueryClientProvider>
+  );
+
+  return { queryClient, Wrapper };
+};
+
 describe("ProfileRoute", () => {
   let lastPatchPayload: Record<string, unknown> | null = null;
   let currentOverview: ProfileResponse;
@@ -177,19 +194,7 @@ describe("ProfileRoute", () => {
 
   it("プロフィール情報を取得し、編集後に更新値を表示する", async () => {
     const user = userEvent.setup();
-
-    const queryClient = new QueryClient({
-      defaultOptions: {
-        queries: { retry: false },
-        mutations: { retry: false },
-      },
-    });
-
-    const Wrapper = ({ children }: { children: ReactNode }) => (
-      <QueryClientProvider client={queryClient}>
-        <TestAuthProvider useMemoryRouter>{children}</TestAuthProvider>
-      </QueryClientProvider>
-    );
+    const { queryClient, Wrapper } = createWrapper();
 
     render(<ProfileRoute />, { wrapper: Wrapper });
 
@@ -242,5 +247,27 @@ describe("ProfileRoute", () => {
     expect(activitySummaries[0]).toBeInTheDocument();
 
     expect(lastPatchPayload).toMatchObject({ department: "DX推進室" });
+  });
+
+  it("統計カードで勤怠サマリと月次詳細を表示する", async () => {
+    const { Wrapper } = createWrapper();
+
+    render(<ProfileRoute />, { wrapper: Wrapper });
+
+    const summaryCard = await screen.findByTestId("profile-summary-card");
+    expect(summaryCard).toBeVisible();
+    expect(within(summaryCard).getByText("勤怠サマリ")).toBeVisible();
+    expect(within(summaryCard).getByText("165h")).toBeVisible();
+    expect(within(summaryCard).getByText("月間残業")).toBeVisible();
+
+    const monthlyCard = await screen.findByTestId(
+      "profile-monthly-detail-card"
+    );
+    expect(monthlyCard).toBeVisible();
+    expect(
+      within(monthlyCard).getByRole("img", {
+        name: "月次勤怠データのバーチャート",
+      })
+    ).toBeInTheDocument();
   });
 });

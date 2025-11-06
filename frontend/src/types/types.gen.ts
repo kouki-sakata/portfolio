@@ -207,6 +207,79 @@ export type NewsPublishRequest = {
     releaseFlag: boolean;
 };
 
+export type ProfileStatisticsResponse = {
+    summary: AttendanceSummaryResponse;
+    /**
+     * 過去6か月分の月次勤怠データ
+     */
+    monthly: Array<MonthlyAttendanceResponse>;
+};
+
+export type AttendanceSummaryResponse = {
+    currentMonth: AttendanceSummaryCurrentMonth;
+    /**
+     * 直近6か月の勤怠トレンド
+     */
+    trendData: Array<AttendanceSummaryTrendItem>;
+};
+
+export type AttendanceSummaryCurrentMonth = {
+    /**
+     * 月間総労働時間（時間）
+     */
+    totalHours: number;
+    /**
+     * 月間残業時間（時間）
+     */
+    overtimeHours: number;
+    /**
+     * 月間の遅刻回数
+     */
+    lateCount: number;
+    /**
+     * 有給消化時間（時間）
+     */
+    paidLeaveHours: number;
+};
+
+export type AttendanceSummaryTrendItem = {
+    /**
+     * 月（YYYY-MM形式）
+     */
+    month: string;
+    /**
+     * 月間総労働時間（時間）
+     */
+    totalHours: number;
+    /**
+     * 月間残業時間（時間）
+     */
+    overtimeHours: number;
+};
+
+export type MonthlyAttendanceResponse = {
+    /**
+     * 月（YYYY-MM形式）
+     */
+    month: string;
+    /**
+     * 月間総労働時間（時間）
+     */
+    totalHours: number;
+    /**
+     * 月間残業時間（時間）
+     */
+    overtimeHours: number;
+    /**
+     * 遅刻回数
+     */
+    lateCount: number;
+    /**
+     * 有給消化時間（時間）
+     */
+    paidLeaveHours: number;
+};
+
 export type StampRequest = {
     /**
      * 打刻時刻（ISO形式）
@@ -802,3 +875,28 @@ export type ToggleNewsPublishResponses = {
 };
 
 export type ToggleNewsPublishResponse = ToggleNewsPublishResponses[keyof ToggleNewsPublishResponses];
+
+export type GetSelfProfileStatisticsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/profile/me/statistics';
+};
+
+export type GetSelfProfileStatisticsErrors = {
+    /**
+     * 認証が必要です
+     */
+    401: ErrorResponse;
+};
+
+export type GetSelfProfileStatisticsError = GetSelfProfileStatisticsErrors[keyof GetSelfProfileStatisticsErrors];
+
+export type GetSelfProfileStatisticsResponses = {
+    /**
+     * 勤怠統計取得成功
+     */
+    200: ProfileStatisticsResponse;
+};
+
+export type GetSelfProfileStatisticsResponse = GetSelfProfileStatisticsResponses[keyof GetSelfProfileStatisticsResponses];
