@@ -184,11 +184,11 @@ export function DataTable<TData, TValue = unknown>({
       {/* テーブル本体 - デスクトップビュー (lg以上) */}
       <section
         aria-label="データテーブル"
-        className="relative hidden w-full overflow-auto rounded-md border lg:block"
+        className="relative hidden w-full overflow-auto lg:block"
         style={fixedHeight ? { height: fixedHeight } : undefined}
       >
         <Table>
-          <TableHeader className="sticky top-0 z-10 bg-background">
+          <TableHeader className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
