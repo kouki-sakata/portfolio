@@ -1,5 +1,27 @@
 # Steering Documents Changelog
 
+## 2025-11-07 (Update 34)
+
+### Updated Documents
+- `CHANGELOG.md` - Update 33 で報告されたコードドリフトの解消を記録
+
+### Code Drift Resolution
+- ✅ `/api/profile/me/statistics` エンドポイント実装完了
+  - コミット 2ce033c, 309a515 で `UserProfileRestController` に GET マッピング追加（117-122行目）
+- ✅ `ProfileAttendanceStatisticsService` 削除完了
+  - 重複ロジックを `ProfileAppService#getProfileStatistics` に統合
+  - 単一集計実装への移行達成
+- ✅ Recharts 3.3.0 統合完了
+  - 統計ビジュアライゼーション機能本稼働
+  - `ProfileSummaryCard` と `ProfileMonthlyDetailCard` で正常表示中
+
+### Note
+Update 33（2025-11-06）で懸念されていたプロフィール勤怠統計のAPIギャップとサービス重複問題は、
+同日および翌日のコミット群（c109137, 206655c, 66987c6, 2ce033c, 309a515 等）で完全解決済み。
+コードベースとステアリングの整合性は良好。
+
+---
+
 ## 2025-11-06 (Update 33)
 
 ### Updated Documents
