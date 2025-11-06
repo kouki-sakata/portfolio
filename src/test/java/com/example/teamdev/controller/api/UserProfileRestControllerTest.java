@@ -18,15 +18,16 @@ import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.profile.ProfileAppService;
-import com.example.teamdev.service.profile.ProfileAttendanceStatisticsService;
 import com.example.teamdev.service.profile.model.ProfileActivityEntry;
 import com.example.teamdev.service.profile.model.ProfileActivityPage;
 import com.example.teamdev.service.profile.model.ProfileAggregate;
 import com.example.teamdev.service.profile.model.ProfileEmployeeSummary;
 import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.example.teamdev.service.profile.model.ProfileMetadataUpdateCommand;
+import com.example.teamdev.service.profile.model.ProfileStatisticsData;
 import com.example.teamdev.service.profile.model.ProfileWorkScheduleDocument;
 import com.example.teamdev.util.SecurityUtil;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
@@ -67,9 +68,6 @@ class UserProfileRestControllerTest {
 
     @MockBean
     private EmployeeMapper employeeMapper;
-
-    @MockBean
-    private ProfileAttendanceStatisticsService statisticsService;
 
     @Captor
     private ArgumentCaptor<ProfileMetadataUpdateCommand> commandCaptor;
@@ -290,5 +288,38 @@ class UserProfileRestControllerTest {
             .andExpect(status().isBadRequest());
 
         verifyNoInteractions(profileAppService);
+    }
+
+    @DisplayName("GET /api/profile/me/statistics は集約サービスを通じた統計レスポンスを返す")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void getSelfStatisticsReturnsAggregatedResponse() throws Exception {
+        ProfileStatisticsData.AttendanceSummaryData summary = new ProfileStatisticsData.AttendanceSummaryData(
+            BigDecimal.valueOf(168.5),
+            BigDecimal.valueOf(12.0),
+            1,
+            BigDecimal.ZERO,
+            List.of(
+                new ProfileStatisticsData.MonthlyTrendData("2025-06", BigDecimal.valueOf(160), BigDecimal.valueOf(8))
+            )
+        );
+        ProfileStatisticsData.MonthlyAttendanceData monthly = new ProfileStatisticsData.MonthlyAttendanceData(
+            "2025-06",
+            BigDecimal.valueOf(160),
+            BigDecimal.valueOf(8),
+            1,
+            BigDecimal.ZERO
+        );
+        ProfileStatisticsData statisticsData = new ProfileStatisticsData(summary, List.of(monthly));
+        when(profileAppService.getProfileStatistics(9000, 9000)).thenReturn(statisticsData);
+
+        mockMvc.perform(get("/api/profile/me/statistics"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.summary.currentMonth.totalHours").value(168.5))
+            .andExpect(jsonPath("$.summary.currentMonth.overtimeHours").value(12.0))
+            .andExpect(jsonPath("$.summary.trendData[0].month").value("2025-06"))
+            .andExpect(jsonPath("$.monthly[0].month").value("2025-06"));
+
+        verify(profileAppService).getProfileStatistics(9000, 9000);
     }
 }

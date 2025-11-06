@@ -103,6 +103,13 @@ npm run generate:api # OpenAPI型生成
 - 各 Repository（`AuthRepository`, `HomeRepository` 等）は Zod スキーマで API 応答を検証し、依存逆転の原則 (DIP) を満たしたテスト容易な構造。
 - `defaultHttpClient` が axios レスポンスを RepositoryError（`TIMEOUT`/`NETWORK_ERROR`/`SERVER_ERROR` など）に正規化し、UI へ安定したエラーハンドリング契約を提供。
 
+#### プロフィール勤怠統計ビジュアライゼーション（2025-11-06 追加）
+- **React Query + Recharts**: `useProfileStatisticsQuery` が `/profile/me/statistics` をフェッチし、`ProfileStatisticsData` ビューモデルへ正規化。Recharts 3.3.0 と `ResponsiveContainer` でレスポンシブにライン/バーを描画。
+- **カード構成**: `ProfileSummaryCard`（ラインチャート + `MiniStat` でKPIを表示）と `ProfileMonthlyDetailCard`（BarChart + テーブル）で6か月推移を可視化。`constants/chartStyles.ts` にチャート軸・グリッド・ツールチップ設定を集約。
+- **フォールバック**: `ProfileSummaryCard`/`ProfileMonthlyDetailCard` は Skeleton と空状態カードを実装し、統計レスポンス待機中でも UI が崩れない。
+- **バックエンド集計**: `ProfileAppService#getProfileStatistics` が `StampHistoryMapper.findMonthlyStatistics` を呼び、JSONB の勤務予定を参照しながら BigDecimal で総労働/残業/遅刻カウンタを算出（有給はプレースホルダーで 0）。
+- **ギャップ注意**: `ProfileAttendanceStatisticsService` が既存の月次計算ロジックを保持する一方、`UserProfileRestController` に `/api/profile/me/statistics` の GET マッピングが未接続。重複ロジックの統合とルーティング追加を実施して初めて本機能が有効になる。
+
 ## バックエンド
 
 ### 主要スタック
@@ -222,4 +229,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-05 (Profile機能のDDDアーキテクチャとView Model変換パターンを反映)*
+*Last Updated: 2025-11-06 (プロフィール勤怠統計ビジュアライゼーションとAPIギャップを追記)*

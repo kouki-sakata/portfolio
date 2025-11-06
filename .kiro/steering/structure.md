@@ -28,8 +28,8 @@ TeamDevelopBravo-main/
 │   ├── 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService
 │   ├── 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter
 │   ├── お知らせ: NewsManageService（ファサード、読み取り専用）、NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
-│   └── プロフィール（service/profile/）: ProfileAppService、ProfileActivityQueryService、ProfileAuditService、ProfileMetadataRepository
-│       └── model/: ProfileAggregate、ProfileMetadataDocument、ProfileWorkScheduleDocument、ProfileChangeSet、ProfileActivityPage等（DDDドメインモデル）
+│   └── プロフィール（service/profile/）: ProfileAppService、ProfileActivityQueryService、ProfileAttendanceStatisticsService（勤怠統計集計）、ProfileAuditService、ProfileMetadataRepository
+│       └── model/: ProfileAggregate、ProfileMetadataDocument、ProfileWorkScheduleDocument、ProfileChangeSet、ProfileActivityPage、ProfileStatisticsData等（DDDドメインモデル）
 ├── mapper/           # MyBatisマッパー
 ├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
 ├── entity/           # エンティティ（Employee、News、StampHistory、StampHistoryDisplay等）
@@ -40,6 +40,13 @@ TeamDevelopBravo-main/
 ### API公開パターンの追加
 - `/api/public/**` は `FeatureFlagRestController` が担当し、モダンUIフラグを匿名アクセスで提供（`FeatureFlagService` が Spring プロファイルに応じて値を決定）。
 - `DebugController` は dev/test プロファイル限定で `/api/debug` を公開し、CSRF ヘッダー／Cookie の整合性やリクエストヘッダーを可視化するデバッグ専用エンドポイント。
+
+### プロフィール統計レイヤー（2025-11-06 追加）
+- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が JSONB の勤務予定（start/end/breakMinutes）を参照して総労働時間・残業・遅刻回数を算出（有給は現状0でプレースホルダー）。
+- **アプリケーションサービス**: `ProfileAppService#getProfileStatistics` が集計結果を `ProfileStatisticsData` に折り込み、UI側の KPI（summary + monthly）に合わせた BigDecimal ベースのレスポンスを提供。
+- **レガシーサービスとの重複**: `ProfileAttendanceStatisticsService` も同種の統計計算を保持しているため、ロジックの一本化とデータソースの整合性確認が必要。
+- **フロント接続**: `useProfileStatisticsQuery` → `ProfileSummaryCard`（ラインチャート）/`ProfileMonthlyDetailCard`（BarChart + テーブル）が Recharts 3.3.0 で可視化。`constants/chartStyles.ts` でテーマに沿った配色を統一。
+- **コードドリフト**: 2025-11-06 時点で `UserProfileRestController` に `/api/profile/me/statistics` が未配線。ルーティング追加とレガシーサービス整理を完了させてからデプロイすること。
 
 ## フロントエンド構造 (`frontend/src/`)
 
@@ -73,6 +80,7 @@ TeamDevelopBravo-main/
 │   └── profile/      # プロフィール管理（DDD対応フロント）
 │       ├── api/      # profileApi.ts（REST呼び出し）
 │       ├── components/ # ProfilePage、ProfileEditForm、ProfileOverviewCard、ProfileSummaryCard、ProfileMonthlyDetailCard、ProfileActivityTable、MiniStat（8コンポーネント、全てテスト完備）
+│       ├── constants/ # chartStyles.ts（Rechartsの軸・グリッド・ツールチップ設定）
 │       ├── hooks/    # useProfile.ts（React Query統合）
 │       ├── lib/      # profileViewModel.ts（3つの変換関数: createOverviewViewModel、createMetadataFormValues、createActivityViewModel）
 │       ├── routes/   # ProfileRoute.tsx
@@ -156,4 +164,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-11-05 (Profile機能のDDD構造とView Model変換パターンを反映)*
+*Last Updated: 2025-11-06 (プロフィール統計レイヤーとAPIギャップを追記)*

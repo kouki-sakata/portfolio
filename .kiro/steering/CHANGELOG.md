@@ -1,5 +1,25 @@
 # Steering Documents Changelog
 
+## 2025-11-06 (Update 33)
+
+### Updated Documents
+- `product.md` - プロフィール勤怠統計UIの進捗と未公開APIを記録
+- `tech.md` - Rechartsビジュアライゼーションと集計フローを追記
+- `structure.md` - プロフィール統計レイヤーとサービス構成、ドリフト注意点を追加
+
+### Key Changes
+- フロントエンドの `ProfileSummaryCard` / `ProfileMonthlyDetailCard` と `useProfileStatisticsQuery` による勤怠分析パターンを明文化。
+- バックエンドの `ProfileAppService#getProfileStatistics` と `StampHistoryMapper.findMonthlyStatistics` を紐付け、JSONB勤務予定を利用した統計生成の意図を記録。
+- プロフィール勤怠統計 UI が実装済みである一方、APIエンドポイントが未配線である現状をステアリングに残し、ギャップの可視化を実施。
+
+### Code Drift Warnings
+- `/profile/me/statistics` をフェッチする `fetchProfileStatistics` / `ProfileRoute` 実装に対し、`UserProfileRestController` に GET マッピングが存在せず 404 になる。`ProfileAppService#getProfileStatistics` へのルーティング追加が必要。
+- `ProfileAttendanceStatisticsService` が従来ロジックを保持し、`ProfileAppService` 側の新集計と重複している。二重定義による値不一致リスクがあるため統合方針を決めること。
+
+### Recommendations
+- `/api/profile/me/statistics` を `ProfileAppService#getProfileStatistics` 経由で公開し、React Query の統計取得と整合させる。
+- 既存の `ProfileAttendanceStatisticsService` を統合または廃止し、単一の集計実装に集約した上で OpenAPI を更新する。
+
 ## 2025-11-05 (Update 32)
 
 ### Updated Documents

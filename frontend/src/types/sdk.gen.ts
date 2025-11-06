@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, DeleteStampData, DeleteStampErrors, DeleteStampResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses, UpdateStampData, UpdateStampErrors, UpdateStampResponses } from './types.gen';
+import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, DeleteStampData, DeleteStampErrors, DeleteStampResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSelfProfileStatisticsData, GetSelfProfileStatisticsErrors, GetSelfProfileStatisticsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses, UpdateStampData, UpdateStampErrors, UpdateStampResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -340,5 +340,23 @@ export const toggleNewsPublish = <ThrowOnError extends boolean = false>(options:
             'Content-Type': 'application/json',
             ...options.headers
         }
+    });
+};
+
+/**
+ * 自身の勤怠統計取得
+ * ログイン中の従業員について、直近6か月の勤怠統計サマリと月次詳細を返します。
+ */
+export const getSelfProfileStatistics = <ThrowOnError extends boolean = false>(options?: Options<GetSelfProfileStatisticsData, ThrowOnError>) => {
+    return (options?.client ?? client).get<GetSelfProfileStatisticsResponses, GetSelfProfileStatisticsErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/profile/me/statistics',
+        ...options
     });
 };

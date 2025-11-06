@@ -106,9 +106,12 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
   - お知らせ管理 Playwright テスト（news-management.spec.ts、現在スキップ状態）
+- ⚠️ プロフィール勤怠統計ダッシュボード
+  - Rechartsベースの統計UI（ProfileSummaryCard/ProfileMonthlyDetailCard、MiniStat）が実装済み
+  - `/api/profile/me/statistics` エンドポイント未公開のため、API統合はペンディング（2025-11-06 時点）
 - 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
 - 📋 外部システム連携API、プッシュ通知、生体認証
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-11-05 (プロフィール管理機能とDDDアーキテクチャを反映)*
+*Last Updated: 2025-11-06 (プロフィール勤怠統計UIとAPIギャップを反映)*

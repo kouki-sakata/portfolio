@@ -1,11 +1,10 @@
 import { AlertCircle, CalendarCheck, Clock } from "lucide-react";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CartesianGrid,
   Legend,
   Line,
   LineChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -64,16 +63,51 @@ export const ProfileSummaryCard = ({
   loading,
   summary,
 }: ProfileSummaryCardProps) => {
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const [chartSize, setChartSize] = useState({ width: 600, height: 256 });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || loading || !summary) {
+      return;
+    }
+    const element = chartContainerRef.current;
+    if (!element) {
+      return;
+    }
+    const update = () => {
+      const rect = element.getBoundingClientRect();
+      const measuredWidth = rect.width > 0 ? rect.width : element.clientWidth;
+      const measuredHeight =
+        rect.height > 0 ? rect.height : element.clientHeight;
+      const nextWidth = measuredWidth > 0 ? measuredWidth : 600;
+      const nextHeight = measuredHeight > 0 ? measuredHeight : 256;
+      setChartSize({ width: nextWidth, height: nextHeight });
+    };
+    update();
+    if (typeof ResizeObserver === "function") {
+      const observer = new ResizeObserver(() => update());
+      observer.observe(element);
+      return () => observer.disconnect();
+    }
+    const timeoutId = window.setTimeout(update, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, [loading, summary]);
+
+  const extractMonth = useCallback((value: string): string => {
+    const segments = value.split("-");
+    return segments.at(-1) ?? value;
+  }, []);
+
   const chartData = useMemo(() => {
     if (!summary) {
       return [];
     }
     return summary.trendData.map((d) => ({
-      month: `${d.month.slice(5)}`,
+      month: extractMonth(d.month),
       totalHours: d.totalHours,
       overtimeHours: d.overtimeHours,
     }));
-  }, [summary]);
+  }, [summary, extractMonth]);
 
   if (loading) {
     return <ProfileSummaryCardSkeleton />;
@@ -134,12 +168,15 @@ export const ProfileSummaryCard = ({
         <div
           aria-label="直近6か月の勤怠トレンドグラフ"
           className="h-64"
+          ref={chartContainerRef}
           role="img"
         >
-          <ResponsiveContainer height="100%" width="100%">
+          {chartSize.width > 0 && chartSize.height > 0 ? (
             <LineChart
               data={chartData}
+              height={chartSize.height}
               margin={{ bottom: 5, left: 0, right: 20, top: 5 }}
+              width={chartSize.width}
             >
               <CartesianGrid {...CHART_GRID_CONFIG} />
               <XAxis
@@ -177,7 +214,7 @@ export const ProfileSummaryCard = ({
                 type="monotone"
               />
             </LineChart>
-          </ResponsiveContainer>
+          ) : null}
         </div>
       </CardContent>
     </Card>
