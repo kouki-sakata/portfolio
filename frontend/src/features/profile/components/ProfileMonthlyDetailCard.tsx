@@ -88,7 +88,7 @@ export const ProfileMonthlyDetailCard = ({
   }));
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" || loading || monthlyData.length === 0) {
       return;
     }
 
@@ -117,7 +117,7 @@ export const ProfileMonthlyDetailCard = ({
 
     const timeoutId = window.setTimeout(update, 0);
     return () => window.clearTimeout(timeoutId);
-  }, []);
+  }, [loading, monthlyData]);
 
   const chartData = useMemo(
     () =>
