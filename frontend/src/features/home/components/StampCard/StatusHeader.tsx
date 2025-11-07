@@ -19,7 +19,10 @@ export const StatusHeader = ({
 }: StatusHeaderProps) => (
   <div className="flex flex-row items-center justify-between gap-4">
     <CardTitle className="flex items-center gap-2 font-semibold text-lg">
-      <Badge className="rounded-full px-3 py-1 text-xs shadow-sm transition-all duration-300">
+      <Badge
+        className="rounded-full px-3 py-1 text-xs shadow-sm transition-all duration-300"
+        data-testid="stamp-status-badge"
+      >
         {statusMeta ? statusMeta.label : "未登録"}
       </Badge>
       ワンクリック打刻

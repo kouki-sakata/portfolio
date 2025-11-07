@@ -120,7 +120,12 @@ const AttendanceSnapshotCardComponent = ({
         <CardTitle className="flex items-center justify-between gap-4 font-semibold text-base text-slate-700 tracking-tight">
           勤務ステータス
           {statusMeta ? (
-            <Badge variant={statusMeta.badgeVariant}>{statusMeta.label}</Badge>
+            <Badge
+              data-testid="attendance-status-badge"
+              variant={statusMeta.badgeVariant}
+            >
+              {statusMeta.label}
+            </Badge>
           ) : (
             <Badge variant="outline">未登録</Badge>
           )}
@@ -154,6 +159,7 @@ const AttendanceSnapshotCardComponent = ({
           {canToggleBreak ? (
             <Button
               className="min-w-[140px]"
+              data-testid="attendance-break-toggle-button"
               disabled={isToggling}
               onClick={() => {
                 onToggleBreak?.().catch(() => {

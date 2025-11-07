@@ -159,6 +159,8 @@ describe("HomePage", () => {
 
   afterEach(() => {
     cleanup();
+    queryClient.clear();
+    vi.mocked(useHomeClock).mockReturnValue(clockState);
   });
 
   function createPublishedNewsItem(
@@ -270,7 +272,9 @@ describe("HomePage", () => {
 
       await waitFor(() => {
         expect(screen.getByText("勤務ステータス")).toBeInTheDocument();
-        expect(screen.getByText("休憩中")).toBeInTheDocument();
+        expect(screen.getByTestId("attendance-status-badge")).toHaveTextContent(
+          "休憩中"
+        );
       });
 
       expect(screen.getByText("09:00")).toBeInTheDocument();
@@ -304,7 +308,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      await user.click(await screen.findByRole("button", { name: "休憩開始" }));
+      await user.click(
+        await screen.findByTestId("attendance-break-toggle-button")
+      );
 
       await waitFor(async () => {
         expect(capturedRequest).not.toBeNull();
@@ -411,25 +417,25 @@ describe("HomePage", () => {
 
     it("打刻カードのタイトルが表示される", () => {
       expect(
-        screen.getByRole("heading", { name: "ワンクリック打刻" })
+        screen.getByRole("heading", { name: /ワンクリック打刻/ })
       ).toBeInTheDocument();
     });
 
     it("出勤打刻ボタンが表示される", () => {
       expect(
-        screen.getByRole("button", { name: "出勤打刻" })
+        screen.getByRole("button", { name: /出勤打刻/ })
       ).toBeInTheDocument();
     });
 
     it("退勤打刻ボタンが表示される", () => {
       expect(
-        screen.getByRole("button", { name: "退勤打刻" })
+        screen.getByRole("button", { name: /退勤打刻/ })
       ).toBeInTheDocument();
     });
 
     it("夜勤扱いチェックボックスが表示される", () => {
       expect(
-        screen.getByRole("checkbox", { name: /夜勤扱い/ })
+        screen.getByRole("switch", { name: /夜勤扱い/ })
       ).toBeInTheDocument();
     });
 
@@ -448,7 +454,7 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -484,7 +490,7 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "退勤打刻" }));
+      await user.click(screen.getByRole("button", { name: /退勤打刻/ }));
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -520,8 +526,8 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("checkbox", { name: /夜勤扱い/ }));
-      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+      await user.click(screen.getByRole("switch", { name: /夜勤扱い/ }));
+      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -550,7 +556,7 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
 
       await waitFor(() => {
         expect(screen.getByText("出勤打刻が完了しました")).toBeInTheDocument();
@@ -576,7 +582,7 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      const stampButton = screen.getByRole("button", { name: "出勤打刻" });
+      const stampButton = screen.getByRole("button", { name: /出勤打刻/ });
 
       await user.click(stampButton);
 
@@ -611,8 +617,8 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      const stampButton = screen.getByRole("button", { name: "出勤打刻" });
-      const quitButton = screen.getByRole("button", { name: "退勤打刻" });
+      const stampButton = screen.getByRole("button", { name: /出勤打刻/ });
+      const quitButton = screen.getByRole("button", { name: /退勤打刻/ });
 
       await user.click(stampButton);
 
@@ -636,7 +642,7 @@ describe("HomePage", () => {
       );
 
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -852,12 +858,17 @@ describe("HomePage", () => {
         )
       );
 
-      const { container } = renderWithQueryClient(<HomePage />);
+      renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        // shadcn/uiのCardは特定のクラスを持つ
-        const cards = container.querySelectorAll(".rounded-xl.border");
-        expect(cards).toHaveLength(3);
+        // 3つのカードコンポーネントが存在することを確認
+        expect(
+          screen.getByRole("heading", { name: /ワンクリック打刻/ })
+        ).toBeInTheDocument();
+        expect(screen.getByText("勤務ステータス")).toBeInTheDocument();
+        expect(
+          screen.getByRole("heading", { name: "最新のお知らせ" })
+        ).toBeInTheDocument();
       });
     });
 
@@ -892,9 +903,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       await waitFor(() => {
-        const checkbox = screen.getByRole("checkbox");
-        // shadcn/uiのCheckboxは特定のクラスやデータ属性を持つ
-        expect(checkbox).toBeInTheDocument();
+        const switchElement = screen.getByRole("switch");
+        // shadcn/uiのSwitchは特定のクラスやデータ属性を持つ
+        expect(switchElement).toBeInTheDocument();
       });
     });
   });
