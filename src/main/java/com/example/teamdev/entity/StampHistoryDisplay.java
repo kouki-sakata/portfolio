@@ -1,5 +1,6 @@
 package com.example.teamdev.entity;
 
+import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -51,15 +52,43 @@ public class StampHistoryDisplay {
 	 */
 	private String outTime;
 	/**
+	 * 休憩開始時刻
+	 */
+	private String breakStartTime;
+	/**
+	 * 休憩終了時刻
+	 */
+	private String breakEndTime;
+	/**
+	 * 残業分数
+	 */
+	private Integer overtimeMinutes;
+	/**
 	 * 更新日時
 	 */
 	private String updateDate;
+	/**
+	 * 出勤時刻(生値)
+	 */
+	private OffsetDateTime inTimeRaw;
+	/**
+	 * 退勤時刻(生値)
+	 */
+	private OffsetDateTime outTimeRaw;
+	/**
+	 * 休憩開始時刻(生値)
+	 */
+	private OffsetDateTime breakStartTimeRaw;
+	/**
+	 * 休憩終了時刻(生値)
+	 */
+	private OffsetDateTime breakEndTimeRaw;
 
 	/**
 	 * CSV出力処理用
 	 */
 	public static String getCsvHeader() {
-		return "ID,年,月,日,曜日,従業員ID,従業員氏名,更新者氏名,出勤時刻,退勤時刻,更新日時\n";
+		return "ID,年,月,日,曜日,従業員ID,従業員氏名,更新者氏名,出勤時刻,退勤時刻,休憩開始時刻,休憩終了時刻,残業分,更新日時\n";
 	}
 
 	public String toCsvString() {
@@ -74,6 +103,9 @@ public class StampHistoryDisplay {
 		csvBuilder.append("\"").append(updateEmployeeName != null ? updateEmployeeName : "").append("\",");
 		csvBuilder.append("\"").append(inTime != null ? inTime : "").append("\",");
 		csvBuilder.append("\"").append(outTime != null ? outTime : "").append("\",");
+		csvBuilder.append("\"").append(breakStartTime != null ? breakStartTime : "").append("\",");
+		csvBuilder.append("\"").append(breakEndTime != null ? breakEndTime : "").append("\",");
+		csvBuilder.append(overtimeMinutes != null ? overtimeMinutes : 0).append(",");
 		csvBuilder.append("\"").append(updateDate != null ? updateDate : "").append("\",");
 
 		// 最後のカンマを削除して改行を追加

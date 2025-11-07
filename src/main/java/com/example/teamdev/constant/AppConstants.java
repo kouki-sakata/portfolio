@@ -61,6 +61,7 @@ public final class AppConstants {
         public static final int OPERATION_RELEASE = 5;     // 公開
         public static final int OPERATION_PROFILE_VIEW = 6;    // プロフィール閲覧
         public static final int OPERATION_PROFILE_UPDATE = 7;  // プロフィール更新
+        public static final int OPERATION_BREAK_TOGGLE = 8;     // 休憩開始/終了
 
         private LogHistory() {
             throw new UnsupportedOperationException("This is a utility class and cannot be instantiated");

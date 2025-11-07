@@ -6,12 +6,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import com.example.teamdev.entity.StampHistoryDisplay;
 import com.example.teamdev.mapper.StampHistoryMapper;
+import com.example.teamdev.service.dto.DailyAttendanceRecord;
+import com.example.teamdev.service.profile.ProfileMetadataRepository;
+import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * 打刻記録確認
@@ -25,6 +27,9 @@ public class StampHistoryService{
 
 	@Autowired
 	private ObjectMapper objectMapper;
+
+	@Autowired
+	private ProfileMetadataRepository profileMetadataRepository;
 
 	//打刻記録取得
 	public List<Map<String,Object>> execute(String year, String month, int employeeId) {
@@ -44,9 +49,24 @@ public class StampHistoryService{
 		//形式：year(YYYY),month(MM),startDate(YYYYMM01)
 		List<StampHistoryDisplay> stampHistoryList =
 				mapper.getStampHistoryByYearMonthEmployeeId(year, month, employeeId, datesInMonth);
+		ProfileMetadataDocument metadata = profileMetadataRepository.load(employeeId);
+
 		for (StampHistoryDisplay stampHistory : stampHistoryList) {
+			DailyAttendanceRecord record = new DailyAttendanceRecord(
+				stampHistory.getInTimeRaw(),
+				stampHistory.getBreakStartTimeRaw(),
+				stampHistory.getBreakEndTimeRaw(),
+				stampHistory.getOutTimeRaw()
+			);
+			int overtimeMinutes = OvertimeCalculator.calculateOvertimeMinutes(record, metadata.schedule());
+			stampHistory.setOvertimeMinutes(overtimeMinutes);
+
 			//取得した打刻記録をmapに詰め替え
 			stampHistoryMap = objectMapper.convertValue(stampHistory, Map.class);
+			stampHistoryMap.remove("inTimeRaw");
+			stampHistoryMap.remove("outTimeRaw");
+			stampHistoryMap.remove("breakStartTimeRaw");
+			stampHistoryMap.remove("breakEndTimeRaw");
 			//Listに追加
 			stampHistoryMapList.add(stampHistoryMap);
         }

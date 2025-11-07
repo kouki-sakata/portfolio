@@ -1,19 +1,18 @@
 package com.example.teamdev.service;
 
-import java.time.LocalDate;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.exception.DuplicateStampException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
+import java.time.LocalDate;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Objects;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * ホーム画面
@@ -95,8 +94,13 @@ public class StampService {
                 entity.setInTime(existing.getInTime());
             }
 
+            entity.setBreakStartTime(existing.getBreakStartTime());
+            entity.setBreakEndTime(existing.getBreakEndTime());
+
             mapper.update(entity);
         } else {
+            entity.setBreakStartTime(null);
+            entity.setBreakEndTime(null);
             mapper.save(entity);
         }
 
@@ -111,6 +115,68 @@ public class StampService {
             employeeId,
             employeeId,
             dateForLog
+        );
+    }
+
+    public void toggleBreak(Integer employeeId, OffsetDateTime toggleTime) {
+        Objects.requireNonNull(employeeId, "employeeId must not be null");
+        Objects.requireNonNull(toggleTime, "toggleTime must not be null");
+
+        LocalDate targetDate = toggleTime.toLocalDate();
+        String year = String.format("%04d", targetDate.getYear());
+        String month = String.format("%02d", targetDate.getMonthValue());
+        String day = String.format("%02d", targetDate.getDayOfMonth());
+
+        StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
+        OffsetDateTime updateDate = OffsetDateTime.now(ZoneOffset.UTC);
+
+        if (existing == null) {
+            StampHistory entity = new StampHistory();
+            entity.setYear(year);
+            entity.setMonth(month);
+            entity.setDay(day);
+            entity.setEmployeeId(employeeId);
+            entity.setInTime(null);
+            entity.setOutTime(null);
+            entity.setBreakStartTime(toggleTime);
+            entity.setBreakEndTime(null);
+            entity.setUpdateEmployeeId(employeeId);
+            entity.setUpdateDate(updateDate);
+            mapper.save(entity);
+        } else {
+            StampHistory entity = new StampHistory();
+            entity.setId(existing.getId());
+            entity.setYear(year);
+            entity.setMonth(month);
+            entity.setDay(day);
+            entity.setEmployeeId(employeeId);
+            entity.setInTime(existing.getInTime());
+            entity.setOutTime(existing.getOutTime());
+            entity.setBreakStartTime(existing.getBreakStartTime());
+            entity.setBreakEndTime(existing.getBreakEndTime());
+            entity.setUpdateEmployeeId(employeeId);
+            entity.setUpdateDate(updateDate);
+
+            if (existing.getBreakStartTime() == null) {
+                entity.setBreakStartTime(toggleTime);
+            } else if (existing.getBreakEndTime() == null) {
+                entity.setBreakEndTime(toggleTime);
+            } else {
+                throw new DuplicateStampException("休憩", existing.getBreakEndTime().toString());
+            }
+
+            mapper.update(entity);
+        }
+
+        java.sql.Timestamp toggleTimestamp = java.sql.Timestamp.from(toggleTime.toInstant());
+        java.sql.Timestamp updateTimestamp = java.sql.Timestamp.from(updateDate.toInstant());
+        logHistoryService.execute(
+            AppConstants.LogHistory.FUNCTION_STAMP,
+            AppConstants.LogHistory.OPERATION_BREAK_TOGGLE,
+            toggleTimestamp,
+            employeeId,
+            employeeId,
+            updateTimestamp
         );
     }
 }

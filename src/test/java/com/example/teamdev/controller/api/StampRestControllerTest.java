@@ -104,6 +104,8 @@ class StampRestControllerTest {
             10,
             inTime,
             outTime,
+            null,
+            null,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
@@ -140,16 +142,19 @@ class StampRestControllerTest {
     @Test
     @WithMockUser(username = EMPLOYEE_EMAIL)
     void updateStampShouldReturnForbiddenWhenNotOwner() throws Exception {
+        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
         StampHistory history = new StampHistory(
             55,
             "2025",
             "11",
             "01",
             999,
-            OffsetDateTime.now(ZoneOffset.UTC),
+            now,
+            null,
+            null,
             null,
             999,
-            OffsetDateTime.now(ZoneOffset.UTC)
+            now
         );
         when(stampHistoryMapper.getById(55)).thenReturn(Optional.of(history));
 
@@ -197,6 +202,8 @@ class StampRestControllerTest {
             "09",
             "30",
             10,
+            null,
+            null,
             null,
             null,
             10,

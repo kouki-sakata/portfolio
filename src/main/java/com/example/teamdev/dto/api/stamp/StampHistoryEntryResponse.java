@@ -13,6 +13,9 @@ public record StampHistoryEntryResponse(
     @Schema(description = "更新者名", example = "管理者 一郎") String updateEmployeeName,
     @Schema(description = "出勤時刻", example = "09:00", nullable = true) String inTime,
     @Schema(description = "退勤時刻", example = "18:00", nullable = true) String outTime,
+    @Schema(description = "休憩開始時刻", example = "12:00", nullable = true) String breakStartTime,
+    @Schema(description = "休憩終了時刻", example = "12:45", nullable = true) String breakEndTime,
+    @Schema(description = "残業分数", example = "60", nullable = true) Integer overtimeMinutes,
     @Schema(description = "更新日時", example = "2025-01-15 18:01:00", nullable = true) String updateDate
 ) {
 }

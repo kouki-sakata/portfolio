@@ -8,6 +8,10 @@ import com.example.teamdev.config.SecurityConfig;
 import com.example.teamdev.dto.api.home.HomeNewsItem;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.service.HomeNewsService;
+import com.example.teamdev.service.HomeAttendanceService;
+import com.example.teamdev.service.dto.DailyAttendanceSnapshot;
+import com.example.teamdev.service.dto.AttendanceStatus;
+import java.util.Optional;
 import com.example.teamdev.service.StampService;
 import com.example.teamdev.util.SecurityUtil;
 import java.sql.Timestamp;
@@ -27,6 +31,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 import com.example.teamdev.mapper.EmployeeMapper;
@@ -48,6 +54,9 @@ class HomeRestControllerTest {
 
     @MockBean
     private StampService stampService;
+
+    @MockBean
+    private HomeAttendanceService homeAttendanceService;
 
     @MockBean
     private EmployeeMapper employeeMapper;
@@ -80,12 +89,23 @@ class HomeRestControllerTest {
                 true
             )
         ));
+        when(homeAttendanceService.fetchTodaySnapshot(eq(100), any()))
+            .thenReturn(Optional.of(new DailyAttendanceSnapshot(
+                AttendanceStatus.WORKING,
+                "2025-11-07T09:00:00+09:00",
+                null,
+                null,
+                null,
+                0
+            )));
 
         mockMvc.perform(get("/api/home/overview").accept(MediaType.APPLICATION_JSON))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.news[0].title").value("メンテナンスのお知らせ"))
             .andExpect(jsonPath("$.news[0].label").value("SYSTEM"))
             .andExpect(jsonPath("$.news[0].releaseFlag").value(true))
-            .andExpect(jsonPath("$.news[0].released").doesNotExist());
+            .andExpect(jsonPath("$.news[0].released").doesNotExist())
+            .andExpect(jsonPath("$.attendance.status").value("WORKING"))
+            .andExpect(jsonPath("$.attendance.attendanceTime").value("2025-11-07T09:00:00+09:00"));
     }
 }

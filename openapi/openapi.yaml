@@ -240,6 +240,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/home/breaks/toggle:
+    post:
+      tags:
+        - Home
+      summary: 休憩トグル
+      description: 休憩開始/終了を切り替えます
+      operationId: toggleBreak
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BreakToggleRequest'
+      responses:
+        '204':
+          description: トグル成功
+        '401':
+          description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 状態不整合によるエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/stamp-history:
     get:
       tags:
@@ -682,6 +712,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/HomeNewsItem'
+        attendance:
+          $ref: '#/components/schemas/DailyAttendanceSnapshot'
+          nullable: true
     HomeNewsItem:
       type: object
       required:
@@ -716,6 +749,46 @@ components:
         releaseFlag:
           type: boolean
           description: 公開フラグ
+    DailyAttendanceSnapshot:
+      type: object
+      required:
+        - status
+        - overtimeMinutes
+      properties:
+        status:
+          $ref: '#/components/schemas/AttendanceStatus'
+        attendanceTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 出勤時刻（ISO 8601、JST）
+        breakStartTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 休憩開始時刻（ISO 8601、JST）
+        breakEndTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 休憩終了時刻（ISO 8601、JST）
+        departureTime:
+          type: string
+          format: date-time
+          nullable: true
+          description: 退勤時刻（ISO 8601、JST）
+        overtimeMinutes:
+          type: integer
+          format: int32
+          description: 残業時間（分）
+    AttendanceStatus:
+      type: string
+      description: 勤務ステータス
+      enum:
+        - NOT_ATTENDED
+        - WORKING
+        - ON_BREAK
+        - FINISHED
     NewsResponse:
       type: object
       required:
@@ -969,6 +1042,15 @@ components:
             - '0'
             - '1'
           description: 夜勤フラグ（0:通常、1:夜勤）
+    BreakToggleRequest:
+      type: object
+      required:
+        - timestamp
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: 休憩トグル時刻（ISO 8601形式）
     StampResponse:
       type: object
       required:
@@ -1067,6 +1149,19 @@ components:
           type: string
           nullable: true
           description: 退勤時刻
+        breakStartTime:
+          type: string
+          nullable: true
+          description: 休憩開始時刻
+        breakEndTime:
+          type: string
+          nullable: true
+          description: 休憩終了時刻
+        overtimeMinutes:
+          type: integer
+          format: int32
+          nullable: true
+          description: 残業時間（分）
         updateDate:
           type: string
           nullable: true

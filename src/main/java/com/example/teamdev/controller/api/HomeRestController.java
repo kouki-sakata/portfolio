@@ -2,6 +2,7 @@ package com.example.teamdev.controller.api;
 
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.common.EmployeeSummaryResponse;
+import com.example.teamdev.dto.api.home.BreakToggleRequest;
 import com.example.teamdev.dto.api.home.HomeDashboardResponse;
 import com.example.teamdev.dto.api.home.HomeNewsItem;
 import com.example.teamdev.dto.api.home.StampRequest;
@@ -10,8 +11,10 @@ import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.exception.DuplicateStampException;
 import com.example.teamdev.form.HomeForm;
+import com.example.teamdev.service.HomeAttendanceService;
 import com.example.teamdev.service.HomeNewsService;
 import com.example.teamdev.service.StampService;
+import com.example.teamdev.service.dto.DailyAttendanceSnapshot;
 import com.example.teamdev.util.MessageUtil;
 import com.example.teamdev.util.SecurityUtil;
 import jakarta.validation.Valid;
@@ -31,6 +34,7 @@ import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/home")
@@ -42,10 +46,16 @@ public class HomeRestController {
 
     private final HomeNewsService homeNewsService;
     private final StampService stampService;
+    private final HomeAttendanceService homeAttendanceService;
 
-    public HomeRestController(HomeNewsService homeNewsService, StampService stampService) {
+    public HomeRestController(
+        HomeNewsService homeNewsService,
+        StampService stampService,
+        HomeAttendanceService homeAttendanceService
+    ) {
         this.homeNewsService = homeNewsService;
         this.stampService = stampService;
+        this.homeAttendanceService = homeAttendanceService;
     }
 
     @Operation(summary = "ホーム概要", description = "ログイン中の従業員情報とお知らせ一覧を返却")
@@ -57,8 +67,16 @@ public class HomeRestController {
         }
 
         List<HomeNewsItem> newsItems = homeNewsService.execute();
+        Optional<DailyAttendanceSnapshot> attendance = homeAttendanceService.fetchTodaySnapshot(
+            currentEmployee.getId(),
+            ZoneId.of("Asia/Tokyo")
+        );
 
-        HomeDashboardResponse response = new HomeDashboardResponse(toEmployeeSummary(currentEmployee), newsItems);
+        HomeDashboardResponse response = new HomeDashboardResponse(
+            toEmployeeSummary(currentEmployee),
+            newsItems,
+            attendance.orElse(null)
+        );
         return ResponseEntity.ok(response);
     }
 
@@ -88,6 +106,19 @@ public class HomeRestController {
         String message = MessageUtil.getMessage(messageKey, new Object[]{formattedDateTime});
 
         return ResponseEntity.ok(new StampResponse(message));
+    }
+
+    @Operation(summary = "休憩トグル", description = "休憩開始/終了を切り替える")
+    @PostMapping(value = "/breaks/toggle", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Void> toggleBreak(@Valid @RequestBody BreakToggleRequest request) {
+        Integer employeeId = SecurityUtil.getCurrentEmployeeId();
+        if (employeeId == null) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Authentication required");
+        }
+
+        OffsetDateTime toggleTime = OffsetDateTime.parse(request.timestamp(), INPUT_FORMATTER);
+        stampService.toggleBreak(employeeId, toggleTime);
+        return ResponseEntity.noContent().build();
     }
 
     private EmployeeSummaryResponse toEmployeeSummary(Employee employee) {

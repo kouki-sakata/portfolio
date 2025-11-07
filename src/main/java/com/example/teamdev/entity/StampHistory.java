@@ -46,6 +46,14 @@ public class StampHistory {
 	 */
 	private OffsetDateTime outTime;  //←out_time→outTime修正
 	/**
+	 * 休憩開始時刻（タイムゾーン情報付き）
+	 */
+	private OffsetDateTime breakStartTime;
+	/**
+	 * 休憩終了時刻（タイムゾーン情報付き）
+	 */
+	private OffsetDateTime breakEndTime;
+	/**
 	 * 更新従業員ID
 	 */
 	private Integer updateEmployeeId;  //←update_employee_id→updateEmployeeId修正

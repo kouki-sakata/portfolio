@@ -68,6 +68,9 @@ public class StampHistoryRestController {
             asString(source.get("updateEmployeeName")),
             asString(source.get("inTime")),
             asString(source.get("outTime")),
+            asString(source.get("breakStartTime")),
+            asString(source.get("breakEndTime")),
+            asInteger(source.get("overtimeMinutes")),
             asString(source.get("updateDate"))
         );
     }
