@@ -11,6 +11,8 @@ import { queryKeys } from "@/shared/utils/queryUtils";
 
 const DEFAULT_SUCCESS_MESSAGE = "休憩ステータスを更新しました";
 const DEFAULT_ERROR_MESSAGE = "休憩の切り替えに失敗しました";
+const CONFLICT_ERROR_MESSAGE =
+  "休憩操作は既に登録されています。画面を再読み込みして最新の勤怠状況を確認してください。";
 
 export type UseBreakToggleOptions = {
   timestampProvider?: () => string;
@@ -56,10 +58,18 @@ export const useBreakToggle = (
       });
     },
     onError: (error) => {
+      const status =
+        typeof error === "object" && error
+          ? (error as { status?: number }).status
+          : undefined;
+      const description =
+        status === 409
+          ? CONFLICT_ERROR_MESSAGE
+          : error.message || DEFAULT_ERROR_MESSAGE;
       toast({
         variant: "destructive",
         title: "エラー",
-        description: error.message || DEFAULT_ERROR_MESSAGE,
+        description,
       });
     },
   });

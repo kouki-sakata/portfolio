@@ -265,11 +265,16 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
         '409':
-          description: 状態不整合によるエラー
+          description: 休憩開始/終了が既に登録されている場合のエラー
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                duplicateBreakToggle:
+                  summary: 重複する休憩操作
+                  value:
+                    message: "休憩操作は既に登録されています。画面を再読み込みして最新の勤怠状況を確認してください。"
   /api/stamp-history:
     get:
       tags:

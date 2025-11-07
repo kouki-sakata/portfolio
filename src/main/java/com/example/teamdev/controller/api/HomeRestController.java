@@ -117,7 +117,12 @@ public class HomeRestController {
         }
 
         OffsetDateTime toggleTime = OffsetDateTime.parse(request.timestamp(), INPUT_FORMATTER);
-        stampService.toggleBreak(employeeId, toggleTime);
+        try {
+            stampService.toggleBreak(employeeId, toggleTime);
+        } catch (DuplicateStampException e) {
+            String conflictMessage = "休憩操作は既に登録されています。画面を再読み込みして最新の勤怠状況を確認してください。";
+            throw new ResponseStatusException(HttpStatus.CONFLICT, conflictMessage, e);
+        }
         return ResponseEntity.noContent().build();
     }
 

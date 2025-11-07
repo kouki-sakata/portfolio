@@ -11,10 +11,10 @@ import { useBreakToggle } from "../hooks/useBreakToggle";
 import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
 import type { HomeNewsItem } from "../types";
-import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 import { HomeClockPanel } from "./HomeClockPanel";
 import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
+import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 
 /**
  * リファクタリング後のHomePageコンポーネント
@@ -114,25 +114,30 @@ export const HomePageRefactored = () => {
           lastName={data.employee.lastName}
         />
 
-        <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
-          <StampCard
-            className="home-card"
-            clockState={clockState}
-            isLoading={isStamping}
-            onCaptureTimestamp={clockState.captureTimestamp}
-            onStamp={handleStamp}
-            showSkeleton={false}
-            status={stampStatus}
-          />
-          <AttendanceSnapshotCard
-            className="home-card"
-            isLoading={false}
-            isToggling={isBreakToggling}
-            onToggleBreak={() => toggleBreak()}
-            snapshot={data.attendance}
-          />
+        <div className="home-grid grid grid-cols-1 gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="space-y-6">
+            <StampCard
+              className="home-card"
+              clockState={clockState}
+              isLoading={isStamping}
+              isToggling={isBreakToggling}
+              onCaptureTimestamp={clockState.captureTimestamp}
+              onStamp={handleStamp}
+              onToggleBreak={() => toggleBreak()}
+              showSkeleton={false}
+              snapshot={data.attendance}
+              status={stampStatus}
+            />
+            <AttendanceSnapshotCard
+              className="home-card"
+              isLoading={isStamping && !data.attendance}
+              isToggling={isBreakToggling}
+              onToggleBreak={() => toggleBreak()}
+              snapshot={data.attendance}
+            />
+          </div>
           <NewsCard
-            className="home-card md:col-span-2"
+            className="home-card"
             isLoading={publishedNewsQuery.isLoading}
             manageHref={data.employee.admin ? "/news-management" : undefined}
             newsItems={publishedNews}
@@ -153,11 +158,11 @@ type HomeHeroProps = {
 };
 
 const HomeHero = ({ lastName, firstName }: HomeHeroProps) => (
-  <header className="home-hero mb-8 rounded-3xl bg-gradient-to-r from-sky-100 to-indigo-100 px-10 py-8 shadow-sm backdrop-blur-sm bg-white/70">
-    <p className="text-sm text-muted-foreground">
+  <header className="home-hero mb-8 rounded-3xl bg-gradient-to-r bg-white/70 from-sky-100 to-indigo-100 px-10 py-8 shadow-sm backdrop-blur-sm">
+    <p className="text-muted-foreground text-sm">
       今日も素敵な一日を過ごしましょう。
     </p>
-    <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
+    <h1 className="mt-2 font-bold text-3xl text-gray-900 tracking-tight">
       おはようございます、{lastName} {firstName} さん
     </h1>
   </header>
@@ -190,14 +195,9 @@ export const HomeDashboardSkeleton = ({
           />
         </div>
       </div>
-      <div className="home-grid grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
         <SkeletonCard className="home-card" />
-        <AttendanceSnapshotCard
-          className="home-card"
-          isLoading
-          snapshot={null}
-        />
-        <SkeletonCard className="home-card lg:col-span-2" />
+        <SkeletonCard className="home-card" />
       </div>
     </section>
   );

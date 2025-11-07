@@ -32,7 +32,10 @@ type StatusMeta = {
   badgeVariant: "default" | "secondary" | "outline" | "destructive";
 };
 
-const STATUS_META: Record<DailyAttendanceSnapshot["status"], StatusMeta> = {
+export const ATTENDANCE_STATUS_META: Record<
+  DailyAttendanceSnapshot["status"],
+  StatusMeta
+> = {
   NOT_ATTENDED: { label: "未出勤", badgeVariant: "outline" },
   WORKING: { label: "勤務中", badgeVariant: "secondary" },
   ON_BREAK: { label: "休憩中", badgeVariant: "default" },
@@ -46,7 +49,7 @@ const AttendanceSnapshotCardComponent = ({
   onToggleBreak,
   className,
 }: AttendanceSnapshotCardProps) => {
-  const statusMeta = snapshot ? STATUS_META[snapshot.status] : null;
+  const statusMeta = snapshot ? ATTENDANCE_STATUS_META[snapshot.status] : null;
 
   const times = useMemo(
     () => [
@@ -107,9 +110,14 @@ const AttendanceSnapshotCardComponent = ({
   }
 
   return (
-    <Card className={cn("w-full rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-md hover:shadow-lg transition-all", className)}>
+    <Card
+      className={cn(
+        "w-full rounded-2xl border border-slate-100 bg-white/70 shadow-md backdrop-blur-sm transition-all hover:shadow-lg",
+        className
+      )}
+    >
       <CardHeader className="space-y-3">
-        <CardTitle className="flex items-center justify-between gap-4 text-base font-semibold tracking-tight text-slate-700">
+        <CardTitle className="flex items-center justify-between gap-4 font-semibold text-base text-slate-700 tracking-tight">
           勤務ステータス
           {statusMeta ? (
             <Badge variant={statusMeta.badgeVariant}>{statusMeta.label}</Badge>

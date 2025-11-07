@@ -3,7 +3,6 @@ import { Loader2, Search } from "lucide-react";
 import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -255,10 +254,10 @@ export const StampHistoryPage = () => {
                     {entry.year}/{entry.month}/{entry.day}
                   </TableCell>
                   <TableCell>{entry.dayOfWeek}</TableCell>
-                  <TableCell>{renderTimeCell(entry.inTime)}</TableCell>
-                  <TableCell>{renderTimeCell(entry.outTime)}</TableCell>
-                  <TableCell>{renderTimeCell(entry.breakStartTime)}</TableCell>
-                  <TableCell>{renderTimeCell(entry.breakEndTime)}</TableCell>
+                  <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
+                  <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
+                  <TableCell>{renderBreakTimeCell(entry.breakStartTime)}</TableCell>
+                  <TableCell>{renderBreakTimeCell(entry.breakEndTime)}</TableCell>
                   <TableCell>
                     {renderOvertimeCell(entry.overtimeMinutes)}
                   </TableCell>
@@ -343,24 +342,12 @@ const StampHistorySkeleton = () => (
   </div>
 );
 
-const renderTimeCell = (value: string | null): ReactNode => {
-  if (!value) {
-    return (
-      <Badge className="font-normal" variant="outline">
-        未登録
-      </Badge>
-    );
-  }
-  return value;
-};
+const renderBreakTimeCell = (value: string | null): ReactNode =>
+  value && value.trim().length > 0 ? value : "-";
 
 const renderOvertimeCell = (value: number | null): ReactNode => {
   if (value === null || value === undefined) {
-    return (
-      <Badge className="font-normal" variant="outline">
-        未登録
-      </Badge>
-    );
+    return "-";
   }
 
   const normalized = Number.isFinite(value) ? value : 0;
@@ -370,3 +357,6 @@ const renderOvertimeCell = (value: number | null): ReactNode => {
 
   return `${normalized}分`;
 };
+
+const renderOptionalTime = (value: string | null): ReactNode =>
+  value && value.trim().length > 0 ? value : "-";

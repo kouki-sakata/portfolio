@@ -1,6 +1,10 @@
 package com.example.teamdev.controller.api;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -13,6 +17,7 @@ import com.example.teamdev.service.dto.DailyAttendanceSnapshot;
 import com.example.teamdev.service.dto.AttendanceStatus;
 import java.util.Optional;
 import com.example.teamdev.service.StampService;
+import com.example.teamdev.exception.DuplicateStampException;
 import com.example.teamdev.util.SecurityUtil;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -73,6 +78,28 @@ class HomeRestControllerTest {
             Timestamp.from(Instant.parse("2025-01-01T00:00:00Z"))
         );
         when(employeeMapper.getEmployeeByEmail(ADMIN_EMAIL)).thenReturn(employee);
+    }
+
+    @DisplayName("POST /api/home/breaks/toggle は重複時に409とメッセージを返す")
+    @Test
+    @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
+    void toggleBreakShouldReturnConflictWhenDuplicate() throws Exception {
+        doThrow(new DuplicateStampException("休憩", "2025-11-07T12:00:00Z"))
+            .when(stampService).toggleBreak(eq(100), any());
+
+        String body = "{" +
+            "\"timestamp\":\"2025-11-07T12:00:00+09:00\"" +
+            "}";
+
+        mockMvc.perform(post("/api/home/breaks/toggle")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isConflict())
+            .andExpect(result -> assertEquals(
+                "休憩操作は既に登録されています。画面を再読み込みして最新の勤怠状況を確認してください。",
+                result.getResponse().getErrorMessage()
+            ));
     }
 
     @DisplayName("/api/home/overview は releaseFlag フィールドを提供するべき")

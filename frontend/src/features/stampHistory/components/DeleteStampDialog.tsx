@@ -76,12 +76,21 @@ export const DeleteStampDialog = ({
         description: "打刻を削除しました",
       });
       onOpenChange(false);
+      queryClient
+        .invalidateQueries({ queryKey: queryKeys.home.dashboard() })
+        .catch(() => {
+          /* ignore cache invalidation errors */
+        });
     },
     onSettled: () => {
       // 成功・失敗に関わらずキャッシュを無効化
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.stampHistory.all,
-      });
+      queryClient
+        .invalidateQueries({
+          queryKey: queryKeys.stampHistory.all,
+        })
+        .catch(() => {
+          /* ignore cache invalidation errors */
+        });
     },
   });
 
