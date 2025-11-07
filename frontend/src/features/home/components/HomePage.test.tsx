@@ -308,7 +308,9 @@ describe("HomePage", () => {
 
       await waitFor(async () => {
         expect(capturedRequest).not.toBeNull();
-        if (!capturedRequest) return;
+        if (!capturedRequest) {
+          return;
+        }
         const body = await capturedRequest.json();
         expect(body).toHaveProperty("timestamp");
       });

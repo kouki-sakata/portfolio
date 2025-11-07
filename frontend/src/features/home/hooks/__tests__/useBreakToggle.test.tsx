@@ -102,7 +102,9 @@ describe("useBreakToggle", () => {
     });
 
     await act(async () => {
-      await expect(result.current.toggleBreak()).rejects.toThrow("toggle failed");
+      await expect(result.current.toggleBreak()).rejects.toThrow(
+        "toggle failed"
+      );
     });
 
     expect(toast).toHaveBeenCalledWith({

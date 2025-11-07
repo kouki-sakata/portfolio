@@ -1,10 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, type ReactNode, lazy, useMemo, useState } from "react";
+import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -259,7 +259,9 @@ export const StampHistoryPage = () => {
                   <TableCell>{renderTimeCell(entry.outTime)}</TableCell>
                   <TableCell>{renderTimeCell(entry.breakStartTime)}</TableCell>
                   <TableCell>{renderTimeCell(entry.breakEndTime)}</TableCell>
-                  <TableCell>{renderOvertimeCell(entry.overtimeMinutes)}</TableCell>
+                  <TableCell>
+                    {renderOvertimeCell(entry.overtimeMinutes)}
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {entry.updateDate ?? "-"}
                   </TableCell>
@@ -344,7 +346,7 @@ const StampHistorySkeleton = () => (
 const renderTimeCell = (value: string | null): ReactNode => {
   if (!value) {
     return (
-      <Badge variant="outline" className="font-normal">
+      <Badge className="font-normal" variant="outline">
         未登録
       </Badge>
     );
@@ -355,7 +357,7 @@ const renderTimeCell = (value: string | null): ReactNode => {
 const renderOvertimeCell = (value: number | null): ReactNode => {
   if (value === null || value === undefined) {
     return (
-      <Badge variant="outline" className="font-normal">
+      <Badge className="font-normal" variant="outline">
         未登録
       </Badge>
     );

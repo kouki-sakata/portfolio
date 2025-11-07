@@ -73,15 +73,21 @@ const AttendanceSnapshotCardComponent = ({
   const overtimeText = formatOvertimeMinutes(snapshot?.overtimeMinutes);
 
   const canToggleBreak = Boolean(
-    onToggleBreak && snapshot && (snapshot.status === "WORKING" || snapshot.status === "ON_BREAK")
+    onToggleBreak &&
+      snapshot &&
+      (snapshot.status === "WORKING" || snapshot.status === "ON_BREAK")
   );
 
-  const toggleButtonLabel = snapshot?.status === "ON_BREAK" ? "休憩終了" : "休憩開始";
+  const toggleButtonLabel =
+    snapshot?.status === "ON_BREAK" ? "休憩終了" : "休憩開始";
   const ToggleButtonIcon = snapshot?.status === "ON_BREAK" ? TimerReset : Play;
 
   if (isLoading) {
     return (
-      <Card className={cn("w-full", className)} data-testid="attendance-card-skeleton">
+      <Card
+        className={cn("w-full", className)}
+        data-testid="attendance-card-skeleton"
+      >
         <CardHeader className="pb-4">
           <Skeleton className="h-6 w-40" />
           <Skeleton className="h-4 w-56" />
@@ -155,11 +161,11 @@ const AttendanceSnapshotCardComponent = ({
           ) : null}
         </div>
 
-        {!statusMeta ? (
+        {statusMeta ? null : (
           <CardDescription className="rounded-md bg-slate-50 p-4 text-sm">
             現在の勤務情報がまだ登録されていません。打刻または休憩操作を行うとステータスが更新されます。
           </CardDescription>
-        ) : null}
+        )}
       </CardContent>
     </Card>
   );

@@ -8,7 +8,9 @@ dayjs.extend(timezone);
 const TIMEZONE = "Asia/Tokyo";
 const TIME_FORMAT = "HH:mm";
 
-export const formatAttendanceTime = (iso: string | null | undefined): string | null => {
+export const formatAttendanceTime = (
+  iso: string | null | undefined
+): string | null => {
   if (!iso) {
     return null;
   }
@@ -21,7 +23,9 @@ export const formatAttendanceTime = (iso: string | null | undefined): string | n
   return parsed.tz(TIMEZONE).format(TIME_FORMAT);
 };
 
-export const formatOvertimeMinutes = (minutes: number | null | undefined): string => {
+export const formatOvertimeMinutes = (
+  minutes: number | null | undefined
+): string => {
   if (minutes === null || minutes === undefined) {
     return "未登録";
   }

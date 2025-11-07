@@ -50,9 +50,7 @@ describe("csv-generator", () => {
       expect(lines[1]).toBe(
         "2025,01,15,水,09:00,18:00,12:00,12:45,60,2025-01-15 18:05"
       );
-      expect(lines[2]).toBe(
-        "2025,01,16,木,09:15,17:45,,,0,2025-01-16 17:50"
-      );
+      expect(lines[2]).toBe("2025,01,16,木,09:15,17:45,,,0,2025-01-16 17:50");
     });
 
     it("ヘッダーなしCSVを生成する", () => {
@@ -66,7 +64,9 @@ describe("csv-generator", () => {
       const content = generateCsvContent(mockEntries, config);
       const lines = content.split("\n");
 
-      expect(lines[0]).toBe("2025,01,15,水,09:00,18:00,12:00,12:45,60,2025-01-15 18:05");
+      expect(lines[0]).toBe(
+        "2025,01,15,水,09:00,18:00,12:00,12:45,60,2025-01-15 18:05"
+      );
       expect(lines.length).toBe(2);
     });
 

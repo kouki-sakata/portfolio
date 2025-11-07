@@ -62,7 +62,7 @@ export const MonthlyStatsCard = ({
           <span className="text-muted-foreground text-sm">残業合計</span>
           <Badge className="justify-center py-2" variant="secondary">
             {stats.totalOvertimeMinutes}分
-            <span className="ml-1 text-xs text-muted-foreground">
+            <span className="ml-1 text-muted-foreground text-xs">
               ({overtimeHours}h)
             </span>
           </Badge>

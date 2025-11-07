@@ -26,17 +26,23 @@ const mapEntry = (
   inTime: entry.inTime ?? null,
   outTime: entry.outTime ?? null,
   breakStartTime:
-    (entry as StampHistoryApiResponse["entries"][number] & {
-      breakStartTime?: string | null;
-    }).breakStartTime ?? null,
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        breakStartTime?: string | null;
+      }
+    ).breakStartTime ?? null,
   breakEndTime:
-    (entry as StampHistoryApiResponse["entries"][number] & {
-      breakEndTime?: string | null;
-    }).breakEndTime ?? null,
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        breakEndTime?: string | null;
+      }
+    ).breakEndTime ?? null,
   overtimeMinutes:
-    (entry as StampHistoryApiResponse["entries"][number] & {
-      overtimeMinutes?: number | null;
-    }).overtimeMinutes ?? null,
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        overtimeMinutes?: number | null;
+      }
+    ).overtimeMinutes ?? null,
   updateDate: entry.updateDate ?? null,
 });
 

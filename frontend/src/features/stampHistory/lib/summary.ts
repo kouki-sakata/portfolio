@@ -72,7 +72,10 @@ export const calculateMonthlySummary = (
 
     totalWorkingHours += workingMinutes / MINUTES_PER_HOUR;
 
-    if (typeof entry.overtimeMinutes === "number" && entry.overtimeMinutes >= 0) {
+    if (
+      typeof entry.overtimeMinutes === "number" &&
+      entry.overtimeMinutes >= 0
+    ) {
       totalOvertimeMinutes += entry.overtimeMinutes;
     }
   }

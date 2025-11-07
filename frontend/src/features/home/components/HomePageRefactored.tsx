@@ -7,12 +7,11 @@ import {
 } from "@/features/home/hooks/useHomeClock";
 import { usePublishedNewsQuery } from "@/features/news/hooks/useNews";
 import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
-
-import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
-import { useDashboard } from "../hooks/useDashboard";
 import { useBreakToggle } from "../hooks/useBreakToggle";
+import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
 import type { HomeNewsItem } from "../types";
+import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 import { HomeClockPanel } from "./HomeClockPanel";
 import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
@@ -30,12 +29,12 @@ export const HomePageRefactored = () => {
     isLoading: isStamping,
     status: stampStatus,
   } = useStamp();
-  const {
-    toggleBreak,
-    isLoading: isBreakToggling,
-  } = useBreakToggle(undefined, {
-    timestampProvider: clockState.captureTimestamp,
-  });
+  const { toggleBreak, isLoading: isBreakToggling } = useBreakToggle(
+    undefined,
+    {
+      timestampProvider: clockState.captureTimestamp,
+    }
+  );
   const publishedNewsQuery = usePublishedNewsQuery({
     refetchInterval: 30_000,
   });

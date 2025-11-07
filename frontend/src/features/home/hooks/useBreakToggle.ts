@@ -25,11 +25,15 @@ export const useBreakToggle = (
   const mutation = useMutation<void, Error, string | undefined>({
     mutationFn: async (timestamp) => {
       const resolvedTimestamp = (() => {
-        if (timestamp) return timestamp;
+        if (timestamp) {
+          return timestamp;
+        }
         if (options.timestampProvider) {
           try {
             const provided = options.timestampProvider();
-            if (provided) return provided;
+            if (provided) {
+              return provided;
+            }
           } catch {
             /* fall through */
           }
