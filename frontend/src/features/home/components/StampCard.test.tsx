@@ -30,8 +30,8 @@ describe("StampCard", () => {
         isLoading={false}
         onCaptureTimestamp={onCaptureTimestamp}
         onStamp={onStamp}
-        status={null}
         snapshot={null}
+        status={null}
       />
     );
 
@@ -60,8 +60,8 @@ describe("StampCard", () => {
         isLoading={false}
         onCaptureTimestamp={() => clockState.isoNow}
         onStamp={vi.fn()}
-        status={status}
         snapshot={null}
+        status={status}
       />
     );
 

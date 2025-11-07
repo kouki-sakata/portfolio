@@ -256,8 +256,12 @@ export const StampHistoryPage = () => {
                   <TableCell>{entry.dayOfWeek}</TableCell>
                   <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
                   <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
-                  <TableCell>{renderBreakTimeCell(entry.breakStartTime)}</TableCell>
-                  <TableCell>{renderBreakTimeCell(entry.breakEndTime)}</TableCell>
+                  <TableCell>
+                    {renderBreakTimeCell(entry.breakStartTime)}
+                  </TableCell>
+                  <TableCell>
+                    {renderBreakTimeCell(entry.breakEndTime)}
+                  </TableCell>
                   <TableCell>
                     {renderOvertimeCell(entry.overtimeMinutes)}
                   </TableCell>

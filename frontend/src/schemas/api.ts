@@ -397,7 +397,7 @@ const endpoints = makeApi([
       },
       {
         status: 409,
-        description: `状態不整合によるエラー`,
+        description: `休憩開始/終了が既に登録されている場合のエラー`,
         schema: ErrorResponse,
       },
     ],

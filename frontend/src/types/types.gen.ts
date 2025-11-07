@@ -659,7 +659,7 @@ export type ToggleBreakErrors = {
      */
     401: ErrorResponse;
     /**
-     * 状態不整合によるエラー
+     * 休憩開始/終了が既に登録されている場合のエラー
      */
     409: ErrorResponse;
 };

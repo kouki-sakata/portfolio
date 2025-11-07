@@ -11,10 +11,10 @@ import { useBreakToggle } from "../hooks/useBreakToggle";
 import { useDashboard } from "../hooks/useDashboard";
 import { useStamp } from "../hooks/useStamp";
 import type { HomeNewsItem } from "../types";
+import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 import { HomeClockPanel } from "./HomeClockPanel";
 import { NewsCard } from "./NewsCard";
 import { StampCard } from "./StampCard";
-import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 
 /**
  * リファクタリング後のHomePageコンポーネント

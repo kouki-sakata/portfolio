@@ -9,6 +9,11 @@ export type AttendanceStatus =
   | "ON_BREAK"
   | "FINISHED";
 
+export type AttendanceStatusMeta = {
+  label: string;
+  badgeVariant: "default" | "secondary" | "outline" | "destructive";
+};
+
 export type DailyAttendanceSnapshot = {
   status: AttendanceStatus;
   attendanceTime: string | null;
