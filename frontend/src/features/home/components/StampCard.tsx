@@ -92,7 +92,7 @@ export const StampCard = memo(
     return (
       <Card
         className={cn(
-          "w-full border border-slate-100 shadow-[0_20px_45px_-25px_rgba(15,23,42,0.35)]",
+          "w-full relative overflow-hidden rounded-2xl border border-slate-100 bg-white/80 backdrop-blur-sm shadow-lg transition-all hover:shadow-xl",
           className
         )}
       >

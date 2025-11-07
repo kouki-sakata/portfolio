@@ -107,9 +107,9 @@ const AttendanceSnapshotCardComponent = ({
   }
 
   return (
-    <Card className={cn("w-full", className)}>
+    <Card className={cn("w-full rounded-2xl border border-slate-100 bg-white/70 backdrop-blur-sm shadow-md hover:shadow-lg transition-all", className)}>
       <CardHeader className="space-y-3">
-        <CardTitle className="flex items-center justify-between gap-4 text-xl">
+        <CardTitle className="flex items-center justify-between gap-4 text-base font-semibold tracking-tight text-slate-700">
           勤務ステータス
           {statusMeta ? (
             <Badge variant={statusMeta.badgeVariant}>{statusMeta.label}</Badge>
