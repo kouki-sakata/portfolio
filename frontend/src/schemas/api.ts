@@ -62,8 +62,29 @@ const HomeNewsItem = z
   })
   .strict()
   .passthrough();
+const AttendanceStatus = z.enum([
+  "NOT_ATTENDED",
+  "WORKING",
+  "ON_BREAK",
+  "FINISHED",
+]);
+const DailyAttendanceSnapshot = z
+  .object({
+    status: AttendanceStatus,
+    attendanceTime: z.string().datetime({ offset: true }).nullish(),
+    breakStartTime: z.string().datetime({ offset: true }).nullish(),
+    breakEndTime: z.string().datetime({ offset: true }).nullish(),
+    departureTime: z.string().datetime({ offset: true }).nullish(),
+    overtimeMinutes: z.number().int(),
+  })
+  .strict()
+  .passthrough();
 const HomeDashboardResponse = z
-  .object({ employee: EmployeeSummaryResponse, news: z.array(HomeNewsItem) })
+  .object({
+    employee: EmployeeSummaryResponse,
+    news: z.array(HomeNewsItem),
+    attendance: DailyAttendanceSnapshot.optional(),
+  })
   .strict()
   .passthrough();
 const StampRequest = z
@@ -75,6 +96,10 @@ const StampRequest = z
   .strict()
   .passthrough();
 const StampResponse = z.object({ message: z.string() }).strict().passthrough();
+const BreakToggleRequest = z
+  .object({ timestamp: z.string().datetime({ offset: true }) })
+  .strict()
+  .passthrough();
 const StampHistoryEntryResponse = z
   .object({
     id: z.number().int().nullable(),
@@ -87,6 +112,9 @@ const StampHistoryEntryResponse = z
     updateEmployeeName: z.string().nullable(),
     inTime: z.string().nullable(),
     outTime: z.string().nullable(),
+    breakStartTime: z.string().nullable(),
+    breakEndTime: z.string().nullable(),
+    overtimeMinutes: z.number().int().nullable(),
     updateDate: z.string().nullable(),
   })
   .partial()
@@ -195,9 +223,12 @@ export const schemas = {
   EmployeeUpsertRequest,
   EmployeeDeleteRequest,
   HomeNewsItem,
+  AttendanceStatus,
+  DailyAttendanceSnapshot,
   HomeDashboardResponse,
   StampRequest,
   StampResponse,
+  BreakToggleRequest,
   StampHistoryEntryResponse,
   StampHistoryResponse,
   StampUpdateRequest,
@@ -337,6 +368,36 @@ const endpoints = makeApi([
       {
         status: 409,
         description: `メールアドレス重複`,
+        schema: ErrorResponse,
+      },
+    ],
+  },
+  {
+    method: "post",
+    path: "/api/home/breaks/toggle",
+    alias: "toggleBreak",
+    description: `休憩開始/終了を切り替えます`,
+    requestFormat: "json",
+    parameters: [
+      {
+        name: "body",
+        type: "Body",
+        schema: z
+          .object({ timestamp: z.string().datetime({ offset: true }) })
+          .strict()
+          .passthrough(),
+      },
+    ],
+    response: z.void(),
+    errors: [
+      {
+        status: 401,
+        description: `認証が必要です`,
+        schema: ErrorResponse,
+      },
+      {
+        status: 409,
+        description: `状態不整合によるエラー`,
         schema: ErrorResponse,
       },
     ],

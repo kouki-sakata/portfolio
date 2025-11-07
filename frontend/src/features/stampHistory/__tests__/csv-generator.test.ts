@@ -12,6 +12,9 @@ describe("csv-generator", () => {
       dayOfWeek: "水",
       inTime: "09:00",
       outTime: "18:00",
+      breakStartTime: "12:00",
+      breakEndTime: "12:45",
+      overtimeMinutes: 60,
       updateDate: "2025-01-15 18:05",
     },
     {
@@ -22,6 +25,9 @@ describe("csv-generator", () => {
       dayOfWeek: "木",
       inTime: "09:15",
       outTime: "17:45",
+      breakStartTime: null,
+      breakEndTime: null,
+      overtimeMinutes: 0,
       updateDate: "2025-01-16 17:50",
     },
   ];
@@ -38,9 +44,15 @@ describe("csv-generator", () => {
       const content = generateCsvContent(mockEntries, config);
       const lines = content.split("\n");
 
-      expect(lines[0]).toBe("年,月,日,曜日,出勤時刻,退勤時刻,更新日時");
-      expect(lines[1]).toBe("2025,01,15,水,09:00,18:00,2025-01-15 18:05");
-      expect(lines[2]).toBe("2025,01,16,木,09:15,17:45,2025-01-16 17:50");
+      expect(lines[0]).toBe(
+        "年,月,日,曜日,出勤時刻,退勤時刻,休憩開始,休憩終了,残業分数,更新日時"
+      );
+      expect(lines[1]).toBe(
+        "2025,01,15,水,09:00,18:00,12:00,12:45,60,2025-01-15 18:05"
+      );
+      expect(lines[2]).toBe(
+        "2025,01,16,木,09:15,17:45,,,0,2025-01-16 17:50"
+      );
     });
 
     it("ヘッダーなしCSVを生成する", () => {
@@ -54,7 +66,7 @@ describe("csv-generator", () => {
       const content = generateCsvContent(mockEntries, config);
       const lines = content.split("\n");
 
-      expect(lines[0]).toBe("2025,01,15,水,09:00,18:00,2025-01-15 18:05");
+      expect(lines[0]).toBe("2025,01,15,水,09:00,18:00,12:00,12:45,60,2025-01-15 18:05");
       expect(lines.length).toBe(2);
     });
 
@@ -121,6 +133,9 @@ describe("csv-generator", () => {
           dayOfWeek: null,
           inTime: null,
           outTime: null,
+          breakStartTime: null,
+          breakEndTime: null,
+          overtimeMinutes: null,
           updateDate: null,
         },
       ];
@@ -133,7 +148,7 @@ describe("csv-generator", () => {
       };
 
       const content = generateCsvContent(entriesWithNull, config);
-      expect(content).toBe("2025,01,15,,,,");
+      expect(content).toBe("2025,01,15,,,,,,,");
     });
   });
 

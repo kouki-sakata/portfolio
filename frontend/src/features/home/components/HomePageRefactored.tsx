@@ -8,7 +8,9 @@ import {
 import { usePublishedNewsQuery } from "@/features/news/hooks/useNews";
 import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
 
+import { AttendanceSnapshotCard } from "./AttendanceSnapshotCard";
 import { useDashboard } from "../hooks/useDashboard";
+import { useBreakToggle } from "../hooks/useBreakToggle";
 import { useStamp } from "../hooks/useStamp";
 import type { HomeNewsItem } from "../types";
 import { HomeClockPanel } from "./HomeClockPanel";
@@ -28,6 +30,12 @@ export const HomePageRefactored = () => {
     isLoading: isStamping,
     status: stampStatus,
   } = useStamp();
+  const {
+    toggleBreak,
+    isLoading: isBreakToggling,
+  } = useBreakToggle(undefined, {
+    timestampProvider: clockState.captureTimestamp,
+  });
   const publishedNewsQuery = usePublishedNewsQuery({
     refetchInterval: 30_000,
   });
@@ -114,8 +122,15 @@ export const HomePageRefactored = () => {
           showSkeleton={false}
           status={stampStatus}
         />
-        <NewsCard
+        <AttendanceSnapshotCard
           className="home-card"
+          isLoading={false}
+          isToggling={isBreakToggling}
+          onToggleBreak={() => toggleBreak()}
+          snapshot={data.attendance}
+        />
+        <NewsCard
+          className="home-card lg:col-span-2"
           isLoading={publishedNewsQuery.isLoading}
           manageHref={data.employee.admin ? "/news-management" : undefined}
           newsItems={publishedNews}
@@ -174,7 +189,12 @@ export const HomeDashboardSkeleton = ({
       </div>
       <div className="home-grid grid grid-cols-1 gap-6 lg:grid-cols-2">
         <SkeletonCard className="home-card" />
-        <SkeletonCard className="home-card" />
+        <AttendanceSnapshotCard
+          className="home-card"
+          isLoading
+          snapshot={null}
+        />
+        <SkeletonCard className="home-card lg:col-span-2" />
       </div>
     </section>
   );

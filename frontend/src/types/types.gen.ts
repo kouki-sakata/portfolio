@@ -87,6 +87,7 @@ export type EmployeeDeleteRequest = {
 export type HomeDashboardResponse = {
     employee: EmployeeSummaryResponse;
     news: Array<HomeNewsItem>;
+    attendance?: DailyAttendanceSnapshot;
 };
 
 export type HomeNewsItem = {
@@ -115,6 +116,35 @@ export type HomeNewsItem = {
      */
     releaseFlag: boolean;
 };
+
+export type DailyAttendanceSnapshot = {
+    status: AttendanceStatus;
+    /**
+     * 出勤時刻（ISO 8601、JST）
+     */
+    attendanceTime?: string | null;
+    /**
+     * 休憩開始時刻（ISO 8601、JST）
+     */
+    breakStartTime?: string | null;
+    /**
+     * 休憩終了時刻（ISO 8601、JST）
+     */
+    breakEndTime?: string | null;
+    /**
+     * 退勤時刻（ISO 8601、JST）
+     */
+    departureTime?: string | null;
+    /**
+     * 残業時間（分）
+     */
+    overtimeMinutes: number;
+};
+
+/**
+ * 勤務ステータス
+ */
+export type AttendanceStatus = 'NOT_ATTENDED' | 'WORKING' | 'ON_BREAK' | 'FINISHED';
 
 export type NewsResponse = {
     /**
@@ -295,6 +325,13 @@ export type StampRequest = {
     nightWorkFlag: '0' | '1';
 };
 
+export type BreakToggleRequest = {
+    /**
+     * 休憩トグル時刻（ISO 8601形式）
+     */
+    timestamp: string;
+};
+
 export type StampResponse = {
     /**
      * 打刻結果メッセージ
@@ -374,6 +411,18 @@ export type StampHistoryEntryResponse = {
      * 退勤時刻
      */
     outTime?: string | null;
+    /**
+     * 休憩開始時刻
+     */
+    breakStartTime?: string | null;
+    /**
+     * 休憩終了時刻
+     */
+    breakEndTime?: string | null;
+    /**
+     * 残業時間（分）
+     */
+    overtimeMinutes?: number | null;
     /**
      * 更新日時
      */
@@ -596,6 +645,35 @@ export type StampResponses = {
 };
 
 export type StampResponse2 = StampResponses[keyof StampResponses];
+
+export type ToggleBreakData = {
+    body: BreakToggleRequest;
+    path?: never;
+    query?: never;
+    url: '/api/home/breaks/toggle';
+};
+
+export type ToggleBreakErrors = {
+    /**
+     * 認証が必要です
+     */
+    401: ErrorResponse;
+    /**
+     * 状態不整合によるエラー
+     */
+    409: ErrorResponse;
+};
+
+export type ToggleBreakError = ToggleBreakErrors[keyof ToggleBreakErrors];
+
+export type ToggleBreakResponses = {
+    /**
+     * トグル成功
+     */
+    204: void;
+};
+
+export type ToggleBreakResponse = ToggleBreakResponses[keyof ToggleBreakResponses];
 
 export type GetStampHistoryData = {
     body?: never;

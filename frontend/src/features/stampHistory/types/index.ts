@@ -6,6 +6,7 @@ export type MonthlyStats = {
   averageWorkingHours: number;
   presentDays: number;
   absentDays: number;
+  totalOvertimeMinutes: number;
 };
 
 export const emptyMonthlySummary: MonthlyStats = {
@@ -14,6 +15,7 @@ export const emptyMonthlySummary: MonthlyStats = {
   averageWorkingHours: 0,
   presentDays: 0,
   absentDays: 0,
+  totalOvertimeMinutes: 0,
 };
 
 export type StampHistoryEntry = {
@@ -24,6 +26,9 @@ export type StampHistoryEntry = {
   dayOfWeek: string | null;
   inTime: string | null;
   outTime: string | null;
+  breakStartTime: string | null;
+  breakEndTime: string | null;
+  overtimeMinutes: number | null;
   updateDate: string | null;
 };
 

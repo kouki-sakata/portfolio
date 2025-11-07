@@ -34,6 +34,14 @@ describe("HomeRepository", () => {
             updateDate: "2025-10-01T00:00:00Z",
           },
         ],
+        attendance: {
+          status: "WORKING",
+          attendanceTime: "2025-11-06T09:00:00+09:00",
+          breakStartTime: null,
+          breakEndTime: null,
+          departureTime: null,
+          overtimeMinutes: 0,
+        },
       }),
     });
 
@@ -46,6 +54,10 @@ describe("HomeRepository", () => {
           releaseFlag: true,
         },
       ],
+      attendance: {
+        status: "WORKING",
+        overtimeMinutes: 0,
+      },
     });
   });
 
@@ -68,11 +80,28 @@ describe("HomeRepository", () => {
             label: "GENERAL",
           },
         ],
+        attendance: null,
       }),
     });
 
     const repository = new HomeRepository(httpClient);
 
     await expect(repository.getDashboard()).rejects.toThrowError();
+  });
+
+  it("休憩トグルAPIを呼び出す", async () => {
+    const httpClient = createHttpClient({
+      post: vi.fn().mockResolvedValue(undefined),
+    });
+
+    const repository = new HomeRepository(httpClient);
+
+    await expect(
+      repository.toggleBreak("2025-11-06T12:00:00+09:00")
+    ).resolves.toBeUndefined();
+
+    expect(httpClient.post).toHaveBeenCalledWith("/home/breaks/toggle", {
+      timestamp: "2025-11-06T12:00:00+09:00",
+    });
   });
 });

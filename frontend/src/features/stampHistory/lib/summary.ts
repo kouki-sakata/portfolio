@@ -34,11 +34,13 @@ export const calculateMonthlySummary = (
       absentDays: 0,
       totalWorkingHours: 0,
       averageWorkingHours: 0,
+      totalOvertimeMinutes: 0,
     };
   }
 
   let totalWorkingHours = 0;
   let presentDays = 0;
+  let totalOvertimeMinutes = 0;
 
   for (const entry of entries) {
     const inMinutes = toMinutes(entry.inTime);
@@ -69,6 +71,10 @@ export const calculateMonthlySummary = (
     }
 
     totalWorkingHours += workingMinutes / MINUTES_PER_HOUR;
+
+    if (typeof entry.overtimeMinutes === "number" && entry.overtimeMinutes >= 0) {
+      totalOvertimeMinutes += entry.overtimeMinutes;
+    }
   }
 
   const totalWorkingDays = entries.length;
@@ -82,5 +88,6 @@ export const calculateMonthlySummary = (
     absentDays,
     totalWorkingHours: roundToSingleDecimal(totalWorkingHours),
     averageWorkingHours: roundToSingleDecimal(averageWorkingHours),
+    totalOvertimeMinutes,
   };
 };

@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, useMemo, useState } from "react";
+import { type FormEvent, type ReactNode, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -230,6 +231,9 @@ export const StampHistoryPage = () => {
               <TableHead>曜日</TableHead>
               <TableHead>出勤時刻</TableHead>
               <TableHead>退勤時刻</TableHead>
+              <TableHead>休憩開始</TableHead>
+              <TableHead>休憩終了</TableHead>
+              <TableHead>残業</TableHead>
               <TableHead>更新日時</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
@@ -239,7 +243,7 @@ export const StampHistoryPage = () => {
               <TableRow>
                 <TableCell
                   className="py-8 text-center text-muted-foreground"
-                  colSpan={6}
+                  colSpan={9}
                 >
                   対象期間の打刻はありません。
                 </TableCell>
@@ -251,8 +255,11 @@ export const StampHistoryPage = () => {
                     {entry.year}/{entry.month}/{entry.day}
                   </TableCell>
                   <TableCell>{entry.dayOfWeek}</TableCell>
-                  <TableCell>{entry.inTime ?? "-"}</TableCell>
-                  <TableCell>{entry.outTime ?? "-"}</TableCell>
+                  <TableCell>{renderTimeCell(entry.inTime)}</TableCell>
+                  <TableCell>{renderTimeCell(entry.outTime)}</TableCell>
+                  <TableCell>{renderTimeCell(entry.breakStartTime)}</TableCell>
+                  <TableCell>{renderTimeCell(entry.breakEndTime)}</TableCell>
+                  <TableCell>{renderOvertimeCell(entry.overtimeMinutes)}</TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {entry.updateDate ?? "-"}
                   </TableCell>
@@ -330,6 +337,34 @@ const StampHistorySkeleton = () => (
       </div>
     </div>
 
-    <SkeletonTable className="bg-card" columns={6} rows={6} showHeader />
+    <SkeletonTable className="bg-card" columns={9} rows={6} showHeader />
   </div>
 );
+
+const renderTimeCell = (value: string | null): ReactNode => {
+  if (!value) {
+    return (
+      <Badge variant="outline" className="font-normal">
+        未登録
+      </Badge>
+    );
+  }
+  return value;
+};
+
+const renderOvertimeCell = (value: number | null): ReactNode => {
+  if (value === null || value === undefined) {
+    return (
+      <Badge variant="outline" className="font-normal">
+        未登録
+      </Badge>
+    );
+  }
+
+  const normalized = Number.isFinite(value) ? value : 0;
+  if (normalized <= 0) {
+    return "0分";
+  }
+
+  return `${normalized}分`;
+};

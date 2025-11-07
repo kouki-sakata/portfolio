@@ -40,6 +40,7 @@ describe("useStamp", () => {
     mockRepository = {
       getDashboard: vi.fn(),
       submitStamp: vi.fn(),
+      toggleBreak: vi.fn(),
     };
 
     vi.clearAllMocks();
