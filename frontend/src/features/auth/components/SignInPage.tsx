@@ -1,8 +1,17 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -52,58 +61,66 @@ export const SignInPage = () => {
   };
 
   return (
-    <div aria-live="polite" className="auth-card">
-      <h1 className="auth-card__title">TeamDevelop Bravo にサインイン</h1>
-      <Form {...form}>
-        <form
-          className="auth-card__form"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <EnhancedFormField
-            control={form.control}
-            label="メールアドレス"
-            name="email"
-          >
-            {(field) => (
-              <Input
-                {...field}
-                autoComplete="email"
-                className="auth-card__input"
-                type="email"
-              />
-            )}
-          </EnhancedFormField>
+    <div
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center bg-neutral-50 px-4 py-12"
+    >
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold text-center">
+            TeamDevelop Bravo にサインイン
+          </CardTitle>
+          <CardDescription className="text-center">
+            メールアドレスとパスワードを入力してログインしてください
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <EnhancedFormField
+                control={form.control}
+                label="メールアドレス"
+                name="email"
+              >
+                {(field) => (
+                  <Input
+                    {...field}
+                    autoComplete="email"
+                    type="email"
+                    placeholder="your.email@example.com"
+                  />
+                )}
+              </EnhancedFormField>
 
-          <EnhancedFormField
-            control={form.control}
-            label="パスワード"
-            name="password"
-          >
-            {(field) => (
-              <Input
-                {...field}
-                autoComplete="current-password"
-                className="auth-card__input"
-                type="password"
-              />
-            )}
-          </EnhancedFormField>
+              <EnhancedFormField
+                control={form.control}
+                label="パスワード"
+                name="password"
+              >
+                {(field) => (
+                  <Input
+                    {...field}
+                    autoComplete="current-password"
+                    type="password"
+                    placeholder="••••••••"
+                  />
+                )}
+              </EnhancedFormField>
 
-          {error ? (
-            <p className="auth-card__error" role="alert">
-              {error}
-            </p>
-          ) : null}
+              {error ? (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              ) : null}
 
-          <Button
-            className="auth-card__submit"
-            disabled={loading}
-            type="submit"
-          >
-            {loading ? "サインイン中…" : "サインイン"}
-          </Button>
-        </form>
-      </Form>
+              <Button className="w-full" disabled={loading} type="submit">
+                {loading ? "サインイン中…" : "サインイン"}
+              </Button>
+            </form>
+          </Form>
+        </CardContent>
+      </Card>
     </div>
   );
 };
