@@ -20,7 +20,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 
 export type EnhancedFormFieldProps<
   TFieldValues extends FieldValues = FieldValues,
@@ -53,13 +52,6 @@ const EnhancedFormFieldContentInner = <
 }) => (
   <>
     <FormControl>{children(field, fieldState)}</FormControl>
-    {fieldState.error && (
-      <SpriteIcon
-        aria-label="エラー"
-        className="pointer-events-none absolute top-9 right-3 h-4 w-4 text-destructive"
-        name="alert-circle"
-      />
-    )}
     {description && <FormDescription>{description}</FormDescription>}
     <FormMessage />
   </>

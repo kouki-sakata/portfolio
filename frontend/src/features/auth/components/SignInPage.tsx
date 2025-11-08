@@ -1,109 +1,41 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import AuthBackgroundShape from "@/assets/svg/auth-background-shape";
+import Logo from "@/components/Logo";
 import {
-  type LoginFormData,
-  loginSchema,
-} from "@/features/auth/schemas/loginSchema";
-import { ApiError } from "@/shared/api/errors/ApiError";
-import { EnhancedFormField } from "@/shared/components/enhanced-form-field";
-import { logger } from "@/shared/utils/logger";
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { LoginForm } from "@/features/auth/components/LoginForm";
 
 export const SignInPage = () => {
-  const navigate = useNavigate();
-  const { login, loading } = useAuth();
-  const [error, setError] = useState<string | null>(null);
-
-  const form = useForm<LoginFormData>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: {
-      email: "",
-      password: "",
-    },
-    mode: "onTouched",
-  });
-
-  const onSubmit = async (data: LoginFormData) => {
-    setError(null);
-    try {
-      await login(data);
-      void navigate("/");
-    } catch (err) {
-      // ログイン失敗時の詳細はユーザーに開示しない（セキュリティ/UX）ため、常に同一メッセージを表示
-      // CI/E2E 環境の差異（401/403/その他）にも頑健
-      setError("メールアドレスまたはパスワードが正しくありません。");
-      // 開発者向けにデバッグ用途でコンソールへは詳細を出す
-      if (err instanceof ApiError) {
-        logger.debug("Login failed:", {
-          status: err.status,
-          code: err.code,
-          message: err.message,
-          details: err.details,
-        });
-      } else {
-        logger.debug("Login failed:", err);
-      }
-    }
-  };
-
   return (
-    <div aria-live="polite" className="auth-card">
-      <h1 className="auth-card__title">TeamDevelop Bravo にサインイン</h1>
-      <Form {...form}>
-        <form
-          className="auth-card__form"
-          onSubmit={form.handleSubmit(onSubmit)}
-        >
-          <EnhancedFormField
-            control={form.control}
-            label="メールアドレス"
-            name="email"
-          >
-            {(field) => (
-              <Input
-                {...field}
-                autoComplete="email"
-                className="auth-card__input"
-                type="email"
-              />
-            )}
-          </EnhancedFormField>
-
-          <EnhancedFormField
-            control={form.control}
-            label="パスワード"
-            name="password"
-          >
-            {(field) => (
-              <Input
-                {...field}
-                autoComplete="current-password"
-                className="auth-card__input"
-                type="password"
-              />
-            )}
-          </EnhancedFormField>
-
-          {error ? (
-            <p className="auth-card__error" role="alert">
-              {error}
-            </p>
-          ) : null}
-
-          <Button
-            className="auth-card__submit"
-            disabled={loading}
-            type="submit"
-          >
-            {loading ? "サインイン中…" : "サインイン"}
-          </Button>
-        </form>
-      </Form>
+    <div className="relative flex h-auto min-h-screen items-center justify-center overflow-x-hidden px-4 py-10 sm:px-6 lg:px-8">
+      <div className="absolute">
+        <AuthBackgroundShape />
+      </div>
+      <Card className="z-10 w-full border-none shadow-md sm:max-w-lg">
+        <CardHeader className="gap-6">
+          <Logo className="gap-3" />
+          <div>
+            <CardTitle className="mb-1.5 text-2xl">
+              TeamDevelop Bravo にサインイン
+            </CardTitle>
+            <CardDescription className="text-base">
+              勤怠管理システムにログインしてください。
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {/* Quick Login Buttons */}
+          <div className="mb-6 flex flex-wrap gap-4 sm:gap-6" />
+          {/* Login Form */}
+          <div className="space-y-4">
+            <LoginForm />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 };
