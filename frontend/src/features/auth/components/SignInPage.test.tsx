@@ -86,7 +86,7 @@ describe("SignInPage", () => {
       renderSignInPage();
 
       expect(
-        screen.getByText(/TeamDevelop Bravo にサインイン/i)
+        screen.getByRole("heading", { name: /TeamDevelop Bravo にサインイン/i })
       ).toBeInTheDocument();
     });
   });

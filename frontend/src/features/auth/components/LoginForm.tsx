@@ -4,7 +4,14 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import {
@@ -73,14 +80,13 @@ export const LoginForm = () => {
         </EnhancedFormField>
 
         {/* Password */}
-        <div className="w-full space-y-1">
-          <EnhancedFormField
-            control={form.control}
-            label="パスワード*"
-            name="password"
-          >
-            {(field) => (
-              <div className="relative">
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem className="relative">
+              <FormLabel>パスワード*</FormLabel>
+              <FormControl>
                 <Input
                   {...field}
                   autoComplete="current-password"
@@ -88,30 +94,29 @@ export const LoginForm = () => {
                   placeholder="••••••••••••••••"
                   type={isPasswordVisible ? "text" : "password"}
                 />
-                <Button
-                  className="absolute inset-y-0 right-0 rounded-l-none text-muted-foreground hover:bg-transparent focus-visible:ring-ring/50"
-                  onClick={() =>
-                    setIsPasswordVisible((prevState) => !prevState)
-                  }
-                  size="icon"
-                  type="button"
-                  variant="ghost"
-                >
-                  {isPasswordVisible ? (
-                    <EyeOffIcon className="size-4" />
-                  ) : (
-                    <EyeIcon className="size-4" />
-                  )}
-                  <span className="sr-only">
-                    {isPasswordVisible
-                      ? "パスワードを隠す"
-                      : "パスワードを表示"}
-                  </span>
-                </Button>
-              </div>
-            )}
-          </EnhancedFormField>
-        </div>
+              </FormControl>
+              <Button
+                className="absolute bottom-[1.875rem] right-0 top-[1.875rem] rounded-l-none text-muted-foreground hover:bg-transparent focus-visible:ring-ring/50"
+                onClick={() => setIsPasswordVisible((prevState) => !prevState)}
+                size="icon"
+                type="button"
+                variant="ghost"
+              >
+                {isPasswordVisible ? (
+                  <EyeOffIcon className="size-4" />
+                ) : (
+                  <EyeIcon className="size-4" />
+                )}
+                <span className="sr-only">
+                  {isPasswordVisible
+                    ? "パスワードを隠す"
+                    : "パスワードを表示"}
+                </span>
+              </Button>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         {/* Remember Me and Forgot Password */}
         <div className="flex justify-end">
