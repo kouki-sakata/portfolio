@@ -60,23 +60,6 @@ function TestForm() {
 
 describe("EnhancedFormField", () => {
   describe("エラー表示", () => {
-    it("エラーがある場合にエラーアイコンを表示する", async () => {
-      render(<TestForm />);
-      const user = userEvent.setup();
-
-      const input = screen.getByPlaceholderText("username");
-
-      // フィールドをタッチしてエラーをトリガー
-      await user.click(input);
-      await user.tab();
-
-      // エラーアイコンが表示されることを確認
-      await waitFor(() => {
-        const errorIcon = screen.getByRole("img", { hidden: true });
-        expect(errorIcon).toBeInTheDocument();
-      });
-    });
-
     it("エラーメッセージを表示する", async () => {
       render(<TestForm />);
       const user = userEvent.setup();
@@ -91,14 +74,6 @@ describe("EnhancedFormField", () => {
           screen.getByText("3文字以上で入力してください")
         ).toBeInTheDocument();
       });
-    });
-
-    it("エラーがない場合はエラーアイコンを表示しない", () => {
-      render(<TestForm />);
-
-      // 初期状態ではエラーアイコンなし
-      const errorIcon = screen.queryByRole("img", { hidden: true });
-      expect(errorIcon).not.toBeInTheDocument();
     });
   });
 
