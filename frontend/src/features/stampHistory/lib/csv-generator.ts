@@ -49,6 +49,12 @@ const STAMP_HISTORY_COLUMNS: CsvColumn<StampHistoryEntry>[] = [
   { header: "曜日", accessor: (row) => row.dayOfWeek ?? "" },
   { header: "出勤時刻", accessor: (row) => row.inTime ?? "" },
   { header: "退勤時刻", accessor: (row) => row.outTime ?? "" },
+  { header: "休憩開始", accessor: (row) => row.breakStartTime ?? "" },
+  { header: "休憩終了", accessor: (row) => row.breakEndTime ?? "" },
+  {
+    header: "残業分数",
+    accessor: (row) => (row.overtimeMinutes ?? "").toString(),
+  },
   { header: "更新日時", accessor: (row) => row.updateDate ?? "" },
 ];
 

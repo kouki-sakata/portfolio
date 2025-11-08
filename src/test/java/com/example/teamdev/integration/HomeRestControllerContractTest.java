@@ -48,7 +48,8 @@ class HomeRestControllerContractTest extends ApiTestSupport {
             .andExpect(jsonPath("$.employee.id").exists())
             .andExpect(jsonPath("$.employee.email").exists())
             .andExpect(jsonPath("$.employee.admin").exists())
-            .andExpect(jsonPath("$.news").isArray());
+            .andExpect(jsonPath("$.news").isArray())
+            .andExpect(jsonPath("$.attendance").exists());
     }
 
     @DisplayName("POST /api/home/stamps accepts valid body and returns message (200)")
@@ -67,5 +68,20 @@ class HomeRestControllerContractTest extends ApiTestSupport {
                 .content(body))
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.message").exists());
+    }
+
+    @DisplayName("POST /api/home/breaks/toggle returns 204")
+    @Test
+    void breaks_toggle_returns_no_content() throws Exception {
+        String body = "{" +
+            "\"timestamp\":\"2025-01-01T12:00:00+09:00\"" +
+            "}";
+
+        mockMvc.perform(post("/api/home/breaks/toggle")
+                .with(csrf())
+                .session(session)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+            .andExpect(status().isNoContent());
     }
 }

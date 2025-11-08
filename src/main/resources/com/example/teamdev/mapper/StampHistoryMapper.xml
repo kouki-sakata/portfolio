@@ -25,6 +25,13 @@
             concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS "updateEmployeeName",
             to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "inTime",
             to_char(sh.out_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "outTime",
+            to_char(sh.break_start_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakStartTime",
+            to_char(sh.break_end_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakEndTime",
+            0 AS "overtimeMinutes",
+            sh.in_time AS "inTimeRaw",
+            sh.out_time AS "outTimeRaw",
+            sh.break_start_time AS "breakStartTimeRaw",
+            sh.break_end_time AS "breakEndTimeRaw",
             to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
@@ -46,10 +53,10 @@
     <!--③IFNULL関数追記-->
     <insert id="save" parameterType="com.example.teamdev.entity.StampHistory">
         INSERT INTO stamp_history (
-            id, year, month, day, employee_id, in_time, out_time,
+            id, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
             update_employee_id, update_date
         ) VALUES (
-            DEFAULT, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime},
+            DEFAULT, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
             #{updateEmployeeId}, #{updateDate}
         )
     </insert>
@@ -67,10 +74,28 @@
             <if test="outTime != null">
                 out_time = #{outTime},
             </if>
+            <if test="breakStartTime != null">
+                break_start_time = #{breakStartTime},
+            </if>
+            <if test="breakEndTime != null">
+                break_end_time = #{breakEndTime},
+            </if>
             update_employee_id = #{updateEmployeeId},
             update_date = #{updateDate}
         WHERE id = #{id}
     </update>
+
+    <select id="selectDailyAttendance" resultType="com.example.teamdev.service.dto.DailyAttendanceRecord">
+        SELECT
+            sh.in_time AS attendanceTime,
+            sh.break_start_time AS breakStartTime,
+            sh.break_end_time AS breakEndTime,
+            sh.out_time AS departureTime
+        FROM stamp_history sh
+        WHERE sh.employee_id = #{employeeId}
+          AND TO_DATE(sh.year || sh.month || sh.day, 'YYYYMMDD') = #{date}
+        LIMIT 1
+    </select>
 
     <!--月次勤怠統計を取得する-->
     <select id="findMonthlyStatistics" resultType="com.example.teamdev.entity.MonthlyAttendanceStats">

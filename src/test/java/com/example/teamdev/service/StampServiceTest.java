@@ -284,4 +284,98 @@ public class StampServiceTest {
         assertNotNull(updated.getOutTime()); // 既存の outTime が保持される
         assertEquals(existingOutTime, updated.getOutTime());
     }
+
+    @Test
+    void toggleBreak_shouldStartBreakWhenNotStarted() {
+        StampHistory existing = new StampHistory();
+        existing.setId(10);
+        existing.setInTime(OffsetDateTime.now().minusHours(3));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        OffsetDateTime toggleTime = OffsetDateTime.now();
+
+        stampService.toggleBreak(employeeId, toggleTime);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper).update(captor.capture());
+
+        StampHistory updated = captor.getValue();
+        assertEquals(existing.getId(), updated.getId());
+        assertEquals(toggleTime, updated.getBreakStartTime());
+        assertNotNull(updated.getUpdateDate());
+		verify(logHistoryService).execute(
+			eq(AppConstants.LogHistory.FUNCTION_STAMP),
+			eq(AppConstants.LogHistory.OPERATION_BREAK_TOGGLE),
+			any(Timestamp.class),
+			eq(employeeId),
+			eq(employeeId),
+			any(Timestamp.class)
+		);
+    }
+
+    @Test
+    void toggleBreak_shouldEndBreakWhenAlreadyStarted() {
+        StampHistory existing = new StampHistory();
+        existing.setId(11);
+        OffsetDateTime inTime = OffsetDateTime.now().minusHours(5);
+        OffsetDateTime breakStart = OffsetDateTime.now().minusMinutes(45);
+        existing.setInTime(inTime);
+        existing.setBreakStartTime(breakStart);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        OffsetDateTime toggleTime = OffsetDateTime.now();
+
+        stampService.toggleBreak(employeeId, toggleTime);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper).update(captor.capture());
+
+        StampHistory updated = captor.getValue();
+        assertEquals(existing.getId(), updated.getId());
+        assertEquals(breakStart, updated.getBreakStartTime());
+        assertEquals(toggleTime, updated.getBreakEndTime());
+		verify(logHistoryService).execute(
+			eq(AppConstants.LogHistory.FUNCTION_STAMP),
+			eq(AppConstants.LogHistory.OPERATION_BREAK_TOGGLE),
+			any(Timestamp.class),
+			eq(employeeId),
+			eq(employeeId),
+			any(Timestamp.class)
+		);
+    }
+
+    @Test
+    void toggleBreak_shouldThrowWhenAlreadyFinished() {
+        StampHistory existing = new StampHistory();
+        existing.setId(12);
+        existing.setInTime(OffsetDateTime.now().minusHours(6));
+        OffsetDateTime breakStart = OffsetDateTime.now().minusHours(2);
+        existing.setBreakStartTime(breakStart);
+        existing.setBreakEndTime(breakStart.plusMinutes(45));
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        assertThrows(DuplicateStampException.class, () ->
+            stampService.toggleBreak(employeeId, OffsetDateTime.now())
+        );
+
+        verify(mapper, never()).update(any());
+        verify(logHistoryService, never()).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(AppConstants.LogHistory.OPERATION_BREAK_TOGGLE),
+            any(),
+            any(),
+            any(),
+            any()
+        );
+    }
 }

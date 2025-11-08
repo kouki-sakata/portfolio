@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, DeleteStampData, DeleteStampErrors, DeleteStampResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSelfProfileStatisticsData, GetSelfProfileStatisticsErrors, GetSelfProfileStatisticsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses, UpdateStampData, UpdateStampErrors, UpdateStampResponses } from './types.gen';
+import type { CreateEmployeeData, CreateEmployeeErrors, CreateEmployeeResponses, CreateNewsData, CreateNewsErrors, CreateNewsResponses, DeleteEmployeesData, DeleteEmployeesResponses, DeleteNewsData, DeleteNewsErrors, DeleteNewsResponses, DeleteStampData, DeleteStampErrors, DeleteStampResponses, GetAllNewsData, GetAllNewsErrors, GetAllNewsResponses, GetHomeOverviewData, GetHomeOverviewErrors, GetHomeOverviewResponses, GetPublishedNewsData, GetPublishedNewsResponses, GetSelfProfileStatisticsData, GetSelfProfileStatisticsErrors, GetSelfProfileStatisticsResponses, GetSessionData, GetSessionResponses, GetStampHistoryData, GetStampHistoryErrors, GetStampHistoryResponses, ListEmployeesData, ListEmployeesResponses, LoginData, LoginErrors, LoginResponses, LogoutData, LogoutResponses, StampData, StampErrors, StampResponses, ToggleBreakData, ToggleBreakErrors, ToggleBreakResponses, ToggleNewsPublishData, ToggleNewsPublishErrors, ToggleNewsPublishResponses, UpdateEmployeeData, UpdateEmployeeErrors, UpdateEmployeeResponses, UpdateNewsData, UpdateNewsErrors, UpdateNewsResponses, UpdateStampData, UpdateStampErrors, UpdateStampResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -164,6 +164,28 @@ export const stamp = <ThrowOnError extends boolean = false>(options: Options<Sta
             }
         ],
         url: '/api/home/stamps',
+        ...options,
+        headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+        }
+    });
+};
+
+/**
+ * 休憩トグル
+ * 休憩開始/終了を切り替えます
+ */
+export const toggleBreak = <ThrowOnError extends boolean = false>(options: Options<ToggleBreakData, ThrowOnError>) => {
+    return (options.client ?? client).post<ToggleBreakResponses, ToggleBreakErrors, ThrowOnError>({
+        security: [
+            {
+                in: 'cookie',
+                name: 'SESSION',
+                type: 'apiKey'
+            }
+        ],
+        url: '/api/home/breaks/toggle',
         ...options,
         headers: {
             'Content-Type': 'application/json',

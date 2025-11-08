@@ -46,6 +46,9 @@ describe("stampApi", () => {
           dayOfWeek: "月",
           inTime: "09:00",
           outTime: "18:00",
+          breakStartTime: "12:00",
+          breakEndTime: "12:45",
+          overtimeMinutes: 60,
           updateDate: "2024-04-01T18:05",
         },
         {
@@ -56,6 +59,9 @@ describe("stampApi", () => {
           dayOfWeek: "火",
           inTime: "09:30",
           outTime: null,
+          breakStartTime: null,
+          breakEndTime: null,
+          overtimeMinutes: null,
           updateDate: null,
         },
       ],
@@ -75,6 +81,7 @@ describe("stampApi", () => {
       absentDays: 1,
       totalWorkingHours: 9,
       averageWorkingHours: 9,
+      totalOvertimeMinutes: 60,
     });
   });
 

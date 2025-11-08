@@ -25,6 +25,7 @@ vi.mock("@/features/stampHistory/api", async (importOriginal) => {
         absentDays: 0,
         totalWorkingHours: 0,
         averageWorkingHours: 0,
+        totalOvertimeMinutes: 0,
       },
     })),
   } satisfies StampHistoryApiModule;

@@ -94,15 +94,11 @@ describe("ProfileEditForm", () => {
     const submitButton = screen.getByRole("button", { name: "保存" });
     await user.click(submitButton);
 
-    // React Hook Formの状態更新を待つ
-    // isSubmittingがtrueになり、ボタンがdisabledになるまで待機
-    await waitFor(() => {
-      expect(submitButton).toBeDisabled();
-    });
+    // 状態更新後にスピナーが描画されることを確認
+    expect(await screen.findByTestId("spinner")).toBeInTheDocument();
 
-    // この時点でボタンは確実にdisabledになっており、スピナーも表示されている
+    expect(submitButton).toBeDisabled();
     expect(handleSubmit).toHaveBeenCalledTimes(1);
-    expect(screen.getByTestId("spinner")).toBeInTheDocument();
     expect(submitButton).toHaveTextContent("保存中…");
   });
 });

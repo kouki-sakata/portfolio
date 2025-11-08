@@ -16,12 +16,13 @@ export const MonthlyStatsCard = ({
   summary,
 }: MonthlyStatsCardProps) => {
   const stats = summary ?? calculateMonthlySummary(entries);
+  const overtimeHours = Math.round((stats.totalOvertimeMinutes / 60) * 10) / 10;
 
   return (
     <Card className="p-6">
       <h3 className="mb-4 font-semibold text-lg">月次統計</h3>
 
-      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-6">
         <div className="flex flex-col gap-2">
           <span className="text-muted-foreground text-sm">総日数</span>
           <Badge className="justify-center py-2" variant="secondary">
@@ -54,6 +55,16 @@ export const MonthlyStatsCard = ({
           <span className="text-muted-foreground text-sm">平均勤務時間</span>
           <Badge className="justify-center py-2" variant="secondary">
             {stats.averageWorkingHours}h
+          </Badge>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <span className="text-muted-foreground text-sm">残業合計</span>
+          <Badge className="justify-center py-2" variant="secondary">
+            {stats.totalOvertimeMinutes}分
+            <span className="ml-1 text-muted-foreground text-xs">
+              ({overtimeHours}h)
+            </span>
           </Badge>
         </div>
       </div>

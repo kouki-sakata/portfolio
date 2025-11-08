@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, useMemo, useState } from "react";
+import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
@@ -230,6 +230,9 @@ export const StampHistoryPage = () => {
               <TableHead>曜日</TableHead>
               <TableHead>出勤時刻</TableHead>
               <TableHead>退勤時刻</TableHead>
+              <TableHead>休憩開始</TableHead>
+              <TableHead>休憩終了</TableHead>
+              <TableHead>残業</TableHead>
               <TableHead>更新日時</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
@@ -239,7 +242,7 @@ export const StampHistoryPage = () => {
               <TableRow>
                 <TableCell
                   className="py-8 text-center text-muted-foreground"
-                  colSpan={6}
+                  colSpan={9}
                 >
                   対象期間の打刻はありません。
                 </TableCell>
@@ -251,8 +254,17 @@ export const StampHistoryPage = () => {
                     {entry.year}/{entry.month}/{entry.day}
                   </TableCell>
                   <TableCell>{entry.dayOfWeek}</TableCell>
-                  <TableCell>{entry.inTime ?? "-"}</TableCell>
-                  <TableCell>{entry.outTime ?? "-"}</TableCell>
+                  <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
+                  <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
+                  <TableCell>
+                    {renderBreakTimeCell(entry.breakStartTime)}
+                  </TableCell>
+                  <TableCell>
+                    {renderBreakTimeCell(entry.breakEndTime)}
+                  </TableCell>
+                  <TableCell>
+                    {renderOvertimeCell(entry.overtimeMinutes)}
+                  </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {entry.updateDate ?? "-"}
                   </TableCell>
@@ -330,6 +342,25 @@ const StampHistorySkeleton = () => (
       </div>
     </div>
 
-    <SkeletonTable className="bg-card" columns={6} rows={6} showHeader />
+    <SkeletonTable className="bg-card" columns={9} rows={6} showHeader />
   </div>
 );
+
+const renderBreakTimeCell = (value: string | null): ReactNode =>
+  value && value.trim().length > 0 ? value : "-";
+
+const renderOvertimeCell = (value: number | null): ReactNode => {
+  if (value === null || value === undefined) {
+    return "-";
+  }
+
+  const normalized = Number.isFinite(value) ? value : 0;
+  if (normalized <= 0) {
+    return "0分";
+  }
+
+  return `${normalized}分`;
+};
+
+const renderOptionalTime = (value: string | null): ReactNode =>
+  value && value.trim().length > 0 ? value : "-";

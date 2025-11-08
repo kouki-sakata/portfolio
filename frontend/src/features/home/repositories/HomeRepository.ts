@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import type {
+  DailyAttendanceSnapshot,
   HomeDashboardResponse,
   StampRequest,
   StampResponse,
@@ -29,13 +30,37 @@ const EmployeeSchema = z.object({
   admin: z.boolean(),
 });
 
+const AttendanceStatusSchema = z.enum([
+  "NOT_ATTENDED",
+  "WORKING",
+  "ON_BREAK",
+  "FINISHED",
+]);
+
+const IsoDateTimeString = z
+  .string()
+  .refine((value) => !Number.isNaN(Date.parse(value)), {
+    message: "Invalid datetime",
+  });
+
+const DailyAttendanceSnapshotSchema = z.object({
+  status: AttendanceStatusSchema,
+  attendanceTime: IsoDateTimeString.nullable(),
+  breakStartTime: IsoDateTimeString.nullable(),
+  breakEndTime: IsoDateTimeString.nullable(),
+  departureTime: IsoDateTimeString.nullable(),
+  overtimeMinutes: z.number().int().nonnegative(),
+});
+
 const HomeDashboardResponseSchema = z.object({
   employee: EmployeeSchema,
   news: z.array(NewsItemSchema),
+  attendance: DailyAttendanceSnapshotSchema.nullable().optional(),
 });
 
 const StampResponseSchema = z.object({
   message: z.string(),
+  success: z.boolean().optional(),
 });
 
 /**
@@ -45,6 +70,7 @@ const StampResponseSchema = z.object({
 export type IHomeRepository = {
   getDashboard(): Promise<HomeDashboardResponse>;
   submitStamp(request: StampRequest): Promise<StampResponse>;
+  toggleBreak(timestamp: string): Promise<void>;
 };
 
 /**
@@ -59,7 +85,11 @@ export class HomeRepository implements IHomeRepository {
 
   async getDashboard(): Promise<HomeDashboardResponse> {
     const response = await this.httpClient.get<unknown>("/home/overview");
-    return HomeDashboardResponseSchema.parse(response);
+    const parsed = HomeDashboardResponseSchema.parse(response);
+    return {
+      ...parsed,
+      attendance: (parsed.attendance ?? null) as DailyAttendanceSnapshot | null,
+    };
   }
 
   async submitStamp(request: StampRequest): Promise<StampResponse> {
@@ -68,6 +98,10 @@ export class HomeRepository implements IHomeRepository {
       request
     );
     return StampResponseSchema.parse(response);
+  }
+
+  async toggleBreak(timestamp: string): Promise<void> {
+    await this.httpClient.post<void>("/home/breaks/toggle", { timestamp });
   }
 }
 

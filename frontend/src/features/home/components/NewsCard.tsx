@@ -90,13 +90,16 @@ export const NewsCard = memo(
     return (
       <Card
         aria-busy={isLoading}
-        className={cn("w-full bg-card text-card-foreground", className)}
+        className={cn(
+          "w-full rounded-2xl border border-slate-100 bg-white/70 shadow-md backdrop-blur-sm transition-all hover:shadow-lg",
+          className
+        )}
       >
         <CardHeader>
-          <CardTitle className="font-semibold text-lg text-slate-900">
+          <CardTitle className="font-semibold text-base text-slate-700 tracking-tight">
             最新のお知らせ
           </CardTitle>
-          <CardDescription className="text-muted-foreground text-sm">
+          <CardDescription className="text-muted-foreground text-xs">
             重要なお知らせを新着順で表示します。
           </CardDescription>
         </CardHeader>

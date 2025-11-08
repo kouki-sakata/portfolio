@@ -30,11 +30,12 @@ describe("StampCard", () => {
         isLoading={false}
         onCaptureTimestamp={onCaptureTimestamp}
         onStamp={onStamp}
+        snapshot={null}
         status={null}
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "出勤打刻" }));
+    await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
 
     expect(onCaptureTimestamp).toHaveBeenCalledTimes(1);
     expect(onStamp).toHaveBeenCalledWith(
@@ -59,6 +60,7 @@ describe("StampCard", () => {
         isLoading={false}
         onCaptureTimestamp={() => clockState.isoNow}
         onStamp={vi.fn()}
+        snapshot={null}
         status={status}
       />
     );
