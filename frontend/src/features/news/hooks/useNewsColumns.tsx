@@ -35,6 +35,9 @@ export function useNewsColumns({
     () => [
       {
         id: "select",
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
         header: ({ table }) => (
           <DataTableSelectionCheckbox
             aria-label="全て選択"
@@ -63,6 +66,9 @@ export function useNewsColumns({
       },
       {
         accessorKey: "newsDate",
+        size: 110,
+        minSize: 90,
+        maxSize: 130,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="日付" />
         ),
@@ -72,13 +78,16 @@ export function useNewsColumns({
       },
       {
         accessorKey: "title",
+        size: 200,
+        minSize: 150,
+        maxSize: 300,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="タイトル" />
         ),
         cell: ({ row }) => {
           const title = row.getValue("title") as string;
           return (
-            <div className="max-w-[200px] truncate font-medium md:max-w-[300px]">
+            <div className="truncate font-medium">
               {title || (
                 <span className="text-muted-foreground italic">
                   タイトル未設定
@@ -90,13 +99,16 @@ export function useNewsColumns({
       },
       {
         accessorKey: "content",
+        size: 300,
+        minSize: 200,
+        maxSize: 500,
         header: "内容",
         cell: ({ row }) => {
           const content = row.getValue("content") as string;
 
           return (
             <div
-              className="max-w-[300px] overflow-hidden text-ellipsis md:max-w-[500px]"
+              className="overflow-hidden text-ellipsis"
               style={multiLineClampStyle}
             >
               {content}
@@ -106,6 +118,9 @@ export function useNewsColumns({
       },
       {
         accessorKey: "labelDisplay",
+        size: 110,
+        minSize: 90,
+        maxSize: 130,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="カテゴリ" />
         ),
@@ -140,6 +155,9 @@ export function useNewsColumns({
       },
       {
         accessorKey: "releaseFlag",
+        size: 110,
+        minSize: 90,
+        maxSize: 130,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="ステータス" />
         ),
@@ -177,6 +195,9 @@ export function useNewsColumns({
       },
       {
         accessorKey: "updateDate",
+        size: 150,
+        minSize: 120,
+        maxSize: 180,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="最終更新" />
         ),
@@ -197,6 +218,9 @@ export function useNewsColumns({
       },
       {
         id: "actions",
+        size: 140,
+        minSize: 120,
+        maxSize: 160,
         header: "アクション",
         cell: ({ row }) => {
           const news = row.original;
