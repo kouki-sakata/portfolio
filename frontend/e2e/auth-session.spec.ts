@@ -243,7 +243,7 @@ test.describe("認証・セッション管理の包括的テスト", () => {
 
       // クリック前の状態確認
       await expect(loginButton).toBeEnabled();
-      await expect(loginButton).toHaveText("サインイン");
+      await expect(loginButton).toHaveText("TeamDevelop Bravo にサインイン");
 
       // 最初のクリック（非同期で実行）
       const clickPromise = loginButton.click();
