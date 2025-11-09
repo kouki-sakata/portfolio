@@ -41,8 +41,8 @@ export function DataTableColumnHeader<TData, TValue = unknown>({
       // 降順 → 昇順
       column.toggleSorting(false);
     } else {
-      // 昇順 → ソート解除
-      column.clearSorting();
+      // 昇順 → 降順
+      column.toggleSorting(true);
     }
   };
 
