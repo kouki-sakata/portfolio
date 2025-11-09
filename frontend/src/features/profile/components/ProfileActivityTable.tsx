@@ -36,16 +36,31 @@ export const ProfileActivityTable = ({
   const [selectedEntry, setSelectedEntry] =
     useState<ProfileActivityEntryViewModel | null>(null);
 
-  const formatDateTime = useMemoizedDateFormatter("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
+import type { DateFormatOptions } from "@/shared/hooks/useMemoizedDateFormatter";
+
+const PROFILE_DATETIME_OPTIONS: DateFormatOptions = {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
+};
+
+export const ProfileActivityTable = ({
+  entries,
+  page,
+  pageSize,
+  totalCount,
+  loading = false,
+  onPaginationChange,
+}: ProfileActivityTableProps) => {
+  const [selectedEntry, setSelectedEntry] =
+    useState<ProfileActivityEntryViewModel | null>(null);
+
+  const formatDateTime = useMemoizedDateFormatter("ja-JP", PROFILE_DATETIME_OPTIONS);
 
   useEffect(() => {
     if (selectedEntry) {
