@@ -142,13 +142,9 @@ export const NewsFormModal = ({
 
       onClose();
       form.reset(defaultValues);
-    } catch (error) {
-      // ミューテーションでハンドリング済みだが、開発時のデバッグのためログ出力
-      console.error("News form submission error:", {
-        mode,
-        newsId: news?.id,
-        error: error instanceof Error ? error.message : String(error),
-      });
+    } catch (_error) {
+      // ミューテーションでハンドリング済み
+      // エラーは上位のエラーハンドリングで処理される
     }
   });
 

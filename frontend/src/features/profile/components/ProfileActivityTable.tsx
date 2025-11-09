@@ -5,27 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProfileActivityEntryViewModel } from "@/features/profile/types";
 import { DataTable } from "@/shared/components/data-table/DataTable";
+import {
+  type DateFormatOptions,
+  useMemoizedDateFormatter,
+} from "@/shared/hooks/useMemoizedDateFormatter";
 import { cn } from "@/shared/utils/cn";
-
-const formatDateTime = (isoLike: string): string => {
-  const date = new Date(isoLike);
-  if (Number.isNaN(date.getTime())) {
-    return "不明";
-  }
-
-  const formatter = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-    hour12: false,
-  });
-
-  return formatter.format(date);
-};
 
 const OPERATION_LABEL: Record<
   ProfileActivityEntryViewModel["operationType"],
@@ -33,6 +17,17 @@ const OPERATION_LABEL: Record<
 > = {
   UPDATE: "更新",
   VIEW: "閲覧",
+};
+
+const PROFILE_DATETIME_OPTIONS: DateFormatOptions = {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
 };
 
 export type ProfileActivityTableProps = {
@@ -54,6 +49,11 @@ export const ProfileActivityTable = ({
 }: ProfileActivityTableProps) => {
   const [selectedEntry, setSelectedEntry] =
     useState<ProfileActivityEntryViewModel | null>(null);
+
+  const formatDateTime = useMemoizedDateFormatter(
+    "ja-JP",
+    PROFILE_DATETIME_OPTIONS
+  );
 
   useEffect(() => {
     if (selectedEntry) {
@@ -77,7 +77,10 @@ export const ProfileActivityTable = ({
       {
         accessorKey: "occurredAt",
         header: "操作日時",
-        cell: ({ getValue }) => formatDateTime(String(getValue() ?? "")),
+        cell: ({ getValue }) => {
+          const value = String(getValue() ?? "");
+          return value ? formatDateTime(value) : "不明";
+        },
       },
       {
         accessorKey: "actor",
@@ -128,7 +131,7 @@ export const ProfileActivityTable = ({
         },
       },
     ],
-    []
+    [formatDateTime]
   );
 
   const handlePaginationChange = (

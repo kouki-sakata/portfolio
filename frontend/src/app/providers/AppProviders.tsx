@@ -1,8 +1,15 @@
 import "@/styles/global.css";
 
 import { QueryClientProvider } from "@tanstack/react-query";
-import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { lazy, StrictMode, Suspense, useEffect } from "react";
+
+// ReactQueryDevtoolsを動的importで遅延ロード
+const ReactQueryDevtools = lazy(() =>
+  import("@tanstack/react-query-devtools").then((module) => ({
+    default: module.ReactQueryDevtools,
+  }))
+);
+
 import {
   createBrowserRouter,
   Outlet,
@@ -193,7 +200,9 @@ export const AppProviders = () => (
       </Suspense>
       {import.meta.env.DEV &&
       import.meta.env["VITE_DISABLE_DATA_TABLE_VIEW_OPTIONS"] !== "true" ? (
-        <ReactQueryDevtools initialIsOpen={false} />
+        <Suspense fallback={null}>
+          <ReactQueryDevtools initialIsOpen={false} />
+        </Suspense>
       ) : null}
     </QueryClientProvider>
   </StrictMode>
