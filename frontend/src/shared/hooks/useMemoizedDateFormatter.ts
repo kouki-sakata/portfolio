@@ -11,6 +11,7 @@ export type DateFormatOptions = {
   minute?: "numeric" | "2-digit";
   second?: "numeric" | "2-digit";
   hour12?: boolean;
+  timeZone?: string;
 };
 
 /**
