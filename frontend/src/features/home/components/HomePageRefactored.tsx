@@ -36,7 +36,15 @@ export const HomePageRefactored = () => {
     }
   );
   const publishedNewsQuery = usePublishedNewsQuery({
-    refetchInterval: 30_000,
+    // パフォーマンス最適化: 5分ごとに更新（ページが表示されている場合のみ）
+    refetchInterval: () => {
+      // Page Visibility API: ページが非表示の場合は自動更新を停止
+      if (document?.hidden) {
+        return false;
+      }
+      return 5 * 60 * 1000; // 5分
+    },
+    refetchOnWindowFocus: true, // フォーカス時は再取得
   });
 
   const publishedNews = useMemo<HomeNewsItem[]>(() => {

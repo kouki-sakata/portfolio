@@ -81,10 +81,48 @@ export const useHomeClock = (): HomeClockState => {
   }, []);
 
   useEffect(() => {
-    const id = window.setInterval(updateClock, CLOCK_INTERVAL_MS);
+    // パフォーマンス最適化: Page Visibility APIで非表示時は更新を停止
+    let id: number | undefined;
+
+    const startInterval = () => {
+      if (id !== undefined) {
+        window.clearInterval(id);
+      }
+      id = window.setInterval(updateClock, CLOCK_INTERVAL_MS);
+    };
+
+    const stopInterval = () => {
+      if (id !== undefined) {
+        window.clearInterval(id);
+        id = undefined;
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        stopInterval();
+      } else {
+        updateClock(); // 即座に更新
+        startInterval();
+      }
+    };
+
+    // 初回起動
+    startInterval();
+
+    // Visibility変更イベントリスナー
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
 
     return () => {
-      window.clearInterval(id);
+      stopInterval();
+      if (typeof document !== "undefined") {
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange
+        );
+      }
     };
   }, [updateClock]);
 

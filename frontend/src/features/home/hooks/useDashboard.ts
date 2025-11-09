@@ -19,7 +19,15 @@ export const dashboardQueryOptions = (
     queryKey: ["home", "dashboard"] as const,
     queryFn: () => repository.getDashboard(),
     staleTime: 60 * 1000,
-    refetchInterval: 5 * 60 * 1000, // 5分ごとに自動更新
+    // パフォーマンス最適化: 10分ごとに自動更新（ページが表示されている場合のみ）
+    refetchInterval: () => {
+      // Page Visibility API: ページが非表示の場合は自動更新を停止
+      if (document?.hidden) {
+        return false;
+      }
+      return 10 * 60 * 1000; // 10分
+    },
+    refetchOnWindowFocus: true, // フォーカス時は再取得
   });
 
 /**

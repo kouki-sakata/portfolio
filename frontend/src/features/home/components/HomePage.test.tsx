@@ -768,7 +768,7 @@ describe("HomePage", () => {
       });
     });
 
-    it("公開お知らせクエリは30秒ごとの自動更新設定を適用する", async () => {
+    it("公開お知らせクエリは5分ごとの自動更新設定を適用する（ページ表示時のみ）", async () => {
       setupPublishedNewsResponse([
         createPublishedNewsItem({
           id: 99,
@@ -797,11 +797,19 @@ describe("HomePage", () => {
 
       const options = query?.options as
         | {
-            refetchInterval?: number;
+            refetchInterval?: number | (() => number | false);
           }
         | undefined;
 
-      expect(options?.refetchInterval).toBe(30_000);
+      // refetchIntervalが関数であることを確認
+      expect(typeof options?.refetchInterval).toBe("function");
+
+      // ページが表示されている場合は5分を返すことを確認
+      if (typeof options?.refetchInterval === "function") {
+        // document.hiddenがfalseの場合（表示中）
+        const interval = options.refetchInterval();
+        expect(interval).toBe(5 * 60 * 1000); // 5分
+      }
     });
   });
 
