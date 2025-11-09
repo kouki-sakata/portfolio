@@ -1,4 +1,4 @@
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,16 +36,9 @@ export const NewsCard = memo(
     manageHref,
     manageLabel = "お知らせ管理へ",
   }: NewsCardProps) => {
-    const visibleNews = useMemo(() => {
-      const toTime = (value: string) => {
-        const time = new Date(value).getTime();
-        return Number.isNaN(time) ? 0 : time;
-      };
-
-      return [...newsItems]
-        .sort((a, b) => toTime(b.newsDate) - toTime(a.newsDate))
-        .slice(0, 5);
-    }, [newsItems]);
+    // パフォーマンス最適化: 親コンポーネントでソート済みのデータを受け取る前提
+    // 二重ソートを避けるため、受け取ったデータをそのまま使用
+    const visibleNews = newsItems;
 
     const renderContent = () => {
       if (isLoading) {
