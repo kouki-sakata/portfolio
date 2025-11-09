@@ -20,6 +20,9 @@ export function useEmployeeColumns({
     () => [
       {
         id: "select",
+        size: 50,
+        minSize: 50,
+        maxSize: 50,
         header: ({ table }) => (
           <DataTableSelectionCheckbox
             aria-label="全て選択"
@@ -44,14 +47,20 @@ export function useEmployeeColumns({
       },
       {
         accessorKey: "id",
+        size: 80,
+        minSize: 60,
+        maxSize: 100,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="ID" />
         ),
-        cell: ({ row }) => <div className="w-[80px]">{row.getValue("id")}</div>,
+        cell: ({ row }) => <div>{row.getValue("id")}</div>,
       },
       {
         id: "fullName",
         accessorFn: (row) => `${row.lastName} ${row.firstName}`,
+        size: 150,
+        minSize: 120,
+        maxSize: 200,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="氏名" />
         ),
@@ -59,7 +68,7 @@ export function useEmployeeColumns({
           const employee = row.original;
           return (
             <div className="flex space-x-2">
-              <span className="max-w-[200px] truncate font-medium">
+              <span className="truncate font-medium">
                 {employee.lastName} {employee.firstName}
               </span>
             </div>
@@ -72,11 +81,14 @@ export function useEmployeeColumns({
       },
       {
         accessorKey: "email",
+        size: 250,
+        minSize: 200,
+        maxSize: 350,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="メールアドレス" />
         ),
         cell: ({ row }) => (
-          <div className="max-w-[300px] truncate">
+          <div className="truncate">
             <a
               className="text-primary hover:underline"
               href={`mailto:${row.getValue("email")}`}
@@ -88,13 +100,16 @@ export function useEmployeeColumns({
       },
       {
         accessorKey: "admin",
+        size: 100,
+        minSize: 80,
+        maxSize: 120,
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="ロール" />
         ),
         cell: ({ row }) => {
           const isAdmin = row.getValue("admin") as boolean;
           return (
-            <div className="flex w-[100px] items-center">
+            <div className="flex items-center">
               <span
                 className={`inline-flex items-center rounded-full px-2.5 py-0.5 font-semibold text-xs ${
                   isAdmin
@@ -111,6 +126,9 @@ export function useEmployeeColumns({
       },
       {
         id: "actions",
+        size: 150,
+        minSize: 120,
+        maxSize: 180,
         header: "操作",
         cell: ({ row }) => {
           const employee = row.original;

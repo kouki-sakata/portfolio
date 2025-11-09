@@ -196,6 +196,11 @@ export function DataTable<TData, TValue = unknown>({
                     className="whitespace-nowrap px-3 md:px-4"
                     key={header.id}
                     scope="col"
+                    style={{
+                      width: header.getSize(),
+                      minWidth: header.column.columnDef.minSize,
+                      maxWidth: header.column.columnDef.maxSize,
+                    }}
                   >
                     {header.isPlaceholder
                       ? null
@@ -234,6 +239,11 @@ export function DataTable<TData, TValue = unknown>({
                     <TableCell
                       className="whitespace-nowrap px-3 py-3 text-sm md:px-4 md:py-4"
                       key={cell.id}
+                      style={{
+                        width: cell.column.getSize(),
+                        minWidth: cell.column.columnDef.minSize,
+                        maxWidth: cell.column.columnDef.maxSize,
+                      }}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
