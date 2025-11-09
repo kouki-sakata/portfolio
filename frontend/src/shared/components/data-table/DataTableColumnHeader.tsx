@@ -50,9 +50,9 @@ export function DataTableColumnHeader<TData, TValue = unknown>({
     <div className={cn("flex items-center space-x-2", className)}>
       <Button
         className="-ml-3 h-8"
+        onClick={handleClick}
         size="sm"
         variant="ghost"
-        onClick={handleClick}
       >
         <span>{title}</span>
         <SortIcon direction={column.getIsSorted()} />
