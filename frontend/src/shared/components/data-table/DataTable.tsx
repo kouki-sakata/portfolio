@@ -187,7 +187,7 @@ export function DataTable<TData, TValue = unknown>({
         className="relative hidden w-full overflow-auto lg:block"
         style={fixedHeight ? { height: fixedHeight } : undefined}
       >
-        <Table>
+        <Table className="table-fixed">
           <TableHeader className="sticky top-0 z-10">
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
