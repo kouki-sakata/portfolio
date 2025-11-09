@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +36,7 @@ type FormMode = "create" | "update" | null;
  * - ✅ 検索フィルター（DataTableに統合済み）
  * - ✅ 一括選択と削除機能
  */
-export function EmployeeListPage() {
+function EmployeeListPageComponent() {
   const { toast } = useToast();
 
   // データフェッチング
@@ -238,6 +238,8 @@ export function EmployeeListPage() {
     </div>
   );
 }
+
+export const EmployeeListPage = memo(EmployeeListPageComponent);
 
 const EmployeeListSkeleton = () => (
   <div

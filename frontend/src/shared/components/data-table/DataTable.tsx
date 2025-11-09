@@ -1,13 +1,15 @@
 import {
+  type Cell,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
   type PaginationState,
+  type Row,
   useReactTable,
 } from "@tanstack/react-table";
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent, memo, useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,7 +38,148 @@ function extractHeaderText(header: unknown): string {
   return "";
 }
 
-export function DataTable<TData, TValue = unknown>({
+/**
+ * デスクトップ用テーブル行コンポーネント（メモ化）
+ */
+const DesktopTableRow = memo(function DesktopTableRowInner<TData>({
+  row,
+  onRowClick,
+}: {
+  row: Row<TData>;
+  onRowClick?: (data: TData) => void;
+}) {
+  return (
+    <TableRow
+      className={`${row.getIsSelected() ? "bg-muted" : ""} ${
+        onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
+      }`}
+      data-state={row.getIsSelected() && "selected"}
+      key={row.id}
+      onClick={() => onRowClick?.(row.original)}
+      onKeyDown={
+        onRowClick
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onRowClick(row.original);
+              }
+            }
+          : undefined
+      }
+      tabIndex={onRowClick ? 0 : undefined}
+    >
+      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => (
+        <TableCell
+          className="whitespace-nowrap px-3 py-3 text-sm md:px-4 md:py-4"
+          key={cell.id}
+          style={{
+            width: cell.column.getSize(),
+            minWidth: cell.column.columnDef.minSize,
+            maxWidth: cell.column.columnDef.maxSize,
+          }}
+        >
+          {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        </TableCell>
+      ))}
+    </TableRow>
+  );
+});
+
+/**
+ * モバイル用カード行コンポーネント（メモ化）
+ */
+const MobileCardRow = memo(function MobileCardRowInner<TData>({
+  row,
+  onRowClick,
+}: {
+  row: Row<TData>;
+  onRowClick?: (data: TData) => void;
+}) {
+  const CardContent = (
+    <div className="space-y-2">
+      {row.getVisibleCells().map((cell: Cell<TData, unknown>) => {
+        const header = cell.column.columnDef.header;
+        const headerText = extractHeaderText(header);
+
+        return (
+          <div className="flex justify-between gap-4" key={cell.id}>
+            <div className="font-medium text-gray-700 text-sm">
+              {headerText || cell.column.id}
+            </div>
+            <div className="text-right text-gray-900 text-sm">
+              {(() => {
+                const cellContent = flexRender(
+                  cell.column.columnDef.cell,
+                  cell.getContext()
+                );
+
+                // content列の場合は特別処理
+                if (
+                  cell.column.id === "content" &&
+                  typeof cellContent === "string"
+                ) {
+                  return (
+                    <div className="max-w-[200px] truncate" title={cellContent}>
+                      {cellContent}
+                    </div>
+                  );
+                }
+
+                return cellContent;
+              })()}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  // クリック可能な場合はbuttonとしてレンダリング
+  if (onRowClick) {
+    const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        onRowClick(row.original);
+      }
+    };
+
+    return (
+      /* biome-ignore lint/a11y/useSemanticElements: ネストされた button を避けつつキーボード操作を支援する必要がある */
+      <div
+        className={cn(
+          "w-full rounded-lg border bg-white p-4 text-left shadow-sm transition-shadow",
+          row.getIsSelected() && "border-blue-500 bg-blue-50",
+          "hover:shadow-md active:shadow-sm"
+        )}
+        data-state={row.getIsSelected() && "selected"}
+        key={row.id}
+        onClick={() => onRowClick(row.original)}
+        onKeyDown={handleKeyDown}
+        role="button"
+        tabIndex={0}
+      >
+        {/* 行クリックと内部ボタン操作の両立のため div + role="button" を採用 */}
+        {CardContent}
+      </div>
+    );
+  }
+
+  // クリック不可の場合は通常のdivとしてレンダリング
+  return (
+    <div
+      className={cn(
+        "rounded-lg border bg-white p-4 shadow-sm",
+        row.getIsSelected() && "border-blue-500 bg-blue-50"
+      )}
+      data-state={row.getIsSelected() && "selected"}
+      key={row.id}
+    >
+      {CardContent}
+    </div>
+  );
+});
+
+function DataTableComponent<TData, TValue = unknown>({
   columns,
   data,
   pagination: controlledPagination,
@@ -215,44 +358,15 @@ export function DataTable<TData, TValue = unknown>({
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  className={`${row.getIsSelected() ? "bg-muted" : ""} ${
-                    onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
-                  }`}
-                  data-state={row.getIsSelected() && "selected"}
-                  key={row.id}
-                  onClick={() => onRowClick?.(row.original)}
-                  onKeyDown={
-                    onRowClick
-                      ? (e) => {
-                          if (e.key === "Enter" || e.key === " ") {
-                            e.preventDefault();
-                            onRowClick(row.original);
-                          }
-                        }
-                      : undefined
-                  }
-                  tabIndex={onRowClick ? 0 : undefined}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell
-                      className="whitespace-nowrap px-3 py-3 text-sm md:px-4 md:py-4"
-                      key={cell.id}
-                      style={{
-                        width: cell.column.getSize(),
-                        minWidth: cell.column.columnDef.minSize,
-                        maxWidth: cell.column.columnDef.maxSize,
-                      }}
-                    >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table
+                .getRowModel()
+                .rows.map((row) => (
+                  <DesktopTableRow
+                    key={row.id}
+                    onRowClick={onRowClick}
+                    row={row}
+                  />
+                ))
             ) : (
               <TableRow>
                 <TableCell
@@ -288,93 +402,11 @@ export function DataTable<TData, TValue = unknown>({
         }
       >
         {table.getRowModel().rows?.length ? (
-          table.getRowModel().rows.map((row) => {
-            const CardContent = (
-              <div className="space-y-2">
-                {row.getVisibleCells().map((cell) => {
-                  const header = cell.column.columnDef.header;
-                  const headerText = extractHeaderText(header);
-
-                  return (
-                    <div className="flex justify-between gap-4" key={cell.id}>
-                      <div className="font-medium text-gray-700 text-sm">
-                        {headerText || cell.column.id}
-                      </div>
-                      <div className="text-right text-gray-900 text-sm">
-                        {(() => {
-                          const cellContent = flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          );
-
-                          // content列の場合は特別処理
-                          if (
-                            cell.column.id === "content" &&
-                            typeof cellContent === "string"
-                          ) {
-                            return (
-                              <div
-                                className="max-w-[200px] truncate"
-                                title={cellContent}
-                              >
-                                {cellContent}
-                              </div>
-                            );
-                          }
-
-                          return cellContent;
-                        })()}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-
-            // クリック可能な場合はbuttonとしてレンダリング
-            if (onRowClick) {
-              const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-                if (event.key === "Enter" || event.key === " ") {
-                  event.preventDefault();
-                  onRowClick(row.original);
-                }
-              };
-
-              return (
-                /* biome-ignore lint/a11y/useSemanticElements: ネストされた button を避けつつキーボード操作を支援する必要がある */
-                <div
-                  className={cn(
-                    "w-full rounded-lg border bg-white p-4 text-left shadow-sm transition-shadow",
-                    row.getIsSelected() && "border-blue-500 bg-blue-50",
-                    "hover:shadow-md active:shadow-sm"
-                  )}
-                  data-state={row.getIsSelected() && "selected"}
-                  key={row.id}
-                  onClick={() => onRowClick(row.original)}
-                  onKeyDown={handleKeyDown}
-                  role="button"
-                  tabIndex={0}
-                >
-                  {/* 行クリックと内部ボタン操作の両立のため div + role="button" を採用 */}
-                  {CardContent}
-                </div>
-              );
-            }
-
-            // クリック不可の場合は通常のdivとしてレンダリング
-            return (
-              <div
-                className={cn(
-                  "rounded-lg border bg-white p-4 shadow-sm",
-                  row.getIsSelected() && "border-blue-500 bg-blue-50"
-                )}
-                data-state={row.getIsSelected() && "selected"}
-                key={row.id}
-              >
-                {CardContent}
-              </div>
-            );
-          })
+          table
+            .getRowModel()
+            .rows.map((row) => (
+              <MobileCardRow key={row.id} onRowClick={onRowClick} row={row} />
+            ))
         ) : (
           <output
             aria-live="polite"
@@ -403,3 +435,6 @@ export function DataTable<TData, TValue = unknown>({
     </div>
   );
 }
+
+// ジェネリック型を保持しながらReact.memoでラップ
+export const DataTable = memo(DataTableComponent) as typeof DataTableComponent;

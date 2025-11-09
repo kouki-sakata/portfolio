@@ -11,6 +11,7 @@ import {
   DataTableSelectionCheckbox,
 } from "@/shared/components/data-table";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
+import { useDateTimeFormatter } from "@/shared/hooks/useMemoizedDateFormatter";
 
 const multiLineClampStyle = {
   display: "-webkit-box",
@@ -31,6 +32,8 @@ export function useNewsColumns({
   onEdit,
   onDeleteClick,
 }: UseNewsColumnsProps = {}) {
+  const formatDateTime = useDateTimeFormatter();
+
   return useMemo<ColumnDef<NewsViewModel>[]>(
     () => [
       {
@@ -205,13 +208,7 @@ export function useNewsColumns({
           const updateDate = row.getValue("updateDate") as string;
           return (
             <div className="text-muted-foreground text-sm">
-              {new Date(updateDate).toLocaleString("ja-JP", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
+              {formatDateTime(updateDate)}
             </div>
           );
         },
@@ -276,6 +273,6 @@ export function useNewsColumns({
         enableHiding: false,
       },
     ],
-    [onEdit, onDeleteClick]
+    [onEdit, onDeleteClick, formatDateTime]
   );
 }

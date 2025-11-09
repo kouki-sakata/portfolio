@@ -1,6 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
+import {
+  type FormEvent,
+  lazy,
+  memo,
+  type ReactNode,
+  useMemo,
+  useState,
+} from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
@@ -46,7 +53,7 @@ const MonthlyStatsCard = lazy(() =>
   )
 );
 
-export const StampHistoryPage = () => {
+const StampHistoryPageComponent = () => {
   // 選択中の年月（ローカル状態）
   const [filters, setFilters] = useState<{ year?: string; month?: string }>(
     () => {
@@ -319,6 +326,8 @@ export const StampHistoryPage = () => {
     </div>
   );
 };
+
+export const StampHistoryPage = memo(StampHistoryPageComponent);
 
 const StampHistorySkeleton = () => (
   <div
