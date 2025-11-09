@@ -1,5 +1,5 @@
 import type { RowSelectionState } from "@tanstack/react-table";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardTitle } from "@/components/ui/card";
@@ -47,7 +47,7 @@ const NewsListSkeleton = () => (
   </div>
 );
 
-const NewsManagementPageComponent = () => {
+export const NewsManagementPage = () => {
   const newsQuery = useNewsQuery();
   const [formOpen, setFormOpen] = useState(false);
   const [formMode, setFormMode] = useState<"create" | "edit">("create");
@@ -295,5 +295,3 @@ const NewsManagementPageComponent = () => {
     </div>
   );
 };
-
-export const NewsManagementPage = memo(NewsManagementPageComponent);

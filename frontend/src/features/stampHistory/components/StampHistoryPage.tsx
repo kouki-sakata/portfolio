@@ -3,7 +3,6 @@ import { Loader2, Search } from "lucide-react";
 import {
   type FormEvent,
   lazy,
-  memo,
   type ReactNode,
   useMemo,
   useState,
@@ -53,7 +52,7 @@ const MonthlyStatsCard = lazy(() =>
   )
 );
 
-const StampHistoryPageComponent = () => {
+export const StampHistoryPage = () => {
   // 選択中の年月（ローカル状態）
   const [filters, setFilters] = useState<{ year?: string; month?: string }>(
     () => {
@@ -326,8 +325,6 @@ const StampHistoryPageComponent = () => {
     </div>
   );
 };
-
-export const StampHistoryPage = memo(StampHistoryPageComponent);
 
 const StampHistorySkeleton = () => (
   <div

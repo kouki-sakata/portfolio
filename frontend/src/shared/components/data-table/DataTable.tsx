@@ -9,7 +9,7 @@ import {
   type Row,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { type KeyboardEvent, memo, useMemo, useState } from "react";
+import { type KeyboardEvent, useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -39,9 +39,9 @@ function extractHeaderText(header: unknown): string {
 }
 
 /**
- * デスクトップ用テーブル行コンポーネント（メモ化）
+ * デスクトップ用テーブル行コンポーネント
  */
-const DesktopTableRow = memo(function DesktopTableRowInner<TData>({
+function DesktopTableRow<TData>({
   row,
   onRowClick,
 }: {
@@ -83,15 +83,12 @@ const DesktopTableRow = memo(function DesktopTableRowInner<TData>({
       ))}
     </TableRow>
   );
-}) as <TData>(props: {
-  row: Row<TData>;
-  onRowClick?: (data: TData) => void;
-}) => React.ReactElement;
+}
 
 /**
- * モバイル用カード行コンポーネント（メモ化）
+ * モバイル用カード行コンポーネント
  */
-const MobileCardRow = memo(function MobileCardRowInner<TData>({
+function MobileCardRow<TData>({
   row,
   onRowClick,
 }: {
@@ -180,10 +177,7 @@ const MobileCardRow = memo(function MobileCardRowInner<TData>({
       {CardContent}
     </div>
   );
-}) as <TData>(props: {
-  row: Row<TData>;
-  onRowClick?: (data: TData) => void;
-}) => React.ReactElement;
+}
 
 function DataTableComponent<TData, TValue = unknown>({
   columns,
@@ -442,5 +436,4 @@ function DataTableComponent<TData, TValue = unknown>({
   );
 }
 
-// ジェネリック型を保持しながらReact.memoでラップ
-export const DataTable = memo(DataTableComponent) as typeof DataTableComponent;
+export const DataTable = DataTableComponent;
