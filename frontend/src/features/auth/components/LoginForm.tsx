@@ -96,7 +96,7 @@ export const LoginForm = () => {
                 />
               </FormControl>
               <Button
-                className="absolute bottom-[1.875rem] right-0 top-[1.875rem] rounded-l-none text-muted-foreground hover:bg-transparent focus-visible:ring-ring/50"
+                className="absolute top-[1.875rem] right-0 bottom-[1.875rem] rounded-l-none text-muted-foreground hover:bg-transparent focus-visible:ring-ring/50"
                 onClick={() => setIsPasswordVisible((prevState) => !prevState)}
                 size="icon"
                 type="button"
@@ -108,9 +108,7 @@ export const LoginForm = () => {
                   <EyeIcon className="size-4" />
                 )}
                 <span className="sr-only">
-                  {isPasswordVisible
-                    ? "パスワードを隠す"
-                    : "パスワードを表示"}
+                  {isPasswordVisible ? "パスワードを隠す" : "パスワードを表示"}
                 </span>
               </Button>
               <FormMessage />
