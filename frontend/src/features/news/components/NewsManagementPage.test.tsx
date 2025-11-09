@@ -330,14 +330,18 @@ describe("NewsManagementPage", () => {
     await user.click(screen.getByLabelText("全て選択"));
 
     const table = screen.getByLabelText("データテーブル");
-    const itemCheckboxes = within(table).getAllByRole("checkbox", {
-      name: /のお知らせを選択$/,
-    });
 
-    expect(itemCheckboxes).toHaveLength(2);
-    for (const checkbox of itemCheckboxes) {
-      expect(checkbox).toHaveAttribute("data-state", "checked");
-    }
+    // Wait for checkboxes to be updated after selection
+    await waitFor(() => {
+      const itemCheckboxes = within(table).getAllByRole("checkbox", {
+        name: /のお知らせを選択$/,
+      });
+
+      expect(itemCheckboxes).toHaveLength(2);
+      for (const checkbox of itemCheckboxes) {
+        expect(checkbox).toHaveAttribute("data-state", "checked");
+      }
+    });
 
     const bulkDeleteButton = screen.getByRole("button", {
       name: "選択した2件を削除",
