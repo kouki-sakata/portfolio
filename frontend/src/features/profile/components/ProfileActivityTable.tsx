@@ -5,7 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { ProfileActivityEntryViewModel } from "@/features/profile/types";
 import { DataTable } from "@/shared/components/data-table/DataTable";
-import { useMemoizedDateFormatter } from "@/shared/hooks/useMemoizedDateFormatter";
+import {
+  type DateFormatOptions,
+  useMemoizedDateFormatter,
+} from "@/shared/hooks/useMemoizedDateFormatter";
 import { cn } from "@/shared/utils/cn";
 
 const OPERATION_LABEL: Record<
@@ -14,6 +17,17 @@ const OPERATION_LABEL: Record<
 > = {
   UPDATE: "更新",
   VIEW: "閲覧",
+};
+
+const PROFILE_DATETIME_OPTIONS: DateFormatOptions = {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+  hour12: false,
 };
 
 export type ProfileActivityTableProps = {
@@ -36,31 +50,10 @@ export const ProfileActivityTable = ({
   const [selectedEntry, setSelectedEntry] =
     useState<ProfileActivityEntryViewModel | null>(null);
 
-import type { DateFormatOptions } from "@/shared/hooks/useMemoizedDateFormatter";
-
-const PROFILE_DATETIME_OPTIONS: DateFormatOptions = {
-  timeZone: "Asia/Tokyo",
-  year: "numeric",
-  month: "2-digit",
-  day: "2-digit",
-  hour: "2-digit",
-  minute: "2-digit",
-  second: "2-digit",
-  hour12: false,
-};
-
-export const ProfileActivityTable = ({
-  entries,
-  page,
-  pageSize,
-  totalCount,
-  loading = false,
-  onPaginationChange,
-}: ProfileActivityTableProps) => {
-  const [selectedEntry, setSelectedEntry] =
-    useState<ProfileActivityEntryViewModel | null>(null);
-
-  const formatDateTime = useMemoizedDateFormatter("ja-JP", PROFILE_DATETIME_OPTIONS);
+  const formatDateTime = useMemoizedDateFormatter(
+    "ja-JP",
+    PROFILE_DATETIME_OPTIONS
+  );
 
   useEffect(() => {
     if (selectedEntry) {

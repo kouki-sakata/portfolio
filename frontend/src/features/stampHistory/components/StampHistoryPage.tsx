@@ -1,12 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import {
-  type FormEvent,
-  lazy,
-  type ReactNode,
-  useMemo,
-  useState,
-} from "react";
+import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
