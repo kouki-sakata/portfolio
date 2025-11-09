@@ -36,19 +36,24 @@ export const HomePageRefactored = () => {
     }
   );
   const publishedNewsQuery = usePublishedNewsQuery({
-    refetchInterval: 30_000,
+    // パフォーマンス最適化: 5分ごとに更新（ページが表示されている場合のみ）
+    refetchInterval: () => {
+      // Page Visibility API: ページが非表示の場合は自動更新を停止
+      if (document?.hidden) {
+        return false;
+      }
+      return 5 * 60 * 1000; // 5分
+    },
+    refetchOnWindowFocus: true, // フォーカス時は再取得
   });
 
   const publishedNews = useMemo<HomeNewsItem[]>(() => {
     const items = publishedNewsQuery.data?.news ?? [];
 
-    const toTime = (value: string) => {
-      const time = new Date(value).getTime();
-      return Number.isNaN(time) ? 0 : time;
-    };
-
+    // パフォーマンス最適化: ISO 8601形式の日付文字列は辞書順で比較可能
+    // Date オブジェクト生成によるGC圧力を回避
     return [...items]
-      .sort((a, b) => toTime(b.newsDate) - toTime(a.newsDate))
+      .sort((a, b) => b.newsDate.localeCompare(a.newsDate))
       .slice(0, 5)
       .map(
         ({
