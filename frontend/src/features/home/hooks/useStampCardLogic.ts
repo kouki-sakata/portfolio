@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ATTENDANCE_STATUS_META } from "@/features/home/components/AttendanceSnapshotCard";
 import {
   StampValidationError,
@@ -40,56 +40,62 @@ export const useStampCardLogic = ({
   const isClockError = clockState.status === "error";
 
   // イベントハンドラー
-  const handleStamp = async (type: "1" | "2") => {
-    // クライアント側バリデーション
-    try {
-      if (type === "1") {
-        validateAttendanceStamp(snapshot);
-      } else {
-        validateDepartureStamp(snapshot);
+  const handleStamp = useCallback(
+    async (type: "1" | "2") => {
+      // クライアント側バリデーション
+      try {
+        if (type === "1") {
+          validateAttendanceStamp(snapshot);
+        } else {
+          validateDepartureStamp(snapshot);
+        }
+      } catch (error) {
+        if (error instanceof StampValidationError) {
+          toast({
+            variant: "destructive",
+            title: "操作エラー",
+            description: error.message,
+          });
+          return; // バリデーションエラー時は処理を中断
+        }
+        throw error; // 予期しないエラーは再スロー
       }
-    } catch (error) {
-      if (error instanceof StampValidationError) {
-        toast({
-          variant: "destructive",
-          title: "操作エラー",
-          description: error.message,
-        });
-        return; // バリデーションエラー時は処理を中断
+
+      const iso = onCaptureTimestamp();
+      await onStamp(type, nightWork, iso);
+      const actionType = type === "1" ? "出勤打刻" : "退勤打刻";
+      setLastAction(`${actionType}を登録しました`);
+    },
+    [snapshot, onCaptureTimestamp, onStamp, nightWork]
+  );
+
+  const handleBreakToggle = useCallback(
+    async () => {
+      if (!onToggleBreak) {
+        return;
       }
-      throw error; // 予期しないエラーは再スロー
-    }
 
-    const iso = onCaptureTimestamp();
-    await onStamp(type, nightWork, iso);
-    const actionType = type === "1" ? "出勤打刻" : "退勤打刻";
-    setLastAction(`${actionType}を登録しました`);
-  };
-
-  const handleBreakToggle = async () => {
-    if (!onToggleBreak) {
-      return;
-    }
-
-    // クライアント側バリデーション
-    try {
-      validateBreakToggle(snapshot);
-    } catch (error) {
-      if (error instanceof StampValidationError) {
-        toast({
-          variant: "destructive",
-          title: "操作エラー",
-          description: error.message,
-        });
-        return; // バリデーションエラー時は処理を中断
+      // クライアント側バリデーション
+      try {
+        validateBreakToggle(snapshot);
+      } catch (error) {
+        if (error instanceof StampValidationError) {
+          toast({
+            variant: "destructive",
+            title: "操作エラー",
+            description: error.message,
+          });
+          return; // バリデーションエラー時は処理を中断
+        }
+        throw error; // 予期しないエラーは再スロー
       }
-      throw error; // 予期しないエラーは再スロー
-    }
 
-    await onToggleBreak();
-    const action = isBreak ? "休憩終了" : "休憩開始";
-    setLastAction(`${action}を登録しました`);
-  };
+      await onToggleBreak();
+      const action = isBreak ? "休憩終了" : "休憩開始";
+      setLastAction(`${action}を登録しました`);
+    },
+    [onToggleBreak, snapshot, isBreak]
+  );
 
   const toggleNightWork = () => setNightWork((prev) => !prev);
 
