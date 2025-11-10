@@ -31,9 +31,7 @@ export type StampHistoryCardProps = {
 export const StampHistoryCard = memo<StampHistoryCardProps>(
   ({ entry, onEdit, onDelete }) => {
     const dayOfWeekColor = getDayOfWeekColor(entry.dayOfWeek);
-    const overtimeBadgeVariant = getOvertimeBadgeVariant(
-      entry.overtimeMinutes
-    );
+    const overtimeBadgeVariant = getOvertimeBadgeVariant(entry.overtimeMinutes);
 
     return (
       <li

@@ -36,8 +36,12 @@ export const renderOvertimeCell = (value: number | null): ReactNode => {
  * 土曜日: 青、日曜日: 赤、それ以外: デフォルト
  */
 export const getDayOfWeekColor = (dayOfWeek: string | null): string => {
-  if (dayOfWeek === "土") return "text-blue-600";
-  if (dayOfWeek === "日") return "text-red-600";
+  if (dayOfWeek === "土") {
+    return "text-blue-600";
+  }
+  if (dayOfWeek === "日") {
+    return "text-red-600";
+  }
   return "text-foreground";
 };
 
@@ -48,6 +52,8 @@ export const getDayOfWeekColor = (dayOfWeek: string | null): string => {
 export const getOvertimeBadgeVariant = (
   minutes: number | null
 ): "secondary" | "destructive" => {
-  if (!minutes || minutes <= 0) return "secondary";
+  if (!minutes || minutes <= 0) {
+    return "secondary";
+  }
   return "destructive";
 };
