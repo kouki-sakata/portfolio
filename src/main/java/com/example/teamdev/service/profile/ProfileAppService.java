@@ -190,8 +190,8 @@ public class ProfileAppService {
         if (operator.getId().equals(target.getId())) {
             return;
         }
-        boolean operatorIsAdmin = operator.getAdmin_flag() != null
-            && operator.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+        boolean operatorIsAdmin = operator.getAdminFlag() != null
+            && operator.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
         if (!operatorIsAdmin) {
             throw new org.springframework.security.access.AccessDeniedException(
                 "Access denied: operator does not have permission for target profile"
@@ -287,15 +287,15 @@ public class ProfileAppService {
 
     private ProfileEmployeeSummary toSummary(Employee employee, Instant overrideUpdatedAt) {
         String fullName = String.format(Locale.JAPANESE, "%s %s",
-            safe(employee.getLast_name()),
-            safe(employee.getFirst_name())
+            safe(employee.getLastName()),
+            safe(employee.getFirstName())
         ).trim();
-        boolean admin = employee.getAdmin_flag() != null
-            && employee.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+        boolean admin = employee.getAdminFlag() != null
+            && employee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
         Instant updated = overrideUpdatedAt != null
             ? overrideUpdatedAt
-            : employee.getUpdate_date() != null
-                ? employee.getUpdate_date().toInstant()
+            : employee.getUpdateDate() != null
+                ? employee.getUpdateDate().toInstant()
                 : clock.instant();
         String formatted = ISO_FORMATTER.format(updated.atOffset(ZoneOffset.UTC));
         return new ProfileEmployeeSummary(

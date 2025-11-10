@@ -34,12 +34,12 @@ public class LogHistoryRegistrationService {
         int count = mapper.existsLogHistoryForToday(params);
         if (count == 0) {
             LogHistory entity = new LogHistory();
-            entity.setDisplay_name(displayName);
-            entity.setOperation_type(operationType);
-            entity.setStamp_time(stampTime);
-            entity.setEmployee_id(employeeId);
-            entity.setUpdate_employee_id(update_employee_id);
-            entity.setUpdate_date(update_date);
+            entity.setDisplayName(displayName);
+            entity.setOperationType(operationType);
+            entity.setStampTime(stampTime);
+            entity.setEmployeeId(employeeId);
+            entity.setUpdateEmployeeId(update_employee_id);
+            entity.setUpdateDate(update_date);
             entity.setDetail("{}");
             mapper.save(entity);
         }

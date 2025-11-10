@@ -88,8 +88,8 @@ public class PasswordMigrationService {
             try {
                 String hashedPassword = passwordEncoder.encode(employee.getPassword());
                 employee.setPassword(hashedPassword);
-                employee.setUpdate_date(updateTime);
-                
+                employee.setUpdateDate(updateTime);
+
                 employeeMapper.upDate(employee);
                 migratedCount++;
                 

@@ -66,7 +66,7 @@ public class EmployeeQueryService {
         } else {
             // N+1問題解決：全件取得後Javaでフィルタリング（キャッシュ効果も期待）
             return employeeMapper.getAllOrderById().stream()
-                    .filter(employee -> employee.getAdmin_flag().equals(adminFlag))
+                    .filter(employee -> employee.getAdminFlag().equals(adminFlag))
                     .toList();
         }
     }

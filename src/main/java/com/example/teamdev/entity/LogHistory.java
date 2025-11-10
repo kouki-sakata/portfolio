@@ -23,27 +23,27 @@ public class LogHistory {
 	/**
 	 * 画面名
 	 */
-	private Integer display_name;
+	private Integer displayName;
 	/**
 	 * 履歴種別
 	 */
-	private Integer operation_type;
+	private Integer operationType;
 	/**
 	 * 打刻時刻
 	 */
-	private Timestamp stamp_time;
+	private Timestamp stampTime;
 	/**
 	 * 従業員ID
 	 */
-	private Integer employee_id;
+	private Integer employeeId;
 	/**
 	 * 更新従業員ID
 	 */
-    private Integer update_employee_id;
+    private Integer updateEmployeeId;
     /**
      * 更新日時
      */
-    private Timestamp update_date;
+    private Timestamp updateDate;
     /**
      * 詳細JSON
      */

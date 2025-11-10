@@ -109,11 +109,11 @@ public class EmployeeRestController {
     }
 
     private EmployeeSummaryResponse toSummary(Employee employee) {
-        boolean admin = employee.getAdmin_flag() != null && employee.getAdmin_flag() == 1;
+        boolean admin = employee.getAdminFlag() != null && employee.getAdminFlag() == 1;
         return new EmployeeSummaryResponse(
             employee.getId(),
-            employee.getFirst_name(),
-            employee.getLast_name(),
+            employee.getFirstName(),
+            employee.getLastName(),
             employee.getEmail(),
             admin
         );

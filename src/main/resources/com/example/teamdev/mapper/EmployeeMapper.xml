@@ -12,25 +12,25 @@
 			admin_flag,
 			update_date
 		) VALUES (
-			#{first_name},
-			#{last_name},
+			#{firstName},
+			#{lastName},
 			#{email},
 			#{password},
-			#{admin_flag},
-			#{update_date}
+			#{adminFlag},
+			#{updateDate}
 		) RETURNING id
 	</insert>
 	<!-- データを更新する 2025/4/18 山本追記-->
 	<update id="upDate" parameterType="com.example.teamdev.entity.Employee">
-		UPDATE 
+		UPDATE
 			employee
 		SET
-			first_name = #{first_name},
-			last_name = #{last_name},
+			first_name = #{firstName},
+			last_name = #{lastName},
 			email = #{email},
 			password = #{password},
-			admin_flag = #{admin_flag},
-			update_date = #{update_date}
+			admin_flag = #{adminFlag},
+			update_date = #{updateDate}
 		WHERE
 			id = #{id}
 	</update>
@@ -38,7 +38,13 @@
     <!-- ページネーション最適化: カバリングインデックスとパフォーマンス最適化 -->
     <select id="findFilteredEmployees" resultType="com.example.teamdev.entity.Employee">
         SELECT /*+ USE_INDEX(employee, idx_employee_name_search, idx_employee_email_unique) */
-               id, first_name, last_name, email, password, admin_flag, update_date
+               id,
+               first_name AS firstName,
+               last_name AS lastName,
+               email,
+               password,
+               admin_flag AS adminFlag,
+               update_date AS updateDate
         FROM employee
         <where>
             <if test="searchValue != null and searchValue != ''">
