@@ -69,33 +69,30 @@ export const useStampCardLogic = ({
     [snapshot, onCaptureTimestamp, onStamp, nightWork]
   );
 
-  const handleBreakToggle = useCallback(
-    async () => {
-      if (!onToggleBreak) {
-        return;
-      }
+  const handleBreakToggle = useCallback(async () => {
+    if (!onToggleBreak) {
+      return;
+    }
 
-      // クライアント側バリデーション
-      try {
-        validateBreakToggle(snapshot);
-      } catch (error) {
-        if (error instanceof StampValidationError) {
-          toast({
-            variant: "destructive",
-            title: "操作エラー",
-            description: error.message,
-          });
-          return; // バリデーションエラー時は処理を中断
-        }
-        throw error; // 予期しないエラーは再スロー
+    // クライアント側バリデーション
+    try {
+      validateBreakToggle(snapshot);
+    } catch (error) {
+      if (error instanceof StampValidationError) {
+        toast({
+          variant: "destructive",
+          title: "操作エラー",
+          description: error.message,
+        });
+        return; // バリデーションエラー時は処理を中断
       }
+      throw error; // 予期しないエラーは再スロー
+    }
 
-      await onToggleBreak();
-      const action = isBreak ? "休憩終了" : "休憩開始";
-      setLastAction(`${action}を登録しました`);
-    },
-    [onToggleBreak, snapshot, isBreak]
-  );
+    await onToggleBreak();
+    const action = isBreak ? "休憩終了" : "休憩開始";
+    setLastAction(`${action}を登録しました`);
+  }, [onToggleBreak, snapshot, isBreak]);
 
   const toggleNightWork = () => setNightWork((prev) => !prev);
 
