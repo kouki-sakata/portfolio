@@ -53,11 +53,11 @@ public class HomeService03Test {
         storedEmployee = new Employee();
         storedEmployee.setId(1);
         storedEmployee.setEmail("test@example.com");
-        storedEmployee.setFirst_name("Test");
-        storedEmployee.setLast_name("User");
+        storedEmployee.setFirstName("Test");
+        storedEmployee.setLastName("User");
         // Stored password is now hashed for the test
         storedEmployee.setPassword("$2a$10$hashedpassword");
-        storedEmployee.setAdmin_flag(0);
+        storedEmployee.setAdminFlag(0);
     }
 
     @Test
