@@ -72,8 +72,8 @@ public class AuthSessionService {
 
         return new EmployeeSummaryResponse(
                 employee.getId(),
-                employee.getFirst_name(),
-                employee.getLast_name(),
+                employee.getFirstName(),
+                employee.getLastName(),
                 employee.getEmail(),
                 isAdmin
         );
@@ -86,7 +86,7 @@ public class AuthSessionService {
      * @return 管理者の場合true
      */
     private boolean isAdminUser(Employee employee) {
-        return employee.getAdmin_flag() != null && employee.getAdmin_flag() == 1;
+        return employee.getAdminFlag() != null && employee.getAdminFlag() == 1;
     }
 
     /**

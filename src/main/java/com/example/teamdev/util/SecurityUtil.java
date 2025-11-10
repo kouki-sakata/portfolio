@@ -61,7 +61,7 @@ public class SecurityUtil {
      */
     public static boolean isCurrentUserAdmin() {
         Employee currentEmployee = getInstance().getCurrentEmployeeInternal();
-        return currentEmployee != null && currentEmployee.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+        return currentEmployee != null && currentEmployee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
     }
 
     private static SecurityUtil getInstance() {

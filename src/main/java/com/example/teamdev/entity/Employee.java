@@ -20,11 +20,11 @@ public class Employee {
 	/**
 	 * 名（given name）
 	 */
-	private String first_name;
+	private String firstName;
 	/**
 	 * 姓（family name）
 	 */
-	private String last_name;
+	private String lastName;
 	/**
 	 * メールアドレス
 	 */
@@ -36,9 +36,9 @@ public class Employee {
 	/**
 	 * 管理者フラグ
 	 */
-	private Integer admin_flag;
+	private Integer adminFlag;
 	/**
 	 * 更新日時
 	 */
-	private Timestamp update_date;
+	private Timestamp updateDate;
 }

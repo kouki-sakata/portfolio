@@ -32,16 +32,16 @@ class AuthSessionServiceTest {
         testEmployee = new Employee();
         testEmployee.setId(1);
         testEmployee.setEmail("test@example.com");
-        testEmployee.setFirst_name("太郎");
-        testEmployee.setLast_name("田中");
-        testEmployee.setAdmin_flag(0);
+        testEmployee.setFirstName("太郎");
+        testEmployee.setLastName("田中");
+        testEmployee.setAdminFlag(0);
 
         adminEmployee = new Employee();
         adminEmployee.setId(2);
         adminEmployee.setEmail("admin@example.com");
-        adminEmployee.setFirst_name("花子");
-        adminEmployee.setLast_name("佐藤");
-        adminEmployee.setAdmin_flag(1);
+        adminEmployee.setFirstName("花子");
+        adminEmployee.setLastName("佐藤");
+        adminEmployee.setAdminFlag(1);
     }
 
     // ========== getEmployeeSummaryByEmail tests ==========
@@ -202,9 +202,9 @@ class AuthSessionServiceTest {
         Employee employeeWithNullAdminFlag = new Employee();
         employeeWithNullAdminFlag.setId(3);
         employeeWithNullAdminFlag.setEmail("null-admin@example.com");
-        employeeWithNullAdminFlag.setFirst_name("次郎");
-        employeeWithNullAdminFlag.setLast_name("鈴木");
-        employeeWithNullAdminFlag.setAdmin_flag(null);
+        employeeWithNullAdminFlag.setFirstName("次郎");
+        employeeWithNullAdminFlag.setLastName("鈴木");
+        employeeWithNullAdminFlag.setAdminFlag(null);
 
         when(employeeQueryService.getByEmail("null-admin@example.com")).thenReturn(employeeWithNullAdminFlag);
 

@@ -126,7 +126,7 @@ class ProfileAppServiceTest {
 
             assertThat(aggregate.employee().id()).isEqualTo(selfEmployee.getId());
             assertThat(aggregate.employee().fullName()).isEqualTo(
-                String.format(Locale.JAPANESE, "%s %s", selfEmployee.getLast_name(), selfEmployee.getFirst_name())
+                String.format(Locale.JAPANESE, "%s %s", selfEmployee.getLastName(), selfEmployee.getFirstName())
             );
             assertThat(aggregate.metadata().department()).isEqualTo("開発部");
 

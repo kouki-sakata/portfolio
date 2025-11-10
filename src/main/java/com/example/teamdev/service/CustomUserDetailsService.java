@@ -35,7 +35,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
 
         List<GrantedAuthority> authorities = new ArrayList<>();
-        if (employee.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN) {
+        if (employee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN) {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + AppConstants.Employee.ADMIN_AUTHORITY));
         } else {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + AppConstants.Employee.USER_AUTHORITY));

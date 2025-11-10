@@ -66,10 +66,10 @@ class AuthenticationServiceIntegrationTest {
         // テストデータの準備
         testEmployee = new Employee();
         testEmployee.setEmail("integration-test@example.com");
-        testEmployee.setFirst_name("Integration");
-        testEmployee.setLast_name("Test");
+        testEmployee.setFirstName("Integration");
+        testEmployee.setLastName("Test");
         testEmployee.setPassword(passwordEncoder.encode("password123"));
-        testEmployee.setAdmin_flag(0);
+        testEmployee.setAdminFlag(0);
 
         // 実際のDBにテストデータを投入
         employeeMapper.save(testEmployee);
@@ -92,9 +92,9 @@ class AuthenticationServiceIntegrationTest {
         // 従業員情報が正しく含まれている
         assertTrue(result.containsKey("id"), "idが含まれている必要がある");
         assertEquals("integration-test@example.com", result.get("email"), "メールアドレスが一致する必要がある");
-        assertEquals("Integration", result.get("first_name"), "名前が一致する必要がある");
-        assertEquals("Test", result.get("last_name"), "苗字が一致する必要がある");
-        assertEquals(0, result.get("admin_flag"), "管理者フラグが一致する必要がある");
+        assertEquals("Integration", result.get("firstName"), "名前が一致する必要がある");
+        assertEquals("Test", result.get("lastName"), "苗字が一致する必要がある");
+        assertEquals(0, result.get("adminFlag"), "管理者フラグが一致する必要がある");
 
         // 従業員名が正しく生成されている（実際のサービスロジック）
         assertTrue(result.containsKey("employeeName"), "employeeNameが含まれている必要がある");
@@ -158,10 +158,10 @@ class AuthenticationServiceIntegrationTest {
         // Arrange - 管理者ユーザーを作成
         Employee adminEmployee = new Employee();
         adminEmployee.setEmail("admin@example.com");
-        adminEmployee.setFirst_name("Admin");
-        adminEmployee.setLast_name("User");
+        adminEmployee.setFirstName("Admin");
+        adminEmployee.setLastName("User");
         adminEmployee.setPassword(passwordEncoder.encode("adminpass"));
-        adminEmployee.setAdmin_flag(1);
+        adminEmployee.setAdminFlag(1);
         employeeMapper.save(adminEmployee);
 
         Employee loginForm = new Employee();
@@ -174,7 +174,7 @@ class AuthenticationServiceIntegrationTest {
         // Assert - 実際のBCryptエンコーディングが正しく動作していることを検証
         assertNotNull(result);
         assertFalse(result.isEmpty());
-        assertEquals(1, result.get("admin_flag"), "管理者フラグが正しく取得できる");
+        assertEquals(1, result.get("adminFlag"), "管理者フラグが正しく取得できる");
         assertEquals("Admin User", result.get("employeeName"), "管理者の従業員名が正しく生成される");
     }
 }

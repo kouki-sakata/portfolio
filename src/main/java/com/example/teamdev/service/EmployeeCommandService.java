@@ -75,14 +75,14 @@ public class EmployeeCommandService {
         }
 
         Employee entity = new Employee();
-        entity.setFirst_name(form.getFirstName());
-        entity.setLast_name(form.getLastName());
+        entity.setFirstName(form.getFirstName());
+        entity.setLastName(form.getLastName());
         entity.setEmail(form.getEmail());
         entity.setPassword(passwordEncoder.encode(form.getPassword()));
-        entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
+        entity.setAdminFlag(Integer.parseInt(form.getAdminFlag()));
 
         Timestamp timestamp = Timestamp.from(clock.instant());
-        entity.setUpdate_date(timestamp);
+        entity.setUpdateDate(timestamp);
 
         employeeMapper.save(entity);
         logHistoryService.execute(3, 3, null, entity.getId(), updateEmployeeId, timestamp);
@@ -120,8 +120,8 @@ public class EmployeeCommandService {
                     "メールアドレス「" + form.getEmail() + "」は既に使用されています。");
         }
 
-        entity.setFirst_name(form.getFirstName());
-        entity.setLast_name(form.getLastName());
+        entity.setFirstName(form.getFirstName());
+        entity.setLastName(form.getLastName());
         entity.setEmail(form.getEmail());
 
         // パスワードは入力された場合のみ更新
@@ -129,10 +129,10 @@ public class EmployeeCommandService {
             entity.setPassword(passwordEncoder.encode(form.getPassword()));
         }
 
-        entity.setAdmin_flag(Integer.parseInt(form.getAdminFlag()));
+        entity.setAdminFlag(Integer.parseInt(form.getAdminFlag()));
 
         Timestamp timestamp = Timestamp.from(clock.instant());
-        entity.setUpdate_date(timestamp);
+        entity.setUpdateDate(timestamp);
 
         employeeMapper.upDate(entity);
         logHistoryService.execute(3, 3, null, entity.getId(), updateEmployeeId, timestamp);

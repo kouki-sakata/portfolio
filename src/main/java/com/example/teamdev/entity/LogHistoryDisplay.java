@@ -16,35 +16,35 @@ public class LogHistoryDisplay {
 	/**
 	 * 更新日時
 	 */
-	private String update_date;
+	private String updateDate;
 	/**
 	 * 画面名 (コード値)
 	 */
-	private Integer display_name_code; // 新しいフィールド
+	private Integer displayNameCode;
 	/**
 	 * 履歴種別 (コード値)
 	 */
-	private Integer operation_type_code; // 新しいフィールド
+	private Integer operationTypeCode;
 	/**
 	 * 打刻時刻
 	 */
-	private String stamp_time;
+	private String stampTime;
 	/**
 	 * 従業員氏名
 	 */
-	private String employee_name;
+	private String employeeName;
 	/**
 	 * 更新者氏名
 	 */
-	private String update_employee_name;
+	private String updateEmployeeName;
 
-	// display_name_codeから名前を取得するgetter
-	public String getDisplay_name() {
-		return DisplayName.getNameByCode(this.display_name_code);
+	// displayNameCodeから名前を取得するgetter
+	public String getDisplayName() {
+		return DisplayName.getNameByCode(this.displayNameCode);
 	}
 
-	// operation_type_codeから名前を取得するgetter
-	public String getOperation_type() {
-		return OperationType.getNameByCode(this.operation_type_code);
+	// operationTypeCodeから名前を取得するgetter
+	public String getOperationType() {
+		return OperationType.getNameByCode(this.operationTypeCode);
 	}
 }
