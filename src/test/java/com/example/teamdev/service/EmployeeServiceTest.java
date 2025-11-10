@@ -64,8 +64,8 @@ class EmployeeServiceTest {
         testEmployee = new Employee();
         testEmployee.setId(1);
         testEmployee.setEmail("test@example.com");
-        testEmployee.setFirst_name("Test");
-        testEmployee.setLast_name("User");
+        testEmployee.setFirstName("Test");
+        testEmployee.setLastName("User");
 
         testForm = new EmployeeManageForm();
         testForm.setEmail("test@example.com");

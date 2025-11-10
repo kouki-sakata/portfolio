@@ -52,8 +52,8 @@ class AuthenticationServiceTest {
 
         dbEmployee = new Employee();
         dbEmployee.setId(1);
-        dbEmployee.setFirst_name("太郎");
-        dbEmployee.setLast_name("田中");
+        dbEmployee.setFirstName("太郎");
+        dbEmployee.setLastName("田中");
         dbEmployee.setEmail("test@example.com");
         dbEmployee.setPassword("$2a$10$hashedPassword");
     }
@@ -65,15 +65,15 @@ class AuthenticationServiceTest {
         when(employeeMapper.getEmployeeByEmail(formEmployee.getEmail())).thenReturn(dbEmployee);
         when(passwordEncoder.matches(formEmployee.getPassword(), dbEmployee.getPassword())).thenReturn(true);
         when(objectMapper.convertValue(any(), eq(Map.class))).thenReturn(
-            Map.of("id", 1, "first_name", "太郎", "last_name", "田中", "email", "test@example.com", "password", "hashedPassword")
+            Map.of("id", 1, "firstName", "太郎", "lastName", "田中", "email", "test@example.com", "password", "hashedPassword")
         );
 
         Map<String, Object> result = authenticationService.execute(formEmployee);
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.get("id"));
-        assertEquals("太郎", result.get("first_name"));
-        assertEquals("田中", result.get("last_name"));
+        assertEquals("太郎", result.get("firstName"));
+        assertEquals("田中", result.get("lastName"));
         assertEquals("test@example.com", result.get("email"));
         assertEquals("太郎 田中", result.get("employeeName"));
         assertNotNull(result.get("signInTime"));

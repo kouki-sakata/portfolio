@@ -31,12 +31,12 @@
         <!--			WHERE YEAR(log_history.update_date) = #{year} AND MONTH(log_history.update_date) = #{month} -->
         <!--			ORDER BY log_history.update_date DESC-->
         SELECT
-        DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS update_date,
-        log_history.display_name AS display_name_code,
-        log_history.operation_type AS operation_type_code,
-        DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stamp_time,
-        CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employee_name,
-        CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS update_employee_name
+        DATE_FORMAT(log_history.update_date, '%Y/%m/%d %H:%i') AS updateDate,
+        log_history.display_name AS displayNameCode,
+        log_history.operation_type AS operationTypeCode,
+        DATE_FORMAT(log_history.stamp_time, '%H:%i') AS stampTime,
+        CONCAT_WS(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS employeeName,
+        CONCAT_WS(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS updateEmployeeName
         FROM log_history
         LEFT JOIN employee AS emp ON log_history.employee_id = emp.id
         LEFT JOIN employee AS emp2 ON log_history.update_employee_id = emp2.id
@@ -65,12 +65,12 @@
             update_date,
             detail
         ) VALUES (
-            #{display_name},
-            #{operation_type},
-            #{stamp_time},
-            #{employee_id},
-            #{update_employee_id},
-            #{update_date},
+            #{displayName},
+            #{operationType},
+            #{stampTime},
+            #{employeeId},
+            #{updateEmployeeId},
+            #{updateDate},
             CAST(COALESCE(#{detail}, '{}') AS jsonb)
         )
     </insert>

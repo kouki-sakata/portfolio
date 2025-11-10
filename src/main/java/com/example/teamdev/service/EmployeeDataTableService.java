@@ -23,7 +23,7 @@ public class EmployeeDataTableService {
 
     // SQLインジェクション対策: ホワイトリスト定義
     private static final Set<String> ALLOWED_COLUMNS = Set.of(
-            "id", "first_name", "last_name", "email", "admin_flag"
+            "id", "firstName", "lastName", "email", "adminFlag"
     );
     private static final Set<String> ALLOWED_DIRECTIONS = Set.of("asc", "desc");
 
@@ -140,11 +140,11 @@ public class EmployeeDataTableService {
         for (Employee emp : employees) {
             Map<String, Object> empData = new HashMap<>();
             empData.put("id", emp.getId());
-            empData.put("first_name", emp.getFirst_name());
-            empData.put("last_name", emp.getLast_name());
+            empData.put("firstName", emp.getFirstName());
+            empData.put("lastName", emp.getLastName());
             empData.put("email", emp.getEmail());
             empData.put("password", emp.getPassword());
-            empData.put("admin_flag", emp.getAdmin_flag());
+            empData.put("adminFlag", emp.getAdminFlag());
             employeeDataList.add(empData);
         }
         return employeeDataList;

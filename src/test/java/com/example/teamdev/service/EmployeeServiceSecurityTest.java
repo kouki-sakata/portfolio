@@ -32,10 +32,10 @@ class EmployeeServiceSecurityTest {
 
             // 許可されるカラムのテスト
             assertTrue(allowedColumns.contains("id"), "idカラムが許可されている");
-            assertTrue(allowedColumns.contains("first_name"), "first_nameカラムが許可されている");
-            assertTrue(allowedColumns.contains("last_name"), "last_nameカラムが許可されている");
+            assertTrue(allowedColumns.contains("firstName"), "firstNameカラムが許可されている");
+            assertTrue(allowedColumns.contains("lastName"), "lastNameカラムが許可されている");
             assertTrue(allowedColumns.contains("email"), "emailカラムが許可されている");
-            assertTrue(allowedColumns.contains("admin_flag"), "admin_flagカラムが許可されている");
+            assertTrue(allowedColumns.contains("adminFlag"), "adminFlagカラムが許可されている");
             
             // 危険なカラム名は許可されていない
             assertFalse(allowedColumns.contains("DROP TABLE"), "危険なSQL文は許可されていない");

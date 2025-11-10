@@ -127,11 +127,11 @@ public class HomeRestController {
     }
 
     private EmployeeSummaryResponse toEmployeeSummary(Employee employee) {
-        boolean admin = employee.getAdmin_flag() != null && employee.getAdmin_flag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+        boolean admin = employee.getAdminFlag() != null && employee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
         return new EmployeeSummaryResponse(
             employee.getId(),
-            employee.getFirst_name(),
-            employee.getLast_name(),
+            employee.getFirstName(),
+            employee.getLastName(),
             employee.getEmail(),
             admin
         );
