@@ -4,13 +4,14 @@ import type { DailyAttendanceSnapshot } from "../types";
  * 打刻バリデーションエラー
  */
 export class StampValidationError extends Error {
-  constructor(
-    message: string,
-    public readonly operation: string,
-    public readonly reason: string
-  ) {
+  readonly operation: string;
+  readonly reason: string;
+
+  constructor(message: string, operation: string, reason: string) {
     super(message);
     this.name = "StampValidationError";
+    this.operation = operation;
+    this.reason = reason;
   }
 }
 

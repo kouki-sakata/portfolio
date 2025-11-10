@@ -13,15 +13,26 @@ import { StatusHeader } from "./StampCard/StatusHeader";
 import { StatusMessage } from "./StampCard/StatusMessage";
 
 /**
+ * アクションボタンのレンダリングオプション
+ */
+type ActionButtonsOptions = {
+  status: DailyAttendanceSnapshot["status"] | undefined;
+  isLoading: boolean;
+  isToggling: boolean;
+  handleStamp: (type: "1" | "2") => void;
+  handleBreakToggle?: () => void;
+};
+
+/**
  * 状態に応じてアクションボタンをレンダリング
  */
-const renderActionButtons = (
-  status: DailyAttendanceSnapshot["status"] | undefined,
-  isLoading: boolean,
-  isToggling: boolean,
-  handleStamp: (type: "1" | "2") => void,
-  handleBreakToggle?: () => void
-) => {
+const renderActionButtons = ({
+  status,
+  isLoading,
+  isToggling,
+  handleStamp,
+  handleBreakToggle,
+}: ActionButtonsOptions) => {
   // 状態が不明な場合は出勤ボタンのみ表示
   if (!status || status === "NOT_ATTENDED") {
     return (
@@ -129,7 +140,6 @@ export const StampCard = memo(
     const {
       nightWork,
       lastAction,
-      isBreak,
       statusMeta,
       isClockError,
       handleStamp,
@@ -146,13 +156,13 @@ export const StampCard = memo(
     // アクションボタンをメモ化
     const actionButtons = useMemo(
       () =>
-        renderActionButtons(
-          snapshot?.status,
+        renderActionButtons({
+          status: snapshot?.status,
           isLoading,
           isToggling,
           handleStamp,
-          onToggleBreak ? handleBreakToggle : undefined
-        ),
+          handleBreakToggle: onToggleBreak ? handleBreakToggle : undefined,
+        }),
       [snapshot?.status, isLoading, isToggling, handleStamp, onToggleBreak, handleBreakToggle]
     );
 
