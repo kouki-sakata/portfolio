@@ -111,8 +111,3 @@ export class HomeRepository implements IHomeRepository {
 export const createHomeRepository = (
   httpClient?: IHttpClient
 ): IHomeRepository => new HomeRepository(httpClient);
-
-/**
- * デフォルトインスタンス
- */
-export const homeRepository = createHomeRepository();
