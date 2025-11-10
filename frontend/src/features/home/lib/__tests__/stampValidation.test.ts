@@ -51,7 +51,7 @@ describe("stampValidation", () => {
       expect(() => validateAttendanceStamp(undefined)).not.toThrow();
     });
 
-    it("勤務中の場合はエラーをスローしない", () => {
+    it("勤務中の場合はエラーをスロー", () => {
       const snapshot: DailyAttendanceSnapshot = {
         status: "WORKING",
         attendanceTime: "2025-11-10T09:00:00+09:00",
@@ -61,7 +61,30 @@ describe("stampValidation", () => {
         overtimeMinutes: null,
       };
 
-      expect(() => validateAttendanceStamp(snapshot)).not.toThrow();
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        StampValidationError
+      );
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        "出勤打刻ができません: 既に出勤済みです"
+      );
+    });
+
+    it("休憩中の場合はエラーをスロー", () => {
+      const snapshot: DailyAttendanceSnapshot = {
+        status: "ON_BREAK",
+        attendanceTime: "2025-11-10T09:00:00+09:00",
+        breakStartTime: "2025-11-10T12:00:00+09:00",
+        breakEndTime: null,
+        departureTime: null,
+        overtimeMinutes: null,
+      };
+
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        StampValidationError
+      );
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        "出勤打刻ができません: 既に出勤済みです"
+      );
     });
   });
 

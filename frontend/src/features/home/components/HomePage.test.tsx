@@ -402,41 +402,53 @@ describe("HomePage", () => {
   });
 
   describe("打刻カードの機能", () => {
-    beforeEach(async () => {
+    const notAttendedData: HomeDashboardResponse = {
+      ...mockDashboardData,
+      attendance: {
+        status: "NOT_ATTENDED",
+        attendanceTime: null,
+        breakStartTime: null,
+        breakEndTime: null,
+        departureTime: null,
+        overtimeMinutes: 0,
+      },
+    };
+
+    beforeEach(() => {
       setupPublishedNewsResponse();
+      // 未出勤状態でテストを開始
       mswServer.use(
         http.get("http://localhost/api/home/overview", () =>
-          HttpResponse.json(mockDashboardData)
+          HttpResponse.json(notAttendedData)
         )
       );
+    });
+
+    it("打刻カードのタイトルが表示される", async () => {
       renderWithQueryClient(<HomePage />);
       await waitFor(() => {
-        expect(screen.getByText("ワンクリック打刻")).toBeInTheDocument();
+        expect(
+          screen.getByRole("heading", { name: /ワンクリック打刻/ })
+        ).toBeInTheDocument();
       });
     });
 
-    it("打刻カードのタイトルが表示される", () => {
-      expect(
-        screen.getByRole("heading", { name: /ワンクリック打刻/ })
-      ).toBeInTheDocument();
+    it("未出勤状態では出勤打刻ボタンが表示される", async () => {
+      renderWithQueryClient(<HomePage />);
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /出勤打刻/ })
+        ).toBeInTheDocument();
+      });
     });
 
-    it("出勤打刻ボタンが表示される", () => {
-      expect(
-        screen.getByRole("button", { name: /出勤打刻/ })
-      ).toBeInTheDocument();
-    });
-
-    it("退勤打刻ボタンが表示される", () => {
-      expect(
-        screen.getByRole("button", { name: /退勤打刻/ })
-      ).toBeInTheDocument();
-    });
-
-    it("夜勤扱いチェックボックスが表示される", () => {
-      expect(
-        screen.getByRole("switch", { name: /夜勤扱い/ })
-      ).toBeInTheDocument();
+    it("夜勤扱いチェックボックスが表示される", async () => {
+      renderWithQueryClient(<HomePage />);
+      await waitFor(() => {
+        expect(
+          screen.getByRole("switch", { name: /夜勤扱い/ })
+        ).toBeInTheDocument();
+      });
     });
 
     it("出勤打刻ボタンをクリックすると打刻APIが呼ばれる", async () => {
@@ -453,8 +465,11 @@ describe("HomePage", () => {
         })
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      await user.click(stampButton);
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -475,43 +490,7 @@ describe("HomePage", () => {
       );
     });
 
-    it("退勤打刻ボタンをクリックすると打刻APIが呼ばれる", async () => {
-      const mockResponse: StampResponse = {
-        message: "退勤打刻が完了しました",
-      };
-
-      let capturedRequest: Request | null = null;
-
-      mswServer.use(
-        http.post("http://localhost/api/home/stamps", ({ request }) => {
-          capturedRequest = request.clone();
-          return HttpResponse.json(mockResponse);
-        })
-      );
-
-      const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: /退勤打刻/ }));
-
-      await waitFor(() => {
-        expect(capturedRequest).not.toBeNull();
-      });
-
-      if (!capturedRequest) {
-        throw new Error("Request was not captured");
-      }
-
-      const body = await (capturedRequest as Request).json();
-      expect(body).toMatchObject({
-        stampType: "2",
-        nightWorkFlag: "0",
-      });
-      // stampTimeがISO 8601形式（タイムゾーンオフセット付き）で送信されることを確認
-      expect(body.stampTime).toMatch(
-        /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:\d{2}$/
-      );
-    });
-
-    it("夜勤チェックボックスをチェックして打刻すると夜勤フラグが設定される", async () => {
+    it("夜勤チェックボックスをチェックして出勤打刻すると夜勤フラグが設定される", async () => {
       const mockResponse: StampResponse = {
         message: "出勤打刻が完了しました",
       };
@@ -525,9 +504,13 @@ describe("HomePage", () => {
         })
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      await user.click(screen.getByRole("switch", { name: /夜勤扱い/ }));
-      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
+      const nightSwitch = await screen.findByRole("switch", { name: /夜勤扱い/ });
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      await user.click(nightSwitch);
+      await user.click(stampButton);
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
@@ -555,8 +538,11 @@ describe("HomePage", () => {
         )
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      await user.click(stampButton);
 
       await waitFor(() => {
         expect(screen.getByText("出勤打刻が完了しました")).toBeInTheDocument();
@@ -581,8 +567,10 @@ describe("HomePage", () => {
         )
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      const stampButton = screen.getByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
 
       await user.click(stampButton);
 
@@ -616,15 +604,15 @@ describe("HomePage", () => {
         })
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      const stampButton = screen.getByRole("button", { name: /出勤打刻/ });
-      const quitButton = screen.getByRole("button", { name: /退勤打刻/ });
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
 
       await user.click(stampButton);
 
       // ボタンが無効化されているか確認
       expect(stampButton).toBeDisabled();
-      expect(quitButton).toBeDisabled();
     });
 
     it("打刻時にJST固定のタイムスタンプが送信される", async () => {
@@ -641,8 +629,11 @@ describe("HomePage", () => {
         })
       );
 
+      renderWithQueryClient(<HomePage />);
+
       const user = userEvent.setup();
-      await user.click(screen.getByRole("button", { name: /出勤打刻/ }));
+      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      await user.click(stampButton);
 
       await waitFor(() => {
         expect(capturedRequest).not.toBeNull();
