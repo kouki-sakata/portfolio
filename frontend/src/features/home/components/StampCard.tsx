@@ -1,12 +1,15 @@
+import { Coffee, Sun } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStampCardLogic } from "@/features/home/hooks/useStampCardLogic";
-import type { DailyAttendanceSnapshot, StampCardProps } from "@/features/home/types";
+import type {
+  DailyAttendanceSnapshot,
+  StampCardProps,
+} from "@/features/home/types";
 import { cn } from "@/lib/utils";
-import { Coffee, Sun } from "lucide-react";
 import { ActionLog } from "./StampCard/ActionLog";
 import { ClockDisplay } from "./StampCard/ClockDisplay";
 import { StatusHeader } from "./StampCard/StatusHeader";
@@ -51,7 +54,7 @@ const renderActionButtons = (
             onClick={handleBreakToggle}
             variant="outline"
           >
-            <Coffee className="h-4 w-4 mr-2" /> 休憩開始
+            <Coffee className="mr-2 h-4 w-4" /> 休憩開始
           </Button>
         )}
         <Button
@@ -79,7 +82,7 @@ const renderActionButtons = (
             onClick={handleBreakToggle}
             variant="default"
           >
-            <Sun className="h-4 w-4 mr-2" /> 休憩終了(業務再開)
+            <Sun className="mr-2 h-4 w-4" /> 休憩終了(業務再開)
           </Button>
         )}
       </div>
@@ -90,7 +93,7 @@ const renderActionButtons = (
   if (status === "FINISHED") {
     return (
       <div className="rounded-lg bg-slate-50 p-6 text-center">
-        <p className="text-muted-foreground font-medium">
+        <p className="font-medium text-muted-foreground">
           本日の勤務は完了しています
         </p>
       </div>
@@ -153,7 +156,14 @@ export const StampCard = memo(
           handleStamp,
           onToggleBreak ? handleBreakToggle : undefined
         ),
-      [snapshot?.status, isLoading, isToggling, handleStamp, onToggleBreak, handleBreakToggle]
+      [
+        snapshot?.status,
+        isLoading,
+        isToggling,
+        handleStamp,
+        onToggleBreak,
+        handleBreakToggle,
+      ]
     );
 
     if (isLoading && showSkeleton) {

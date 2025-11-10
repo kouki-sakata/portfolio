@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { ATTENDANCE_STATUS_META } from "@/features/home/components/AttendanceSnapshotCard";
-import type { StampCardProps } from "@/features/home/types";
 import {
   StampValidationError,
   validateAttendanceStamp,
   validateBreakToggle,
   validateDepartureStamp,
 } from "@/features/home/lib/stampValidation";
+import type { StampCardProps } from "@/features/home/types";
 import { toast } from "@/hooks/use-toast";
 
 type UseStampCardLogicParams = Pick<
