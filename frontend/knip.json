@@ -1,0 +1,44 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "src/**/*.test.{ts,tsx}",
+    "src/**/__tests__/**/*.{ts,tsx}",
+    "e2e/**/*.spec.ts",
+    "vite.config.ts",
+    "playwright.config.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "e2e/**/*.{ts,tsx}"
+  ],
+  "ignore": [
+    "**/*.gen.ts",
+    "src/types/**",
+    "src/schemas/**",
+    "dist/**",
+    "coverage/**"
+  ],
+  "ignoreDependencies": [
+    "postcss",
+    "tailwindcss"
+  ],
+  "ignoreBinaries": [
+    "openapi-ts",
+    "openapi-zod-client"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "vite": {
+    "config": "vite.config.ts",
+    "entry": [
+      "src/main.tsx"
+    ]
+  },
+  "playwright": {
+    "config": "playwright.config.ts",
+    "entry": [
+      "e2e/**/*.spec.ts",
+      "e2e/support/**/*.ts"
+    ]
+  }
+}
