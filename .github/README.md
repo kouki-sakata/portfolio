@@ -1,297 +1,191 @@
-# CI/CD パイプライン ガイド
+# TeamDevelop Bravo 勤怠管理システム
 
-## 概要
+モバイルフレンドリーな React + Spring Boot SPA 版の勤怠管理システムです。
+*システムは現在改修中です
 
-TeamDevelopプロジェクトでは、包括的なCI/CDパイプラインを実装しており、コード品質、セキュリティ、デプロイメントの自動化を行います。
+## 🌐 デプロイ先 & テストアカウント
+- **URL:** [portfolio-eight-ebon-25.vercel.app](https://portfolio-eight-ebon-25.vercel.app/)
+- **管理者:** `test@gmail.com` / `testtest`
+- **一般ユーザー:** `test.user@example.com` / `TestPass123!`
 
-## パイプライン構成
+## 📋 主な機能
 
-### 1. Feature Branch Pipeline (`feature.yml`)
-**トリガー**: `feature/**`, `bugfix/**`, `hotfix/**` ブランチへのプッシュ・PR
+### 一般ユーザー向け
+- **打刻管理**: 出勤・退勤の記録（夜勤対応）
+- **打刻履歴**: 月別の勤怠履歴閲覧・年月絞り込み
+- **お知らせ**: ホーム画面でのお知らせ確認
 
-#### 実行ジョブ:
-- **Validate**: ブランチ名・コミットメッセージ・ファイルサイズのチェック
-- **Quick Test**: 高速な単体テスト実行
-- **Security Check**: セキュリティスキャンと機密情報チェック
-- **Code Analysis**: コード複雑度分析・TODO/FIXMEカウント
-- **Integration Test**: 統合テスト（条件付き）
-- **Build Test**: ビルド・Dockerイメージ作成テスト
+### 管理者向け
+- **従業員管理**: 従業員の登録・編集・削除
+- **お知らせ管理**: お知らせの作成・編集・公開管理
+- **ログ管理**: システム操作ログの閲覧
 
-#### 特徴:
-- 高速フィードバック（平均5-10分）
-- 並列実行による効率化
-- 条件付き統合テスト（`[full-test]`コミット、またはPR時）
+### セキュリティ
+- セッションベース認証
+- ロール別アクセス制御（管理者/一般ユーザー）
+- CSRF トークン保護
 
-### 2. Main CI Pipeline (`ci.yml`)
-**トリガー**: `main`, `develop` ブランチへのプッシュ・PR
+## 🧰 技術スタック
 
-#### 実行ジョブ:
-- **Test**: 完全な単体テストスイート
-- **Build**: アプリケーションビルド
-- **Security Scan**: OWASP Dependency Check、Trivyスキャン
-- **Docker Build**: セキュアなDockerイメージ作成
-- **Code Quality**: SonarCloud分析
-- **Deployment**: ステージング・本番環境デプロイ
+### フロントエンド
+- **コア**: React 19.1.1, TypeScript 5.8.3, Vite 7.1.7
+- **ルーティング**: React Router 7.9.2
+- **状態管理**: React Query 5.90.2
+- **UI**: shadcn-ui@canary, Tailwind CSS 4.1.13, Radix UI
+- **フォーム**: React Hook Form 7.63.0 + Zod 3.25.76
+- **HTTP**: axios 1.12.2
+- **テスト**: Vitest 3.2.4, Playwright 1.49.1
+- **コード品質**: Biome 2.2.4
 
-#### 特徴:
-- 包括的なテスト実行
-- セキュリティ重視の多層スキャン
-- 環境別デプロイメント
-- 自動通知機能
+### バックエンド
+- **コア**: Java 21, Spring Boot 3.4.3
+- **セキュリティ**: Spring Security 6.x (セッションベース認証)
+- **データアクセス**: MyBatis 3.0.4
+- **API ドキュメント**: Springdoc OpenAPI 2.6.0
+- **テスト**: JUnit 5, Testcontainers
 
-### 3. Release Pipeline (`release.yml`)
-**トリガー**: `v*.*.*` タグのプッシュ
+### インフラ
+- **データベース**: PostgreSQL 16
+- **ビルド**: Gradle 8.14.2, Node.js 22.12.0
+- **コンテナ**: Docker, Docker Compose
+- **CI/CD**: GitHub Actions
 
-#### 実行ジョブ:
-- **Create Release**: GitHub Release作成・変更履歴生成
-- **Build and Test**: リリース用ビルド・テスト
-- **Build Docker**: Container Registry への Docker イメージプッシュ
-- **Security Scan**: リリース前セキュリティチェック
-- **Deploy Production**: 本番環境デプロイ
-- **Rollback**: 失敗時の自動ロールバック
+## 🚀 セットアップ
 
-#### 特徴:
-- セマンティックバージョニング対応
-- 自動変更履歴生成
-- Container Registry 統合
-- 失敗時自動ロールバック
+### 必要要件
+- Docker & Docker Compose
+- Java 21 以上（ローカル開発時）
+- Node.js 22 以上（ローカル開発時）
 
-## ブランチ戦略
+### Docker Compose で起動
 
-### Git Flow
-```
-main (本番)
-├── develop (開発)
-│   ├── feature/user-authentication
-│   ├── feature/api-improvements
-│   └── bugfix/login-issue
-├── hotfix/security-patch
-└── release/v1.2.0
-```
-
-### ブランチ命名規則
-- `feature/機能名` - 新機能開発
-- `bugfix/バグ名` - バグ修正
-- `hotfix/緊急修正名` - 緊急修正
-- `release/vX.Y.Z` - リリース準備
-
-### コミットメッセージ規則
-```
-type: 簡潔な説明
-
-詳細な説明（オプション）
-
-feat: 新機能追加
-fix: バグ修正
-docs: ドキュメント更新
-style: コードスタイル修正
-refactor: リファクタリング
-test: テスト追加・修正
-chore: その他のメンテナンス
-```
-
-## セキュリティ対策
-
-### 1. 静的解析
-- **OWASP Dependency Check**: 既知の脆弱性スキャン
-- **Trivy**: コンテナイメージ脆弱性スキャン
-- **GitLeaks**: 機密情報漏洩チェック
-- **SonarCloud**: コード品質・セキュリティ分析
-
-### 2. 動的チェック
-- **Container Security**: 非rootユーザー実行
-- **Network Security**: 最小限のポート露出
-- **Secrets Management**: GitHub Secrets利用
-
-### 3. アクセス制御
-```yaml
-permissions:
-  contents: read      # コードの読み取り
-  packages: write     # Container Registry書き込み
-  security-events: write  # セキュリティアラート
-```
-
-## 環境管理
-
-### 環境構成
-```
-Development → Staging → Production
-     ↓           ↓         ↓
-   feature    develop    main
-```
-
-### 環境変数
-```yaml
-# 開発環境
-SPRING_PROFILES_ACTIVE: dev
-LOG_LEVEL_ROOT: DEBUG
-
-# ステージング環境  
-SPRING_PROFILES_ACTIVE: staging
-LOG_LEVEL_ROOT: INFO
-
-# 本番環境
-SPRING_PROFILES_ACTIVE: prod
-LOG_LEVEL_ROOT: WARN
-```
-
-### デプロイメント戦略
-- **Blue-Green Deployment**: ゼロダウンタイムデプロイ
-- **Canary Release**: 段階的リリース
-- **Rollback Strategy**: 即座のロールバック機能
-
-## 品質ゲート
-
-### コードカバレッジ
-- **単体テスト**: 最低70%
-- **統合テスト**: 最低50%
-- **E2Eテスト**: 主要機能100%
-
-### セキュリティ閾値
-- **CVSS Score**: 7.0以上で失敗
-- **脆弱性**: High以上で警告
-- **機密情報**: 検出で即座に失敗
-
-### パフォーマンス
-- **ビルド時間**: 10分以内
-- **テスト実行**: 5分以内
-- **デプロイ時間**: 3分以内
-
-## 監視・通知
-
-### Slack通知
-```yaml
-チャンネル:
-#ci-cd         - パイプライン実行状況
-#deployments   - デプロイメント通知
-#security      - セキュリティアラート
-#releases      - リリース通知
-```
-
-### メトリクス監視
-- **Success Rate**: 成功率95%以上維持
-- **MTTR**: 平均復旧時間30分以内
-- **Deployment Frequency**: 週2回以上
-
-## トラブルシューティング
-
-### よくある問題
-
-#### 1. テスト失敗
 ```bash
-# ローカルでのテスト実行
-./gradlew test --info
+# アプリケーション起動
+docker-compose up -d
 
-# 特定テストの実行
-./gradlew test --tests "AuthenticationServiceTest"
+# アプリケーション停止
+docker-compose down
 
-# データベース接続確認
-docker-compose up -d db
-./gradlew test
+**アクセス先:**
+- アプリケーション: http://localhost:8080
+- ヘルスチェック: http://localhost:8080/actuator/health
+- Swagger UI (dev): http://localhost:8080/swagger-ui/index.html
+
+# フロントエンド依存関係インストール
+npm ci --prefix frontend
+
+# （別ターミナル）フロントエンド開発サーバー起動
+npm run dev --prefix frontend
 ```
 
-#### 2. ビルド失敗
-```bash
-# 依存関係の確認
-./gradlew dependencies
+## 🏗️ アーキテクチャ
 
-# キャッシュクリア
-./gradlew clean build
+### 認証システム
+- **方式**: Spring Security セッションベース認証
+- **CSRF 保護**: Cookie + `X-XSRF-TOKEN` ヘッダー（自動送信）
+- **セッション管理**: React Query によるクライアント側キャッシュ（8時間有効）
+- **API エンドポイント**:
+  - `POST /api/auth/login` - ログイン
+  - `POST /api/auth/logout` - ログアウト
+  - `GET /api/auth/session` - セッション確認
 
-# Gradle Wrapper更新
-./gradlew wrapper --gradle-version 8.14.2
+詳細: [docs/authentication-system.md](docs/authentication-system.md)
+
+### データフロー
+
+```
+React コンポーネント
+  ↓ React Query hooks
+axios クライアント
+  ↓ HTTP (JSON)
+Spring RestController
+  ↓ Service層
+MyBatis Mapper
+  ↓ SQL
+PostgreSQL 16
 ```
 
-#### 3. Docker問題
-```bash
-# イメージビルドテスト
-docker build -t teamdev:test .
+### フォルダ構成
 
-# コンテナ実行テスト
-docker run -d --name test-app teamdev:test
-
-# ログ確認
-docker logs test-app
+**バックエンド:**
+```
+src/main/java/com/example/teamdev/
+├── controller/api/      # REST API エンドポイント
+├── service/            # ビジネスロジック
+├── mapper/             # MyBatis マッパー
+├── model/              # Entity/DTO
+└── config/             # Spring 設定
 ```
 
-#### 4. セキュリティスキャン失敗
-```bash
-# ローカルでの脆弱性チェック
-./gradlew dependencyCheckAnalyze
-
-# 抑制設定の確認
-vim dependency-check-suppressions.xml
-
-# NVD データベース更新
-./gradlew dependencyCheckUpdate
+**フロントエンド:**
+```
+frontend/src/
+├── app/                # React Router 7 ルート定義
+├── features/           # 機能別モジュール (auth, employee, stamp)
+│   └── [feature]/
+│       ├── api/       # API クライアント関数
+│       ├── components/# 機能固有コンポーネント
+│       ├── hooks/     # React Query カスタムフック
+│       └── types/     # TypeScript 型定義
+├── components/ui/     # shadcn-ui コンポーネント
+├── shared/            # 共通ユーティリティ
+└── schemas/          # Zod スキーマ（自動生成）
 ```
 
-### ログ確認
-```bash
-# GitHub Actions ログアクセス
-# Repository → Actions → 該当のワークフロー実行
+## 🔐 環境変数
 
-# アーティファクトダウンロード
-# テストレポート、セキュリティレポート等が利用可能
-```
+主要な環境変数（詳細は `.env.example` を参照）:
 
-## ベストプラクティス
+| 変数 | 用途 | デフォルト |
+|:-----|:-----|:-----------|
+| `DB_HOST` | PostgreSQL ホスト | `localhost` |
+| `DB_PORT` | PostgreSQL ポート | `15432` |
+| `DB_NAME` | データベース名 | `teamdev_db` |
+| `DB_USERNAME` | DB ユーザー名 | `user` |
+| `DB_PASSWORD` | DB パスワード | `password` |
+| `JWT_SECRET` | JWT シークレット | 32文字以上推奨 |
+| `ENCRYPTION_KEY` | 暗号化キー | 32文字以上推奨 |
+| `SPRING_PROFILES_ACTIVE` | Spring プロファイル | `dev` / `test` / `prod` |
 
-### 1. 開発フロー
-```bash
-# フィーチャーブランチ作成
-git checkout -b feature/new-authentication
+**運用:**
+- **ローカル**: `.env` ファイル（Git 管理外）
+- **CI**: GitHub Secrets
+- **本番**: Render 環境変数（render.yaml）
 
-# 頻繁なコミット
-git add .
-git commit -m "feat: add JWT token validation"
+## 🧪 テスト戦略
 
-# プッシュ前のローカルテスト
-./gradlew test
-docker build -t teamdev:local .
+### バックエンド
+- **単体テスト**: Service / Mapper 層のロジックテスト
+- **API テスト**: `@Tag("api")` による REST API 統合テスト
+- **契約テスト**: OpenAPI 仕様との整合性検証
+- **インフラ**: Testcontainers で PostgreSQL 自動起動
 
-# プッシュ
-git push origin feature/new-authentication
-```
+### フロントエンド
+- **ユニットテスト**: Vitest + React Testing Library
+- **E2E テスト**: Playwright でブラウザ自動化テスト
+- **型チェック**: TypeScript strict モード
+- **Lint**: Biome による統一的なコード品質管理
 
-### 2. PR作成
-- **タイトル**: 明確で簡潔
-- **説明**: 変更内容の詳細
-- **レビュアー**: 適切な担当者指定
-- **チェックリスト**: 実装・テスト・ドキュメント
+## 📦 ビルド & デプロイ
 
-### 3. マージ戦略
-- **Squash Merge**: feature → develop
-- **Merge Commit**: develop → main
-- **Fast-Forward**: hotfix → main
+### 本番デプロイ
+- **バックエンド**: Render (render.yaml で自動デプロイ設定)
+- **フロントエンド**: Vercel (main ブランチ自動デプロイ)
 
-### 4. セキュリティ
-- **機密情報**: GitHub Secretsに保存
-- **アクセストークン**: 最小権限の原則
-- **定期更新**: 依存関係の定期的な更新
+## 🔒 セキュリティ
 
-## 設定ファイル
+実装済みのセキュリティ対策:
+- CSRF トークン保護（状態変更操作）
+- BCrypt パスワードハッシュ（ソルト付き）
+- MyBatis パラメータ化クエリ（SQL インジェクション対策）
+- Content Security Policy ヘッダー
+- OWASP Dependency Check（CI 自動実行）
+- セッション固定攻撃対策
+- セキュアな Cookie 設定（本番環境）
 
-### 必要なSecrets
-```
-GitHub Repository Settings → Secrets and variables → Actions
+詳細: [docs/SECURITY.md](docs/SECURITY.md)
 
-Required:
-- GITHUB_TOKEN (自動生成)
+## 📚 ドキュメント
 
-Optional:
-- SONAR_TOKEN (SonarCloud連携)
-- SLACK_WEBHOOK (Slack通知)
-- NVD_API_KEY (高速脆弱性DB更新)
-```
-
-### 環境変数
-```yaml
-# .github/workflows/ci.yml
-env:
-  JAVA_VERSION: '21'
-  GRADLE_VERSION: '8.14.2'
-  REGISTRY: ghcr.io
-```
-
-これらの設定により、堅牢で効率的なCI/CDパイプラインを実現し、高品質なソフトウェアの継続的デリバリーを支援します。
+- [認証システムの全体像](docs/authentication-system.md)
+- [セキュリティポリシー](docs/SECURITY.md)
