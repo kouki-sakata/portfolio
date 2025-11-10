@@ -72,8 +72,8 @@ class AuthenticationServiceTest {
 
         assertFalse(result.isEmpty());
         assertEquals(1, result.get("id"));
-        assertEquals("太郎", result.get("first_name"));
-        assertEquals("田中", result.get("last_name"));
+        assertEquals("太郎", result.get("firstName"));
+        assertEquals("田中", result.get("lastName"));
         assertEquals("test@example.com", result.get("email"));
         assertEquals("太郎 田中", result.get("employeeName"));
         assertNotNull(result.get("signInTime"));

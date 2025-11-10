@@ -79,9 +79,9 @@ public class HomeService03Test {
         assertEquals(1, result.get("id"));
         // 実際のJackson変換により、すべてのフィールドが正しく変換されることを検証
         assertEquals("test@example.com", result.get("email"));
-        assertEquals("Test", result.get("first_name"));
-        assertEquals("User", result.get("last_name"));
-        assertEquals(0, result.get("admin_flag"));
+        assertEquals("Test", result.get("firstName"));
+        assertEquals("User", result.get("lastName"));
+        assertEquals(0, result.get("adminFlag"));
     }
 
     @Test
