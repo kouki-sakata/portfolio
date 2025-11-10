@@ -5,11 +5,66 @@ import {
   canStampDeparture,
   canToggleBreak,
   StampValidationError,
+  validateAttendanceStamp,
   validateBreakToggle,
   validateDepartureStamp,
 } from "../stampValidation";
 
 describe("stampValidation", () => {
+  describe("validateAttendanceStamp", () => {
+    it("退勤済みの場合はエラーをスロー", () => {
+      const snapshot: DailyAttendanceSnapshot = {
+        status: "FINISHED",
+        attendanceTime: "2025-11-10T09:00:00+09:00",
+        breakStartTime: null,
+        breakEndTime: null,
+        departureTime: "2025-11-10T18:00:00+09:00",
+        overtimeMinutes: 0,
+      };
+
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        StampValidationError
+      );
+      expect(() => validateAttendanceStamp(snapshot)).toThrow(
+        "出勤打刻ができません: 本日の勤務は既に終了しています"
+      );
+    });
+
+    it("未出勤の場合はエラーをスローしない", () => {
+      const snapshot: DailyAttendanceSnapshot = {
+        status: "NOT_ATTENDED",
+        attendanceTime: null,
+        breakStartTime: null,
+        breakEndTime: null,
+        departureTime: null,
+        overtimeMinutes: null,
+      };
+
+      expect(() => validateAttendanceStamp(snapshot)).not.toThrow();
+    });
+
+    it("snapshotがnullの場合はエラーをスローしない", () => {
+      expect(() => validateAttendanceStamp(null)).not.toThrow();
+    });
+
+    it("snapshotがundefinedの場合はエラーをスローしない", () => {
+      expect(() => validateAttendanceStamp(undefined)).not.toThrow();
+    });
+
+    it("勤務中の場合はエラーをスローしない", () => {
+      const snapshot: DailyAttendanceSnapshot = {
+        status: "WORKING",
+        attendanceTime: "2025-11-10T09:00:00+09:00",
+        breakStartTime: null,
+        breakEndTime: null,
+        departureTime: null,
+        overtimeMinutes: null,
+      };
+
+      expect(() => validateAttendanceStamp(snapshot)).not.toThrow();
+    });
+  });
+
   describe("validateDepartureStamp", () => {
     it("未出勤の場合はエラーをスロー", () => {
       const snapshot: DailyAttendanceSnapshot = {

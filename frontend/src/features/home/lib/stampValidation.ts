@@ -15,6 +15,22 @@ export class StampValidationError extends Error {
 }
 
 /**
+ * 出勤打刻のバリデーション
+ * 既に退勤済みの場合はエラーをスロー
+ */
+export function validateAttendanceStamp(
+  snapshot: DailyAttendanceSnapshot | null | undefined
+): void {
+  if (snapshot && snapshot.status === "FINISHED") {
+    throw new StampValidationError(
+      "出勤打刻ができません: 本日の勤務は既に終了しています",
+      "出勤打刻",
+      "本日の勤務は既に終了しています"
+    );
+  }
+}
+
+/**
  * 退勤打刻のバリデーション
  * 出勤打刻がない場合はエラーをスロー
  */

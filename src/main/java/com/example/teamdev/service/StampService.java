@@ -83,6 +83,10 @@ public class StampService {
                 if (existing.getInTime() != null) {
                     throw new DuplicateStampException("出勤", existing.getInTime().toString());
                 }
+                // 状態チェック: 退勤済みの場合は出勤打刻不可
+                if (existing.getOutTime() != null) {
+                    throw new InvalidStampStateException("出勤打刻", "本日の勤務は既に終了しています");
+                }
                 // 既存の outTime を保持
                 entity.setOutTime(existing.getOutTime());
             }

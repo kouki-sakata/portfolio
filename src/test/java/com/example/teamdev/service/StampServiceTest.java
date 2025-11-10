@@ -485,4 +485,33 @@ public class StampServiceTest {
         verify(mapper, never()).update(any());
         verify(logHistoryService, never()).execute(any(), any(), any(), any(), any(), any());
     }
+
+    /**
+     * 出勤打刻時に退勤済みの場合のテスト
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void execute_shouldThrowException_whenAttendanceAfterDeparture() {
+        // 退勤済みのレコード
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.now().minusHours(8));
+        existing.setOutTime(OffsetDateTime.now().minusHours(1));
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        homeForm.setStampType(StampType.ATTENDANCE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF);
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.execute(homeForm, employeeId)
+        );
+
+        assertEquals("出勤打刻", exception.getOperation());
+        assertEquals("本日の勤務は既に終了しています", exception.getReason());
+        verify(mapper, never()).update(any());
+        verify(mapper, never()).save(any());
+    }
 }

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -19,7 +19,6 @@ const renderActionButtons = (
   status: DailyAttendanceSnapshot["status"] | undefined,
   isLoading: boolean,
   isToggling: boolean,
-  isBreak: boolean,
   handleStamp: (type: "1" | "2") => void,
   handleBreakToggle?: () => void
 ) => {
@@ -144,6 +143,19 @@ export const StampCard = memo(
       onToggleBreak,
     });
 
+    // アクションボタンをメモ化
+    const actionButtons = useMemo(
+      () =>
+        renderActionButtons(
+          snapshot?.status,
+          isLoading,
+          isToggling,
+          handleStamp,
+          onToggleBreak ? handleBreakToggle : undefined
+        ),
+      [snapshot?.status, isLoading, isToggling, handleStamp, onToggleBreak, handleBreakToggle]
+    );
+
     if (isLoading && showSkeleton) {
       return <StampCardSkeleton className={className} />;
     }
@@ -171,14 +183,7 @@ export const StampCard = memo(
           </div>
 
           {/* 状態ベースのアクションボタン */}
-          {renderActionButtons(
-            snapshot?.status,
-            isLoading,
-            isToggling,
-            isBreak,
-            handleStamp,
-            onToggleBreak ? handleBreakToggle : undefined
-          )}
+          {actionButtons}
 
           <Separator />
 
