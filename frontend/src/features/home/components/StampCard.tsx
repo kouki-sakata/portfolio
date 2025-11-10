@@ -1,30 +1,38 @@
-import { Coffee, Sun } from "lucide-react";
 import { memo, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStampCardLogic } from "@/features/home/hooks/useStampCardLogic";
-import type {
-  DailyAttendanceSnapshot,
-  StampCardProps,
-} from "@/features/home/types";
+import type { DailyAttendanceSnapshot, StampCardProps } from "@/features/home/types";
 import { cn } from "@/lib/utils";
+import { Coffee, Sun } from "lucide-react";
 import { ActionLog } from "./StampCard/ActionLog";
 import { ClockDisplay } from "./StampCard/ClockDisplay";
 import { StatusHeader } from "./StampCard/StatusHeader";
 import { StatusMessage } from "./StampCard/StatusMessage";
 
 /**
+ * アクションボタンのレンダリングオプション
+ */
+type ActionButtonsOptions = {
+  status: DailyAttendanceSnapshot["status"] | undefined;
+  isLoading: boolean;
+  isToggling: boolean;
+  handleStamp: (type: "1" | "2") => void;
+  handleBreakToggle?: () => void;
+};
+
+/**
  * 状態に応じてアクションボタンをレンダリング
  */
-const renderActionButtons = (
-  status: DailyAttendanceSnapshot["status"] | undefined,
-  isLoading: boolean,
-  isToggling: boolean,
-  handleStamp: (type: "1" | "2") => void,
-  handleBreakToggle?: () => void
-) => {
+const renderActionButtons = ({
+  status,
+  isLoading,
+  isToggling,
+  handleStamp,
+  handleBreakToggle,
+}: ActionButtonsOptions) => {
   // 状態が不明な場合は出勤ボタンのみ表示
   if (!status || status === "NOT_ATTENDED") {
     return (
@@ -54,7 +62,7 @@ const renderActionButtons = (
             onClick={handleBreakToggle}
             variant="outline"
           >
-            <Coffee className="mr-2 h-4 w-4" /> 休憩開始
+            <Coffee className="h-4 w-4 mr-2" /> 休憩開始
           </Button>
         )}
         <Button
@@ -82,7 +90,7 @@ const renderActionButtons = (
             onClick={handleBreakToggle}
             variant="default"
           >
-            <Sun className="mr-2 h-4 w-4" /> 休憩終了(業務再開)
+            <Sun className="h-4 w-4 mr-2" /> 休憩終了(業務再開)
           </Button>
         )}
       </div>
@@ -93,7 +101,7 @@ const renderActionButtons = (
   if (status === "FINISHED") {
     return (
       <div className="rounded-lg bg-slate-50 p-6 text-center">
-        <p className="font-medium text-muted-foreground">
+        <p className="text-muted-foreground font-medium">
           本日の勤務は完了しています
         </p>
       </div>
@@ -132,7 +140,6 @@ export const StampCard = memo(
     const {
       nightWork,
       lastAction,
-      isBreak,
       statusMeta,
       isClockError,
       handleStamp,
@@ -149,21 +156,14 @@ export const StampCard = memo(
     // アクションボタンをメモ化
     const actionButtons = useMemo(
       () =>
-        renderActionButtons(
-          snapshot?.status,
+        renderActionButtons({
+          status: snapshot?.status,
           isLoading,
           isToggling,
           handleStamp,
-          onToggleBreak ? handleBreakToggle : undefined
-        ),
-      [
-        snapshot?.status,
-        isLoading,
-        isToggling,
-        handleStamp,
-        onToggleBreak,
-        handleBreakToggle,
-      ]
+          handleBreakToggle: onToggleBreak ? handleBreakToggle : undefined,
+        }),
+      [snapshot?.status, isLoading, isToggling, handleStamp, onToggleBreak, handleBreakToggle]
     );
 
     if (isLoading && showSkeleton) {
