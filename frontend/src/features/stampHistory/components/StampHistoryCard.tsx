@@ -1,5 +1,4 @@
 import { AlertCircle, Clock, Coffee, LogOut } from "lucide-react";
-import type { ReactNode } from "react";
 import { memo } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +11,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import {
+  getDayOfWeekColor,
+  getOvertimeBadgeVariant,
+  renderBreakTimeCell,
+  renderOptionalTime,
+  renderOvertimeCell,
+} from "@/features/stampHistory/lib/formatters";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { cn } from "@/shared/utils/cn";
@@ -110,11 +116,9 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             </div>
 
             {/* 更新日時 */}
-            {entry.updateDate && (
-              <div className="pt-2 text-muted-foreground text-xs">
-                更新: {entry.updateDate}
-              </div>
-            )}
+            <div className="pt-2 text-muted-foreground text-xs">
+              更新: {entry.updateDate ?? "-"}
+            </div>
           </CardContent>
 
           <Separator />
@@ -150,36 +154,3 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
 );
 
 StampHistoryCard.displayName = "StampHistoryCard";
-
-// Helper functions
-const renderOptionalTime = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
-
-const renderBreakTimeCell = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
-
-const renderOvertimeCell = (value: number | null): ReactNode => {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-
-  const normalized = Number.isFinite(value) ? value : 0;
-  if (normalized <= 0) {
-    return "0分";
-  }
-
-  return `${normalized}分`;
-};
-
-const getDayOfWeekColor = (dayOfWeek: string | null): string => {
-  if (dayOfWeek === "土") return "text-blue-600";
-  if (dayOfWeek === "日") return "text-red-600";
-  return "text-foreground";
-};
-
-const getOvertimeBadgeVariant = (
-  minutes: number | null
-): "secondary" | "destructive" => {
-  if (!minutes || minutes <= 0) return "secondary";
-  return "destructive";
-};

@@ -216,7 +216,7 @@ describe("StampHistoryCard", () => {
     expect(deleteButton).toBeDisabled();
   });
 
-  it("does not display update date when it is null", () => {
+  it("displays '-' for null update date", () => {
     const entryWithoutUpdateDate: StampHistoryEntry = {
       ...mockEntry,
       updateDate: null,
@@ -230,7 +230,7 @@ describe("StampHistoryCard", () => {
       />
     );
 
-    expect(screen.queryByText(/更新:/)).not.toBeInTheDocument();
+    expect(screen.getByText("更新: -")).toBeInTheDocument();
   });
 
   it("has proper ARIA labels for accessibility", () => {

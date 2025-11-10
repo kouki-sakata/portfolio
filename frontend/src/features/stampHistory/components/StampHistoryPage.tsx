@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
+import { type FormEvent, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,11 @@ import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStam
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
 import { StampHistoryCard } from "@/features/stampHistory/components/StampHistoryCard";
+import {
+  renderBreakTimeCell,
+  renderOptionalTime,
+  renderOvertimeCell,
+} from "@/features/stampHistory/lib/formatters";
 import {
   emptyMonthlySummary,
   type StampHistoryEntry,
@@ -397,22 +402,3 @@ const StampHistorySkeleton = () => (
     </div>
   </div>
 );
-
-const renderBreakTimeCell = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
-
-const renderOvertimeCell = (value: number | null): ReactNode => {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-
-  const normalized = Number.isFinite(value) ? value : 0;
-  if (normalized <= 0) {
-    return "0分";
-  }
-
-  return `${normalized}分`;
-};
-
-const renderOptionalTime = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
