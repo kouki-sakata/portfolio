@@ -36,9 +36,8 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
     );
 
     return (
-      <article
+      <li
         aria-labelledby={`stamp-card-${entry.year}-${entry.month}-${entry.day}`}
-        role="listitem"
       >
         <Card className="transition-shadow hover:shadow-md">
           <CardHeader className="pb-3">
@@ -148,7 +147,7 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             </Button>
           </CardFooter>
         </Card>
-      </article>
+      </li>
     );
   }
 );

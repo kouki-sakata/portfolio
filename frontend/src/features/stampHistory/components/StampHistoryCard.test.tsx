@@ -255,7 +255,7 @@ describe("StampHistoryCard", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders as a list item with proper article role", () => {
+  it("renders as a list item", () => {
     const { container } = render(
       <StampHistoryCard
         entry={mockEntry}
@@ -264,9 +264,9 @@ describe("StampHistoryCard", () => {
       />
     );
 
-    const article = container.querySelector('article[role="listitem"]');
-    expect(article).toBeInTheDocument();
-    expect(article).toHaveAttribute(
+    const listItem = container.querySelector("li");
+    expect(listItem).toBeInTheDocument();
+    expect(listItem).toHaveAttribute(
       "aria-labelledby",
       "stamp-card-2024-11-10"
     );

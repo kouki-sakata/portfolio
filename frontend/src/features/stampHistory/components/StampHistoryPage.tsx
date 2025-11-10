@@ -239,7 +239,7 @@ export const StampHistoryPage = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="block space-y-4 lg:hidden" role="list">
+        <ul className="block list-none space-y-4 lg:hidden">
           {data.entries.map((entry) => (
             <StampHistoryCard
               entry={entry}
@@ -248,7 +248,7 @@ export const StampHistoryPage = () => {
               onEdit={handleEdit}
             />
           ))}
-        </div>
+        </ul>
       )}
 
       {/* Table layout for desktop (>= lg) */}
@@ -376,8 +376,14 @@ const StampHistorySkeleton = () => (
 
     {/* Card skeleton for mobile/tablet */}
     <div className="block space-y-4 lg:hidden">
-      {Array.from({ length: 5 }, (_, index) => (
-        <Card key={`skeleton-card-${index}`}>
+      {[
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-2",
+        "skeleton-3",
+        "skeleton-4",
+      ].map((id) => (
+        <Card key={id}>
           <CardContent className="p-6">
             <div className="space-y-4">
               <Skeleton className="h-6 w-32" />
