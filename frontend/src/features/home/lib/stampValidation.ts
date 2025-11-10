@@ -22,7 +22,10 @@ export class StampValidationError extends Error {
 export function validateAttendanceStamp(
   snapshot: DailyAttendanceSnapshot | null | undefined
 ): void {
-  if (snapshot && (snapshot.status === "WORKING" || snapshot.status === "ON_BREAK")) {
+  if (
+    snapshot &&
+    (snapshot.status === "WORKING" || snapshot.status === "ON_BREAK")
+  ) {
     throw new StampValidationError(
       "出勤打刻ができません: 既に出勤済みです",
       "出勤打刻",
