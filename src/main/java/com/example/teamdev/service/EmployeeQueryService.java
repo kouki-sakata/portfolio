@@ -80,7 +80,7 @@ public class EmployeeQueryService {
     @Cacheable(value = "employeesGrouped")
     public Map<Integer, List<Employee>> getEmployeesGroupedByAdminFlag() {
         return employeeMapper.getAllEmployeesGroupedByAdminFlag().stream()
-                .collect(Collectors.groupingBy(Employee::getAdmin_flag));
+                .collect(Collectors.groupingBy(Employee::getAdminFlag));
     }
 
     /**
