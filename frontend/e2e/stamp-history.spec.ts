@@ -84,8 +84,12 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
     await navigateAndWait(page, "勤怠履歴", /\/stamp-history/, "打刻履歴");
 
     await test.step("空状態メッセージを確認", async () => {
-      // データがない場合のメッセージを確認（実際のメッセージは「対象期間の打刻はありません。」）
-      const emptyMessage = page.getByText("対象期間の打刻はありません。");
+      // データがない場合のメッセージを確認
+      // レスポンシブ対応により、カード用とテーブル用の2つの要素が存在する
+      // デスクトップ表示（テーブル）のメッセージを確認
+      const emptyMessage = page.getByRole("cell", {
+        name: "対象期間の打刻はありません。",
+      });
       await expect(emptyMessage).toBeVisible({ timeout: 5000 });
     });
   });

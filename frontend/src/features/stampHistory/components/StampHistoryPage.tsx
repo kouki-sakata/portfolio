@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, type ReactNode, useMemo, useState } from "react";
+import { type FormEvent, lazy, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -24,6 +25,12 @@ import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
+import { StampHistoryCard } from "@/features/stampHistory/components/StampHistoryCard";
+import {
+  renderBreakTimeCell,
+  renderOptionalTime,
+  renderOvertimeCell,
+} from "@/features/stampHistory/lib/formatters";
 import {
   emptyMonthlySummary,
   type StampHistoryEntry,
@@ -222,7 +229,30 @@ export const StampHistoryPage = () => {
         <MonthlyStatsCard entries={data.entries} summary={data.summary} />
       </SuspenseWrapper>
 
-      <div className="mt-6">
+      {/* Card layout for mobile and tablet (< lg) */}
+      {data.entries.length === 0 ? (
+        <Card className="block lg:hidden">
+          <CardContent className="py-12 text-center">
+            <p className="text-muted-foreground">
+              対象期間の打刻はありません。
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <ul className="block list-none space-y-4 lg:hidden">
+          {data.entries.map((entry) => (
+            <StampHistoryCard
+              entry={entry}
+              key={`card-${entry.year}-${entry.month}-${entry.day}`}
+              onDelete={handleDelete}
+              onEdit={handleEdit}
+            />
+          ))}
+        </ul>
+      )}
+
+      {/* Table layout for desktop (>= lg) */}
+      <div className="mt-6 hidden lg:block">
         <Table>
           <TableHeader>
             <TableRow>
@@ -249,7 +279,9 @@ export const StampHistoryPage = () => {
               </TableRow>
             ) : (
               data.entries.map((entry) => (
-                <TableRow key={`${entry.year}-${entry.month}-${entry.day}`}>
+                <TableRow
+                  key={`table-${entry.year}-${entry.month}-${entry.day}`}
+                >
                   <TableCell>
                     {entry.year}/{entry.month}/{entry.day}
                   </TableCell>
@@ -342,25 +374,37 @@ const StampHistorySkeleton = () => (
       </div>
     </div>
 
-    <SkeletonTable className="bg-card" columns={9} rows={6} showHeader />
+    {/* Card skeleton for mobile/tablet */}
+    <div className="block space-y-4 lg:hidden">
+      {[
+        "skeleton-0",
+        "skeleton-1",
+        "skeleton-2",
+        "skeleton-3",
+        "skeleton-4",
+      ].map((id) => (
+        <Card key={id}>
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-6 w-32" />
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <Skeleton className="h-8 w-full" />
+                <Skeleton className="h-8 w-full" />
+              </div>
+              <Skeleton className="h-10 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      ))}
+    </div>
+
+    {/* Table skeleton for desktop */}
+    <div className="hidden lg:block">
+      <SkeletonTable className="bg-card" columns={9} rows={6} showHeader />
+    </div>
   </div>
 );
-
-const renderBreakTimeCell = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
-
-const renderOvertimeCell = (value: number | null): ReactNode => {
-  if (value === null || value === undefined) {
-    return "-";
-  }
-
-  const normalized = Number.isFinite(value) ? value : 0;
-  if (normalized <= 0) {
-    return "0分";
-  }
-
-  return `${normalized}分`;
-};
-
-const renderOptionalTime = (value: string | null): ReactNode =>
-  value && value.trim().length > 0 ? value : "-";
