@@ -27,10 +27,20 @@ final class OvertimeCalculator {
         }
 
         Duration worked = Duration.between(record.attendanceTime(), record.departureTime());
+
+        // 休憩時間を差し引く
+        Duration breakDuration;
         if (record.breakStartTime() != null && record.breakEndTime() != null) {
-            Duration breakDuration = Duration.between(record.breakStartTime(), record.breakEndTime());
+            // 実際の休憩時間が記録されている場合はそれを使用
+            breakDuration = Duration.between(record.breakStartTime(), record.breakEndTime());
             if (!breakDuration.isNegative()) {
                 worked = worked.minus(breakDuration);
+            }
+        } else {
+            // 休憩時間が記録されていない場合はスケジュールの休憩時間を使用
+            int scheduleBreakMinutes = schedule.breakMinutes();
+            if (scheduleBreakMinutes > 0) {
+                worked = worked.minus(Duration.ofMinutes(scheduleBreakMinutes));
             }
         }
 
