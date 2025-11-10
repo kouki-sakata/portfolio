@@ -167,7 +167,7 @@ class StampHistoryMapperOvertimeCalculationTest extends PostgresContainerSupport
     @Test
     @DisplayName("休憩時間が考慮されて残業時間が正確に計算される")
     void calculateOvertimeConsideringBreakTime() {
-        // Arrange: 9:00-19:00勤務、休憩60分
+        // Arrange: 9:00-19:00勤務、休憩60分（実際の休憩時間記録あり）
         // 10時間 - 1時間休憩 = 9時間実働、残業1時間
         for (int day = 1; day <= 10; day++) {
             insertStampHistory(day, 9, 0, 19, 0);
@@ -186,6 +186,35 @@ class StampHistoryMapperOvertimeCalculationTest extends PostgresContainerSupport
         assertThat(result.getOvertimeHours())
             .as("休憩時間を除いた実働時間から残業を計算")
             .isEqualByComparingTo(new BigDecimal("10.00")); // (9-8) × 10日
+    }
+
+    @Test
+    @DisplayName("休憩時間が未記録の場合はスケジュールの休憩時間を使用して月次統計を計算")
+    void calculateMonthlyStatsUsingScheduleBreakWhenBreakNotRecorded() {
+        // Arrange: 9:00-19:00勤務（10時間拘束）、休憩未記録
+        // スケジュール休憩60分が適用されるべき
+        // 実働: 10h - 1h(スケジュール休憩) = 9h
+        // 残業: 9h - 8h = 1h/日
+        for (int day = 1; day <= 10; day++) {
+            insertStampHistoryWithoutBreak(day, 9, 0, 19, 0);
+        }
+
+        // Act
+        List<MonthlyAttendanceStats> stats = stampHistoryMapper.findMonthlyStatistics(
+            TEST_EMPLOYEE_ID, "2025-01", "2025-01"
+        );
+
+        // Assert
+        assertThat(stats).hasSize(1);
+        MonthlyAttendanceStats result = stats.get(0);
+
+        assertThat(result.getMonth()).isEqualTo("2025-01");
+        assertThat(result.getTotalHours())
+            .as("10日間、各日9時間実働 = 90時間")
+            .isEqualByComparingTo(new BigDecimal("90.00")); // (10h - 1h) × 10日
+        assertThat(result.getOvertimeHours())
+            .as("スケジュール休憩60分を使用して残業計算")
+            .isEqualByComparingTo(new BigDecimal("10.00")); // (9h - 8h) × 10日
     }
 
     /**
@@ -276,6 +305,49 @@ class StampHistoryMapperOvertimeCalculationTest extends PostgresContainerSupport
 
         history.setInTime(inTime);
         history.setOutTime(null);
+        history.setUpdateEmployeeId(TEST_EMPLOYEE_ID);
+        history.setUpdateDate(OffsetDateTime.now(ZoneOffset.ofHours(9)));
+
+        stampHistoryMapper.save(history);
+    }
+
+    /**
+     * 休憩時間なしの打刻履歴をINSERTするヘルパーメソッド
+     * （休憩時間が未記録の場合のテスト用）
+     */
+    private void insertStampHistoryWithoutBreak(int day, int inHour, int inMinute, int outHour, int outMinute) {
+        StampHistory history = new StampHistory();
+        history.setYear(TEST_YEAR);
+        history.setMonth(TEST_MONTH);
+        history.setDay(String.format("%02d", day));
+        history.setEmployeeId(TEST_EMPLOYEE_ID);
+
+        OffsetDateTime inTime = OffsetDateTime.of(
+            Integer.parseInt(TEST_YEAR),
+            Integer.parseInt(TEST_MONTH),
+            day,
+            inHour,
+            inMinute,
+            0,
+            0,
+            ZoneOffset.ofHours(9)
+        );
+
+        OffsetDateTime outTime = OffsetDateTime.of(
+            Integer.parseInt(TEST_YEAR),
+            Integer.parseInt(TEST_MONTH),
+            day,
+            outHour,
+            outMinute,
+            0,
+            0,
+            ZoneOffset.ofHours(9)
+        );
+
+        history.setInTime(inTime);
+        history.setOutTime(outTime);
+        history.setBreakStartTime(null);  // 休憩開始時刻なし
+        history.setBreakEndTime(null);    // 休憩終了時刻なし
         history.setUpdateEmployeeId(TEST_EMPLOYEE_ID);
         history.setUpdateDate(OffsetDateTime.now(ZoneOffset.ofHours(9)));
 
