@@ -10,6 +10,7 @@ import com.example.teamdev.dto.api.home.StampResponse;
 import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.exception.DuplicateStampException;
+import com.example.teamdev.exception.InvalidStampStateException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.service.HomeAttendanceService;
 import com.example.teamdev.service.HomeNewsService;
@@ -95,6 +96,9 @@ public class HomeRestController {
         } catch (DuplicateStampException e) {
             // 409 Conflict でクライアントに通知
             throw new ResponseStatusException(HttpStatus.CONFLICT, e.getMessage());
+        } catch (InvalidStampStateException e) {
+            // 400 Bad Request でクライアントに通知
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
 
         OffsetDateTime dateTime = OffsetDateTime.parse(request.stampTime(), INPUT_FORMATTER);
@@ -122,6 +126,9 @@ public class HomeRestController {
         } catch (DuplicateStampException e) {
             String conflictMessage = "休憩操作は既に登録されています。画面を再読み込みして最新の勤怠状況を確認してください。";
             throw new ResponseStatusException(HttpStatus.CONFLICT, conflictMessage, e);
+        } catch (InvalidStampStateException e) {
+            // 400 Bad Request でクライアントに通知
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
         }
         return ResponseEntity.noContent().build();
     }

@@ -4,13 +4,102 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStampCardLogic } from "@/features/home/hooks/useStampCardLogic";
-import type { StampCardProps } from "@/features/home/types";
+import type { DailyAttendanceSnapshot, StampCardProps } from "@/features/home/types";
 import { cn } from "@/lib/utils";
+import { Coffee, Sun } from "lucide-react";
 import { ActionLog } from "./StampCard/ActionLog";
-import { BreakToggleButton } from "./StampCard/BreakToggleButton";
 import { ClockDisplay } from "./StampCard/ClockDisplay";
 import { StatusHeader } from "./StampCard/StatusHeader";
 import { StatusMessage } from "./StampCard/StatusMessage";
+
+/**
+ * 状態に応じてアクションボタンをレンダリング
+ */
+const renderActionButtons = (
+  status: DailyAttendanceSnapshot["status"] | undefined,
+  isLoading: boolean,
+  isToggling: boolean,
+  isBreak: boolean,
+  handleStamp: (type: "1" | "2") => void,
+  handleBreakToggle?: () => void
+) => {
+  // 状態が不明な場合は出勤ボタンのみ表示
+  if (!status || status === "NOT_ATTENDED") {
+    return (
+      <div className="space-y-3">
+        <Button
+          aria-label="出勤打刻を登録"
+          className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
+          disabled={isLoading}
+          onClick={() => handleStamp("1")}
+          variant="default"
+        >
+          出勤打刻
+        </Button>
+      </div>
+    );
+  }
+
+  // 勤務中: 休憩開始 + 退勤
+  if (status === "WORKING") {
+    return (
+      <div className="space-y-3">
+        {handleBreakToggle && (
+          <Button
+            aria-label="休憩を開始"
+            className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
+            disabled={isLoading || isToggling}
+            onClick={handleBreakToggle}
+            variant="outline"
+          >
+            <Coffee className="h-4 w-4 mr-2" /> 休憩開始
+          </Button>
+        )}
+        <Button
+          aria-label="退勤打刻を登録"
+          className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
+          disabled={isLoading}
+          onClick={() => handleStamp("2")}
+          variant="default"
+        >
+          退勤打刻
+        </Button>
+      </div>
+    );
+  }
+
+  // 休憩中: 休憩終了のみ
+  if (status === "ON_BREAK") {
+    return (
+      <div className="space-y-3">
+        {handleBreakToggle && (
+          <Button
+            aria-label="休憩を終了して業務を再開"
+            className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
+            disabled={isLoading || isToggling}
+            onClick={handleBreakToggle}
+            variant="default"
+          >
+            <Sun className="h-4 w-4 mr-2" /> 休憩終了(業務再開)
+          </Button>
+        )}
+      </div>
+    );
+  }
+
+  // 退勤済み: ボタンなし、メッセージのみ
+  if (status === "FINISHED") {
+    return (
+      <div className="rounded-lg bg-slate-50 p-6 text-center">
+        <p className="text-muted-foreground font-medium">
+          本日の勤務は完了しています
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 /**
  * StampCardプレゼンテーション コンポーネント(リファクタリング版)
@@ -81,37 +170,15 @@ export const StampCard = memo(
             <ClockDisplay clockState={clockState} isClockError={isClockError} />
           </div>
 
-          {/* 出勤・退勤ボタン */}
-          <div className="grid grid-cols-2 gap-3">
-            <Button
-              aria-label="出勤打刻を登録"
-              className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
-              disabled={isLoading}
-              onClick={() => handleStamp("1")}
-              variant="default"
-            >
-              出勤打刻
-            </Button>
-            <Button
-              aria-label="退勤打刻を登録"
-              className="w-full py-5 font-semibold text-base shadow-sm transition-shadow hover:shadow-md"
-              disabled={isLoading}
-              onClick={() => handleStamp("2")}
-              variant="outline"
-            >
-              退勤打刻
-            </Button>
-          </div>
-
-          {/* 休憩操作 */}
-          {onToggleBreak ? (
-            <BreakToggleButton
-              isBreak={isBreak}
-              isLoading={isLoading}
-              isToggling={isToggling}
-              onToggle={handleBreakToggle}
-            />
-          ) : null}
+          {/* 状態ベースのアクションボタン */}
+          {renderActionButtons(
+            snapshot?.status,
+            isLoading,
+            isToggling,
+            isBreak,
+            handleStamp,
+            onToggleBreak ? handleBreakToggle : undefined
+          )}
 
           <Separator />
 

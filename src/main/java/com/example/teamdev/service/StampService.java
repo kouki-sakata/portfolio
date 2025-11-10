@@ -4,6 +4,7 @@ import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.dto.api.home.StampType;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.exception.DuplicateStampException;
+import com.example.teamdev.exception.InvalidStampStateException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
 import java.time.LocalDate;
@@ -87,6 +88,10 @@ public class StampService {
             }
             // 退勤打刻時: 既存の outTime が設定済みなら上書き拒否
             else if (stampType == StampType.DEPARTURE) {
+                // 状態チェック: 出勤打刻がない場合はエラー
+                if (existing.getInTime() == null) {
+                    throw new InvalidStampStateException("退勤打刻", "出勤打刻が必要です");
+                }
                 if (existing.getOutTime() != null) {
                     throw new DuplicateStampException("退勤", existing.getOutTime().toString());
                 }
@@ -99,6 +104,10 @@ public class StampService {
 
             mapper.update(entity);
         } else {
+            // レコードが存在しない場合: 退勤打刻は不正（出勤打刻が必要）
+            if (stampType == StampType.DEPARTURE) {
+                throw new InvalidStampStateException("退勤打刻", "出勤打刻が必要です");
+            }
             entity.setBreakStartTime(null);
             entity.setBreakEndTime(null);
             mapper.save(entity);
@@ -130,43 +139,39 @@ public class StampService {
         StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
         OffsetDateTime updateDate = OffsetDateTime.now(ZoneOffset.UTC);
 
-        if (existing == null) {
-            StampHistory entity = new StampHistory();
-            entity.setYear(year);
-            entity.setMonth(month);
-            entity.setDay(day);
-            entity.setEmployeeId(employeeId);
-            entity.setInTime(null);
-            entity.setOutTime(null);
-            entity.setBreakStartTime(toggleTime);
-            entity.setBreakEndTime(null);
-            entity.setUpdateEmployeeId(employeeId);
-            entity.setUpdateDate(updateDate);
-            mapper.save(entity);
-        } else {
-            StampHistory entity = new StampHistory();
-            entity.setId(existing.getId());
-            entity.setYear(year);
-            entity.setMonth(month);
-            entity.setDay(day);
-            entity.setEmployeeId(employeeId);
-            entity.setInTime(existing.getInTime());
-            entity.setOutTime(existing.getOutTime());
-            entity.setBreakStartTime(existing.getBreakStartTime());
-            entity.setBreakEndTime(existing.getBreakEndTime());
-            entity.setUpdateEmployeeId(employeeId);
-            entity.setUpdateDate(updateDate);
-
-            if (existing.getBreakStartTime() == null) {
-                entity.setBreakStartTime(toggleTime);
-            } else if (existing.getBreakEndTime() == null) {
-                entity.setBreakEndTime(toggleTime);
-            } else {
-                throw new DuplicateStampException("休憩", existing.getBreakEndTime().toString());
-            }
-
-            mapper.update(entity);
+        // 状態チェック: 出勤打刻がない場合はエラー
+        if (existing == null || existing.getInTime() == null) {
+            throw new InvalidStampStateException("休憩操作", "出勤打刻が必要です");
         }
+
+        // 状態チェック: 退勤打刻後はエラー
+        if (existing.getOutTime() != null) {
+            throw new InvalidStampStateException("休憩操作", "退勤後は休憩操作できません");
+        }
+
+        // 休憩時刻の更新
+        StampHistory entity = new StampHistory();
+        entity.setId(existing.getId());
+        entity.setYear(year);
+        entity.setMonth(month);
+        entity.setDay(day);
+        entity.setEmployeeId(employeeId);
+        entity.setInTime(existing.getInTime());
+        entity.setOutTime(existing.getOutTime());
+        entity.setBreakStartTime(existing.getBreakStartTime());
+        entity.setBreakEndTime(existing.getBreakEndTime());
+        entity.setUpdateEmployeeId(employeeId);
+        entity.setUpdateDate(updateDate);
+
+        if (existing.getBreakStartTime() == null) {
+            entity.setBreakStartTime(toggleTime);
+        } else if (existing.getBreakEndTime() == null) {
+            entity.setBreakEndTime(toggleTime);
+        } else {
+            throw new DuplicateStampException("休憩", existing.getBreakEndTime().toString());
+        }
+
+        mapper.update(entity);
 
         java.sql.Timestamp toggleTimestamp = java.sql.Timestamp.from(toggleTime.toInstant());
         java.sql.Timestamp updateTimestamp = java.sql.Timestamp.from(updateDate.toInstant());

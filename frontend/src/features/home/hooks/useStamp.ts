@@ -196,6 +196,27 @@ export const useStamp = (
         return; // 早期リターンで他のエラーハンドリングをスキップ
       }
 
+      // 400 Bad Request（状態遷移エラー）の特別処理
+      if (errorInfo.status === 400) {
+        const validationMessage =
+          extractServerMessage(errorInfo.details) ||
+          errorInfo.message ||
+          "不正な操作です。画面を再読み込みして最新の状態を確認してください。";
+        setStatus({
+          message: validationMessage,
+          submittedAt: iso,
+          type,
+          result: "error",
+        });
+        toast({
+          variant: "destructive",
+          title: "操作エラー",
+          description: validationMessage,
+        });
+        capturedStampRef.current = null;
+        return;
+      }
+
       const errorMessage = "打刻に失敗しました。再度お試しください。";
 
       // サーバーエラーを最初にチェック（500番台）
