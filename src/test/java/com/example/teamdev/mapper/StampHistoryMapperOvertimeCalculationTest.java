@@ -220,8 +220,33 @@ class StampHistoryMapperOvertimeCalculationTest extends PostgresContainerSupport
             ZoneOffset.ofHours(9)
         );
 
+        // 休憩時間を設定（12:00-13:00の1時間）
+        OffsetDateTime breakStartTime = OffsetDateTime.of(
+            Integer.parseInt(TEST_YEAR),
+            Integer.parseInt(TEST_MONTH),
+            day,
+            12,
+            0,
+            0,
+            0,
+            ZoneOffset.ofHours(9)
+        );
+
+        OffsetDateTime breakEndTime = OffsetDateTime.of(
+            Integer.parseInt(TEST_YEAR),
+            Integer.parseInt(TEST_MONTH),
+            day,
+            13,
+            0,
+            0,
+            0,
+            ZoneOffset.ofHours(9)
+        );
+
         history.setInTime(inTime);
         history.setOutTime(outTime);
+        history.setBreakStartTime(breakStartTime);
+        history.setBreakEndTime(breakEndTime);
         history.setUpdateEmployeeId(TEST_EMPLOYEE_ID);
         history.setUpdateDate(OffsetDateTime.now(ZoneOffset.ofHours(9)));
 
