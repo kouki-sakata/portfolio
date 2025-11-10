@@ -58,4 +58,42 @@ class OvertimeCalculatorTest {
 
         assertThat(overtime).isZero();
     }
+
+    @DisplayName("休憩時間が記録されていない場合はスケジュールの休憩時間を使用")
+    @Test
+    void useScheduleBreakWhenBreakNotRecorded() {
+        // 9時間9分勤務、休憩記録なし
+        DailyAttendanceRecord record = new DailyAttendanceRecord(
+            OffsetDateTime.of(2025, 11, 1, 18, 0, 0, 0, ZoneOffset.UTC),
+            null,
+            null,
+            OffsetDateTime.of(2025, 11, 2, 3, 9, 0, 0, ZoneOffset.UTC)
+        );
+        ProfileWorkScheduleDocument schedule = new ProfileWorkScheduleDocument("09:00", "18:00", 60);
+
+        int overtime = OvertimeCalculator.calculateOvertimeMinutes(record, schedule);
+
+        // 実働: 9h9m - 1h(スケジュール休憩) = 8h9m
+        // 残業: 8h9m - 8h = 9分
+        assertThat(overtime).isEqualTo(9);
+    }
+
+    @DisplayName("休憩時間が記録されている場合は実際の休憩時間を優先")
+    @Test
+    void useActualBreakWhenRecorded() {
+        // 9時間9分勤務、2時間休憩
+        DailyAttendanceRecord record = new DailyAttendanceRecord(
+            OffsetDateTime.of(2025, 11, 1, 18, 0, 0, 0, ZoneOffset.UTC),
+            OffsetDateTime.of(2025, 11, 1, 21, 0, 0, 0, ZoneOffset.UTC),
+            OffsetDateTime.of(2025, 11, 1, 23, 0, 0, 0, ZoneOffset.UTC),
+            OffsetDateTime.of(2025, 11, 2, 3, 9, 0, 0, ZoneOffset.UTC)
+        );
+        ProfileWorkScheduleDocument schedule = new ProfileWorkScheduleDocument("09:00", "18:00", 60);
+
+        int overtime = OvertimeCalculator.calculateOvertimeMinutes(record, schedule);
+
+        // 実働: 9h9m - 2h(実際の休憩) = 7h9m
+        // 残業: 7h9m - 8h = 0（負数なので0）
+        assertThat(overtime).isZero();
+    }
 }
