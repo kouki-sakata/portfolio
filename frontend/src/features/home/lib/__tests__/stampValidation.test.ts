@@ -37,7 +37,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateAttendanceStamp(snapshot)).not.toThrow();
@@ -58,7 +58,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateAttendanceStamp(snapshot)).toThrow(
@@ -76,7 +76,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateAttendanceStamp(snapshot)).toThrow(
@@ -96,7 +96,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateDepartureStamp(snapshot)).toThrow(
@@ -145,7 +145,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateDepartureStamp(snapshot)).not.toThrow();
@@ -158,7 +158,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateDepartureStamp(snapshot)).not.toThrow();
@@ -173,7 +173,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateBreakToggle(snapshot)).toThrow(StampValidationError);
@@ -218,7 +218,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateBreakToggle(snapshot)).not.toThrow();
@@ -231,7 +231,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(() => validateBreakToggle(snapshot)).not.toThrow();
@@ -254,7 +254,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampAttendance(snapshot)).toBe(true);
@@ -267,7 +267,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampAttendance(snapshot)).toBe(false);
@@ -280,7 +280,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampAttendance(snapshot)).toBe(false);
@@ -316,7 +316,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampDeparture(snapshot)).toBe(false);
@@ -329,7 +329,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampDeparture(snapshot)).toBe(true);
@@ -342,7 +342,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canStampDeparture(snapshot)).toBe(true);
@@ -378,7 +378,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canToggleBreak(snapshot)).toBe(false);
@@ -391,7 +391,7 @@ describe("stampValidation", () => {
         breakStartTime: null,
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canToggleBreak(snapshot)).toBe(true);
@@ -404,7 +404,7 @@ describe("stampValidation", () => {
         breakStartTime: "2025-11-10T12:00:00+09:00",
         breakEndTime: null,
         departureTime: null,
-        overtimeMinutes: null,
+        overtimeMinutes: 0,
       };
 
       expect(canToggleBreak(snapshot)).toBe(true);
