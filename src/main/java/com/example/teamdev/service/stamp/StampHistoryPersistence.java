@@ -123,10 +123,8 @@ public class StampHistoryPersistence {
         entity.setBreakStartTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakStartTime()));
         entity.setBreakEndTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakEndTime()));
 
-        // 夜勤フラグの更新
-        if (data.getIsNightShift() != null) {
-            entity.setIsNightShift(data.getIsNightShift());
-        }
+        // 夜勤フラグの更新（nullも設定可能）
+        entity.setIsNightShift(data.getIsNightShift());
 
         // メタ情報の更新
         entity.setUpdateEmployeeId(updateEmployeeId);
@@ -157,7 +155,7 @@ public class StampHistoryPersistence {
      * @return JST（+09:00）のOffsetDateTime、timeがnullの場合はnull
      */
     private OffsetDateTime parseBreakTime(String year, String month, String day, String time) {
-        if (time == null || time.isEmpty()) {
+        if (time == null || time.isBlank()) {
             return null;
         }
         // Zero-pad month and day to ensure ISO 8601 compliance

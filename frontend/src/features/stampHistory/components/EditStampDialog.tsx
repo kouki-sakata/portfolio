@@ -141,8 +141,9 @@ export const EditStampDialog = ({
       id: data.id,
       inTime: data.inTime || undefined,
       outTime: data.outTime || undefined,
-      breakStartTime: data.breakStartTime || undefined,
-      breakEndTime: data.breakEndTime || undefined,
+      // 空文字列も送信する（|| を使わない）
+      breakStartTime: data.breakStartTime,
+      breakEndTime: data.breakEndTime,
       ...(data.isNightShift !== undefined && { isNightShift: data.isNightShift }),
     });
   };

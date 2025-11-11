@@ -62,7 +62,7 @@
         )
     </insert>
     <!--更新の追記-->
-    <!--動的SQL: in_time/out_time が null の場合は既存値を保持、break_start_time/break_end_time は常に更新（削除可能）-->
+    <!--動的SQL: in_time/out_time が null の場合は既存値を保持、break_start_time/break_end_time/is_night_shift は常に更新（削除可能）-->
     <update id="update" parameterType="com.example.teamdev.entity.StampHistory">
         UPDATE stamp_history
         SET
@@ -77,9 +77,7 @@
             </if>
             break_start_time = #{breakStartTime},
             break_end_time = #{breakEndTime},
-            <if test="isNightShift != null">
-                is_night_shift = #{isNightShift},
-            </if>
+            is_night_shift = #{isNightShift},
             update_employee_id = #{updateEmployeeId},
             update_date = #{updateDate}
         WHERE id = #{id}
