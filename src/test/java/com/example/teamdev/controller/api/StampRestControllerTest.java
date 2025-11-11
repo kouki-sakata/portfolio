@@ -106,6 +106,7 @@ class StampRestControllerTest {
             outTime,
             null,
             null,
+            null,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
@@ -150,6 +151,7 @@ class StampRestControllerTest {
             "01",
             999,
             now,
+            null,
             null,
             null,
             null,
@@ -206,6 +208,7 @@ class StampRestControllerTest {
             null,
             null,
             null,
+            null,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
@@ -252,6 +255,7 @@ class StampRestControllerTest {
             outTime,
             breakStart,
             breakEnd,
+            null,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
@@ -300,10 +304,10 @@ class StampRestControllerTest {
             outTime,
             null,
             null,
+            false,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
-        history.setIsNightShift(false);
         when(stampHistoryMapper.getById(160)).thenReturn(Optional.of(history));
 
         mockMvc.perform(
@@ -349,6 +353,7 @@ class StampRestControllerTest {
             outTime,
             null,
             null,
+            null,
             10,
             OffsetDateTime.now(ZoneOffset.UTC)
         );
@@ -386,6 +391,7 @@ class StampRestControllerTest {
             10,
             inTime,
             outTime,
+            null,
             null,
             null,
             10,
