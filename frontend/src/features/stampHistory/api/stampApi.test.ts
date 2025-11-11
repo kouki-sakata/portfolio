@@ -146,7 +146,6 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 100,
-      employeeId: 1,
         breakStartTime: "",
         breakEndTime: "",
       });
@@ -162,7 +161,6 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 200,
-      employeeId: 1,
         breakStartTime: "01:00",
         breakEndTime: "02:00",
         isNightShift: true,
@@ -180,7 +178,6 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 300,
-      employeeId: 1,
         inTime: "",
         outTime: "",
         breakStartTime: "12:00",
@@ -198,7 +195,6 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 400,
-      employeeId: 1,
         isNightShift: false,
       });
 

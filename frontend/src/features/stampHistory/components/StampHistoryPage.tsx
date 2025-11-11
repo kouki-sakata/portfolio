@@ -150,7 +150,7 @@ export const StampHistoryPage = () => {
           year,
           month,
           day: dayStr,
-          dayOfWeek: dayOfWeekNames[date.getDay()],
+          dayOfWeek: dayOfWeekNames[date.getDay()] ?? null,
           inTime: null,
           outTime: null,
           breakStartTime: null,
