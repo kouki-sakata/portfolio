@@ -9,7 +9,7 @@ import {
   type Row,
   useReactTable,
 } from "@tanstack/react-table";
-import { type KeyboardEvent, useMemo, useState } from "react";
+import { type KeyboardEvent, memo, useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -40,8 +40,9 @@ function extractHeaderText(header: unknown): string {
 
 /**
  * デスクトップ用テーブル行コンポーネント
+ * React.memoで最適化し、変更された行のみ再レンダリング
  */
-function DesktopTableRow<TData>({
+const DesktopTableRow = memo(function DesktopTableRow<TData>({
   row,
   onRowClick,
 }: {
@@ -83,12 +84,16 @@ function DesktopTableRow<TData>({
       ))}
     </TableRow>
   );
-}
+}) as <TData>(props: {
+  row: Row<TData>;
+  onRowClick?: (data: TData) => void;
+}) => JSX.Element;
 
 /**
  * モバイル用カード行コンポーネント
+ * React.memoで最適化し、変更された行のみ再レンダリング
  */
-function MobileCardRow<TData>({
+const MobileCardRow = memo(function MobileCardRow<TData>({
   row,
   onRowClick,
 }: {
@@ -177,7 +182,10 @@ function MobileCardRow<TData>({
       {CardContent}
     </div>
   );
-}
+}) as <TData>(props: {
+  row: Row<TData>;
+  onRowClick?: (data: TData) => void;
+}) => JSX.Element;
 
 function DataTableComponent<TData, TValue = unknown>({
   columns,

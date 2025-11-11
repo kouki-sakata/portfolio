@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { Loader2, Search } from "lucide-react";
-import { type FormEvent, lazy, useMemo, useState } from "react";
+import { type FormEvent, lazy, useCallback, useMemo, useState } from "react";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { Button } from "@/components/ui/button";
@@ -106,15 +106,15 @@ export const StampHistoryPage = () => {
     setConfirmedFilters(filters);
   };
 
-  const handleEdit = (entry: StampHistoryEntry) => {
+  const handleEdit = useCallback((entry: StampHistoryEntry) => {
     setSelectedEntry(entry);
     setEditDialogOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (entry: StampHistoryEntry) => {
+  const handleDelete = useCallback((entry: StampHistoryEntry) => {
     setSelectedEntry(entry);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
   if (query.isLoading) {
     return <StampHistorySkeleton />;

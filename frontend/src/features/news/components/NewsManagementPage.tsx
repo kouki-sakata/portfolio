@@ -68,8 +68,14 @@ export const NewsManagementPage = () => {
     }
     return newsQuery.data.news.map(toNewsViewModel);
   }, [newsQuery.data]);
+  const newsItemsRef = useRef<NewsViewModel[]>(newsItems);
   const bulkPublishMutation = useBulkPublishMutation();
   const bulkUnpublishMutation = useBulkUnpublishMutation();
+
+  // newsItemsRefを最新の値に保つ
+  useEffect(() => {
+    newsItemsRef.current = newsItems;
+  }, [newsItems]);
 
   const handleEdit = useCallback((news: NewsViewModel) => {
     setSelectedNews(news);
@@ -132,11 +138,11 @@ export const NewsManagementPage = () => {
     (selection: Record<string, boolean>) => {
       const selectedIds = Object.keys(selection)
         .filter((key) => selection[key])
-        .map((key) => newsItems[Number.parseInt(key, 10)]?.id)
+        .map((key) => newsItemsRef.current[Number.parseInt(key, 10)]?.id)
         .filter((id): id is number => id !== undefined);
       setSelectedNewsIds(selectedIds);
     },
-    [newsItems]
+    []
   );
 
   const handleOpenCreate = () => {
