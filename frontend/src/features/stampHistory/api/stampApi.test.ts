@@ -40,6 +40,7 @@ describe("stampApi", () => {
       entries: [
         {
           id: 1,
+      employeeId: 1,
           year: "2024",
           month: "04",
           day: "01",
@@ -53,6 +54,7 @@ describe("stampApi", () => {
         },
         {
           id: 2,
+      employeeId: 1,
           year: "2024",
           month: "04",
           day: "02",
@@ -110,7 +112,9 @@ describe("stampApi", () => {
 
     await updateStampsBatch([
       { id: 1, inTime: "09:00", outTime: "18:00" },
+      employeeId: 1,
       { id: 2, inTime: "10:00" },
+      employeeId: 1,
     ]);
 
     expect(mockedApi.put).toHaveBeenCalledTimes(2);
@@ -144,6 +148,7 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 100,
+      employeeId: 1,
         breakStartTime: "",
         breakEndTime: "",
       });
@@ -159,6 +164,7 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 200,
+      employeeId: 1,
         breakStartTime: "01:00",
         breakEndTime: "02:00",
         isNightShift: true,
@@ -176,6 +182,7 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 300,
+      employeeId: 1,
         inTime: "",
         outTime: "",
         breakStartTime: "12:00",
@@ -193,6 +200,7 @@ describe("stampApi", () => {
 
       await updateStamp({
         id: 400,
+      employeeId: 1,
         isNightShift: false,
       });
 

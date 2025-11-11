@@ -116,6 +116,55 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
+  // 選択された年月の全日付を生成する関数
+  const generateAllDaysInMonth = useCallback((year: string, month: string, entries: StampHistoryEntry[]) => {
+    if (!year || !month) return entries;
+
+    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
+    const allDays: StampHistoryEntry[] = [];
+
+    // 既存のentriesをMapに変換（day をキーとして高速検索）
+    const entryMap = new Map<string, StampHistoryEntry>();
+    entries.forEach((entry) => {
+      if (entry.day) {
+        entryMap.set(entry.day, entry);
+      }
+    });
+
+    // 全日付を生成
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayStr = day.toString();
+      const existingEntry = entryMap.get(dayStr);
+
+      if (existingEntry) {
+        // 既存のentryがある場合はそのまま使用
+        allDays.push(existingEntry);
+      } else {
+        // entryがない場合はダミーentryを作成（新規作成用）
+        const date = new Date(parseInt(year), parseInt(month) - 1, day);
+        const dayOfWeekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+        allDays.push({
+          id: null,
+          employeeId: entries[0]?.employeeId ?? null, // 既存entryがあればそのemployeeIdを使用
+          year,
+          month,
+          day: dayStr,
+          dayOfWeek: dayOfWeekNames[date.getDay()],
+          inTime: null,
+          outTime: null,
+          breakStartTime: null,
+          breakEndTime: null,
+          overtimeMinutes: null,
+          isNightShift: null,
+          updateDate: null,
+        });
+      }
+    }
+
+    return allDays;
+  }, []);
+
   if (query.isLoading) {
     return <StampHistorySkeleton />;
   }
@@ -136,6 +185,11 @@ export const StampHistoryPage = () => {
     entries: [],
     summary: { ...emptyMonthlySummary },
   };
+
+  // 全日付を含むentriesを生成
+  const allEntriesWithDays = useMemo(() => {
+    return generateAllDaysInMonth(data.selectedYear, data.selectedMonth, data.entries);
+  }, [data.selectedYear, data.selectedMonth, data.entries, generateAllDaysInMonth]);
 
   // 現在選択中の年月（確定前）を表示
   const selectedYear: string | undefined = filters.year;
@@ -230,26 +284,16 @@ export const StampHistoryPage = () => {
       </SuspenseWrapper>
 
       {/* Card layout for mobile and tablet (< lg) */}
-      {data.entries.length === 0 ? (
-        <Card className="block lg:hidden">
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              対象期間の打刻はありません。
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <ul className="block list-none space-y-4 lg:hidden">
-          {data.entries.map((entry) => (
-            <StampHistoryCard
-              entry={entry}
-              key={`card-${entry.year}-${entry.month}-${entry.day}`}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
-          ))}
-        </ul>
-      )}
+      <ul className="block list-none space-y-4 lg:hidden">
+        {allEntriesWithDays.map((entry) => (
+          <StampHistoryCard
+            entry={entry}
+            key={`card-${entry.year}-${entry.month}-${entry.day}`}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
+        ))}
+      </ul>
 
       {/* Table layout for desktop (>= lg) */}
       <div className="mt-6 hidden lg:block">
@@ -269,17 +313,7 @@ export const StampHistoryPage = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.entries.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  className="py-8 text-center text-muted-foreground"
-                  colSpan={10}
-                >
-                  対象期間の打刻はありません。
-                </TableCell>
-              </TableRow>
-            ) : (
-              data.entries.map((entry) => (
+            {allEntriesWithDays.map((entry) => (
                 <TableRow
                   key={`table-${entry.year}-${entry.month}-${entry.day}`}
                 >
@@ -341,14 +375,17 @@ export const StampHistoryPage = () => {
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
+              ))}
           </TableBody>
         </Table>
       </div>
 
       <EditStampDialog
         entry={selectedEntry}
+        year={selectedEntry?.year ?? undefined}
+        month={selectedEntry?.month ?? undefined}
+        day={selectedEntry?.day ?? undefined}
+        employeeId={selectedEntry?.employeeId ?? undefined}
         onOpenChange={setEditDialogOpen}
         open={editDialogOpen}
       />

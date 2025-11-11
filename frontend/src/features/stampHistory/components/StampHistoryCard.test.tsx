@@ -8,6 +8,7 @@ import { StampHistoryCard } from "./StampHistoryCard";
 describe("StampHistoryCard", () => {
   const mockEntry: StampHistoryEntry = {
     id: 1,
+    employeeId: 1,
     year: "2024",
     month: "11",
     day: "10",
@@ -196,6 +197,7 @@ describe("StampHistoryCard", () => {
     const entryWithoutId: StampHistoryEntry = {
       ...mockEntry,
       id: null,
+    employeeId: 1,
     };
 
     render(

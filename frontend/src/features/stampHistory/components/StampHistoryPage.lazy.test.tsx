@@ -24,6 +24,7 @@ const mockStampHistoryData = {
   entries: [
     {
       id: 1,
+        employeeId: 1,
       year: "2025",
       month: "10",
       day: "01",
@@ -38,6 +39,7 @@ const mockStampHistoryData = {
     },
     {
       id: 2,
+        employeeId: 1,
       year: "2025",
       month: "10",
       day: "02",

@@ -20,6 +20,7 @@ export const emptyMonthlySummary: MonthlyStats = {
 
 export type StampHistoryEntry = {
   id: number | null;
+  employeeId: number | null;
   year: string | null;
   month: string | null;
   day: string | null;

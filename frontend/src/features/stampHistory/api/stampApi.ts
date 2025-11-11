@@ -20,6 +20,7 @@ const mapEntry = (
   entry: StampHistoryApiResponse["entries"][number]
 ): StampHistoryEntry => ({
   id: entry.id ?? null,
+  employeeId: entry.employeeId ?? null,
   year: entry.year ?? null,
   month: entry.month ?? null,
   day: entry.day ?? null,

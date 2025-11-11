@@ -6,6 +6,7 @@ describe("csv-generator", () => {
   const mockEntries: StampHistoryEntry[] = [
     {
       id: 1,
+      employeeId: 1,
       year: "2025",
       month: "01",
       day: "15",
@@ -20,6 +21,7 @@ describe("csv-generator", () => {
     },
     {
       id: 2,
+      employeeId: 1,
       year: "2025",
       month: "01",
       day: "16",
@@ -129,6 +131,7 @@ describe("csv-generator", () => {
       const entriesWithNull: StampHistoryEntry[] = [
         {
           id: null,
+      employeeId: 1,
           year: "2025",
           month: "01",
           day: "15",
