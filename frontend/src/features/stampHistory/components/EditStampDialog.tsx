@@ -52,7 +52,7 @@ export const EditStampDialog = ({
       outTime: entry?.outTime ?? "",
       breakStartTime: entry?.breakStartTime ?? "",
       breakEndTime: entry?.breakEndTime ?? "",
-      isNightShift: entry?.isNightShift ?? false,
+      isNightShift: entry?.isNightShift ?? undefined,
     },
   });
 
@@ -64,7 +64,7 @@ export const EditStampDialog = ({
       outTime: entry?.outTime ?? "",
       breakStartTime: entry?.breakStartTime ?? "",
       breakEndTime: entry?.breakEndTime ?? "",
-      isNightShift: entry?.isNightShift ?? false,
+      isNightShift: entry?.isNightShift ?? undefined,
     });
   }
 
@@ -94,11 +94,11 @@ export const EditStampDialog = ({
               e.id === variables.id
                 ? {
                     ...e,
-                    inTime: variables.inTime ?? null,
-                    outTime: variables.outTime ?? null,
-                    breakStartTime: variables.breakStartTime ?? null,
-                    breakEndTime: variables.breakEndTime ?? null,
-                    isNightShift: variables.isNightShift ?? null,
+                    ...(variables.inTime !== undefined && { inTime: variables.inTime || null }),
+                    ...(variables.outTime !== undefined && { outTime: variables.outTime || null }),
+                    ...(variables.breakStartTime !== undefined && { breakStartTime: variables.breakStartTime || null }),
+                    ...(variables.breakEndTime !== undefined && { breakEndTime: variables.breakEndTime || null }),
+                    ...(variables.isNightShift !== undefined && { isNightShift: variables.isNightShift }),
                   }
                 : e
             ),
@@ -143,7 +143,7 @@ export const EditStampDialog = ({
       outTime: data.outTime || undefined,
       breakStartTime: data.breakStartTime || undefined,
       breakEndTime: data.breakEndTime || undefined,
-      isNightShift: data.isNightShift,
+      ...(data.isNightShift !== undefined && { isNightShift: data.isNightShift }),
     });
   };
 

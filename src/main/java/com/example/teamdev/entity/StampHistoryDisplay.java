@@ -110,7 +110,7 @@ public class StampHistoryDisplay {
 		csvBuilder.append("\"").append(breakStartTime != null ? breakStartTime : "").append("\",");
 		csvBuilder.append("\"").append(breakEndTime != null ? breakEndTime : "").append("\",");
 		csvBuilder.append(overtimeMinutes != null ? overtimeMinutes : 0).append(",");
-		csvBuilder.append("\"").append(isNightShift != null && isNightShift ? "夜勤" : "").append("\",");
+		csvBuilder.append("\"").append(isNightShift == null ? "-" : (isNightShift ? "夜勤" : "通常")).append("\",");
 		csvBuilder.append("\"").append(updateDate != null ? updateDate : "").append("\",");
 
 		// 最後のカンマを削除して改行を追加
