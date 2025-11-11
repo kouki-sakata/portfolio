@@ -165,6 +165,20 @@ export const StampHistoryPage = () => {
     return allDays;
   }, []);
 
+  // 全日付を含むentriesを生成 (hooks must be called before early returns)
+  const data: StampHistoryResponse = query.data ?? {
+    selectedYear: confirmedFilters.year ?? "",
+    selectedMonth: confirmedFilters.month ?? "",
+    years: [],
+    months: [],
+    entries: [],
+    summary: { ...emptyMonthlySummary },
+  };
+
+  const allEntriesWithDays = useMemo(() => {
+    return generateAllDaysInMonth(data.selectedYear, data.selectedMonth, data.entries);
+  }, [data.selectedYear, data.selectedMonth, data.entries, generateAllDaysInMonth]);
+
   if (query.isLoading) {
     return <StampHistorySkeleton />;
   }
@@ -176,20 +190,6 @@ export const StampHistoryPage = () => {
       </div>
     );
   }
-
-  const data: StampHistoryResponse = query.data ?? {
-    selectedYear: confirmedFilters.year ?? "",
-    selectedMonth: confirmedFilters.month ?? "",
-    years: [],
-    months: [],
-    entries: [],
-    summary: { ...emptyMonthlySummary },
-  };
-
-  // 全日付を含むentriesを生成
-  const allEntriesWithDays = useMemo(() => {
-    return generateAllDaysInMonth(data.selectedYear, data.selectedMonth, data.entries);
-  }, [data.selectedYear, data.selectedMonth, data.entries, generateAllDaysInMonth]);
 
   // 現在選択中の年月（確定前）を表示
   const selectedYear: string | undefined = filters.year;
