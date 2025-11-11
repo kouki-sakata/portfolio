@@ -112,9 +112,7 @@ describe("stampApi", () => {
 
     await updateStampsBatch([
       { id: 1, inTime: "09:00", outTime: "18:00" },
-      employeeId: 1,
       { id: 2, inTime: "10:00" },
-      employeeId: 1,
     ]);
 
     expect(mockedApi.put).toHaveBeenCalledTimes(2);
