@@ -28,6 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -107,7 +108,7 @@ public class StampServiceTest {
         assertEquals("出勤打刻が必要です", exception.getReason());
         verify(mapper, never()).save(any());
         verify(mapper, never()).update(any());
-        verify(logHistoryService, never()).execute(any(), any(), any(), any(), any(), any());
+        verifyNoInteractions(logHistoryService);
     }
 
     @Test
@@ -119,10 +120,20 @@ public class StampServiceTest {
         homeForm.setStampType(StampType.DEPARTURE); // 退勤
         homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON); // 夜勤
 
+        // 出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 10, 17, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+            .thenReturn(existing);
+
         stampService.execute(homeForm, employeeId);
 
         ArgumentCaptor<StampHistory> stampHistoryCaptor = ArgumentCaptor.forClass(StampHistory.class);
-        verify(mapper, times(1)).save(stampHistoryCaptor.capture());
+        verify(mapper, times(1)).update(stampHistoryCaptor.capture());
         StampHistory capturedStamp = stampHistoryCaptor.getValue();
 
         // 夜勤フラグがONの場合、日付が前日になることを確認
@@ -130,7 +141,7 @@ public class StampServiceTest {
         assertEquals("07", capturedStamp.getMonth());
         assertEquals("10", capturedStamp.getDay()); // 日付が前日になっていることを確認
         assertEquals(employeeId, capturedStamp.getEmployeeId());
-        assertNull(capturedStamp.getInTime());
+        assertNotNull(capturedStamp.getInTime()); // 既存の出勤時刻が保持される
         assertNotNull(capturedStamp.getOutTime());
         // Convert LocalDateTime to OffsetDateTime for comparison
         OffsetDateTime expectedOutTime = nightLeaveTime.atOffset(ZoneOffset.ofHours(9));
@@ -425,7 +436,7 @@ public class StampServiceTest {
         assertEquals("出勤打刻が必要です", exception.getReason());
         verify(mapper, never()).save(any());
         verify(mapper, never()).update(any());
-        verify(logHistoryService, never()).execute(any(), any(), any(), any(), any(), any());
+        verifyNoInteractions(logHistoryService);
     }
 
     /**
@@ -454,7 +465,7 @@ public class StampServiceTest {
         assertEquals("休憩操作", exception.getOperation());
         assertEquals("出勤打刻が必要です", exception.getReason());
         verify(mapper, never()).update(any());
-        verify(logHistoryService, never()).execute(any(), any(), any(), any(), any(), any());
+        verifyNoInteractions(logHistoryService);
     }
 
     /**
@@ -483,7 +494,7 @@ public class StampServiceTest {
         assertEquals("休憩操作", exception.getOperation());
         assertEquals("退勤後は休憩操作できません", exception.getReason());
         verify(mapper, never()).update(any());
-        verify(logHistoryService, never()).execute(any(), any(), any(), any(), any(), any());
+        verifyNoInteractions(logHistoryService);
     }
 
     /**
