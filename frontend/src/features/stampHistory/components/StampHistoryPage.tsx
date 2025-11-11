@@ -347,7 +347,6 @@ export const StampHistoryPage = () => {
                   <TableCell>
                     <div className="flex gap-2">
                       <Button
-                        disabled={!entry.id}
                         onClick={() => handleEdit(entry)}
                         size="sm"
                         variant="ghost"

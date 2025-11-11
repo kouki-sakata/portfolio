@@ -133,7 +133,6 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             <Button
               aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を編集`}
               className="w-full"
-              disabled={!entry.id}
               onClick={() => onEdit(entry)}
               size="sm"
               variant="outline"

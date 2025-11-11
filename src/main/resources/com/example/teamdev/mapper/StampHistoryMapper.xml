@@ -27,7 +27,7 @@
             to_char(sh.out_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "outTime",
             to_char(sh.break_start_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakStartTime",
             to_char(sh.break_end_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakEndTime",
-            0 AS "overtimeMinutes",
+            CASE WHEN sh.id IS NOT NULL THEN 0 ELSE NULL END AS "overtimeMinutes",
             sh.in_time AS "inTimeRaw",
             sh.out_time AS "outTimeRaw",
             sh.break_start_time AS "breakStartTimeRaw",
