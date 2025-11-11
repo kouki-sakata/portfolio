@@ -14,7 +14,7 @@ export type CaptureTimestampState = {
  */
 export const useCaptureTimestamp = (): CaptureTimestampState => {
   const [lastCaptured, setLastCaptured] = useState<string | undefined>();
-  const latestIsoRef = useRef<string | undefined>();
+  const latestIsoRef = useRef<string | undefined>(undefined);
 
   const captureTimestamp = useCallback((): string => {
     try {
