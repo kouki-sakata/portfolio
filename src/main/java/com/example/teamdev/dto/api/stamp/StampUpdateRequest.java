@@ -18,13 +18,13 @@ public record StampUpdateRequest(
     )
     String outTime,
     @Pattern(
-        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
-        message = "休憩開始時刻はHH:mm形式で指定してください"
+        regexp = "^$|^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "休憩開始時刻はHH:mm形式で指定してください（空の場合は削除）"
     )
     String breakStartTime,
     @Pattern(
-        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
-        message = "休憩終了時刻はHH:mm形式で指定してください"
+        regexp = "^$|^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "休憩終了時刻はHH:mm形式で指定してください（空の場合は削除）"
     )
     String breakEndTime,
     Boolean isNightShift
