@@ -1,5 +1,4 @@
 import type { EmployeeSummary } from "@/features/auth/types";
-import type { HomeClockState } from "@/features/home/hooks/useHomeClock";
 import type { StampStatus } from "@/features/home/hooks/useStamp";
 import type { NewsResponse } from "@/types";
 
@@ -54,14 +53,13 @@ export type StampResponse = {
 /**
  * StampCardコンポーネントのProps定義
  * 改善版: snapshot, onToggleBreak, isToggling を追加
+ * パフォーマンス最適化: clockStateを削除し、ClockDisplay内部で管理
  */
 export type StampCardProps = {
   /** 打刻処理のコールバック */
   onStamp: (type: "1" | "2", nightWork: boolean, iso?: string) => Promise<void>;
   /** タイムスタンプをキャプチャする関数 */
   onCaptureTimestamp: () => string;
-  /** 時計の状態 */
-  clockState: Pick<HomeClockState, "status" | "isoNow" | "displayText">;
   /** 打刻ステータス */
   status: StampStatus | null;
   /** 勤務スナップショット（改善版で追加） */

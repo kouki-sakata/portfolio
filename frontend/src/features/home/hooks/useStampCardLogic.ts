@@ -11,12 +11,11 @@ import { toast } from "@/hooks/use-toast";
 
 type UseStampCardLogicParams = Pick<
   StampCardProps,
-  "snapshot" | "clockState" | "onCaptureTimestamp" | "onStamp" | "onToggleBreak"
+  "snapshot" | "onCaptureTimestamp" | "onStamp" | "onToggleBreak"
 >;
 
 export const useStampCardLogic = ({
   snapshot,
-  clockState,
   onCaptureTimestamp,
   onStamp,
   onToggleBreak,
@@ -37,7 +36,6 @@ export const useStampCardLogic = ({
   const statusMeta = snapshot
     ? ATTENDANCE_STATUS_META[snapshot.status]
     : undefined;
-  const isClockError = clockState.status === "error";
 
   // イベントハンドラー
   const handleStamp = useCallback(
@@ -101,7 +99,6 @@ export const useStampCardLogic = ({
     lastAction,
     isBreak,
     statusMeta,
-    isClockError,
     handleStamp,
     handleBreakToggle,
     toggleNightWork,

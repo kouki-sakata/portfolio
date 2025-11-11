@@ -1,22 +1,22 @@
 import { Clock } from "lucide-react";
+import { memo } from "react";
 import {
   formatClockDate,
   formatClockTime,
 } from "@/features/home/lib/clockFormat";
+import { useClockDisplay } from "@/features/home/hooks/useClockDisplay";
 
-type ClockDisplayProps = {
-  clockState: {
-    status: "ready" | "error";
-    isoNow: string | null;
-    displayText: string;
-  };
-  isClockError: boolean;
-};
+/**
+ * 時計表示コンポーネント
+ *
+ * このコンポーネントは内部でuseClockDisplayフックを使用して、
+ * 1秒ごとに時刻を更新します。親コンポーネントの再レンダリングを
+ * 防ぐため、時計の状態はこのコンポーネント内で完結しています。
+ */
+export const ClockDisplay = memo(() => {
+  const clockState = useClockDisplay();
+  const isClockError = clockState.status === "error";
 
-export const ClockDisplay = ({
-  clockState,
-  isClockError,
-}: ClockDisplayProps) => {
   if (isClockError) {
     return (
       <p className="rounded-lg bg-amber-50 px-4 py-3 font-medium text-amber-700 text-sm">
@@ -46,4 +46,6 @@ export const ClockDisplay = ({
       ) : null}
     </>
   );
-};
+});
+
+ClockDisplay.displayName = "ClockDisplay";

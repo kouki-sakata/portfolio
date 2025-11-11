@@ -4,10 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  type HomeClockState,
-  useHomeClock,
-} from "@/features/home/hooks/useHomeClock";
+import type { ClockDisplayState } from "@/features/home/hooks/useClockDisplay";
 import type {
   HomeDashboardResponse,
   StampResponse,
@@ -18,17 +15,16 @@ import { mswServer } from "@/test/msw/server";
 import type { NewsListResponse } from "@/types";
 import { HomePageRefactored as HomePage } from "./HomePageRefactored";
 
-vi.mock("@/features/home/hooks/useHomeClock", () => ({
-  useHomeClock: vi.fn(),
+// useClockDisplayフックをモック（HomeClockPanelが内部で使用）
+vi.mock("@/features/home/hooks/useClockDisplay", () => ({
+  useClockDisplay: vi.fn(),
 }));
 
 describe("HomePage", () => {
   let queryClient: QueryClient;
-  let clockState: HomeClockState;
-  let captureTimestampMock: HomeClockState["captureTimestamp"];
-  let resetErrorMock: HomeClockState["resetError"];
+  let clockDisplayState: ClockDisplayState;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
@@ -36,17 +32,17 @@ describe("HomePage", () => {
       },
     });
 
-    captureTimestampMock = vi.fn(() => formatLocalTimestamp());
-    resetErrorMock = vi.fn();
-    clockState = {
+    // useClockDisplayのモック設定
+    clockDisplayState = {
       displayText: "モック現在時刻 09:15:42",
       isoNow: "2025-11-02T09:15:42+09:00",
       status: "ready",
-      lastCaptured: undefined,
-      captureTimestamp: captureTimestampMock,
-      resetError: resetErrorMock,
+      resetError: vi.fn(),
     };
-    vi.mocked(useHomeClock).mockReturnValue(clockState);
+    const { useClockDisplay } = vi.mocked(
+      await import("@/features/home/hooks/useClockDisplay")
+    );
+    useClockDisplay.mockReturnValue(clockDisplayState);
 
     mswServer.use(
       http.get("/api/public/feature-flags", () => HttpResponse.json({}))
@@ -133,10 +129,14 @@ describe("HomePage", () => {
     });
 
     it("エラー時にも時計が表示される", async () => {
-      vi.mocked(useHomeClock).mockReturnValue({
-        ...clockState,
-        status: "error",
+      const { useClockDisplay } = vi.mocked(
+        await import("@/features/home/hooks/useClockDisplay")
+      );
+      useClockDisplay.mockReturnValue({
         displayText: "現在時刻を取得できません。端末時計を確認してください。",
+        isoNow: "",
+        status: "error",
+        resetError: vi.fn(),
       });
 
       mswServer.use(
@@ -157,10 +157,14 @@ describe("HomePage", () => {
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     cleanup();
     queryClient.clear();
-    vi.mocked(useHomeClock).mockReturnValue(clockState);
+    // モックをリセット
+    const { useClockDisplay } = vi.mocked(
+      await import("@/features/home/hooks/useClockDisplay")
+    );
+    useClockDisplay.mockReturnValue(clockDisplayState);
   });
 
   function createPublishedNewsItem(

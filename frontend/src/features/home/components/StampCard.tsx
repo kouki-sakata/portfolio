@@ -131,7 +131,6 @@ export const StampCard = memo(
   ({
     onStamp,
     onCaptureTimestamp,
-    clockState,
     status,
     snapshot,
     onToggleBreak,
@@ -144,13 +143,11 @@ export const StampCard = memo(
       nightWork,
       lastAction,
       statusMeta,
-      isClockError,
       handleStamp,
       handleBreakToggle,
       toggleNightWork,
     } = useStampCardLogic({
       snapshot,
-      clockState,
       onCaptureTimestamp,
       onStamp,
       onToggleBreak,
@@ -199,7 +196,7 @@ export const StampCard = memo(
         <CardContent className="space-y-4">
           {/* 時刻表示 */}
           <div className="flex flex-col items-center justify-center py-6">
-            <ClockDisplay clockState={clockState} isClockError={isClockError} />
+            <ClockDisplay />
           </div>
 
           {/* 状態ベースのアクションボタン */}

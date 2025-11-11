@@ -1,34 +1,36 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
-import type { HomeClockState } from "@/features/home/hooks/useHomeClock";
+import type { ClockDisplayState } from "@/features/home/hooks/useClockDisplay";
 import type { HomeClockPanelProps } from "./HomeClockPanel";
 import { HomeClockPanel } from "./HomeClockPanel";
 
-describe("HomeClockPanel", () => {
-  const baseState: Omit<HomeClockState, "captureTimestamp" | "resetError"> = {
-    displayText: "2025年11月02日(日) 09:15:42",
-    isoNow: "2025-11-02T09:15:42+09:00",
-    status: "ready",
-    lastCaptured: undefined,
-  };
+// useClockDisplayフックをモック
+vi.mock("@/features/home/hooks/useClockDisplay", () => ({
+  useClockDisplay: vi.fn(),
+}));
 
-  const noop = () => "";
-  const renderPanel = (
-    stateOverrides?: Partial<HomeClockState>,
-    variant: HomeClockPanelProps["variant"] = "hero"
-  ) =>
-    render(
-      <HomeClockPanel
-        state={{
-          ...baseState,
-          captureTimestamp: noop,
-          resetError: () => void 0,
-          ...stateOverrides,
-        }}
-        variant={variant}
-      />
+describe("HomeClockPanel", () => {
+  const mockUseClockDisplay = vi.fn();
+
+  beforeEach(() => {
+    // デフォルトのモック実装
+    mockUseClockDisplay.mockReturnValue({
+      displayText: "2025年11月02日(日) 09:15:42",
+      isoNow: "2025-11-02T09:15:42+09:00",
+      status: "ready",
+      resetError: vi.fn(),
+    } satisfies ClockDisplayState);
+
+    // モックをインポート
+    const { useClockDisplay } = vi.mocked(
+      await import("@/features/home/hooks/useClockDisplay")
     );
+    useClockDisplay.mockImplementation(mockUseClockDisplay);
+  });
+
+  const renderPanel = (variant: HomeClockPanelProps["variant"] = "hero") =>
+    render(<HomeClockPanel variant={variant} />);
 
   it("準備完了状態の時計を描画する", () => {
     renderPanel();
@@ -40,10 +42,14 @@ describe("HomeClockPanel", () => {
   });
 
   it("エラー時はフォールバックメッセージを表示する", () => {
-    renderPanel({
+    mockUseClockDisplay.mockReturnValue({
       displayText: "現在時刻を取得できません。端末時計を確認してください。",
+      isoNow: "",
       status: "error",
-    });
+      resetError: vi.fn(),
+    } satisfies ClockDisplayState);
+
+    renderPanel();
 
     const panel = screen.getByTestId("home-clock-panel");
     expect(panel).toHaveTextContent(
@@ -52,7 +58,7 @@ describe("HomeClockPanel", () => {
   });
 
   it("variantを切り替えるとdata属性が変わる", () => {
-    renderPanel(undefined, "card");
+    renderPanel("card");
 
     expect(screen.getByTestId("home-clock-panel")).toHaveAttribute(
       "data-variant",
