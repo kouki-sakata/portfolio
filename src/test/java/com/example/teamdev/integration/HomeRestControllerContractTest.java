@@ -73,6 +73,21 @@ class HomeRestControllerContractTest extends ApiTestSupport {
     @DisplayName("POST /api/home/breaks/toggle returns 204")
     @Test
     void breaks_toggle_returns_no_content() throws Exception {
+        // 休憩トグルの前に出勤打刻を行う（状態チェックのため）
+        String stampBody = "{" +
+            "\"stampType\":\"1\"," +
+            "\"stampTime\":\"2025-01-01T09:00:00+09:00\"," +
+            "\"nightWorkFlag\":\"0\"" +
+            "}";
+
+        mockMvc.perform(post("/api/home/stamps")
+                .with(csrf())
+                .session(session)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(stampBody))
+            .andExpect(status().isOk());
+
+        // 休憩トグル実行
         String body = "{" +
             "\"timestamp\":\"2025-01-01T12:00:00+09:00\"" +
             "}";
