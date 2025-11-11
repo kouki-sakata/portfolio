@@ -80,8 +80,8 @@ public class StampService {
 
             // 出勤打刻時: 状態チェック→重複チェックの順で実行
             if (stampType == StampType.ATTENDANCE) {
-                // 状態チェック: 退勤済みの場合は出勤打刻不可（重複チェックより優先）
-                if (existing.getOutTime() != null) {
+                // 状態チェック: 出勤済み＆退勤済みの場合は出勤打刻不可（重複チェックより優先）
+                if (existing.getInTime() != null && existing.getOutTime() != null) {
                     throw new InvalidStampStateException("出勤打刻", "本日の勤務は既に終了しています");
                 }
                 // 重複チェック: 既存の inTime が設定済みなら上書き拒否
