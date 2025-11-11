@@ -53,7 +53,7 @@ export const EditStampDialog = ({
   onOpenChange,
 }: EditStampDialogProps) => {
   const queryClient = useQueryClient();
-  const isCreateMode = entry === null;
+  const isCreateMode = !entry?.id;
 
   const form = useForm<EditStampFormData>({
     resolver: zodResolver(EditStampSchema),
@@ -214,8 +214,17 @@ export const EditStampDialog = ({
       });
     } else {
       // 編集モード
+      if (!entry?.id) {
+        toast({
+          title: "エラー",
+          description: "編集対象のIDが不足しています",
+          variant: "destructive",
+        });
+        return;
+      }
+
       updateMutation.mutate({
-        id: data.id,
+        id: entry.id,
         inTime: data.inTime || undefined,
         outTime: data.outTime || undefined,
         // 空文字列も送信する（|| を使わない）
