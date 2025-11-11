@@ -45,16 +45,18 @@ function extractHeaderText(header: unknown): string {
 const DesktopTableRow = memo(function DesktopTableRowComponent<TData>({
   row,
   onRowClick,
+  isSelected,
 }: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
+  isSelected: boolean;
 }) {
   return (
     <TableRow
-      className={`${row.getIsSelected() ? "bg-muted" : ""} ${
+      className={`${isSelected ? "bg-muted" : ""} ${
         onRowClick ? "cursor-pointer hover:bg-muted/50" : ""
       }`}
-      data-state={row.getIsSelected() && "selected"}
+      data-state={isSelected && "selected"}
       key={row.id}
       onClick={() => onRowClick?.(row.original)}
       onKeyDown={
@@ -87,6 +89,7 @@ const DesktopTableRow = memo(function DesktopTableRowComponent<TData>({
 }) as <TData>(props: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
+  isSelected: boolean;
 }) => React.JSX.Element;
 
 /**
@@ -96,9 +99,11 @@ const DesktopTableRow = memo(function DesktopTableRowComponent<TData>({
 const MobileCardRow = memo(function MobileCardRowComponent<TData>({
   row,
   onRowClick,
+  isSelected,
 }: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
+  isSelected: boolean;
 }) {
   const CardContent = (
     <div className="space-y-2">
@@ -153,10 +158,10 @@ const MobileCardRow = memo(function MobileCardRowComponent<TData>({
       <div
         className={cn(
           "w-full rounded-lg border bg-white p-4 text-left shadow-sm transition-shadow",
-          row.getIsSelected() && "border-blue-500 bg-blue-50",
+          isSelected && "border-blue-500 bg-blue-50",
           "hover:shadow-md active:shadow-sm"
         )}
-        data-state={row.getIsSelected() && "selected"}
+        data-state={isSelected && "selected"}
         key={row.id}
         onClick={() => onRowClick(row.original)}
         onKeyDown={handleKeyDown}
@@ -174,9 +179,9 @@ const MobileCardRow = memo(function MobileCardRowComponent<TData>({
     <div
       className={cn(
         "rounded-lg border bg-white p-4 shadow-sm",
-        row.getIsSelected() && "border-blue-500 bg-blue-50"
+        isSelected && "border-blue-500 bg-blue-50"
       )}
-      data-state={row.getIsSelected() && "selected"}
+      data-state={isSelected && "selected"}
       key={row.id}
     >
       {CardContent}
@@ -185,6 +190,7 @@ const MobileCardRow = memo(function MobileCardRowComponent<TData>({
 }) as <TData>(props: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
+  isSelected: boolean;
 }) => React.JSX.Element;
 
 function DataTableComponent<TData, TValue = unknown>({
@@ -277,10 +283,13 @@ function DataTableComponent<TData, TValue = unknown>({
       const newSelection =
         typeof updater === "function" ? updater(currentRowSelection) : updater;
 
-      setState((prev) => ({
-        ...prev,
-        rowSelection: newSelection,
-      }));
+      // 制御コンポーネント（rowSelectionプロップが渡されている）でない場合のみ内部状態を更新
+      if (!controlledRowSelection) {
+        setState((prev) => ({
+          ...prev,
+          rowSelection: newSelection,
+        }));
+      }
 
       onRowSelectionChange?.(newSelection);
     },
@@ -370,6 +379,7 @@ function DataTableComponent<TData, TValue = unknown>({
                 .getRowModel()
                 .rows.map((row) => (
                   <DesktopTableRow
+                    isSelected={row.getIsSelected()}
                     key={row.id}
                     onRowClick={onRowClick}
                     row={row}
@@ -413,7 +423,12 @@ function DataTableComponent<TData, TValue = unknown>({
           table
             .getRowModel()
             .rows.map((row) => (
-              <MobileCardRow key={row.id} onRowClick={onRowClick} row={row} />
+              <MobileCardRow
+                isSelected={row.getIsSelected()}
+                key={row.id}
+                onRowClick={onRowClick}
+                row={row}
+              />
             ))
         ) : (
           <output
