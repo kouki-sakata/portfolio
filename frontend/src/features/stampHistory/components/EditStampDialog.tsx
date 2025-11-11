@@ -1,5 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
@@ -66,17 +67,20 @@ export const EditStampDialog = ({
     },
   });
 
-  // Reset form when entry changes
-  if (entry && form.getValues().id !== entry.id) {
-    form.reset({
-      id: entry.id ?? 0,
-      inTime: entry.inTime ?? "",
-      outTime: entry?.outTime ?? "",
-      breakStartTime: entry?.breakStartTime ?? "",
-      breakEndTime: entry?.breakEndTime ?? "",
-      isNightShift: entry?.isNightShift ?? undefined,
-    });
-  }
+  // Reset form when dialog opens or entry changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        id: entry?.id ?? 0,
+        inTime: entry?.inTime ?? "",
+        outTime: entry?.outTime ?? "",
+        breakStartTime: entry?.breakStartTime ?? "",
+        breakEndTime: entry?.breakEndTime ?? "",
+        isNightShift: entry?.isNightShift ?? undefined,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entry?.id, open]);
 
   const createMutation = useMutation({
     mutationFn: createStamp,
