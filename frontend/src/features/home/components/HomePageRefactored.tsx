@@ -170,26 +170,24 @@ const HomeHero = ({ lastName, firstName }: HomeHeroProps) => (
   </header>
 );
 
-export const HomeDashboardSkeleton = () => {
-  return (
-    <section
-      className="home container mx-auto px-4 py-6"
-      data-testid="home-dashboard-skeleton"
-    >
-      <div className="home-hero mb-8 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300">
-        <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 py-10">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-4 w-56" />
-        </div>
-        <div className="mx-auto flex w-full max-w-xl justify-center pb-6">
-          <HomeClockPanel className="max-w-sm" variant="hero" />
-        </div>
+export const HomeDashboardSkeleton = () => (
+  <section
+    className="home container mx-auto px-4 py-6"
+    data-testid="home-dashboard-skeleton"
+  >
+    <div className="home-hero mb-8 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300">
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 py-10">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-4 w-56" />
       </div>
-      <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
-        <SkeletonCard className="home-card" />
-        <SkeletonCard className="home-card" />
+      <div className="mx-auto flex w-full max-w-xl justify-center pb-6">
+        <HomeClockPanel className="max-w-sm" variant="hero" />
       </div>
-    </section>
-  );
-};
+    </div>
+    <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
+      <SkeletonCard className="home-card" />
+      <SkeletonCard className="home-card" />
+    </div>
+  </section>
+);

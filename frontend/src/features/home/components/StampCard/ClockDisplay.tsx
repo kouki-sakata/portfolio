@@ -1,10 +1,10 @@
 import { Clock } from "lucide-react";
 import { memo } from "react";
+import { useClockDisplay } from "@/features/home/hooks/useClockDisplay";
 import {
   formatClockDate,
   formatClockTime,
 } from "@/features/home/lib/clockFormat";
-import { useClockDisplay } from "@/features/home/hooks/useClockDisplay";
 
 /**
  * 時計表示コンポーネント

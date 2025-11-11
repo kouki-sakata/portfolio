@@ -13,7 +13,6 @@ import type {
   StampResponse,
 } from "@/features/home/types";
 import { newsQueryKeys } from "@/features/news/hooks/useNews";
-import { formatLocalTimestamp } from "@/shared/utils/date";
 import { mswServer } from "@/test/msw/server";
 import type { NewsListResponse } from "@/types";
 import { HomePageRefactored as HomePage } from "./HomePageRefactored";
