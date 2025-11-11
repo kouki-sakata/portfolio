@@ -33,8 +33,25 @@ public record StampUpdateRequest(
     public boolean hasUpdatableField() {
         return (inTime != null && !inTime.isBlank())
             || (outTime != null && !outTime.isBlank())
-            || (breakStartTime != null && !breakStartTime.isBlank())
-            || (breakEndTime != null && !breakEndTime.isBlank())
+            || breakStartTime != null
+            || breakEndTime != null
             || isNightShift != null;
+    }
+
+    @AssertTrue(message = "Break end time must be after break start time")
+    public boolean isBreakTimeValid() {
+        // 両方の休憩時間が指定されている場合のみ検証
+        if (breakStartTime != null && !breakStartTime.isBlank()
+            && breakEndTime != null && !breakEndTime.isBlank()) {
+            try {
+                java.time.LocalTime start = java.time.LocalTime.parse(breakStartTime);
+                java.time.LocalTime end = java.time.LocalTime.parse(breakEndTime);
+                return end.isAfter(start);
+            } catch (java.time.format.DateTimeParseException e) {
+                // パースエラーは別のバリデーションで検出される
+                return true;
+            }
+        }
+        return true;
     }
 }

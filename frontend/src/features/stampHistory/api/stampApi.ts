@@ -43,6 +43,12 @@ const mapEntry = (
         overtimeMinutes?: number | null;
       }
     ).overtimeMinutes ?? null,
+  isNightShift:
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        isNightShift?: boolean | null;
+      }
+    ).isNightShift ?? null,
   updateDate: entry.updateDate ?? null,
 });
 
@@ -109,17 +115,26 @@ export const updateStamp = async (
 ): Promise<void> => {
   const { id, inTime, outTime, breakStartTime, breakEndTime, isNightShift } = payload;
 
-  const data: Partial<Record<"inTime" | "outTime" | "breakStartTime" | "breakEndTime" | "isNightShift", string | boolean>> = {};
-  if (inTime && inTime.length > 0) {
+  const data: {
+    inTime?: string;
+    outTime?: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
+    isNightShift?: boolean;
+  } = {};
+
+  // 出勤・退勤時刻は値がある場合のみ送信
+  if (inTime !== undefined && inTime.length > 0) {
     data.inTime = inTime;
   }
-  if (outTime && outTime.length > 0) {
+  if (outTime !== undefined && outTime.length > 0) {
     data.outTime = outTime;
   }
-  if (breakStartTime && breakStartTime.length > 0) {
+  // 休憩時間は空文字列も送信（削除を表す）
+  if (breakStartTime !== undefined) {
     data.breakStartTime = breakStartTime;
   }
-  if (breakEndTime && breakEndTime.length > 0) {
+  if (breakEndTime !== undefined) {
     data.breakEndTime = breakEndTime;
   }
   if (isNightShift !== undefined) {

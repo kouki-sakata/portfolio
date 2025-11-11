@@ -119,15 +119,12 @@ public class StampRestController {
             payload.put("outTime", resolvedOutTime);
         }
 
-        String resolvedBreakStartTime = resolveTimeValue(request.breakStartTime(), target.getBreakStartTime());
-        if (resolvedBreakStartTime != null) {
-            payload.put("breakStartTime", resolvedBreakStartTime);
-        }
+        // 休憩時間は空文字列を削除として扱う
+        String resolvedBreakStartTime = resolveBreakTimeValue(request.breakStartTime(), target.getBreakStartTime());
+        payload.put("breakStartTime", resolvedBreakStartTime);
 
-        String resolvedBreakEndTime = resolveTimeValue(request.breakEndTime(), target.getBreakEndTime());
-        if (resolvedBreakEndTime != null) {
-            payload.put("breakEndTime", resolvedBreakEndTime);
-        }
+        String resolvedBreakEndTime = resolveBreakTimeValue(request.breakEndTime(), target.getBreakEndTime());
+        payload.put("breakEndTime", resolvedBreakEndTime);
 
         // 夜勤フラグの処理
         if (request.isNightShift() != null) {
@@ -141,6 +138,29 @@ public class StampRestController {
         if (requested != null && !requested.isBlank()) {
             return requested;
         }
+        if (existing == null) {
+            return null;
+        }
+        return TIME_FORMATTER.format(existing);
+    }
+
+    /**
+     * 休憩時間専用の解決ロジック。空文字列を明示的な削除として扱う。
+     *
+     * @param requested リクエストで指定された値（null=未指定、空文字列=削除、値あり=更新）
+     * @param existing  既存のデータベース値
+     * @return 解決された文字列（nullは削除を意味する）
+     */
+    private String resolveBreakTimeValue(String requested, OffsetDateTime existing) {
+        if (requested != null) {
+            // 空文字列の場合は削除（nullを返す）
+            if (requested.isBlank()) {
+                return null;
+            }
+            // 値がある場合はそのまま返す
+            return requested;
+        }
+        // リクエストにフィールドがない場合は既存値を保持
         if (existing == null) {
             return null;
         }
