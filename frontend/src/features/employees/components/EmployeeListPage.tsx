@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,10 +60,10 @@ export function EmployeeListPage() {
   };
 
   // 編集モード
-  const handleEdit = (employee: EmployeeSummary) => {
+  const handleEdit = useCallback((employee: EmployeeSummary) => {
     setFormMode("update");
     setEditingEmployee(employee);
-  };
+  }, []);
 
   // フォームキャンセル
   const handleCancelForm = () => {
@@ -113,26 +113,29 @@ export function EmployeeListPage() {
   };
 
   // 単一削除
-  const handleDelete = async (employeeId: number) => {
-    // TODO: カスタムダイアログに置き換える
-    if (!confirm("この従業員を削除しますか？")) {
-      return;
-    }
+  const handleDelete = useCallback(
+    async (employeeId: number) => {
+      // TODO: カスタムダイアログに置き換える
+      if (!confirm("この従業員を削除しますか？")) {
+        return;
+      }
 
-    try {
-      await deleteMutation.mutateAsync(employeeId);
-      toast({
-        title: "成功",
-        description: "従業員を削除しました",
-      });
-    } catch (_error) {
-      toast({
-        title: "エラー",
-        description: "削除に失敗しました",
-        variant: "destructive",
-      });
-    }
-  };
+      try {
+        await deleteMutation.mutateAsync(employeeId);
+        toast({
+          title: "成功",
+          description: "従業員を削除しました",
+        });
+      } catch (_error) {
+        toast({
+          title: "エラー",
+          description: "削除に失敗しました",
+          variant: "destructive",
+        });
+      }
+    },
+    [deleteMutation, toast]
+  );
 
   // 一括削除
   const handleBulkDelete = async () => {
