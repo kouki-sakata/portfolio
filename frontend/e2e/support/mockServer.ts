@@ -358,15 +358,13 @@ export class AppMockServer {
           departureTime: null,
           overtimeMinutes: 0,
         };
-      } else if (payload.stampType === "2") {
+      } else if (payload.stampType === "2" && this.currentAttendance) {
         // Departure stamp
-        if (this.currentAttendance) {
-          this.currentAttendance = {
-            ...this.currentAttendance,
-            status: "FINISHED",
-            departureTime: payload.stampTime,
-          };
-        }
+        this.currentAttendance = {
+          ...this.currentAttendance,
+          status: "FINISHED",
+          departureTime: payload.stampTime,
+        };
       }
 
       await route.fulfill(buildJsonResponse(this.stampResponse));
