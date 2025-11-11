@@ -29,6 +29,7 @@ export type StampHistoryEntry = {
   breakStartTime: string | null;
   breakEndTime: string | null;
   overtimeMinutes: number | null;
+  isNightShift: boolean | null;
   updateDate: string | null;
 };
 
@@ -46,6 +47,9 @@ export type UpdateStampRequest = {
   id: number;
   inTime?: string;
   outTime?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  isNightShift?: boolean;
 };
 
 // 打刻削除リクエスト型
@@ -71,21 +75,50 @@ export const EditStampSchema = z
       })
       .optional()
       .or(z.literal("")),
+    breakStartTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: "時刻はHH:MM形式で入力してください",
+      })
+      .optional()
+      .or(z.literal("")),
+    breakEndTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: "時刻はHH:MM形式で入力してください",
+      })
+      .optional()
+      .or(z.literal("")),
+    isNightShift: z.boolean().optional(),
   })
   .refine(
     (data) => {
-      // 両方空の場合はエラー
-      if ((!data.inTime || data.inTime === "") && (!data.outTime || data.outTime === "")) {
+      // すべて空の場合はエラー
+      const hasAnyField =
+        (data.inTime && data.inTime !== "") ||
+        (data.outTime && data.outTime !== "") ||
+        (data.breakStartTime && data.breakStartTime !== "") ||
+        (data.breakEndTime && data.breakEndTime !== "") ||
+        data.isNightShift !== undefined;
+
+      if (!hasAnyField) {
         return false;
       }
+
       // 退勤時刻が出勤時刻より前の場合はエラー
       if (data.inTime && data.outTime && data.inTime !== "" && data.outTime !== "") {
         return data.outTime > data.inTime;
       }
+
+      // 休憩終了が休憩開始より前の場合はエラー
+      if (data.breakStartTime && data.breakEndTime && data.breakStartTime !== "" && data.breakEndTime !== "") {
+        return data.breakEndTime > data.breakStartTime;
+      }
+
       return true;
     },
     {
-      message: "出勤時刻と退勤時刻を正しく入力してください",
+      message: "時刻を正しく入力してください",
       path: ["outTime"],
     }
   );

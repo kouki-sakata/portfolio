@@ -107,14 +107,23 @@ export const fetchStampHistory = async (
 export const updateStamp = async (
   payload: UpdateStampRequest
 ): Promise<void> => {
-  const { id, inTime, outTime } = payload;
+  const { id, inTime, outTime, breakStartTime, breakEndTime, isNightShift } = payload;
 
-  const data: Partial<Record<"inTime" | "outTime", string>> = {};
+  const data: Partial<Record<"inTime" | "outTime" | "breakStartTime" | "breakEndTime" | "isNightShift", string | boolean>> = {};
   if (inTime && inTime.length > 0) {
     data.inTime = inTime;
   }
   if (outTime && outTime.length > 0) {
     data.outTime = outTime;
+  }
+  if (breakStartTime && breakStartTime.length > 0) {
+    data.breakStartTime = breakStartTime;
+  }
+  if (breakEndTime && breakEndTime.length > 0) {
+    data.breakEndTime = breakEndTime;
+  }
+  if (isNightShift !== undefined) {
+    data.isNightShift = isNightShift;
   }
 
   try {

@@ -263,6 +263,7 @@ export const StampHistoryPage = () => {
               <TableHead>休憩開始</TableHead>
               <TableHead>休憩終了</TableHead>
               <TableHead>残業</TableHead>
+              <TableHead>夜勤</TableHead>
               <TableHead>更新日時</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
@@ -272,7 +273,7 @@ export const StampHistoryPage = () => {
               <TableRow>
                 <TableCell
                   className="py-8 text-center text-muted-foreground"
-                  colSpan={9}
+                  colSpan={10}
                 >
                   対象期間の打刻はありません。
                 </TableCell>
@@ -296,6 +297,15 @@ export const StampHistoryPage = () => {
                   </TableCell>
                   <TableCell>
                     {renderOvertimeCell(entry.overtimeMinutes)}
+                  </TableCell>
+                  <TableCell>
+                    {entry.isNightShift ? (
+                      <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
+                        夜勤
+                      </span>
+                    ) : (
+                      "-"
+                    )}
                   </TableCell>
                   <TableCell className="text-muted-foreground text-sm">
                     {entry.updateDate ?? "-"}

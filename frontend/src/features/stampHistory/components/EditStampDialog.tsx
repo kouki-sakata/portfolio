@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -49,6 +50,9 @@ export const EditStampDialog = ({
       id: entry?.id ?? 0,
       inTime: entry?.inTime ?? "",
       outTime: entry?.outTime ?? "",
+      breakStartTime: entry?.breakStartTime ?? "",
+      breakEndTime: entry?.breakEndTime ?? "",
+      isNightShift: entry?.isNightShift ?? false,
     },
   });
 
@@ -57,7 +61,10 @@ export const EditStampDialog = ({
     form.reset({
       id: entry.id ?? 0,
       inTime: entry.inTime ?? "",
-      outTime: entry.outTime ?? "",
+      outTime: entry?.outTime ?? "",
+      breakStartTime: entry?.breakStartTime ?? "",
+      breakEndTime: entry?.breakEndTime ?? "",
+      isNightShift: entry?.isNightShift ?? false,
     });
   }
 
@@ -89,6 +96,9 @@ export const EditStampDialog = ({
                     ...e,
                     inTime: variables.inTime ?? null,
                     outTime: variables.outTime ?? null,
+                    breakStartTime: variables.breakStartTime ?? null,
+                    breakEndTime: variables.breakEndTime ?? null,
+                    isNightShift: variables.isNightShift ?? null,
                   }
                 : e
             ),
@@ -131,6 +141,9 @@ export const EditStampDialog = ({
       id: data.id,
       inTime: data.inTime || undefined,
       outTime: data.outTime || undefined,
+      breakStartTime: data.breakStartTime || undefined,
+      breakEndTime: data.breakEndTime || undefined,
+      isNightShift: data.isNightShift,
     });
   };
 
@@ -185,6 +198,57 @@ export const EditStampDialog = ({
                   </FormControl>
                   <FormDescription>HH:MM形式で入力してください</FormDescription>
                   <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="breakStartTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>休憩開始時刻</FormLabel>
+                  <FormControl>
+                    <Input placeholder="12:00" type="time" {...field} />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="breakEndTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>休憩終了時刻</FormLabel>
+                  <FormControl>
+                    <Input placeholder="13:00" type="time" {...field} />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="isNightShift"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>夜勤</FormLabel>
+                    <FormDescription>
+                      夜勤の場合はチェックしてください
+                    </FormDescription>
+                  </div>
                 </FormItem>
               )}
             />

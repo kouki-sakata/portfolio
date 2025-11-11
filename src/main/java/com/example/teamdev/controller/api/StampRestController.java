@@ -119,6 +119,21 @@ public class StampRestController {
             payload.put("outTime", resolvedOutTime);
         }
 
+        String resolvedBreakStartTime = resolveTimeValue(request.breakStartTime(), target.getBreakStartTime());
+        if (resolvedBreakStartTime != null) {
+            payload.put("breakStartTime", resolvedBreakStartTime);
+        }
+
+        String resolvedBreakEndTime = resolveTimeValue(request.breakEndTime(), target.getBreakEndTime());
+        if (resolvedBreakEndTime != null) {
+            payload.put("breakEndTime", resolvedBreakEndTime);
+        }
+
+        // 夜勤フラグの処理
+        if (request.isNightShift() != null) {
+            payload.put("isNightShift", request.isNightShift());
+        }
+
         return payload;
     }
 

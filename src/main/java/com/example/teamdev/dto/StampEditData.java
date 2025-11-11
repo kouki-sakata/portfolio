@@ -13,20 +13,27 @@ public class StampEditData {
     private final String day;
     private final String inTime;
     private final String outTime;
+    private final String breakStartTime;
+    private final String breakEndTime;
+    private final Boolean isNightShift;
 
     /**
      * StampEditDataのコンストラクタ。
      *
-     * @param id         打刻履歴ID（新規登録時はnull）
-     * @param employeeId 従業員ID
-     * @param year       年
-     * @param month      月
-     * @param day        日
-     * @param inTime     出勤時刻
-     * @param outTime    退勤時刻
+     * @param id             打刻履歴ID（新規登録時はnull）
+     * @param employeeId     従業員ID
+     * @param year           年
+     * @param month          月
+     * @param day            日
+     * @param inTime         出勤時刻
+     * @param outTime        退勤時刻
+     * @param breakStartTime 休憩開始時刻
+     * @param breakEndTime   休憩終了時刻
+     * @param isNightShift   夜勤フラグ
      */
     public StampEditData(Integer id, Integer employeeId, String year,
-            String month, String day, String inTime, String outTime) {
+            String month, String day, String inTime, String outTime,
+            String breakStartTime, String breakEndTime, Boolean isNightShift) {
         this.id = id;
         this.employeeId = employeeId;
         this.year = year;
@@ -34,6 +41,9 @@ public class StampEditData {
         this.day = day;
         this.inTime = inTime;
         this.outTime = outTime;
+        this.breakStartTime = breakStartTime;
+        this.breakEndTime = breakEndTime;
+        this.isNightShift = isNightShift;
     }
 
     // Getters
@@ -63,6 +73,18 @@ public class StampEditData {
 
     public String getOutTime() {
         return outTime;
+    }
+
+    public String getBreakStartTime() {
+        return breakStartTime;
+    }
+
+    public String getBreakEndTime() {
+        return breakEndTime;
+    }
+
+    public Boolean getIsNightShift() {
+        return isNightShift;
     }
 
     /**

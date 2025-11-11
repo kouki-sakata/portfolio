@@ -16,10 +16,25 @@ public record StampUpdateRequest(
         regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
         message = "outTime must match HH:mm format"
     )
-    String outTime
+    String outTime,
+    @Pattern(
+        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "breakStartTime must match HH:mm format"
+    )
+    String breakStartTime,
+    @Pattern(
+        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "breakEndTime must match HH:mm format"
+    )
+    String breakEndTime,
+    Boolean isNightShift
 ) {
-    @AssertTrue(message = "Either inTime or outTime must be provided")
+    @AssertTrue(message = "At least one field must be provided")
     public boolean hasUpdatableField() {
-        return (inTime != null && !inTime.isBlank()) || (outTime != null && !outTime.isBlank());
+        return (inTime != null && !inTime.isBlank())
+            || (outTime != null && !outTime.isBlank())
+            || (breakStartTime != null && !breakStartTime.isBlank())
+            || (breakEndTime != null && !breakEndTime.isBlank())
+            || isNightShift != null;
     }
 }

@@ -112,6 +112,15 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
               </Badge>
             </div>
 
+            {/* 夜勤 */}
+            {entry.isNightShift && (
+              <div className="flex items-center justify-center rounded-md bg-purple-100 px-3 py-2">
+                <Badge className="font-semibold bg-purple-700 text-white">
+                  夜勤
+                </Badge>
+              </div>
+            )}
+
             {/* 更新日時 */}
             <div className="pt-2 text-muted-foreground text-xs">
               更新: {entry.updateDate ?? "-"}
