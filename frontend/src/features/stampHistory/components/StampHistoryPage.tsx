@@ -133,7 +133,7 @@ export const StampHistoryPage = () => {
 
     // 全日付を生成
     for (let day = 1; day <= daysInMonth; day++) {
-      const dayStr = day.toString();
+      const dayStr = day.toString().padStart(2, '0'); // ゼロパディング（例: "01", "02"）
       const existingEntry = entryMap.get(dayStr);
 
       if (existingEntry) {
