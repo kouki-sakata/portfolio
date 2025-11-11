@@ -1,5 +1,6 @@
 import { calculateMonthlySummary } from "@/features/stampHistory/lib/summary";
 import type {
+  CreateStampRequest,
   DeleteStampRequest,
   StampHistoryEntry,
   StampHistoryResponse,
@@ -105,6 +106,52 @@ export const fetchStampHistory = async (
       query ? { params: query } : undefined
     );
     return mapResponse(response);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
+export const createStamp = async (
+  payload: CreateStampRequest
+): Promise<void> => {
+  const { employeeId, year, month, day, inTime, outTime, breakStartTime, breakEndTime, isNightShift } = payload;
+
+  const data: {
+    employeeId: number;
+    year: string;
+    month: string;
+    day: string;
+    inTime?: string;
+    outTime?: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
+    isNightShift?: boolean;
+  } = {
+    employeeId,
+    year,
+    month,
+    day,
+  };
+
+  // 出勤・退勤時刻は値がある場合のみ送信
+  if (inTime !== undefined && inTime.length > 0) {
+    data.inTime = inTime;
+  }
+  if (outTime !== undefined && outTime.length > 0) {
+    data.outTime = outTime;
+  }
+  if (breakStartTime !== undefined && breakStartTime.length > 0) {
+    data.breakStartTime = breakStartTime;
+  }
+  if (breakEndTime !== undefined && breakEndTime.length > 0) {
+    data.breakEndTime = breakEndTime;
+  }
+  if (isNightShift !== undefined) {
+    data.isNightShift = isNightShift;
+  }
+
+  try {
+    await api.post<void>("/stamps", data);
   } catch (error) {
     return handleApiError(error);
   }

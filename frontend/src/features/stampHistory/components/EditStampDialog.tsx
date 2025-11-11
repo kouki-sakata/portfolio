@@ -29,6 +29,7 @@ import {
   type StampHistoryEntry,
 } from "@/features/stampHistory/types";
 import { toast } from "@/hooks/use-toast";
+import { ApiError } from "@/shared/api/errors";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 type EditStampDialogProps = {
@@ -108,16 +109,25 @@ export const EditStampDialog = ({
 
       return { previousData };
     },
-    onError: (_error, _variables, context) => {
+    onError: (error, _variables, context) => {
       // エラー時はロールバック
       if (context?.previousData) {
         for (const [queryKey, data] of context.previousData) {
           queryClient.setQueryData(queryKey, data);
         }
       }
+
+      // エラーメッセージを抽出
+      let errorMessage = "打刻の更新に失敗しました";
+      if (error instanceof ApiError) {
+        errorMessage = error.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message || errorMessage;
+      }
+
       toast({
         title: "エラー",
-        description: "打刻の更新に失敗しました",
+        description: errorMessage,
         variant: "destructive",
       });
     },

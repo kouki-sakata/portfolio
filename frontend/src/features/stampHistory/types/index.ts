@@ -52,6 +52,19 @@ export type UpdateStampRequest = {
   isNightShift?: boolean;
 };
 
+// 打刻新規作成リクエスト型
+export type CreateStampRequest = {
+  employeeId: number;
+  year: string;
+  month: string;
+  day: string;
+  inTime?: string;
+  outTime?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  isNightShift?: boolean;
+};
+
 // 打刻削除リクエスト型
 export type DeleteStampRequest = {
   id: number;
