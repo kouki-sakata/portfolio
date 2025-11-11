@@ -1,20 +1,33 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-import type { HomeClockState } from "@/features/home/hooks/useHomeClock";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  type ClockDisplayState,
+  useClockDisplay,
+} from "@/features/home/hooks/useClockDisplay";
 import type { StampStatus } from "@/features/home/hooks/useStamp";
 
 import { StampCard } from "./StampCard";
 
+// useClockDisplayフックをモック
+vi.mock("@/features/home/hooks/useClockDisplay", () => ({
+  useClockDisplay: vi.fn(),
+}));
+
 describe("StampCard", () => {
-  const clockState: HomeClockState = {
-    displayText: "2025年11月02日(日) 09:15:42",
-    isoNow: "2025-11-02T09:15:42+09:00",
-    status: "ready",
-    lastCaptured: undefined,
-    captureTimestamp: () => "2025-11-02T09:15:42+09:00",
-    resetError: vi.fn(),
-  };
+  const mockUseClockDisplay = vi.fn();
+
+  beforeEach(() => {
+    // デフォルトのモック実装
+    mockUseClockDisplay.mockReturnValue({
+      displayText: "2025年11月02日(日) 09:15:42",
+      isoNow: "2025-11-02T09:15:42+09:00",
+      status: "ready",
+      resetError: vi.fn(),
+    } satisfies ClockDisplayState);
+
+    vi.mocked(useClockDisplay).mockImplementation(mockUseClockDisplay);
+  });
 
   it("ボタン押下時に時計からタイムスタンプを取得し、handleStampへ渡す", async () => {
     const user = userEvent.setup();
@@ -26,7 +39,6 @@ describe("StampCard", () => {
     render(
       <StampCard
         className="test-card"
-        clockState={clockState}
         isLoading={false}
         onCaptureTimestamp={onCaptureTimestamp}
         onStamp={onStamp}
@@ -56,9 +68,8 @@ describe("StampCard", () => {
     render(
       <StampCard
         className="test-card"
-        clockState={clockState}
         isLoading={false}
-        onCaptureTimestamp={() => clockState.isoNow}
+        onCaptureTimestamp={() => "2025-11-02T09:15:42+09:00"}
         onStamp={vi.fn()}
         snapshot={null}
         status={status}

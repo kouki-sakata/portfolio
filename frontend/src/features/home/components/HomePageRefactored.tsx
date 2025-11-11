@@ -1,10 +1,7 @@
 import { useMemo } from "react";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  type HomeClockState,
-  useHomeClock,
-} from "@/features/home/hooks/useHomeClock";
+import { useCaptureTimestamp } from "@/features/home/hooks/useCaptureTimestamp";
 import { usePublishedNewsQuery } from "@/features/news/hooks/useNews";
 import { SkeletonCard } from "@/shared/components/loading/skeletons/SkeletonVariants";
 import { useBreakToggle } from "../hooks/useBreakToggle";
@@ -20,9 +17,10 @@ import { StampCard } from "./StampCard";
  * リファクタリング後のHomePageコンポーネント
  * Single Responsibility: UIの調整とコンポーネントの組み立てのみ
  * Dependency Inversion: カスタムフックのインターフェースに依存
+ * パフォーマンス最適化: 時計の状態をコンポーネント内部で管理し、不要な再レンダリングを防止
  */
 export const HomePageRefactored = () => {
-  const clockState = useHomeClock();
+  const { captureTimestamp } = useCaptureTimestamp();
   const { data, isLoading, isError, error, refetch } = useDashboard();
   const {
     handleStamp,
@@ -32,7 +30,7 @@ export const HomePageRefactored = () => {
   const { toggleBreak, isLoading: isBreakToggling } = useBreakToggle(
     undefined,
     {
-      timestampProvider: clockState.captureTimestamp,
+      timestampProvider: captureTimestamp,
     }
   );
   const publishedNewsQuery = usePublishedNewsQuery({
@@ -80,7 +78,7 @@ export const HomePageRefactored = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200">
         <section className="home container mx-auto px-4 py-6">
-          <HomeClockPanel className="mb-6" state={clockState} variant="hero" />
+          <HomeClockPanel className="mb-6" variant="hero" />
           <div className="flex min-h-[320px] flex-col items-center justify-center gap-4 rounded-lg border bg-card p-6 text-center shadow-sm">
             <p className="font-semibold text-destructive text-lg">
               ダッシュボードを読み込めませんでした。
@@ -108,7 +106,7 @@ export const HomePageRefactored = () => {
   }
 
   if (isLoading || !data) {
-    return <HomeDashboardSkeleton clockState={clockState} />;
+    return <HomeDashboardSkeleton />;
   }
 
   return (
@@ -123,10 +121,9 @@ export const HomePageRefactored = () => {
           <div className="space-y-6">
             <StampCard
               className="home-card"
-              clockState={clockState}
               isLoading={isStamping}
               isToggling={isBreakToggling}
-              onCaptureTimestamp={clockState.captureTimestamp}
+              onCaptureTimestamp={captureTimestamp}
               onStamp={handleStamp}
               onToggleBreak={() => toggleBreak()}
               showSkeleton={false}
@@ -173,37 +170,24 @@ const HomeHero = ({ lastName, firstName }: HomeHeroProps) => (
   </header>
 );
 
-export const HomeDashboardSkeleton = ({
-  clockState: override,
-}: {
-  clockState?: HomeClockState;
-}) => {
-  const fallbackClock = useHomeClock();
-  const derivedClock = override ?? fallbackClock;
-
-  return (
-    <section
-      className="home container mx-auto px-4 py-6"
-      data-testid="home-dashboard-skeleton"
-    >
-      <div className="home-hero mb-8 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300">
-        <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 py-10">
-          <Skeleton className="h-6 w-40" />
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-4 w-56" />
-        </div>
-        <div className="mx-auto flex w-full max-w-xl justify-center pb-6">
-          <HomeClockPanel
-            className="max-w-sm"
-            state={derivedClock}
-            variant="hero"
-          />
-        </div>
+export const HomeDashboardSkeleton = () => (
+  <section
+    className="home container mx-auto px-4 py-6"
+    data-testid="home-dashboard-skeleton"
+  >
+    <div className="home-hero mb-8 bg-gradient-to-r from-blue-100 via-blue-200 to-blue-300">
+      <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-3 py-10">
+        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-4 w-56" />
       </div>
-      <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
-        <SkeletonCard className="home-card" />
-        <SkeletonCard className="home-card" />
+      <div className="mx-auto flex w-full max-w-xl justify-center pb-6">
+        <HomeClockPanel className="max-w-sm" variant="hero" />
       </div>
-    </section>
-  );
-};
+    </div>
+    <div className="home-grid grid grid-cols-1 gap-6 md:grid-cols-[1.1fr_0.9fr]">
+      <SkeletonCard className="home-card" />
+      <SkeletonCard className="home-card" />
+    </div>
+  </section>
+);
