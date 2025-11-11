@@ -78,14 +78,15 @@ public class StampService {
         if (existing != null) {
             entity.setId(existing.getId());
 
-            // 出勤打刻時: 既存の inTime が設定済みなら上書き拒否
+            // 出勤打刻時: 状態チェック→重複チェックの順で実行
             if (stampType == StampType.ATTENDANCE) {
-                if (existing.getInTime() != null) {
-                    throw new DuplicateStampException("出勤", existing.getInTime().toString());
-                }
-                // 状態チェック: 退勤済みの場合は出勤打刻不可
+                // 状態チェック: 退勤済みの場合は出勤打刻不可（重複チェックより優先）
                 if (existing.getOutTime() != null) {
                     throw new InvalidStampStateException("出勤打刻", "本日の勤務は既に終了しています");
+                }
+                // 重複チェック: 既存の inTime が設定済みなら上書き拒否
+                if (existing.getInTime() != null) {
+                    throw new DuplicateStampException("出勤", existing.getInTime().toString());
                 }
                 // 既存の outTime を保持
                 entity.setOutTime(existing.getOutTime());
