@@ -228,4 +228,185 @@ class StampRestControllerTest {
                 .with(csrf())
         ).andExpect(status().isUnauthorized());
     }
+
+    // ========================================
+    // 改修箇所の統合テスト
+    // ========================================
+
+    @DisplayName("PUT /api/stamps/{id} は空文字列で休憩時間を削除できる【OK】")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void updateStampShouldDeleteBreakTimeWithEmptyString() throws Exception {
+        OffsetDateTime inTime = OffsetDateTime.of(2025, 10, 15, 9, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime outTime = OffsetDateTime.of(2025, 10, 15, 18, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime breakStart = OffsetDateTime.of(2025, 10, 15, 12, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime breakEnd = OffsetDateTime.of(2025, 10, 15, 13, 0, 0, 0, ZoneOffset.ofHours(9));
+
+        StampHistory history = new StampHistory(
+            150,
+            "2025",
+            "10",
+            "15",
+            10,
+            inTime,
+            outTime,
+            breakStart,
+            breakEnd,
+            10,
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
+        when(stampHistoryMapper.getById(150)).thenReturn(Optional.of(history));
+
+        mockMvc.perform(
+            put("/api/stamps/{id}", 150)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "breakStartTime": "",
+                      "breakEndTime": ""
+                    }
+                    """)
+        ).andExpect(status().isNoContent());
+
+        ArgumentCaptor<List<Map<String, Object>>> payloadCaptor = ArgumentCaptor.forClass(List.class);
+        verify(stampEditService).execute(payloadCaptor.capture(), eq(10));
+
+        List<Map<String, Object>> captured = payloadCaptor.getValue();
+        Map<String, Object> first = captured.getFirst();
+
+        // 休憩時間がnullになっていることを確認（削除）
+        org.assertj.core.api.Assertions.assertThat(first)
+            .containsEntry("breakStartTime", null)
+            .containsEntry("breakEndTime", null)
+            .containsEntry("inTime", "09:00")
+            .containsEntry("outTime", "18:00");
+    }
+
+    @DisplayName("PUT /api/stamps/{id} は夜勤フラグと休憩時間を同時に更新できる【OK】")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void updateStampShouldUpdateNightShiftFlagAndBreakTime() throws Exception {
+        OffsetDateTime inTime = OffsetDateTime.of(2025, 10, 20, 22, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime outTime = OffsetDateTime.of(2025, 10, 21, 6, 0, 0, 0, ZoneOffset.ofHours(9));
+
+        StampHistory history = new StampHistory(
+            160,
+            "2025",
+            "10",
+            "20",
+            10,
+            inTime,
+            outTime,
+            null,
+            null,
+            10,
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
+        history.setIsNightShift(false);
+        when(stampHistoryMapper.getById(160)).thenReturn(Optional.of(history));
+
+        mockMvc.perform(
+            put("/api/stamps/{id}", 160)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "breakStartTime": "01:00",
+                      "breakEndTime": "02:00",
+                      "isNightShift": true
+                    }
+                    """)
+        ).andExpect(status().isNoContent());
+
+        ArgumentCaptor<List<Map<String, Object>>> payloadCaptor = ArgumentCaptor.forClass(List.class);
+        verify(stampEditService).execute(payloadCaptor.capture(), eq(10));
+
+        List<Map<String, Object>> captured = payloadCaptor.getValue();
+        Map<String, Object> first = captured.getFirst();
+
+        // 休憩時間と夜勤フラグが更新されることを確認
+        org.assertj.core.api.Assertions.assertThat(first)
+            .containsEntry("breakStartTime", "01:00")
+            .containsEntry("breakEndTime", "02:00")
+            .containsEntry("isNightShift", true);
+    }
+
+    @DisplayName("PUT /api/stamps/{id} は休憩終了時刻が開始時刻より前だと400エラーを返す【NG】")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void updateStampShouldReturnBadRequestWhenBreakEndBeforeStart() throws Exception {
+        OffsetDateTime inTime = OffsetDateTime.of(2025, 10, 25, 9, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime outTime = OffsetDateTime.of(2025, 10, 25, 18, 0, 0, 0, ZoneOffset.ofHours(9));
+
+        StampHistory history = new StampHistory(
+            170,
+            "2025",
+            "10",
+            "25",
+            10,
+            inTime,
+            outTime,
+            null,
+            null,
+            10,
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
+        when(stampHistoryMapper.getById(170)).thenReturn(Optional.of(history));
+
+        // 休憩終了時刻（11:00）が休憩開始時刻（13:00）より前
+        mockMvc.perform(
+            put("/api/stamps/{id}", 170)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "breakStartTime": "13:00",
+                      "breakEndTime": "11:00"
+                    }
+                    """)
+        ).andExpect(status().isBadRequest());
+
+        // サービスが呼ばれないことを確認
+        verifyNoInteractions(stampEditService);
+    }
+
+    @DisplayName("PUT /api/stamps/{id} はすべてのフィールドが空だと400エラーを返す【NG】")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void updateStampShouldReturnBadRequestWhenAllFieldsEmpty() throws Exception {
+        OffsetDateTime inTime = OffsetDateTime.of(2025, 10, 30, 9, 0, 0, 0, ZoneOffset.ofHours(9));
+        OffsetDateTime outTime = OffsetDateTime.of(2025, 10, 30, 18, 0, 0, 0, ZoneOffset.ofHours(9));
+
+        StampHistory history = new StampHistory(
+            180,
+            "2025",
+            "10",
+            "30",
+            10,
+            inTime,
+            outTime,
+            null,
+            null,
+            10,
+            OffsetDateTime.now(ZoneOffset.UTC)
+        );
+        when(stampHistoryMapper.getById(180)).thenReturn(Optional.of(history));
+
+        // すべてのフィールドが空またはnull
+        mockMvc.perform(
+            put("/api/stamps/{id}", 180)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "inTime": "",
+                      "outTime": ""
+                    }
+                    """)
+        ).andExpect(status().isBadRequest());
+
+        // サービスが呼ばれないことを確認
+        verifyNoInteractions(stampEditService);
+    }
 }

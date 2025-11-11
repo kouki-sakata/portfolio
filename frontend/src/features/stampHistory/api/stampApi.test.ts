@@ -133,4 +133,72 @@ describe("stampApi", () => {
     expect(mockedApi.delete).toHaveBeenNthCalledWith(2, "/stamps/4");
     expect(mockedApi.delete).toHaveBeenNthCalledWith(3, "/stamps/5");
   });
+
+  // ========================================
+  // 改修箇所の統合テスト
+  // ========================================
+
+  describe("Break time deletion and night shift flag update", () => {
+    it("sends empty string to delete break times 【OK】", async () => {
+      mockedApi.put.mockResolvedValue(undefined);
+
+      await updateStamp({
+        id: 100,
+        breakStartTime: "",
+        breakEndTime: "",
+      });
+
+      expect(mockedApi.put).toHaveBeenCalledWith("/stamps/100", {
+        breakStartTime: "",
+        breakEndTime: "",
+      });
+    });
+
+    it("sends night shift flag with break times 【OK】", async () => {
+      mockedApi.put.mockResolvedValue(undefined);
+
+      await updateStamp({
+        id: 200,
+        breakStartTime: "01:00",
+        breakEndTime: "02:00",
+        isNightShift: true,
+      });
+
+      expect(mockedApi.put).toHaveBeenCalledWith("/stamps/200", {
+        breakStartTime: "01:00",
+        breakEndTime: "02:00",
+        isNightShift: true,
+      });
+    });
+
+    it("does not send in/out times when they are empty strings", async () => {
+      mockedApi.put.mockResolvedValue(undefined);
+
+      await updateStamp({
+        id: 300,
+        inTime: "",
+        outTime: "",
+        breakStartTime: "12:00",
+      });
+
+      // inTimeとoutTimeは送信されない（空文字列だから）
+      // breakStartTimeは送信される
+      expect(mockedApi.put).toHaveBeenCalledWith("/stamps/300", {
+        breakStartTime: "12:00",
+      });
+    });
+
+    it("includes isNightShift when it is false", async () => {
+      mockedApi.put.mockResolvedValue(undefined);
+
+      await updateStamp({
+        id: 400,
+        isNightShift: false,
+      });
+
+      expect(mockedApi.put).toHaveBeenCalledWith("/stamps/400", {
+        isNightShift: false,
+      });
+    });
+  });
 });
