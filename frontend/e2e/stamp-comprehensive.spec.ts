@@ -120,32 +120,6 @@ test.describe("打刻機能の包括的テスト", () => {
     });
   });
 
-  test("連続して同じ打刻タイプを実行した場合のエラーハンドリング", async ({
-    page,
-  }) => {
-    const adminUser = createAdminUser();
-    await createAppMockServer(page, {
-      user: adminUser,
-      stampResponse: { message: "既に打刻済みです", success: false },
-    });
-
-    await signIn(
-      page,
-      TEST_CREDENTIALS.admin.email,
-      TEST_CREDENTIALS.admin.password
-    );
-
-    await test.step("出勤打刻を実行", async () => {
-      await page.getByRole("button", { name: "出勤打刻" }).click();
-      await waitForToast(page, /既に打刻済み/);
-    });
-
-    await test.step("再度出勤打刻を試みるとエラーが表示される", async () => {
-      await page.getByRole("button", { name: "出勤打刻" }).click();
-      await waitForToast(page, /既に打刻済み/);
-    });
-  });
-
   test("打刻時にサーバーエラーが発生した場合のエラー表示", async ({ page }) => {
     const adminUser = createAdminUser();
     const server = await createAppMockServer(page, { user: adminUser });

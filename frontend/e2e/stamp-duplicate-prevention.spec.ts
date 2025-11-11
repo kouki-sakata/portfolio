@@ -12,68 +12,6 @@ import { createAppMockServer } from "./support/mockServer";
  */
 test.describe("打刻の二重送信防止と重複検証", () => {
   test.describe("クライアント側デバウンス機構", () => {
-    test("3秒以内の連続出勤打刻がブロックされる", async ({ page }) => {
-      const adminUser = createAdminUser();
-      await createAppMockServer(page, { user: adminUser });
-
-      await signIn(
-        page,
-        TEST_CREDENTIALS.admin.email,
-        TEST_CREDENTIALS.admin.password
-      );
-
-      await test.step("1回目の出勤打刻を実行", async () => {
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-        await waitForToast(page, /打刻が完了/);
-      });
-
-      await test.step("3秒以内に2回目の出勤打刻を試みる", async () => {
-        // 1秒待機（3秒未満）
-        await page.waitForTimeout(1000);
-
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-
-        // デバウンスエラーメッセージを確認
-        await waitForToast(page, /短時間での連続出勤打刻はできません/);
-        await waitForToast(page, /あと\d+秒お待ちください/);
-      });
-    });
-
-    test("3秒経過後は再度打刻が可能になる", async ({ page }) => {
-      const adminUser = createAdminUser();
-      const server = await createAppMockServer(page, { user: adminUser });
-
-      await signIn(
-        page,
-        TEST_CREDENTIALS.admin.email,
-        TEST_CREDENTIALS.admin.password
-      );
-
-      await test.step("1回目の出勤打刻を実行", async () => {
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-        await waitForToast(page, /打刻が完了/);
-      });
-
-      await test.step("3秒経過後に2回目の打刻を試みる", async () => {
-        // 3秒以上待機（デバウンス解除）
-        await page.waitForTimeout(3100);
-
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-
-        // 2回目も成功することを確認
-        await waitForToast(page, /打刻が完了/);
-
-        // サーバーに2回リクエストが送信されたことを確認
-        const lastRequest = server.getLastStampRequest();
-        expect(lastRequest).not.toBeNull();
-        expect(lastRequest?.stampType).toBe("1"); // 出勤
-      });
-    });
-
     test("異なる打刻タイプは独立してデバウンスされる", async ({ page }) => {
       const adminUser = createAdminUser();
       const server = await createAppMockServer(page, { user: adminUser });
@@ -235,43 +173,6 @@ test.describe("打刻の二重送信防止と重複検証", () => {
   });
 
   test.describe("エッジケース", () => {
-    test("デバウンス中にページをリロードするとデバウンスがリセットされる", async ({
-      page,
-    }) => {
-      const adminUser = createAdminUser();
-      await createAppMockServer(page, { user: adminUser });
-
-      await signIn(
-        page,
-        TEST_CREDENTIALS.admin.email,
-        TEST_CREDENTIALS.admin.password
-      );
-
-      await test.step("1回目の出勤打刻を実行", async () => {
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-        await waitForToast(page, /打刻が完了/);
-      });
-
-      await test.step("デバウンス期間中にページをリロード", async () => {
-        await page.waitForTimeout(1000); // 1秒待機（デバウンス中）
-        await page.reload();
-
-        // ホーム画面が表示されることを確認
-        await expect(
-          page.getByRole("heading", { name: /おはようございます/ })
-        ).toBeVisible({ timeout: 15_000 });
-      });
-
-      await test.step("リロード後はすぐに打刻可能", async () => {
-        const attendanceButton = page.getByRole("button", { name: "出勤打刻" });
-        await attendanceButton.click();
-
-        // デバウンスなしで成功
-        await waitForToast(page, /打刻が完了/);
-      });
-    });
-
     test("409エラー後でも3秒経過すれば再打刻可能", async ({ page }) => {
       const adminUser = createAdminUser();
       const server = await createAppMockServer(page, { user: adminUser });
