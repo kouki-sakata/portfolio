@@ -72,7 +72,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData extractedData = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00");
+            StampEditData extractedData = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
 
             when(dataExtractor.extractFromMap(stampEdit)).thenReturn(extractedData);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -98,8 +98,8 @@ class StampEditServiceTest {
             Map<String, Object> stamp2 = createStampEditMap("100", "2025", "10", "2", "10:00", "19:00", null);
             List<Map<String, Object>> stampEditList = List.of(stamp1, stamp2);
 
-            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00");
-            StampEditData data2 = new StampEditData(null, 100, "2025", "10", "2", "10:00", "19:00");
+            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
+            StampEditData data2 = new StampEditData(null, 100, "2025", "10", "2", "10:00", "19:00", null, null, null);
 
             when(dataExtractor.extractFromMap(stamp1)).thenReturn(data1);
             when(dataExtractor.extractFromMap(stamp2)).thenReturn(data2);
@@ -124,7 +124,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("200", "2025", "10", "5", "08:00", "17:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(null, 200, "2025", "10", "5", "08:00", "17:00");
+            StampEditData data = new StampEditData(null, 200, "2025", "10", "5", "08:00", "17:00", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -144,7 +144,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("300", "2025", "10", "10", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(999, 300, "2025", "10", "10", "09:00", "18:00");
+            StampEditData data = new StampEditData(999, 300, "2025", "10", "10", "09:00", "18:00", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -238,7 +238,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "22:00", "06:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(null, 100, "2025", "10", "1", "22:00", "06:00");
+            StampEditData data = new StampEditData(null, 100, "2025", "10", "1", "22:00", "06:00", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(adjustedOutTime);
@@ -261,7 +261,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "5", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(null, 100, "2025", "10", "5", "09:00", "18:00");
+            StampEditData data = new StampEditData(null, 100, "2025", "10", "5", "09:00", "18:00", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -289,7 +289,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("100", "2025", "10", "1", "09:30", "18:30", "500");
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(500, 100, "2025", "10", "1", "09:30", "18:30");
+            StampEditData data = new StampEditData(500, 100, "2025", "10", "1", "09:30", "18:30", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -333,7 +333,7 @@ class StampEditServiceTest {
             Map<String, Object> stampEdit = createStampEditMap("100,200,300", "2025", "10", "1", "09:00", "18:00", null);
             List<Map<String, Object>> stampEditList = List.of(stampEdit);
 
-            StampEditData data = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00");
+            StampEditData data = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
 
             when(dataExtractor.extractFromMap(any())).thenReturn(data);
             when(outTimeAdjuster.adjustOutTimeIfNeeded(any(), any())).thenReturn(testOutTime);
@@ -355,8 +355,8 @@ class StampEditServiceTest {
             Map<String, Object> stamp2 = createStampEditMap("100", "2025", "10", "2", "10:00", "19:00", "999");
             List<Map<String, Object>> stampEditList = List.of(stamp1, stamp2);
 
-            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00");
-            StampEditData data2 = new StampEditData(999, 100, "2025", "10", "2", "10:00", "19:00");
+            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
+            StampEditData data2 = new StampEditData(999, 100, "2025", "10", "2", "10:00", "19:00", null, null, null);
 
             when(dataExtractor.extractFromMap(stamp1)).thenReturn(data1);
             when(dataExtractor.extractFromMap(stamp2)).thenReturn(data2);
