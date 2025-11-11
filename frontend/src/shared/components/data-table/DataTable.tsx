@@ -9,7 +9,7 @@ import {
   type Row,
   useReactTable,
 } from "@tanstack/react-table";
-import { type KeyboardEvent, memo, useMemo, useState } from "react";
+import React, { type KeyboardEvent, memo, useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,7 +87,7 @@ const DesktopTableRow = memo(function DesktopTableRowComponent<TData>({
 }) as <TData>(props: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
-}) => JSX.Element;
+}) => React.JSX.Element;
 
 /**
  * モバイル用カード行コンポーネント
@@ -185,7 +185,7 @@ const MobileCardRow = memo(function MobileCardRowComponent<TData>({
 }) as <TData>(props: {
   row: Row<TData>;
   onRowClick?: (data: TData) => void;
-}) => JSX.Element;
+}) => React.JSX.Element;
 
 function DataTableComponent<TData, TValue = unknown>({
   columns,
