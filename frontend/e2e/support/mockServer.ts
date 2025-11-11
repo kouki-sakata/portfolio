@@ -2,6 +2,7 @@ import type { Page, Route } from "@playwright/test";
 
 import type { EmployeeSummary } from "@/features/auth/types";
 import type {
+  DailyAttendanceSnapshot,
   HomeDashboardResponse,
   StampRequest,
   StampResponse,
@@ -40,6 +41,7 @@ const DEFAULT_HOME_DASHBOARD: HomeDashboardResponse = {
       updateDate: new Date().toISOString(),
     },
   ],
+  attendance: null,
 };
 
 type LoginFailureConfig = {
@@ -142,6 +144,8 @@ export class AppMockServer {
   private readonly stampResponse: StampResponse;
 
   private lastStampRequest: StampRequest | null = null;
+
+  private currentAttendance: DailyAttendanceSnapshot | null = null;
 
   private employees: EmployeeSummary[];
 
@@ -330,14 +334,66 @@ export class AppMockServer {
     }
 
     if (normalizedPath === "/home/overview" && method === "GET") {
-      await route.fulfill(buildJsonResponse(this.homeDashboard));
+      await route.fulfill(
+        buildJsonResponse({
+          ...this.homeDashboard,
+          attendance: this.currentAttendance,
+        })
+      );
       return;
     }
 
     if (normalizedPath === "/home/stamps" && method === "POST") {
       const payload = request.postDataJSON() as StampRequest;
       this.lastStampRequest = { ...payload };
+
+      // Update attendance state based on stamp type
+      if (payload.stampType === "1") {
+        // Attendance stamp
+        this.currentAttendance = {
+          status: "WORKING",
+          attendanceTime: payload.stampTime,
+          breakStartTime: null,
+          breakEndTime: null,
+          departureTime: null,
+          overtimeMinutes: 0,
+        };
+      } else if (payload.stampType === "2" && this.currentAttendance) {
+        // Departure stamp
+        this.currentAttendance = {
+          ...this.currentAttendance,
+          status: "FINISHED",
+          departureTime: payload.stampTime,
+        };
+      }
+
       await route.fulfill(buildJsonResponse(this.stampResponse));
+      return;
+    }
+
+    if (normalizedPath === "/home/breaks/toggle" && method === "POST") {
+      const payload = request.postDataJSON() as { timestamp: string };
+
+      // Update attendance state for break toggle
+      if (this.currentAttendance) {
+        if (this.currentAttendance.breakStartTime === null) {
+          // Start break
+          this.currentAttendance = {
+            ...this.currentAttendance,
+            status: "ON_BREAK",
+            breakStartTime: payload.timestamp,
+          };
+        } else if (this.currentAttendance.breakEndTime === null) {
+          // End break
+          this.currentAttendance = {
+            ...this.currentAttendance,
+            status: "WORKING",
+            breakEndTime: payload.timestamp,
+          };
+        }
+      }
+
+      await route.fulfill({ status: 204, body: "" });
       return;
     }
 

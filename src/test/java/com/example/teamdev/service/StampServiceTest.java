@@ -2,6 +2,7 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.exception.DuplicateStampException;
+import com.example.teamdev.exception.InvalidStampStateException;
 import com.example.teamdev.form.HomeForm;
 import com.example.teamdev.mapper.StampHistoryMapper;
 import com.example.teamdev.constant.AppConstants;
@@ -27,6 +28,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -84,34 +86,29 @@ public class StampServiceTest {
         );
     }
 
+    /**
+     * 退勤打刻時に出勤打刻がない場合のテスト（レコードが存在しない）
+     * InvalidStampStateException がスローされることを確認
+     */
     @Test
-    void execute_shouldSaveNewLeaveStamp() {
+    void execute_shouldThrowException_whenDepartureWithoutAttendanceRecord() {
         homeForm.setStampType(StampType.DEPARTURE); // 退勤
         homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF); // 夜勤ではない
 
-        stampService.execute(homeForm, employeeId);
+        // レコードが存在しない場合
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(null);
 
-        ArgumentCaptor<StampHistory> stampHistoryCaptor = ArgumentCaptor.forClass(StampHistory.class);
-        verify(mapper, times(1)).save(stampHistoryCaptor.capture());
-        StampHistory capturedStamp = stampHistoryCaptor.getValue();
-
-        assertEquals("2025", capturedStamp.getYear());
-        assertEquals("07", capturedStamp.getMonth());
-        assertEquals("10", capturedStamp.getDay());
-        assertEquals(employeeId, capturedStamp.getEmployeeId());
-        assertNull(capturedStamp.getInTime());
-        assertNotNull(capturedStamp.getOutTime());
-        assertEquals(employeeId, capturedStamp.getUpdateEmployeeId());
-        assertNotNull(capturedStamp.getUpdateDate());
-
-        verify(logHistoryService, times(1)).execute(
-                eq(AppConstants.LogHistory.FUNCTION_STAMP),
-                eq(StampType.DEPARTURE.getLogHistoryOperationType()),
-                any(Timestamp.class),
-                eq(employeeId),
-                eq(employeeId),
-                any(Timestamp.class)
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.execute(homeForm, employeeId)
         );
+
+        assertEquals("退勤打刻", exception.getOperation());
+        assertEquals("出勤打刻が必要です", exception.getReason());
+        verify(mapper, never()).save(any());
+        verify(mapper, never()).update(any());
+        verifyNoInteractions(logHistoryService);
     }
 
     @Test
@@ -123,10 +120,20 @@ public class StampServiceTest {
         homeForm.setStampType(StampType.DEPARTURE); // 退勤
         homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON); // 夜勤
 
+        // 出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 10, 17, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+            .thenReturn(existing);
+
         stampService.execute(homeForm, employeeId);
 
         ArgumentCaptor<StampHistory> stampHistoryCaptor = ArgumentCaptor.forClass(StampHistory.class);
-        verify(mapper, times(1)).save(stampHistoryCaptor.capture());
+        verify(mapper, times(1)).update(stampHistoryCaptor.capture());
         StampHistory capturedStamp = stampHistoryCaptor.getValue();
 
         // 夜勤フラグがONの場合、日付が前日になることを確認
@@ -134,7 +141,7 @@ public class StampServiceTest {
         assertEquals("07", capturedStamp.getMonth());
         assertEquals("10", capturedStamp.getDay()); // 日付が前日になっていることを確認
         assertEquals(employeeId, capturedStamp.getEmployeeId());
-        assertNull(capturedStamp.getInTime());
+        assertNotNull(capturedStamp.getInTime()); // 既存の出勤時刻が保持される
         assertNotNull(capturedStamp.getOutTime());
         // Convert LocalDateTime to OffsetDateTime for comparison
         OffsetDateTime expectedOutTime = nightLeaveTime.atOffset(ZoneOffset.ofHours(9));
@@ -377,5 +384,145 @@ public class StampServiceTest {
             any(),
             any()
         );
+    }
+
+    /**
+     * 退勤打刻時に出勤打刻がない場合のテスト（レコードは存在するがinTimeがnull）
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void execute_shouldThrowException_whenDepartureWithoutInTime() {
+        // レコードは存在するが inTime がない
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(null);
+        existing.setOutTime(null);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF);
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.execute(homeForm, employeeId)
+        );
+
+        assertEquals("退勤打刻", exception.getOperation());
+        assertEquals("出勤打刻が必要です", exception.getReason());
+        verify(mapper, never()).update(any());
+        verify(mapper, never()).save(any());
+    }
+
+    /**
+     * 休憩操作時に出勤打刻がない場合のテスト（レコードが存在しない）
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void toggleBreak_shouldThrowException_whenNoAttendanceRecord() {
+        // レコードが存在しない場合
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(null);
+
+        OffsetDateTime toggleTime = OffsetDateTime.now();
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.toggleBreak(employeeId, toggleTime)
+        );
+
+        assertEquals("休憩操作", exception.getOperation());
+        assertEquals("出勤打刻が必要です", exception.getReason());
+        verify(mapper, never()).save(any());
+        verify(mapper, never()).update(any());
+        verifyNoInteractions(logHistoryService);
+    }
+
+    /**
+     * 休憩操作時に出勤打刻がない場合のテスト（レコードは存在するがinTimeがnull）
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void toggleBreak_shouldThrowException_whenNoInTime() {
+        // レコードは存在するが inTime がない
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(null);
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        OffsetDateTime toggleTime = OffsetDateTime.now();
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.toggleBreak(employeeId, toggleTime)
+        );
+
+        assertEquals("休憩操作", exception.getOperation());
+        assertEquals("出勤打刻が必要です", exception.getReason());
+        verify(mapper, never()).update(any());
+        verifyNoInteractions(logHistoryService);
+    }
+
+    /**
+     * 休憩操作時に退勤済みの場合のテスト
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void toggleBreak_shouldThrowException_whenAlreadyDeparted() {
+        // 退勤済みのレコード
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.now().minusHours(8));
+        existing.setOutTime(OffsetDateTime.now().minusHours(1));
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        OffsetDateTime toggleTime = OffsetDateTime.now();
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.toggleBreak(employeeId, toggleTime)
+        );
+
+        assertEquals("休憩操作", exception.getOperation());
+        assertEquals("退勤後は休憩操作できません", exception.getReason());
+        verify(mapper, never()).update(any());
+        verifyNoInteractions(logHistoryService);
+    }
+
+    /**
+     * 出勤打刻時に退勤済みの場合のテスト
+     * InvalidStampStateException がスローされることを確認
+     */
+    @Test
+    void execute_shouldThrowException_whenAttendanceAfterDeparture() {
+        // 退勤済みのレコード
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.now().minusHours(8));
+        existing.setOutTime(OffsetDateTime.now().minusHours(1));
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+            .thenReturn(existing);
+
+        homeForm.setStampType(StampType.ATTENDANCE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF);
+
+        InvalidStampStateException exception = assertThrows(
+            InvalidStampStateException.class,
+            () -> stampService.execute(homeForm, employeeId)
+        );
+
+        assertEquals("出勤打刻", exception.getOperation());
+        assertEquals("本日の勤務は既に終了しています", exception.getReason());
+        verify(mapper, never()).update(any());
+        verify(mapper, never()).save(any());
     }
 }
