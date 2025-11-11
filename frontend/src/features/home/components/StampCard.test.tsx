@@ -1,7 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import type { ClockDisplayState } from "@/features/home/hooks/useClockDisplay";
+import {
+  type ClockDisplayState,
+  useClockDisplay,
+} from "@/features/home/hooks/useClockDisplay";
 import type { StampStatus } from "@/features/home/hooks/useStamp";
 
 import { StampCard } from "./StampCard";
@@ -14,7 +17,7 @@ vi.mock("@/features/home/hooks/useClockDisplay", () => ({
 describe("StampCard", () => {
   const mockUseClockDisplay = vi.fn();
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // デフォルトのモック実装
     mockUseClockDisplay.mockReturnValue({
       displayText: "2025年11月02日(日) 09:15:42",
@@ -23,11 +26,7 @@ describe("StampCard", () => {
       resetError: vi.fn(),
     } satisfies ClockDisplayState);
 
-    // モックをインポート
-    const { useClockDisplay } = vi.mocked(
-      await import("@/features/home/hooks/useClockDisplay")
-    );
-    useClockDisplay.mockImplementation(mockUseClockDisplay);
+    vi.mocked(useClockDisplay).mockImplementation(mockUseClockDisplay);
   });
 
   it("ボタン押下時に時計からタイムスタンプを取得し、handleStampへ渡す", async () => {

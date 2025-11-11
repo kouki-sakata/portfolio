@@ -4,7 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ClockDisplayState } from "@/features/home/hooks/useClockDisplay";
+import {
+  type ClockDisplayState,
+  useClockDisplay,
+} from "@/features/home/hooks/useClockDisplay";
 import type {
   HomeDashboardResponse,
   StampResponse,
@@ -24,7 +27,7 @@ describe("HomePage", () => {
   let queryClient: QueryClient;
   let clockDisplayState: ClockDisplayState;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     queryClient = new QueryClient({
       defaultOptions: {
         queries: { retry: false },
@@ -39,10 +42,7 @@ describe("HomePage", () => {
       status: "ready",
       resetError: vi.fn(),
     };
-    const { useClockDisplay } = vi.mocked(
-      await import("@/features/home/hooks/useClockDisplay")
-    );
-    useClockDisplay.mockReturnValue(clockDisplayState);
+    vi.mocked(useClockDisplay).mockReturnValue(clockDisplayState);
 
     mswServer.use(
       http.get("/api/public/feature-flags", () => HttpResponse.json({}))
@@ -129,10 +129,7 @@ describe("HomePage", () => {
     });
 
     it("エラー時にも時計が表示される", async () => {
-      const { useClockDisplay } = vi.mocked(
-        await import("@/features/home/hooks/useClockDisplay")
-      );
-      useClockDisplay.mockReturnValue({
+      vi.mocked(useClockDisplay).mockReturnValue({
         displayText: "現在時刻を取得できません。端末時計を確認してください。",
         isoNow: "",
         status: "error",
@@ -157,14 +154,11 @@ describe("HomePage", () => {
     });
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     cleanup();
     queryClient.clear();
     // モックをリセット
-    const { useClockDisplay } = vi.mocked(
-      await import("@/features/home/hooks/useClockDisplay")
-    );
-    useClockDisplay.mockReturnValue(clockDisplayState);
+    vi.mocked(useClockDisplay).mockReturnValue(clockDisplayState);
   });
 
   function createPublishedNewsItem(
