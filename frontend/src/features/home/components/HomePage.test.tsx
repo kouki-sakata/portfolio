@@ -468,7 +468,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
       await user.click(stampButton);
 
       await waitFor(() => {
@@ -507,8 +509,12 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const nightSwitch = await screen.findByRole("switch", { name: /夜勤扱い/ });
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const nightSwitch = await screen.findByRole("switch", {
+        name: /夜勤扱い/,
+      });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
       await user.click(nightSwitch);
       await user.click(stampButton);
 
@@ -541,7 +547,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
       await user.click(stampButton);
 
       await waitFor(() => {
@@ -570,7 +578,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
 
       await user.click(stampButton);
 
@@ -607,7 +617,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
 
       await user.click(stampButton);
 
@@ -632,7 +644,9 @@ describe("HomePage", () => {
       renderWithQueryClient(<HomePage />);
 
       const user = userEvent.setup();
-      const stampButton = await screen.findByRole("button", { name: /出勤打刻/ });
+      const stampButton = await screen.findByRole("button", {
+        name: /出勤打刻/,
+      });
       await user.click(stampButton);
 
       await waitFor(() => {
