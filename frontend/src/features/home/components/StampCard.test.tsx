@@ -14,7 +14,7 @@ vi.mock("@/features/home/hooks/useClockDisplay", () => ({
 describe("StampCard", () => {
   const mockUseClockDisplay = vi.fn();
 
-  beforeEach(() => {
+  beforeEach(async () => {
     // デフォルトのモック実装
     mockUseClockDisplay.mockReturnValue({
       displayText: "2025年11月02日(日) 09:15:42",
