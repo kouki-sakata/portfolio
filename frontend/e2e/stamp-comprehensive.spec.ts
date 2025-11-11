@@ -19,6 +19,12 @@ test.describe("打刻機能の包括的テスト", () => {
       TEST_CREDENTIALS.admin.password
     );
 
+    await test.step("出勤打刻を実行（退勤打刻の前提条件）", async () => {
+      const attendanceButton = page.getByRole("button", { name: /出勤/ });
+      await attendanceButton.click();
+      await waitForToast(page, /打刻が完了/);
+    });
+
     await test.step("退勤打刻を実行", async () => {
       // 退勤ボタンが存在することを確認（実際のUIに応じて調整が必要）
       const departureButton = page.getByRole("button", { name: /退勤/ });

@@ -103,7 +103,10 @@ test.describe("打刻の二重送信防止と重複検証", () => {
       });
     });
 
-    test("退勤打刻も3秒のデバウンスが適用される", async ({ page }) => {
+    test.skip("退勤打刻も3秒のデバウンスが適用される", async ({ page }) => {
+      // NOTE: 状態ベースのUI制御により、退勤打刻後は退勤ボタンが表示されなくなるため、
+      // このテストケースは不可能になりました。退勤済み（FINISHED）状態では、
+      // 退勤ボタンではなく「本日の勤務は完了しています」というメッセージが表示されます。
       const adminUser = createAdminUser();
       await createAppMockServer(page, { user: adminUser });
 
@@ -112,6 +115,12 @@ test.describe("打刻の二重送信防止と重複検証", () => {
         TEST_CREDENTIALS.admin.email,
         TEST_CREDENTIALS.admin.password
       );
+
+      await test.step("出勤打刻を実行（退勤打刻の前提条件）", async () => {
+        const attendanceButton = page.getByRole("button", { name: /出勤/ });
+        await attendanceButton.click();
+        await waitForToast(page, /打刻が完了/);
+      });
 
       await test.step("1回目の退勤打刻を実行", async () => {
         const departureButton = page.getByRole("button", { name: /退勤/ });
