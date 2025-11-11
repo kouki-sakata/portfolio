@@ -42,7 +42,7 @@ function extractHeaderText(header: unknown): string {
  * デスクトップ用テーブル行コンポーネント
  * React.memoで最適化し、変更された行のみ再レンダリング
  */
-const DesktopTableRow = memo(function DesktopTableRow<TData>({
+const DesktopTableRow = memo(function DesktopTableRowComponent<TData>({
   row,
   onRowClick,
 }: {
@@ -93,7 +93,7 @@ const DesktopTableRow = memo(function DesktopTableRow<TData>({
  * モバイル用カード行コンポーネント
  * React.memoで最適化し、変更された行のみ再レンダリング
  */
-const MobileCardRow = memo(function MobileCardRow<TData>({
+const MobileCardRow = memo(function MobileCardRowComponent<TData>({
   row,
   onRowClick,
 }: {
