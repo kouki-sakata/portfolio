@@ -17,6 +17,7 @@ describe("StampHistoryCard", () => {
     breakStartTime: "12:00",
     breakEndTime: "13:00",
     overtimeMinutes: 30,
+    isNightShift: null,
     updateDate: "2024/11/10 18:05",
   };
 

@@ -15,6 +15,7 @@ describe("csv-generator", () => {
       breakStartTime: "12:00",
       breakEndTime: "12:45",
       overtimeMinutes: 60,
+      isNightShift: null,
       updateDate: "2025-01-15 18:05",
     },
     {
@@ -28,6 +29,7 @@ describe("csv-generator", () => {
       breakStartTime: null,
       breakEndTime: null,
       overtimeMinutes: 0,
+      isNightShift: null,
       updateDate: "2025-01-16 17:50",
     },
   ];
@@ -136,6 +138,7 @@ describe("csv-generator", () => {
           breakStartTime: null,
           breakEndTime: null,
           overtimeMinutes: null,
+          isNightShift: null,
           updateDate: null,
         },
       ];
