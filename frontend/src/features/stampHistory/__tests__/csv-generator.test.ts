@@ -131,7 +131,7 @@ describe("csv-generator", () => {
       const entriesWithNull: StampHistoryEntry[] = [
         {
           id: null,
-      employeeId: 1,
+          employeeId: 1,
           year: "2025",
           month: "01",
           day: "15",

@@ -116,54 +116,80 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
+  const createDummyEntry = useCallback(
+    (
+      year: string,
+      month: string,
+      day: number,
+      employeeId: number | null
+    ): StampHistoryEntry => {
+      const dayStr = day.toString().padStart(2, "0");
+      const date = new Date(
+        Number.parseInt(year, 10),
+        Number.parseInt(month, 10) - 1,
+        day
+      );
+      const dayOfWeekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+      return {
+        id: null,
+        employeeId,
+        year,
+        month,
+        day: dayStr,
+        dayOfWeek: dayOfWeekNames[date.getDay()] ?? null,
+        inTime: null,
+        outTime: null,
+        breakStartTime: null,
+        breakEndTime: null,
+        overtimeMinutes: null,
+        isNightShift: null,
+        updateDate: null,
+      };
+    },
+    []
+  );
+
   // 選択された年月の全日付を生成する関数
-  const generateAllDaysInMonth = useCallback((year: string, month: string, entries: StampHistoryEntry[]) => {
-    if (!year || !month) return entries;
-
-    const daysInMonth = new Date(parseInt(year), parseInt(month), 0).getDate();
-    const allDays: StampHistoryEntry[] = [];
-
-    // 既存のentriesをMapに変換（day をキーとして高速検索）
-    const entryMap = new Map<string, StampHistoryEntry>();
-    entries.forEach((entry) => {
-      if (entry.day) {
-        entryMap.set(entry.day, entry);
+  const generateAllDaysInMonth = useCallback(
+    (year: string, month: string, entries: StampHistoryEntry[]) => {
+      if (!(year && month)) {
+        return entries;
       }
-    });
 
-    // 全日付を生成
-    for (let day = 1; day <= daysInMonth; day++) {
-      const dayStr = day.toString().padStart(2, '0'); // ゼロパディング（例: "01", "02"）
-      const existingEntry = entryMap.get(dayStr);
+      const daysInMonth = new Date(
+        Number.parseInt(year, 10),
+        Number.parseInt(month, 10),
+        0
+      ).getDate();
+      const allDays: StampHistoryEntry[] = [];
 
-      if (existingEntry) {
-        // 既存のentryがある場合はそのまま使用
-        allDays.push(existingEntry);
-      } else {
-        // entryがない場合はダミーentryを作成（新規作成用）
-        const date = new Date(parseInt(year), parseInt(month) - 1, day);
-        const dayOfWeekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
-
-        allDays.push({
-          id: null,
-          employeeId: entries[0]?.employeeId ?? null, // 既存entryがあればそのemployeeIdを使用
-          year,
-          month,
-          day: dayStr,
-          dayOfWeek: dayOfWeekNames[date.getDay()] ?? null,
-          inTime: null,
-          outTime: null,
-          breakStartTime: null,
-          breakEndTime: null,
-          overtimeMinutes: null,
-          isNightShift: null,
-          updateDate: null,
-        });
+      // 既存のentriesをMapに変換（day をキーとして高速検索）
+      const entryMap = new Map<string, StampHistoryEntry>();
+      for (const entry of entries) {
+        if (entry.day) {
+          entryMap.set(entry.day, entry);
+        }
       }
-    }
 
-    return allDays;
-  }, []);
+      const defaultEmployeeId = entries[0]?.employeeId ?? null;
+
+      // 全日付を生成
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayStr = day.toString().padStart(2, "0");
+        const existingEntry = entryMap.get(dayStr);
+
+        if (existingEntry) {
+          allDays.push(existingEntry);
+        } else {
+          allDays.push(createDummyEntry(year, month, day, defaultEmployeeId));
+        }
+      }
+
+      return allDays;
+    },
+    [createDummyEntry]
+  );
 
   // 全日付を含むentriesを生成 (hooks must be called before early returns)
   const data: StampHistoryResponse = query.data ?? {
@@ -175,9 +201,20 @@ export const StampHistoryPage = () => {
     summary: { ...emptyMonthlySummary },
   };
 
-  const allEntriesWithDays = useMemo(() => {
-    return generateAllDaysInMonth(data.selectedYear, data.selectedMonth, data.entries);
-  }, [data.selectedYear, data.selectedMonth, data.entries, generateAllDaysInMonth]);
+  const allEntriesWithDays = useMemo(
+    () =>
+      generateAllDaysInMonth(
+        data.selectedYear,
+        data.selectedMonth,
+        data.entries
+      ),
+    [
+      data.selectedYear,
+      data.selectedMonth,
+      data.entries,
+      generateAllDaysInMonth,
+    ]
+  );
 
   if (query.isLoading) {
     return <StampHistorySkeleton />;
@@ -314,79 +351,71 @@ export const StampHistoryPage = () => {
           </TableHeader>
           <TableBody>
             {allEntriesWithDays.map((entry) => (
-                <TableRow
-                  key={`table-${entry.year}-${entry.month}-${entry.day}`}
-                >
-                  <TableCell>
-                    {entry.year}/{entry.month}/{entry.day}
-                  </TableCell>
-                  <TableCell>{entry.dayOfWeek}</TableCell>
-                  <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
-                  <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
-                  <TableCell>
-                    {renderBreakTimeCell(entry.breakStartTime)}
-                  </TableCell>
-                  <TableCell>
-                    {renderBreakTimeCell(entry.breakEndTime)}
-                  </TableCell>
-                  <TableCell>
-                    {renderOvertimeCell(entry.overtimeMinutes)}
-                  </TableCell>
-                  <TableCell>
-                    {entry.isNightShift ? (
-                      <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 text-xs font-medium text-purple-700">
-                        夜勤
-                      </span>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {entry.updateDate ?? "-"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        onClick={() => handleEdit(entry)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4"
-                          decorative
-                          name="edit"
-                        />
-                        <span className="sr-only">編集</span>
-                      </Button>
-                      <Button
-                        disabled={!entry.id}
-                        onClick={() => handleDelete(entry)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4"
-                          decorative
-                          name="trash-2"
-                        />
-                        <span className="sr-only">削除</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
+              <TableRow key={`table-${entry.year}-${entry.month}-${entry.day}`}>
+                <TableCell>
+                  {entry.year}/{entry.month}/{entry.day}
+                </TableCell>
+                <TableCell>{entry.dayOfWeek}</TableCell>
+                <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
+                <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
+                <TableCell>
+                  {renderBreakTimeCell(entry.breakStartTime)}
+                </TableCell>
+                <TableCell>{renderBreakTimeCell(entry.breakEndTime)}</TableCell>
+                <TableCell>
+                  {renderOvertimeCell(entry.overtimeMinutes)}
+                </TableCell>
+                <TableCell>
+                  {entry.isNightShift ? (
+                    <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 font-medium text-purple-700 text-xs">
+                      夜勤
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {entry.updateDate ?? "-"}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleEdit(entry)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <SpriteIcon className="h-4 w-4" decorative name="edit" />
+                      <span className="sr-only">編集</span>
+                    </Button>
+                    <Button
+                      disabled={!entry.id}
+                      onClick={() => handleDelete(entry)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <SpriteIcon
+                        className="h-4 w-4"
+                        decorative
+                        name="trash-2"
+                      />
+                      <span className="sr-only">削除</span>
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
 
       <EditStampDialog
-        entry={selectedEntry}
-        year={selectedEntry?.year ?? undefined}
-        month={selectedEntry?.month ?? undefined}
         day={selectedEntry?.day ?? undefined}
         employeeId={selectedEntry?.employeeId ?? undefined}
+        entry={selectedEntry}
+        month={selectedEntry?.month ?? undefined}
         onOpenChange={setEditDialogOpen}
         open={editDialogOpen}
+        year={selectedEntry?.year ?? undefined}
       />
 
       <DeleteStampDialog

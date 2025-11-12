@@ -115,7 +115,17 @@ export const fetchStampHistory = async (
 export const createStamp = async (
   payload: CreateStampRequest
 ): Promise<void> => {
-  const { employeeId, year, month, day, inTime, outTime, breakStartTime, breakEndTime, isNightShift } = payload;
+  const {
+    employeeId,
+    year,
+    month,
+    day,
+    inTime,
+    outTime,
+    breakStartTime,
+    breakEndTime,
+    isNightShift,
+  } = payload;
 
   const data: {
     employeeId: number;
@@ -161,7 +171,8 @@ export const createStamp = async (
 export const updateStamp = async (
   payload: UpdateStampRequest
 ): Promise<void> => {
-  const { id, inTime, outTime, breakStartTime, breakEndTime, isNightShift } = payload;
+  const { id, inTime, outTime, breakStartTime, breakEndTime, isNightShift } =
+    payload;
 
   const data: {
     inTime?: string;

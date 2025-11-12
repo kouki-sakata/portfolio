@@ -40,7 +40,7 @@ describe("stampApi", () => {
       entries: [
         {
           id: 1,
-      employeeId: 1,
+          employeeId: 1,
           year: "2024",
           month: "04",
           day: "01",
@@ -54,7 +54,7 @@ describe("stampApi", () => {
         },
         {
           id: 2,
-      employeeId: 1,
+          employeeId: 1,
           year: "2024",
           month: "04",
           day: "02",

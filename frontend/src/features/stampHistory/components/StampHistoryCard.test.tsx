@@ -197,7 +197,7 @@ describe("StampHistoryCard", () => {
     const entryWithoutId: StampHistoryEntry = {
       ...mockEntry,
       id: null,
-    employeeId: 1,
+      employeeId: 1,
     };
 
     render(

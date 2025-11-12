@@ -80,7 +80,16 @@ export const EditStampDialog = ({
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [entry?.id, open]);
+  }, [
+    entry?.id,
+    open,
+    entry?.breakEndTime,
+    entry?.breakStartTime,
+    entry?.inTime,
+    entry?.isNightShift,
+    entry?.outTime,
+    form.reset,
+  ]);
 
   const createMutation = useMutation({
     mutationFn: createStamp,
@@ -138,11 +147,21 @@ export const EditStampDialog = ({
               e.id === variables.id
                 ? {
                     ...e,
-                    ...(variables.inTime !== undefined && { inTime: variables.inTime || null }),
-                    ...(variables.outTime !== undefined && { outTime: variables.outTime || null }),
-                    ...(variables.breakStartTime !== undefined && { breakStartTime: variables.breakStartTime || null }),
-                    ...(variables.breakEndTime !== undefined && { breakEndTime: variables.breakEndTime || null }),
-                    ...(variables.isNightShift !== undefined && { isNightShift: variables.isNightShift }),
+                    ...(variables.inTime !== undefined && {
+                      inTime: variables.inTime || null,
+                    }),
+                    ...(variables.outTime !== undefined && {
+                      outTime: variables.outTime || null,
+                    }),
+                    ...(variables.breakStartTime !== undefined && {
+                      breakStartTime: variables.breakStartTime || null,
+                    }),
+                    ...(variables.breakEndTime !== undefined && {
+                      breakEndTime: variables.breakEndTime || null,
+                    }),
+                    ...(variables.isNightShift !== undefined && {
+                      isNightShift: variables.isNightShift,
+                    }),
                   }
                 : e
             ),
@@ -189,59 +208,78 @@ export const EditStampDialog = ({
     },
   });
 
+  const handleCreateStamp = (data: EditStampFormData) => {
+    if (!(year && month && day && employeeId)) {
+      toast({
+        title: "エラー",
+        description: "日付情報が不足しています",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    createMutation.mutate({
+      employeeId,
+      year,
+      month,
+      day,
+      inTime: data.inTime || undefined,
+      outTime: data.outTime || undefined,
+      breakStartTime: data.breakStartTime || undefined,
+      breakEndTime: data.breakEndTime || undefined,
+      ...(data.isNightShift !== undefined && {
+        isNightShift: data.isNightShift,
+      }),
+    });
+  };
+
+  const handleUpdateStamp = (data: EditStampFormData) => {
+    if (!entry?.id) {
+      toast({
+        title: "エラー",
+        description: "編集対象のIDが不足しています",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    updateMutation.mutate({
+      id: entry.id,
+      inTime: data.inTime || undefined,
+      outTime: data.outTime || undefined,
+      // 空文字列も送信する（|| を使わない）
+      breakStartTime: data.breakStartTime,
+      breakEndTime: data.breakEndTime,
+      ...(data.isNightShift !== undefined && {
+        isNightShift: data.isNightShift,
+      }),
+    });
+  };
+
   const onSubmit = (data: EditStampFormData) => {
     if (isCreateMode) {
-      // 新規作成モード
-      if (!year || !month || !day || !employeeId) {
-        toast({
-          title: "エラー",
-          description: "日付情報が不足しています",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      createMutation.mutate({
-        employeeId,
-        year,
-        month,
-        day,
-        inTime: data.inTime || undefined,
-        outTime: data.outTime || undefined,
-        breakStartTime: data.breakStartTime || undefined,
-        breakEndTime: data.breakEndTime || undefined,
-        ...(data.isNightShift !== undefined && { isNightShift: data.isNightShift }),
-      });
+      handleCreateStamp(data);
     } else {
-      // 編集モード
-      if (!entry?.id) {
-        toast({
-          title: "エラー",
-          description: "編集対象のIDが不足しています",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      updateMutation.mutate({
-        id: entry.id,
-        inTime: data.inTime || undefined,
-        outTime: data.outTime || undefined,
-        // 空文字列も送信する（|| を使わない）
-        breakStartTime: data.breakStartTime,
-        breakEndTime: data.breakEndTime,
-        ...(data.isNightShift !== undefined && { isNightShift: data.isNightShift }),
-      });
+      handleUpdateStamp(data);
     }
   };
 
   const mutation = isCreateMode ? createMutation : updateMutation;
 
+  const getSubmitButtonText = () => {
+    if (mutation.isPending) {
+      return isCreateMode ? "作成中..." : "更新中...";
+    }
+    return isCreateMode ? "作成" : "更新";
+  };
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{isCreateMode ? "打刻新規作成" : "打刻編集"}</DialogTitle>
+          <DialogTitle>
+            {isCreateMode ? "打刻新規作成" : "打刻編集"}
+          </DialogTitle>
           <DialogDescription>
             {isCreateMode
               ? `${year}/${month}/${day}の打刻を作成します`
@@ -351,9 +389,7 @@ export const EditStampDialog = ({
                 キャンセル
               </Button>
               <Button disabled={mutation.isPending} type="submit">
-                {mutation.isPending
-                  ? (isCreateMode ? "作成中..." : "更新中...")
-                  : (isCreateMode ? "作成" : "更新")}
+                {getSubmitButtonText()}
               </Button>
             </DialogFooter>
           </form>

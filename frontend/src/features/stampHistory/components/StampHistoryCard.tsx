@@ -115,7 +115,7 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             {/* 夜勤 */}
             {entry.isNightShift && (
               <div className="flex items-center justify-center rounded-md bg-purple-100 px-3 py-2">
-                <Badge className="font-semibold bg-purple-700 text-white">
+                <Badge className="bg-purple-700 font-semibold text-white">
                   夜勤
                 </Badge>
               </div>
