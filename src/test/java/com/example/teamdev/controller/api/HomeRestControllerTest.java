@@ -28,7 +28,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mockito.MockitoBean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -54,16 +54,16 @@ class HomeRestControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
+    @MockitoBean
     private HomeNewsService homeNewsService;
 
-    @MockBean
+    @MockitoBean
     private StampService stampService;
 
-    @MockBean
+    @MockitoBean
     private HomeAttendanceService homeAttendanceService;
 
-    @MockBean
+    @MockitoBean
     private EmployeeMapper employeeMapper;
 
     @BeforeEach
