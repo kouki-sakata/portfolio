@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.teamdev.config.SecurityConfig;
 import com.example.teamdev.util.SecurityUtil;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
@@ -73,25 +73,25 @@ class NewsRestControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private NewsManageService newsManageService;
 
-    @MockBean
+    @MockitoBean
     private NewsManageRegistrationService registrationService;
 
-    @MockBean
+    @MockitoBean
     private NewsManageDeletionService deletionService;
 
-    @MockBean
+    @MockitoBean
     private NewsManageReleaseService releaseService;
 
-    @MockBean
+    @MockitoBean
     private NewsManageBulkDeletionService bulkDeletionService;
 
-    @MockBean
+    @MockitoBean
     private NewsManageBulkReleaseService bulkReleaseService;
 
-    @MockBean
+    @MockitoBean
     private EmployeeMapper employeeMapper;
 
     @BeforeEach
