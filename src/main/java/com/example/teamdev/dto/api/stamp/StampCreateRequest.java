@@ -19,14 +19,14 @@ public record StampCreateRequest(
     String year,
     @NotBlank(message = "月は必須です")
     @Pattern(
-        regexp = "^([1-9]|1[0-2])$",
-        message = "月は1-12の範囲で指定してください"
+        regexp = "^(0?[1-9]|1[0-2])$",
+        message = "月は1-12の範囲で指定してください（ゼロパディング可）"
     )
     String month,
     @NotBlank(message = "日は必須です")
     @Pattern(
-        regexp = "^([1-9]|[12][0-9]|3[01])$",
-        message = "日は1-31の範囲で指定してください"
+        regexp = "^(0?[1-9]|[12][0-9]|3[01])$",
+        message = "日は1-31の範囲で指定してください（ゼロパディング可）"
     )
     String day,
     @Pattern(
