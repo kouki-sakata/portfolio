@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -99,7 +100,17 @@ class ProfileMetadataRepositoryTest extends PostgresContainerSupport {
         assertThat(root.path("status").asText()).isEqualTo("leave");
         assertThat(root.path("joinedAt").asText()).isEqualTo("2024-04-01");
         assertThat(root.path("avatarUrl").asText()).isEqualTo("https://cdn.example.com/avatar.png");
-        assertThat(root.path("schedule").path("breakMinutes").asInt()).isEqualTo(45);
+        assertThat(root.has("schedule")).isFalse();
+
+        Map<String, Object> scheduleColumns = jdbcTemplate.queryForMap(
+            "SELECT TO_CHAR(schedule_start, 'HH24:MI') AS schedule_start, "
+                + "TO_CHAR(schedule_end, 'HH24:MI') AS schedule_end, schedule_break_minutes "
+                + "FROM employee WHERE id = ?",
+            EMPLOYEE_ID
+        );
+        assertThat(scheduleColumns.get("schedule_start")).isEqualTo("10:00");
+        assertThat(scheduleColumns.get("schedule_end")).isEqualTo("19:00");
+        assertThat(scheduleColumns.get("schedule_break_minutes")).isEqualTo(45);
 
         Timestamp updatedAt = jdbcTemplate.queryForObject(
             "SELECT update_date FROM employee WHERE id = ?",

@@ -94,6 +94,33 @@
 - `SELECT relname, indexrelname, idx_scan, idx_tup_read FROM pg_stat_user_indexes WHERE relname IN ('log_history','stamp_history','employee','news') ORDER BY idx_scan DESC;`
 - `SELECT schemaname, relname, n_live_tup FROM pg_stat_user_tables WHERE relname IN ('log_history','stamp_history');`
 
+## JSONB (log_history.detail) GIN インデックス手順
+1. **マイグレーション確認**
+   - `./gradlew flywayInfo | grep V6__reduce_jsonb_dependencies` で未適用を確認。
+   - 適用は `./gradlew flywayMigrate -Dflyway.configFiles=flyway-stg.conf -Dflyway.target=6` を推奨（V6 単体）。
+2. **GIN インデックス作成**
+   - `CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_log_history_detail_gin ON log_history USING gin(detail jsonb_path_ops);`
+   - 作成中は `SELECT phase, tuples_total, tuples_done FROM pg_stat_progress_create_index WHERE index_relname = 'idx_log_history_detail_gin';` を監視。
+3. **統計更新とキャッシュウォームアップ**
+   - `ANALYZE log_history;`
+   - `/api/profile/*` を 3 件叩き、`log_history` へ最新データを追加しヒストグラムを刷新。
+4. **EXPLAIN 検証**
+   - 代表クエリ: `EXPLAIN (ANALYZE, BUFFERS)` +
+     ```sql
+     SELECT id, update_date
+     FROM log_history
+     WHERE detail ->> 'before' ILIKE '%scheduleStart%'
+     ORDER BY update_date DESC
+     LIMIT 50;
+     ```
+   - 期待プラン: `Bitmap Index Scan on idx_log_history_detail_gin` → `Bitmap Heap Scan`
+   - 期待統計: Seq Scan 150ms → Bitmap Heap Scan 30ms 前後（stg 1M rows 基準）。
+5. **運用監視**
+   - 24 時間後に `SELECT idx_scan FROM pg_stat_user_indexes WHERE indexrelname = 'idx_log_history_detail_gin';` を採取し、アクセス増を確認。
+   - 監査ログ保管: `docs/performance-metrics/YYYYMMDD-gin-detail.md` に EXPLAIN / バッファ情報を追記。
+6. **ロールバック**
+   - 異常時は `DROP INDEX CONCURRENTLY IF EXISTS idx_log_history_detail_gin;` → `ANALYZE log_history;`。
+   - JSONB への回帰は不要（アプリ側は schedule カラムを参照）。
+
 ## 今後の TODO
 - `stamp_date` 列導入（V5）後は `idx_stamp_history_year_month` / `idx_stamp_history_employee_date` を `stamp_date` ベースにリビルドするプランを追加。
-- JSONB カラム (`profile_metadata`, `detail`) の GIN インデックス検証チケットを別 Issue として管理。

@@ -176,7 +176,7 @@
                                         AND sh.break_end_time > sh.break_start_time THEN
                                         EXTRACT(EPOCH FROM (sh.break_end_time - sh.break_start_time)) / 3600.0
                                     ELSE
-                                        COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                        COALESCE(e.schedule_break_minutes, 0)::numeric / 60.0
                                 END
                             ELSE 0
                         END
@@ -195,7 +195,7 @@
                                             AND sh.break_end_time > sh.break_start_time THEN
                                             EXTRACT(EPOCH FROM (sh.break_end_time - sh.break_start_time)) / 3600.0
                                         ELSE
-                                            COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                            COALESCE(e.schedule_break_minutes, 0)::numeric / 60.0
                                     END
                                     - 8.0
                                 ELSE 0
@@ -208,9 +208,9 @@
                 SUM(
                     CASE
                         WHEN sh.in_time IS NOT NULL
-                            AND (e.profile_metadata->>'schedule')::jsonb->>'start' IS NOT NULL
+                            AND e.schedule_start IS NOT NULL
                             AND CAST(to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS TIME)
-                                > CAST((e.profile_metadata->>'schedule')::jsonb->>'start' AS TIME)
+                                > e.schedule_start
                         THEN 1
                         ELSE 0
                     END

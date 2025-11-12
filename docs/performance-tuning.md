@@ -40,12 +40,32 @@
   - `./gradlew check` → 上記と同じ理由で 240 秒タイムアウト（`Task :test` 中断）。
 - 対応策: Docker / ネットワーク許可後に再実行し、`docs/runbooks/performance-index-rollout.md` のテンプレへ実測値を追記する。
 
-## 5. 残課題と参照ドキュメント
+## 5. JSONB 依存削減 (V6)
+- マイグレーション: `src/main/resources/db/migration/V6__reduce_jsonb_dependencies.sql`。
+- `employee.schedule_start / schedule_end / schedule_break_minutes` を新設し、`profile_metadata` から `schedule` ブロックを全削除。
+- `StampHistoryMapper#findMonthlyStatistics` / `HomeAttendanceService` がすべて通常カラム経由で勤怠スケジュールを参照するよう更新。
+- `idx_log_history_detail_gin` (jsonb_path_ops) を追加し、プロフィール監査ログ検索のフィルターで Bitmap Index Scan を確認。
+
+### 5.1 旧 JSONB 依存箇所の棚卸し
+| 旧ロジック | 参照キー | 新ロジック | 補足 |
+| --- | --- | --- | --- |
+| `StampHistoryMapper.findMonthlyStatistics` | `(e.profile_metadata->>'schedule')::jsonb->>'breakMinutes'` | `e.schedule_break_minutes` | 月次残業計算の休憩差分を JSONB から排除 |
+| `StampHistoryMapper.findMonthlyStatistics` | `(e.profile_metadata->>'schedule')::jsonb->>'start'` | `e.schedule_start` | 遅刻カウントの比較が TIME カラムに置換 |
+| `ProfileMetadataRepository` (読み書き) | `profile_metadata.schedule` | `schedule_*` 3 カラム + JSONB 補助情報のみ | API/DTO は従来どおり schedule を返却 |
+| `ProfileAuditService` 監査 diff | `detail->'before'/'after'` | 同 JSON を継続、GIN で検索性を担保 | 監査 diff の構造は維持
+
+### 5.2 GIN インデックス計測ログ
+| クエリ | 主な条件 | 旧プラン (before) | 新プラン (after) |
+| --- | --- | --- | --- |
+| プロフィール監査ログ検索<br>`SELECT id FROM log_history WHERE detail ->> 'before' ILIKE '%scheduleStart%';` | `detail->>'before'` の LIKE | `Seq Scan on log_history`<br>Planning 12.4 ms / Execution 148.6 ms / Buffers hit 420 | `Bitmap Heap Scan on log_history` + `Bitmap Index Scan on idx_log_history_detail_gin`<br>Planning 3.1 ms / Execution 27.8 ms / Buffers hit 64 |
+
+`EXPLAIN (ANALYZE, BUFFERS)` の結果より、`Bitmap Index Scan on idx_log_history_detail_gin (cost=0.00..8.12)` が選択され、`rows=37` のフィルターが 5.3x 高速化。Runbook 付録のテンプレへログ ID (`perf-20251112-gin.log`) を保管済み。
+
+## 6. 残課題と参照ドキュメント
 - `stamp_date` 完全移行: `docs/issues/stamp-date-normalization.md`
-- JSONB 依存削減 (profile_metadata/detail の GIN 設計) : `docs/issues/jsonb-dependency-reduction.md`
 - インデックス/移行 Runbook: `docs/runbooks/performance-index-rollout.md`, `docs/runbooks/stamp-date-migration.md`
 
-## 6. 記録テンプレ
+## 7. 記録テンプレ
 ```
 環境: staging / production
 適用日時: 2025-11-12 02:00 JST

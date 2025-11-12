@@ -13,6 +13,9 @@ CREATE TABLE employee (
     password VARCHAR(255) NOT NULL,
     admin_flag INTEGER NOT NULL,
     update_date TIMESTAMP WITHOUT TIME ZONE,
+    schedule_start TIME WITHOUT TIME ZONE NOT NULL DEFAULT '09:00'::time,
+    schedule_end TIME WITHOUT TIME ZONE NOT NULL DEFAULT '18:00'::time,
+    schedule_break_minutes INTEGER NOT NULL DEFAULT 60,
     profile_metadata JSONB NOT NULL DEFAULT '{}'::jsonb
 );
 
