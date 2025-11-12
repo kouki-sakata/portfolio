@@ -83,14 +83,27 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
 
     await navigateAndWait(page, "勤怠履歴", /\/stamp-history/, "打刻履歴");
 
-    await test.step("空状態メッセージを確認", async () => {
-      // データがない場合のメッセージを確認
-      // レスポンシブ対応により、カード用とテーブル用の2つの要素が存在する
-      // デスクトップ表示（テーブル）のメッセージを確認
-      const emptyMessage = page.getByRole("cell", {
-        name: "対象期間の打刻はありません。",
-      });
-      await expect(emptyMessage).toBeVisible({ timeout: 5000 });
+    await test.step("空状態のテーブル表示を確認", async () => {
+      const now = new Date();
+      const daysInMonth = new Date(
+        now.getFullYear(),
+        now.getMonth() + 1,
+        0
+      ).getDate();
+
+      const tableRows = page.locator("table tbody tr");
+      await expect(tableRows.first()).toBeVisible({ timeout: 10_000 });
+      await expect(tableRows).toHaveCount(daysInMonth);
+
+      const enabledDeleteButtons = tableRows
+        .locator("button:not(:disabled)")
+        .filter({ hasText: "削除" });
+      await expect(enabledDeleteButtons).toHaveCount(0);
+
+      const disabledDeleteButtons = tableRows
+        .locator("button:disabled")
+        .filter({ hasText: "削除" });
+      await expect(disabledDeleteButtons).toHaveCount(daysInMonth);
     });
   });
 

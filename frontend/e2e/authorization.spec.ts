@@ -4,7 +4,7 @@ import {
   createTestUser,
   TEST_CREDENTIALS,
 } from "./support/factories";
-import { expectAccessDenied, signIn } from "./support/helpers";
+import { expectAccessDenied, navigateAndWait, signIn } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
 test.describe("権限制御の包括的テスト", () => {
@@ -136,11 +136,7 @@ test.describe("権限制御の包括的テスト", () => {
     );
 
     await test.step("勤怠履歴ページに遷移", async () => {
-      await page.getByRole("link", { name: "勤怠履歴" }).click();
-      await expect(page).toHaveURL(/\/stamp-history/);
-      await expect(
-        page.getByRole("heading", { name: "打刻履歴" })
-      ).toBeVisible();
+      await navigateAndWait(page, "勤怠履歴", /\/stamp-history/, "打刻履歴");
     });
 
     await test.step("自分の履歴のみが表示される（他ユーザーフィルタなし）", async () => {

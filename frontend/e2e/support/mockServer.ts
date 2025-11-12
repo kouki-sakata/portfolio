@@ -500,17 +500,23 @@ export class AppMockServer {
 
     if (normalizedPath === "/stamp-history" && method === "GET") {
       const currentYear = new Date().getFullYear().toString();
-      const currentMonth = (new Date().getMonth() + 1).toString();
+      const currentMonth = (new Date().getMonth() + 1)
+        .toString()
+        .padStart(2, "0");
+
+      const months = Array.from({ length: 12 }, (_, index) =>
+        (index + 1).toString().padStart(2, "0")
+      );
 
       await route.fulfill(
         buildJsonResponse({
-          year: currentYear,
-          month: currentMonth,
+          selectedYear: currentYear,
+          selectedMonth: currentMonth,
           years: [
             currentYear,
             (Number.parseInt(currentYear, 10) - 1).toString(),
           ],
-          months: Array.from({ length: 12 }, (_, i) => (i + 1).toString()),
+          months,
           entries: [],
           summary: {
             totalWorkingDays: 0,

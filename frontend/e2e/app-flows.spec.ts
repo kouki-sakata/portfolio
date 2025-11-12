@@ -1,8 +1,7 @@
-import type { Page } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 
 import type { EmployeeSummary } from "@/features/auth/types";
-import { waitForToast } from "./support/helpers";
+import { signIn, waitForToast } from "./support/helpers";
 import { createAppMockServer } from "./support/mockServer";
 
 const ADMIN_EMAIL = process.env.E2E_ADMIN_EMAIL ?? "admin.user@example.com";
@@ -18,28 +17,6 @@ const NEW_EMPLOYEE = {
 const UPDATED_EMPLOYEE = {
   firstName: "太郎",
   lastName: "高橋",
-};
-
-const signIn = async (page: Page, email: string, password: string) => {
-  await test.step("サインインページに移動", async () => {
-    await page.goto("/signin");
-    await expect(
-      page.getByRole("heading", { name: /^.*サインイン.*$/ })
-    ).toBeVisible();
-  });
-
-  await test.step("資格情報を入力してサインイン", async () => {
-    await page.getByLabel("メールアドレス").fill(email);
-    await page.getByLabel("パスワード").fill(password);
-    await page.getByRole("button", { name: "サインイン" }).click();
-  });
-
-  await test.step("ホーム画面の読み込みを待機", async () => {
-    await expect(page).toHaveURL(/\/$/);
-    await expect(
-      page.getByRole("heading", { name: /おはようございます/ })
-    ).toBeVisible({ timeout: 15_000 });
-  });
 };
 
 test.describe("勤怠管理の主要E2Eフロー", () => {

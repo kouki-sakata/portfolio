@@ -72,6 +72,27 @@ export type DeleteStampRequest = {
 };
 
 // 編集フォーム用Zodスキーマ
+const toMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(":");
+  return Number.parseInt(hours ?? "0", 10) * 60 + Number.parseInt(minutes ?? "0", 10);
+};
+
+const hasValidTimeRange = (
+  inTime: string,
+  outTime: string,
+  isNightShift: boolean | undefined
+): boolean => {
+  const inMinutes = toMinutes(inTime);
+  const outMinutes = toMinutes(outTime);
+
+  if (isNightShift) {
+    const adjustedOut = outMinutes <= inMinutes ? outMinutes + 24 * 60 : outMinutes;
+    return adjustedOut > inMinutes;
+  }
+
+  return outMinutes > inMinutes;
+};
+
 export const EditStampSchema = z
   .object({
     id: z.number(),
@@ -121,7 +142,7 @@ export const EditStampSchema = z
 
       // 退勤時刻が出勤時刻より前の場合はエラー
       if (data.inTime && data.outTime && data.inTime !== "" && data.outTime !== "") {
-        return data.outTime > data.inTime;
+        return hasValidTimeRange(data.inTime, data.outTime, data.isNightShift);
       }
 
       // 休憩終了が休憩開始より前の場合はエラー
