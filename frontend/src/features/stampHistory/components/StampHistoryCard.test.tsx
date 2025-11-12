@@ -193,7 +193,7 @@ describe("StampHistoryCard", () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("disables edit and delete buttons when entry has no id", () => {
+  it("disables delete button but enables edit button when entry has no id", () => {
     const entryWithoutId: StampHistoryEntry = {
       ...mockEntry,
       id: null,
@@ -215,7 +215,9 @@ describe("StampHistoryCard", () => {
       name: /削除/i,
     });
 
-    expect(editButton).toBeDisabled();
+    // 編集ボタンは有効（新規作成を可能にするため）
+    expect(editButton).not.toBeDisabled();
+    // 削除ボタンは無効（存在しないレコードは削除できない）
     expect(deleteButton).toBeDisabled();
   });
 
