@@ -37,6 +37,14 @@ public interface StampHistoryMapper {
             @Param("datesInMonth") List<java.time.LocalDate> datesInMonth
     );
 
+    // N+1解消用: 複数従業員の勤怠を1クエリで取得
+    List<StampHistoryDisplay> getStampHistoryByYearMonthEmployeeIds(
+            @Param("year") String year,
+            @Param("month") String month,
+            @Param("employeeIds") List<Integer> employeeIds,
+            @Param("datesInMonth") List<java.time.LocalDate> datesInMonth
+    );
+
     //指定のidで1レコードを取得する
     @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
             + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "

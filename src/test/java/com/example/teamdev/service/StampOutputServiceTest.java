@@ -63,18 +63,20 @@ class StampOutputServiceTest {
         MockHttpServletResponse response = new MockHttpServletResponse();
         int updateEmployeeId = 99;
 
-        StampHistoryDisplay history1 = new StampHistoryDisplay();
-        history1.setEmployeeId(1);
-        history1.setEmployeeName("田中太郎");
+        StampHistoryDisplay history1Day1 = new StampHistoryDisplay();
+        history1Day1.setEmployeeId(1);
+        history1Day1.setEmployeeName("田中太郎");
 
-        StampHistoryDisplay history2 = new StampHistoryDisplay();
-        history2.setEmployeeId(2);
-        history2.setEmployeeName("山田花子");
+        StampHistoryDisplay history1Day2 = new StampHistoryDisplay();
+        history1Day2.setEmployeeId(1);
+        history1Day2.setEmployeeName("田中太郎");
 
-        when(mapper.getStampHistoryByYearMonthEmployeeId(eq("2025"), eq("04"), eq(1), anyList()))
-                .thenReturn(List.of(history1));
-        when(mapper.getStampHistoryByYearMonthEmployeeId(eq("2025"), eq("04"), eq(2), anyList()))
-                .thenReturn(List.of(history2));
+        StampHistoryDisplay history2Day1 = new StampHistoryDisplay();
+        history2Day1.setEmployeeId(2);
+        history2Day1.setEmployeeName("山田花子");
+
+        when(mapper.getStampHistoryByYearMonthEmployeeIds(eq("2025"), eq("04"), eq(List.of(1, 2)), anyList()))
+                .thenReturn(List.of(history1Day1, history1Day2, history2Day1));
 
         StampCsvDocumentFactory.StampCsvDocument document =
                 new StampCsvDocumentFactory.StampCsvDocument(
@@ -95,8 +97,9 @@ class StampOutputServiceTest {
         verify(documentFactory).create(eq("2025"), eq("04"), namesCaptor.capture(), historyCaptor.capture());
 
         assertEquals(List.of("田中太郎", "山田花子"), namesCaptor.getValue());
-        assertEquals(2, historyCaptor.getValue().size());
-        assertTrue(historyCaptor.getValue().containsAll(List.of(history1, history2)));
+        assertEquals(3, historyCaptor.getValue().size());
+        assertTrue(historyCaptor.getValue().containsAll(List.of(history1Day1, history1Day2, history2Day1)));
+        verify(mapper).getStampHistoryByYearMonthEmployeeIds(eq("2025"), eq("04"), eq(List.of(1, 2)), anyList());
 
         String expectedFileName = URLEncoder.encode(document.fileName(), StandardCharsets.UTF_8)
                 .replaceAll("\\+", "%20");
