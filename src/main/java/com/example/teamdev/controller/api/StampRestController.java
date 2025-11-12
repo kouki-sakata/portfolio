@@ -196,8 +196,10 @@ public class StampRestController {
         Map<String, Object> payload = new HashMap<>();
         payload.put("employeeId", request.employeeId().toString());
         payload.put("year", request.year());
-        payload.put("month", request.month());
-        payload.put("day", request.day());
+        // 月と日は必ずゼロパディング（2桁）にして保存
+        // 例: "1" -> "01", "12" -> "12"
+        payload.put("month", zeroPad(request.month()));
+        payload.put("day", zeroPad(request.day()));
 
         if (request.inTime() != null && !request.inTime().isBlank()) {
             payload.put("inTime", request.inTime());
@@ -216,5 +218,18 @@ public class StampRestController {
         }
 
         return payload;
+    }
+
+    /**
+     * 数値文字列をゼロパディング（2桁）に変換します。
+     *
+     * @param value 数値文字列（例: "1", "5", "12"）
+     * @return ゼロパディングされた文字列（例: "01", "05", "12"）
+     */
+    private String zeroPad(String value) {
+        if (value == null || value.length() >= 2) {
+            return value;
+        }
+        return String.format("%02d", Integer.parseInt(value));
     }
 }

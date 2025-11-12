@@ -542,6 +542,40 @@ class StampRestControllerTest {
             .doesNotContainKey("isNightShift");
     }
 
+    @DisplayName("POST /api/stamps はゼロパディングなしの月日を正規化して保存する【OK】")
+    @Test
+    @WithMockUser(username = EMPLOYEE_EMAIL)
+    void createStampShouldNormalizeMonthAndDayWithZeroPadding() throws Exception {
+        mockMvc.perform(
+            post("/api/stamps")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("""
+                    {
+                      "employeeId": 10,
+                      "year": "2025",
+                      "month": "1",
+                      "day": "5",
+                      "inTime": "09:00"
+                    }
+                    """)
+        ).andExpect(status().isCreated());
+
+        ArgumentCaptor<List<Map<String, Object>>> payloadCaptor = ArgumentCaptor.forClass(List.class);
+        verify(stampEditService).execute(payloadCaptor.capture(), eq(10));
+
+        List<Map<String, Object>> captured = payloadCaptor.getValue();
+        Map<String, Object> first = captured.getFirst();
+
+        // ゼロパディングなし("1", "5")がゼロパディングあり("01", "05")に正規化されることを確認
+        org.assertj.core.api.Assertions.assertThat(first)
+            .containsEntry("employeeId", "10")
+            .containsEntry("year", "2025")
+            .containsEntry("month", "01")  // "1" -> "01"
+            .containsEntry("day", "05")    // "5" -> "05"
+            .containsEntry("inTime", "09:00");
+    }
+
     @DisplayName("POST /api/stamps は他人のレコードを一般権限から作成できない【NG】")
     @Test
     @WithMockUser(username = EMPLOYEE_EMAIL)
