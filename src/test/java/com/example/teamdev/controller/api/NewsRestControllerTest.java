@@ -49,7 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.example.teamdev.config.SecurityConfig;
 import com.example.teamdev.util.SecurityUtil;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.boot.test.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
