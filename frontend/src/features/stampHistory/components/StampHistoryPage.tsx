@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
@@ -54,6 +55,8 @@ const MonthlyStatsCard = lazy(() =>
 );
 
 export const StampHistoryPage = () => {
+  const { user } = useAuth();
+
   // 選択中の年月（ローカル状態）
   const [filters, setFilters] = useState<{ year?: string; month?: string }>(
     () => {
@@ -172,7 +175,8 @@ export const StampHistoryPage = () => {
         }
       }
 
-      const defaultEmployeeId = entries[0]?.employeeId ?? null;
+      // 現在のユーザーIDを優先的に使用、なければ既存エントリから取得
+      const defaultEmployeeId = user?.id ?? entries[0]?.employeeId ?? null;
 
       // 全日付を生成
       for (let day = 1; day <= daysInMonth; day++) {
@@ -188,7 +192,7 @@ export const StampHistoryPage = () => {
 
       return allDays;
     },
-    [createDummyEntry]
+    [createDummyEntry, user?.id]
   );
 
   // 全日付を含むentriesを生成 (hooks must be called before early returns)
