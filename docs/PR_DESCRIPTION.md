@@ -3,7 +3,7 @@
 ## 概要
 
 勤怠履歴ページでレコードが存在しない日付に対して新規作成できるように機能改善を実施しました。
-また、関連する6つのバグを修正し、コード品質を向上させました。
+また、関連する9つのバグを修正し、コード品質を向上させました。
 
 ## 主要な変更
 
@@ -103,6 +103,48 @@ const dayStr = day.toString().padStart(2, '0');
 @Pattern(regexp = "^$|^([0-1][0-9]|2[0-3]):[0-5][0-9]$")  // 空文字列を許可
 ```
 
+### 8. データ孤立バグの修正（ゼロパディング正規化）
+
+**問題**
+- API が "1" と "01" の両方を受け入れるが、そのまま保存
+- `StampHistoryMapper.xml` の JOIN 条件は `to_char()` で常に "01" を生成
+- "1" で保存されたレコードは一覧・編集に表示されない孤立データになる
+
+**解決**
+```java
+private String zeroPad(String value) {
+    if (value == null || value.length() >= 2) {
+        return value;
+    }
+    return String.format("%02d", Integer.parseInt(value));
+}
+// 月日を必ずゼロパディング（2桁）にして保存
+payload.put("month", zeroPad(request.month()));  // "1" -> "01"
+payload.put("day", zeroPad(request.day()));      // "5" -> "05"
+```
+
+### 9. employeeId が null になる問題の修正
+
+**問題**
+- レコードが存在しない月に新規作成すると `employeeId: null` でエラー
+- `entries[0]?.employeeId` が空配列で null を返していた
+
+**解決**
+```typescript
+const { user } = useAuth();
+const defaultEmployeeId = user?.id ?? entries[0]?.employeeId ?? null;
+```
+
+### 10. 設定の一貫性向上
+
+**問題**
+- 重複マイグレーションファイル `03_add_night_shift_flag.sql` が存在
+- test profile で Flyway 設定が不整合
+
+**解決**
+- 重複ファイルを削除し V3 マイグレーションのみを使用
+- test profile に `baseline-on-migrate=true` と `baseline-version=0` を追加
+
 ## コード品質改善
 
 ### 複雑度の削減
@@ -125,27 +167,34 @@ const dayStr = day.toString().padStart(2, '0');
 ```
 
 ### バックエンド
-- ✅ 統合テスト5件を追加
+- ✅ 統合テスト6件を追加
   - レコードなし日付への新規作成
   - 夜勤フラグありの新規作成
   - 最小限フィールドでの新規作成
+  - ゼロパディング正規化の検証
   - 権限チェック（403エラー）
   - 新規作成→更新の統合シナリオ
 
 ## 変更ファイル
 
-**バックエンド（3ファイル）**
+**バックエンド（6ファイル）**
 - `StampCreateRequest.java` - バリデーションパターン修正
 - `StampUpdateRequest.java` - 空文字列許可
 - `StampHistoryMapper.java` - SELECT文修正
-- `StampRestControllerTest.java` - テスト追加
+- `StampRestController.java` - ゼロパディング正規化追加
+- `StampRestControllerTest.java` - テスト6件追加
+- `application-test.properties` - Flyway設定の一貫性向上
 
-**フロントエンド（5ファイル）**
+**フロントエンド（6ファイル）**
 - `EditStampDialog.tsx` - 新規作成判定修正、複雑度削減
-- `StampHistoryPage.tsx` - 日付フォーマット統一、複雑度削減
+- `StampHistoryPage.tsx` - 日付フォーマット統一、employeeId修正、複雑度削減
 - `StampHistoryCard.tsx` - 編集ボタン有効化
 - `StampHistoryCard.test.tsx` - テスト更新
+- `StampHistoryPage.test.tsx` - useAuth モック追加
 - `stampApi.ts` - リンター自動修正
+
+**削除**
+- `03_add_night_shift_flag.sql` - 重複マイグレーションファイル削除
 
 ## デプロイ時の注意事項
 
