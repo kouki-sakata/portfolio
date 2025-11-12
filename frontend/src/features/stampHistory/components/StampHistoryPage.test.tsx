@@ -9,6 +9,20 @@ import { StampHistoryPage } from "./StampHistoryPage";
 
 type StampHistoryApiModule = typeof import("@/features/stampHistory/api");
 
+vi.mock("@/features/auth/hooks/useAuth", () => ({
+  useAuth: vi.fn(() => ({
+    user: {
+      id: 1,
+      firstName: "Test",
+      lastName: "User",
+      email: "test@example.com",
+      admin: false,
+    },
+    authenticated: true,
+    loading: false,
+  })),
+}));
+
 vi.mock("@/features/stampHistory/api", async (importOriginal) => {
   const actual = (await importOriginal()) as StampHistoryApiModule;
   return {

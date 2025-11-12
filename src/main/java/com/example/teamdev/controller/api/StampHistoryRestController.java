@@ -71,6 +71,7 @@ public class StampHistoryRestController {
             asString(source.get("breakStartTime")),
             asString(source.get("breakEndTime")),
             asInteger(source.get("overtimeMinutes")),
+            asBoolean(source.get("isNightShift")),
             asString(source.get("updateDate"))
         );
     }
@@ -78,6 +79,13 @@ public class StampHistoryRestController {
     private Integer asInteger(Object value) {
         if (value instanceof Number number) {
             return number.intValue();
+        }
+        return null;
+    }
+
+    private Boolean asBoolean(Object value) {
+        if (value instanceof Boolean bool) {
+            return bool;
         }
         return null;
     }

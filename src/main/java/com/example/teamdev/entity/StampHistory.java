@@ -54,6 +54,10 @@ public class StampHistory {
 	 */
 	private OffsetDateTime breakEndTime;
 	/**
+	 * 夜勤フラグ（TRUE=夜勤、FALSE=通常勤務）
+	 */
+	private Boolean isNightShift;
+	/**
 	 * 更新従業員ID
 	 */
 	private Integer updateEmployeeId;  //←update_employee_id→updateEmployeeId修正

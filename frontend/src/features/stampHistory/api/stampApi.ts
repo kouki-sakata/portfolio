@@ -1,5 +1,6 @@
 import { calculateMonthlySummary } from "@/features/stampHistory/lib/summary";
 import type {
+  CreateStampRequest,
   DeleteStampRequest,
   StampHistoryEntry,
   StampHistoryResponse,
@@ -19,6 +20,7 @@ const mapEntry = (
   entry: StampHistoryApiResponse["entries"][number]
 ): StampHistoryEntry => ({
   id: entry.id ?? null,
+  employeeId: entry.employeeId ?? null,
   year: entry.year ?? null,
   month: entry.month ?? null,
   day: entry.day ?? null,
@@ -43,6 +45,12 @@ const mapEntry = (
         overtimeMinutes?: number | null;
       }
     ).overtimeMinutes ?? null,
+  isNightShift:
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        isNightShift?: boolean | null;
+      }
+    ).isNightShift ?? null,
   updateDate: entry.updateDate ?? null,
 });
 
@@ -104,17 +112,92 @@ export const fetchStampHistory = async (
   }
 };
 
+export const createStamp = async (
+  payload: CreateStampRequest
+): Promise<void> => {
+  const {
+    employeeId,
+    year,
+    month,
+    day,
+    inTime,
+    outTime,
+    breakStartTime,
+    breakEndTime,
+    isNightShift,
+  } = payload;
+
+  const data: {
+    employeeId: number;
+    year: string;
+    month: string;
+    day: string;
+    inTime?: string;
+    outTime?: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
+    isNightShift?: boolean;
+  } = {
+    employeeId,
+    year,
+    month,
+    day,
+  };
+
+  // 出勤・退勤時刻は値がある場合のみ送信
+  if (inTime !== undefined && inTime.length > 0) {
+    data.inTime = inTime;
+  }
+  if (outTime !== undefined && outTime.length > 0) {
+    data.outTime = outTime;
+  }
+  if (breakStartTime !== undefined && breakStartTime.length > 0) {
+    data.breakStartTime = breakStartTime;
+  }
+  if (breakEndTime !== undefined && breakEndTime.length > 0) {
+    data.breakEndTime = breakEndTime;
+  }
+  if (isNightShift !== undefined) {
+    data.isNightShift = isNightShift;
+  }
+
+  try {
+    await api.post<void>("/stamps", data);
+  } catch (error) {
+    return handleApiError(error);
+  }
+};
+
 export const updateStamp = async (
   payload: UpdateStampRequest
 ): Promise<void> => {
-  const { id, inTime, outTime } = payload;
+  const { id, inTime, outTime, breakStartTime, breakEndTime, isNightShift } =
+    payload;
 
-  const data: Partial<Record<"inTime" | "outTime", string>> = {};
-  if (inTime && inTime.length > 0) {
+  const data: {
+    inTime?: string;
+    outTime?: string;
+    breakStartTime?: string;
+    breakEndTime?: string;
+    isNightShift?: boolean;
+  } = {};
+
+  // 出勤・退勤時刻は値がある場合のみ送信
+  if (inTime !== undefined && inTime.length > 0) {
     data.inTime = inTime;
   }
-  if (outTime && outTime.length > 0) {
+  if (outTime !== undefined && outTime.length > 0) {
     data.outTime = outTime;
+  }
+  // 休憩時間は空文字列も送信（削除を表す）
+  if (breakStartTime !== undefined) {
+    data.breakStartTime = breakStartTime;
+  }
+  if (breakEndTime !== undefined) {
+    data.breakEndTime = breakEndTime;
+  }
+  if (isNightShift !== undefined) {
+    data.isNightShift = isNightShift;
   }
 
   try {

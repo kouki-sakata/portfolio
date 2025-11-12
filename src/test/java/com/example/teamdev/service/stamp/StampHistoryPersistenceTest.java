@@ -60,7 +60,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "1",
                 "09:00",
-                "18:00"
+                "18:00",
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
@@ -97,7 +100,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "15",
                 "10:00",
-                null
+                null,
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
@@ -128,7 +134,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "20",
                 null,
-                "18:00"
+                "18:00",
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
@@ -159,7 +168,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "25",
                 null,
-                null
+                null,
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
@@ -195,7 +207,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "1",
                 "09:30",
-                "18:30"
+                "18:30",
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             StampHistory existingEntity = new StampHistory();
@@ -239,7 +254,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "5",
                 null,
-                null
+                null,
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             StampHistory existingEntity = new StampHistory();
@@ -277,7 +295,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "10",
                 "09:00",
-                "18:00"
+                "18:00",
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             when(stampHistoryMapper.getById(777)).thenReturn(Optional.empty());
@@ -303,7 +324,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "12",
                 "10:00",
-                null
+                null,
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             StampHistory existingEntity = new StampHistory();
@@ -391,7 +415,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "1",
                 "09:00",
-                null
+                null,
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             // Act - 新規保存
@@ -409,7 +436,10 @@ class StampHistoryPersistenceTest {
                 "10",
                 "1",
                 "09:00",
-                "18:00"
+                "18:00",
+                null,  // breakStartTime
+                null,  // breakEndTime
+                null   // isNightShift
             );
 
             StampHistory existingEntity = new StampHistory();
@@ -428,8 +458,8 @@ class StampHistoryPersistenceTest {
         @DisplayName("異なる従業員IDでの新規登録が連続して動作")
         void multipleNewEntriesWithDifferentEmployees_shouldWorkCorrectly() {
             // Arrange
-            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00");
-            StampEditData data2 = new StampEditData(null, 200, "2025", "10", "2", "10:00", "19:00");
+            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
+            StampEditData data2 = new StampEditData(null, 200, "2025", "10", "2", "10:00", "19:00", null, null, null);
 
             // Act
             boolean result1 = persistence.saveOrUpdate(data1, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);

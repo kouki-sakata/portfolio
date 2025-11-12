@@ -37,13 +37,14 @@ class StampHistoryMapperDailyAttendanceTest extends PostgresContainerSupport {
         OffsetDateTime out = in.plusHours(10);
 
         jdbcTemplate.update(
-            "INSERT INTO stamp_history (year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time, update_employee_id, update_date) "
-                + "VALUES ('2025', '11', '07', ?, ?, ?, ?, ?, ?, ?)",
+            "INSERT INTO stamp_history (year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time, is_night_shift, update_employee_id, update_date) "
+                + "VALUES ('2025', '11', '07', ?, ?, ?, ?, ?, ?, ?, ?)",
             employeeId,
             Timestamp.from(in.toInstant()),
             Timestamp.from(out.toInstant()),
             Timestamp.from(breakStart.toInstant()),
             Timestamp.from(breakEnd.toInstant()),
+            null,  // is_night_shift
             employeeId,
             Timestamp.from(OffsetDateTime.now().toInstant())
         );

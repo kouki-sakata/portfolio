@@ -1,12 +1,34 @@
 package com.example.teamdev.dto.api.stamp;
 
 import jakarta.validation.constraints.AssertTrue;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 
 /**
- * 打刻履歴更新用リクエストDTO。
+ * 打刻履歴新規作成用リクエストDTO。
  */
-public record StampUpdateRequest(
+public record StampCreateRequest(
+    @NotNull(message = "従業員IDは必須です")
+    Integer employeeId,
+    @NotBlank(message = "年は必須です")
+    @Pattern(
+        regexp = "^\\d{4}$",
+        message = "年はYYYY形式で指定してください"
+    )
+    String year,
+    @NotBlank(message = "月は必須です")
+    @Pattern(
+        regexp = "^(0?[1-9]|1[0-2])$",
+        message = "月は1-12の範囲で指定してください（ゼロパディング可）"
+    )
+    String month,
+    @NotBlank(message = "日は必須です")
+    @Pattern(
+        regexp = "^(0?[1-9]|[12][0-9]|3[01])$",
+        message = "日は1-31の範囲で指定してください（ゼロパディング可）"
+    )
+    String day,
     @Pattern(
         regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
         message = "出勤時刻はHH:mm形式で指定してください"
@@ -18,24 +40,21 @@ public record StampUpdateRequest(
     )
     String outTime,
     @Pattern(
-        regexp = "^$|^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
-        message = "休憩開始時刻はHH:mm形式で指定してください（空の場合は削除）"
+        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "休憩開始時刻はHH:mm形式で指定してください"
     )
     String breakStartTime,
     @Pattern(
-        regexp = "^$|^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
-        message = "休憩終了時刻はHH:mm形式で指定してください（空の場合は削除）"
+        regexp = "^([0-1][0-9]|2[0-3]):[0-5][0-9]$",
+        message = "休憩終了時刻はHH:mm形式で指定してください"
     )
     String breakEndTime,
     Boolean isNightShift
 ) {
-    @AssertTrue(message = "少なくとも1つのフィールドを指定してください")
-    public boolean hasUpdatableField() {
+    @AssertTrue(message = "出勤時刻または退勤時刻のいずれかを指定してください")
+    public boolean hasTimeField() {
         return (inTime != null && !inTime.isBlank())
-            || (outTime != null && !outTime.isBlank())
-            || breakStartTime != null
-            || breakEndTime != null
-            || isNightShift != null;
+            || (outTime != null && !outTime.isBlank());
     }
 
     @AssertTrue(message = "出勤時刻と退勤時刻の関係が不正です。通常勤務の場合、退勤時刻は出勤時刻より後である必要があります")

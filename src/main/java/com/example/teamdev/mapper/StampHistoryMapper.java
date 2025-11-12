@@ -22,7 +22,7 @@ public interface StampHistoryMapper {
     //※重複するレコードは存在しない前提のため1件取得
     @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
             + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "
-            + "update_employee_id AS updateEmployeeId, update_date AS updateDate "
+            + "is_night_shift AS isNightShift, update_employee_id AS updateEmployeeId, update_date AS updateDate "
             + "FROM stamp_history WHERE year = #{year} AND month = #{month} AND day = #{day} "
             + "AND employee_id = #{employee_id} LIMIT 1")
     StampHistory getStampHistoryByYearMonthDayEmployeeId(String year,
@@ -39,7 +39,8 @@ public interface StampHistoryMapper {
 
     //指定のidで1レコードを取得する
     @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
-            + "out_time AS outTime, update_employee_id AS updateEmployeeId, update_date AS updateDate "
+            + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "
+            + "is_night_shift AS isNightShift, update_employee_id AS updateEmployeeId, update_date AS updateDate "
             + "FROM stamp_history WHERE id = #{id}")
     Optional<StampHistory> getById(@Param("id") Integer id);
 

@@ -1,5 +1,6 @@
 package com.example.teamdev.controller.api;
 
+import com.example.teamdev.dto.api.stamp.StampCreateRequest;
 import com.example.teamdev.dto.api.stamp.StampUpdateRequest;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.mapper.StampHistoryMapper;
@@ -22,6 +23,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,6 +50,23 @@ public class StampRestController {
         this.stampEditService = stampEditService;
         this.stampDeleteService = stampDeleteService;
         this.stampHistoryMapper = stampHistoryMapper;
+    }
+
+    @Operation(summary = "打刻履歴新規作成", description = "新しい打刻履歴を作成する")
+    @PostMapping
+    public ResponseEntity<Void> createStamp(@Valid @RequestBody StampCreateRequest request) {
+        Integer operatorId = requireAuthenticatedEmployeeId();
+
+        // 管理者以外は自分自身のレコードのみ作成可能
+        boolean isOwner = Objects.equals(request.employeeId(), operatorId);
+        if (!isOwner && !SecurityUtil.isCurrentUserAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "他の従業員の打刻は作成できません");
+        }
+
+        Map<String, Object> payload = buildCreatePayload(request);
+        stampEditService.execute(List.of(payload), operatorId);
+
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @Operation(summary = "打刻履歴更新", description = "打刻IDを指定して時刻を更新する")
@@ -119,6 +138,18 @@ public class StampRestController {
             payload.put("outTime", resolvedOutTime);
         }
 
+        // 休憩時間は空文字列を削除として扱う
+        String resolvedBreakStartTime = resolveBreakTimeValue(request.breakStartTime(), target.getBreakStartTime());
+        payload.put("breakStartTime", resolvedBreakStartTime);
+
+        String resolvedBreakEndTime = resolveBreakTimeValue(request.breakEndTime(), target.getBreakEndTime());
+        payload.put("breakEndTime", resolvedBreakEndTime);
+
+        // 夜勤フラグの処理
+        if (request.isNightShift() != null) {
+            payload.put("isNightShift", request.isNightShift());
+        }
+
         return payload;
     }
 
@@ -130,5 +161,75 @@ public class StampRestController {
             return null;
         }
         return TIME_FORMATTER.format(existing);
+    }
+
+    /**
+     * 休憩時間専用の解決ロジック。空文字列を明示的な削除として扱う。
+     *
+     * @param requested リクエストで指定された値（null=未指定、空文字列=削除、値あり=更新）
+     * @param existing  既存のデータベース値
+     * @return 解決された文字列（nullは削除を意味する）
+     */
+    private String resolveBreakTimeValue(String requested, OffsetDateTime existing) {
+        if (requested != null) {
+            // 空文字列の場合は削除（nullを返す）
+            if (requested.isBlank()) {
+                return null;
+            }
+            // 値がある場合はそのまま返す
+            return requested;
+        }
+        // リクエストにフィールドがない場合は既存値を保持
+        if (existing == null) {
+            return null;
+        }
+        return TIME_FORMATTER.format(existing);
+    }
+
+    /**
+     * 新規作成用のペイロードを構築します。
+     *
+     * @param request 新規作成リクエスト
+     * @return stampEditServiceに渡すペイロード
+     */
+    private Map<String, Object> buildCreatePayload(StampCreateRequest request) {
+        Map<String, Object> payload = new HashMap<>();
+        payload.put("employeeId", request.employeeId().toString());
+        payload.put("year", request.year());
+        // 月と日は必ずゼロパディング（2桁）にして保存
+        // 例: "1" -> "01", "12" -> "12"
+        payload.put("month", zeroPad(request.month()));
+        payload.put("day", zeroPad(request.day()));
+
+        if (request.inTime() != null && !request.inTime().isBlank()) {
+            payload.put("inTime", request.inTime());
+        }
+        if (request.outTime() != null && !request.outTime().isBlank()) {
+            payload.put("outTime", request.outTime());
+        }
+        if (request.breakStartTime() != null && !request.breakStartTime().isBlank()) {
+            payload.put("breakStartTime", request.breakStartTime());
+        }
+        if (request.breakEndTime() != null && !request.breakEndTime().isBlank()) {
+            payload.put("breakEndTime", request.breakEndTime());
+        }
+        if (request.isNightShift() != null) {
+            payload.put("isNightShift", request.isNightShift());
+        }
+
+        return payload;
+    }
+
+    /**
+     * 数値文字列をゼロパディング（2桁）に変換します。
+     *
+     * @param value 数値文字列（例: "1", "5", "12"）
+     * @return ゼロパディングされた文字列（例: "01", "05", "12"）
+     */
+    private String zeroPad(String value) {
+        if (value == null || value.length() >= 2) {
+            return value;
+        }
+        return String.format("%02d", Integer.parseInt(value));
     }
 }

@@ -64,6 +64,10 @@ public class StampHistoryDisplay {
 	 */
 	private Integer overtimeMinutes;
 	/**
+	 * 夜勤フラグ
+	 */
+	private Boolean isNightShift;
+	/**
 	 * 更新日時
 	 */
 	private String updateDate;
@@ -88,7 +92,7 @@ public class StampHistoryDisplay {
 	 * CSV出力処理用
 	 */
 	public static String getCsvHeader() {
-		return "ID,年,月,日,曜日,従業員ID,従業員氏名,更新者氏名,出勤時刻,退勤時刻,休憩開始時刻,休憩終了時刻,残業分,更新日時\n";
+		return "ID,年,月,日,曜日,従業員ID,従業員氏名,更新者氏名,出勤時刻,退勤時刻,休憩開始時刻,休憩終了時刻,残業分,夜勤,更新日時\n";
 	}
 
 	public String toCsvString() {
@@ -106,6 +110,7 @@ public class StampHistoryDisplay {
 		csvBuilder.append("\"").append(breakStartTime != null ? breakStartTime : "").append("\",");
 		csvBuilder.append("\"").append(breakEndTime != null ? breakEndTime : "").append("\",");
 		csvBuilder.append(overtimeMinutes != null ? overtimeMinutes : 0).append(",");
+		csvBuilder.append("\"").append(isNightShift == null ? "-" : (isNightShift ? "夜勤" : "通常")).append("\",");
 		csvBuilder.append("\"").append(updateDate != null ? updateDate : "").append("\",");
 
 		// 最後のカンマを削除して改行を追加

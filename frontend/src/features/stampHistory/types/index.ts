@@ -20,6 +20,7 @@ export const emptyMonthlySummary: MonthlyStats = {
 
 export type StampHistoryEntry = {
   id: number | null;
+  employeeId: number | null;
   year: string | null;
   month: string | null;
   day: string | null;
@@ -29,6 +30,7 @@ export type StampHistoryEntry = {
   breakStartTime: string | null;
   breakEndTime: string | null;
   overtimeMinutes: number | null;
+  isNightShift: boolean | null;
   updateDate: string | null;
 };
 
@@ -46,6 +48,22 @@ export type UpdateStampRequest = {
   id: number;
   inTime?: string;
   outTime?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  isNightShift?: boolean;
+};
+
+// 打刻新規作成リクエスト型
+export type CreateStampRequest = {
+  employeeId: number;
+  year: string;
+  month: string;
+  day: string;
+  inTime?: string;
+  outTime?: string;
+  breakStartTime?: string;
+  breakEndTime?: string;
+  isNightShift?: boolean;
 };
 
 // 打刻削除リクエスト型
@@ -54,6 +72,27 @@ export type DeleteStampRequest = {
 };
 
 // 編集フォーム用Zodスキーマ
+const toMinutes = (time: string): number => {
+  const [hours, minutes] = time.split(":");
+  return Number.parseInt(hours ?? "0", 10) * 60 + Number.parseInt(minutes ?? "0", 10);
+};
+
+const hasValidTimeRange = (
+  inTime: string,
+  outTime: string,
+  isNightShift: boolean | undefined
+): boolean => {
+  const inMinutes = toMinutes(inTime);
+  const outMinutes = toMinutes(outTime);
+
+  if (isNightShift) {
+    const adjustedOut = outMinutes <= inMinutes ? outMinutes + 24 * 60 : outMinutes;
+    return adjustedOut > inMinutes;
+  }
+
+  return outMinutes > inMinutes;
+};
+
 export const EditStampSchema = z
   .object({
     id: z.number(),
@@ -71,21 +110,50 @@ export const EditStampSchema = z
       })
       .optional()
       .or(z.literal("")),
+    breakStartTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: "時刻はHH:MM形式で入力してください",
+      })
+      .optional()
+      .or(z.literal("")),
+    breakEndTime: z
+      .string()
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, {
+        message: "時刻はHH:MM形式で入力してください",
+      })
+      .optional()
+      .or(z.literal("")),
+    isNightShift: z.boolean().optional(),
   })
   .refine(
     (data) => {
-      // 両方空の場合はエラー
-      if ((!data.inTime || data.inTime === "") && (!data.outTime || data.outTime === "")) {
+      // すべて空の場合はエラー
+      const hasAnyField =
+        (data.inTime && data.inTime !== "") ||
+        (data.outTime && data.outTime !== "") ||
+        (data.breakStartTime && data.breakStartTime !== "") ||
+        (data.breakEndTime && data.breakEndTime !== "") ||
+        data.isNightShift !== undefined;
+
+      if (!hasAnyField) {
         return false;
       }
+
       // 退勤時刻が出勤時刻より前の場合はエラー
       if (data.inTime && data.outTime && data.inTime !== "" && data.outTime !== "") {
-        return data.outTime > data.inTime;
+        return hasValidTimeRange(data.inTime, data.outTime, data.isNightShift);
       }
+
+      // 休憩終了が休憩開始より前の場合はエラー
+      if (data.breakStartTime && data.breakEndTime && data.breakStartTime !== "" && data.breakEndTime !== "") {
+        return data.breakEndTime > data.breakStartTime;
+      }
+
       return true;
     },
     {
-      message: "出勤時刻と退勤時刻を正しく入力してください",
+      message: "時刻を正しく入力してください",
       path: ["outTime"],
     }
   );

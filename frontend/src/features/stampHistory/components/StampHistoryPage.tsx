@@ -21,6 +21,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
@@ -54,6 +55,8 @@ const MonthlyStatsCard = lazy(() =>
 );
 
 export const StampHistoryPage = () => {
+  const { user } = useAuth();
+
   // 選択中の年月（ローカル状態）
   const [filters, setFilters] = useState<{ year?: string; month?: string }>(
     () => {
@@ -116,6 +119,107 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
+  const createDummyEntry = useCallback(
+    (
+      year: string,
+      month: string,
+      day: number,
+      employeeId: number | null
+    ): StampHistoryEntry => {
+      const dayStr = day.toString().padStart(2, "0");
+      const date = new Date(
+        Number.parseInt(year, 10),
+        Number.parseInt(month, 10) - 1,
+        day
+      );
+      const dayOfWeekNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+
+      return {
+        id: null,
+        employeeId,
+        year,
+        month,
+        day: dayStr,
+        dayOfWeek: dayOfWeekNames[date.getDay()] ?? null,
+        inTime: null,
+        outTime: null,
+        breakStartTime: null,
+        breakEndTime: null,
+        overtimeMinutes: null,
+        isNightShift: null,
+        updateDate: null,
+      };
+    },
+    []
+  );
+
+  // 選択された年月の全日付を生成する関数
+  const generateAllDaysInMonth = useCallback(
+    (year: string, month: string, entries: StampHistoryEntry[]) => {
+      if (!(year && month)) {
+        return entries;
+      }
+
+      const daysInMonth = new Date(
+        Number.parseInt(year, 10),
+        Number.parseInt(month, 10),
+        0
+      ).getDate();
+      const allDays: StampHistoryEntry[] = [];
+
+      // 既存のentriesをMapに変換（day をキーとして高速検索）
+      const entryMap = new Map<string, StampHistoryEntry>();
+      for (const entry of entries) {
+        if (entry.day) {
+          entryMap.set(entry.day, entry);
+        }
+      }
+
+      // 現在のユーザーIDを優先的に使用、なければ既存エントリから取得
+      const defaultEmployeeId = user?.id ?? entries[0]?.employeeId ?? null;
+
+      // 全日付を生成
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayStr = day.toString().padStart(2, "0");
+        const existingEntry = entryMap.get(dayStr);
+
+        if (existingEntry) {
+          allDays.push(existingEntry);
+        } else {
+          allDays.push(createDummyEntry(year, month, day, defaultEmployeeId));
+        }
+      }
+
+      return allDays;
+    },
+    [createDummyEntry, user?.id]
+  );
+
+  // 全日付を含むentriesを生成 (hooks must be called before early returns)
+  const data: StampHistoryResponse = query.data ?? {
+    selectedYear: confirmedFilters.year ?? "",
+    selectedMonth: confirmedFilters.month ?? "",
+    years: [],
+    months: [],
+    entries: [],
+    summary: { ...emptyMonthlySummary },
+  };
+
+  const allEntriesWithDays = useMemo(
+    () =>
+      generateAllDaysInMonth(
+        data.selectedYear,
+        data.selectedMonth,
+        data.entries
+      ),
+    [
+      data.selectedYear,
+      data.selectedMonth,
+      data.entries,
+      generateAllDaysInMonth,
+    ]
+  );
+
   if (query.isLoading) {
     return <StampHistorySkeleton />;
   }
@@ -127,15 +231,6 @@ export const StampHistoryPage = () => {
       </div>
     );
   }
-
-  const data: StampHistoryResponse = query.data ?? {
-    selectedYear: confirmedFilters.year ?? "",
-    selectedMonth: confirmedFilters.month ?? "",
-    years: [],
-    months: [],
-    entries: [],
-    summary: { ...emptyMonthlySummary },
-  };
 
   // 現在選択中の年月（確定前）を表示
   const selectedYear: string | undefined = filters.year;
@@ -230,26 +325,16 @@ export const StampHistoryPage = () => {
       </SuspenseWrapper>
 
       {/* Card layout for mobile and tablet (< lg) */}
-      {data.entries.length === 0 ? (
-        <Card className="block lg:hidden">
-          <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">
-              対象期間の打刻はありません。
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <ul className="block list-none space-y-4 lg:hidden">
-          {data.entries.map((entry) => (
-            <StampHistoryCard
-              entry={entry}
-              key={`card-${entry.year}-${entry.month}-${entry.day}`}
-              onDelete={handleDelete}
-              onEdit={handleEdit}
-            />
-          ))}
-        </ul>
-      )}
+      <ul className="block list-none space-y-4 lg:hidden">
+        {allEntriesWithDays.map((entry) => (
+          <StampHistoryCard
+            entry={entry}
+            key={`card-${entry.year}-${entry.month}-${entry.day}`}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+          />
+        ))}
+      </ul>
 
       {/* Table layout for desktop (>= lg) */}
       <div className="mt-6 hidden lg:block">
@@ -263,84 +348,78 @@ export const StampHistoryPage = () => {
               <TableHead>休憩開始</TableHead>
               <TableHead>休憩終了</TableHead>
               <TableHead>残業</TableHead>
+              <TableHead>夜勤</TableHead>
               <TableHead>更新日時</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.entries.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  className="py-8 text-center text-muted-foreground"
-                  colSpan={9}
-                >
-                  対象期間の打刻はありません。
+            {allEntriesWithDays.map((entry) => (
+              <TableRow key={`table-${entry.year}-${entry.month}-${entry.day}`}>
+                <TableCell>
+                  {entry.year}/{entry.month}/{entry.day}
+                </TableCell>
+                <TableCell>{entry.dayOfWeek}</TableCell>
+                <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
+                <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
+                <TableCell>
+                  {renderBreakTimeCell(entry.breakStartTime)}
+                </TableCell>
+                <TableCell>{renderBreakTimeCell(entry.breakEndTime)}</TableCell>
+                <TableCell>
+                  {renderOvertimeCell(entry.overtimeMinutes)}
+                </TableCell>
+                <TableCell>
+                  {entry.isNightShift ? (
+                    <span className="inline-flex items-center rounded-md bg-purple-100 px-2 py-1 font-medium text-purple-700 text-xs">
+                      夜勤
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+                <TableCell className="text-muted-foreground text-sm">
+                  {entry.updateDate ?? "-"}
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={() => handleEdit(entry)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <SpriteIcon className="h-4 w-4" decorative name="edit" />
+                      <span className="sr-only">編集</span>
+                    </Button>
+                    <Button
+                      disabled={!entry.id}
+                      onClick={() => handleDelete(entry)}
+                      size="sm"
+                      variant="ghost"
+                    >
+                      <SpriteIcon
+                        className="h-4 w-4"
+                        decorative
+                        name="trash-2"
+                      />
+                      <span className="sr-only">削除</span>
+                    </Button>
+                  </div>
                 </TableCell>
               </TableRow>
-            ) : (
-              data.entries.map((entry) => (
-                <TableRow
-                  key={`table-${entry.year}-${entry.month}-${entry.day}`}
-                >
-                  <TableCell>
-                    {entry.year}/{entry.month}/{entry.day}
-                  </TableCell>
-                  <TableCell>{entry.dayOfWeek}</TableCell>
-                  <TableCell>{renderOptionalTime(entry.inTime)}</TableCell>
-                  <TableCell>{renderOptionalTime(entry.outTime)}</TableCell>
-                  <TableCell>
-                    {renderBreakTimeCell(entry.breakStartTime)}
-                  </TableCell>
-                  <TableCell>
-                    {renderBreakTimeCell(entry.breakEndTime)}
-                  </TableCell>
-                  <TableCell>
-                    {renderOvertimeCell(entry.overtimeMinutes)}
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm">
-                    {entry.updateDate ?? "-"}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        disabled={!entry.id}
-                        onClick={() => handleEdit(entry)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4"
-                          decorative
-                          name="edit"
-                        />
-                        <span className="sr-only">編集</span>
-                      </Button>
-                      <Button
-                        disabled={!entry.id}
-                        onClick={() => handleDelete(entry)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4"
-                          decorative
-                          name="trash-2"
-                        />
-                        <span className="sr-only">削除</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+            ))}
           </TableBody>
         </Table>
       </div>
 
       <EditStampDialog
+        day={selectedEntry?.day ?? undefined}
+        employeeId={selectedEntry?.employeeId ?? undefined}
         entry={selectedEntry}
+        month={selectedEntry?.month ?? undefined}
         onOpenChange={setEditDialogOpen}
         open={editDialogOpen}
+        year={selectedEntry?.year ?? undefined}
       />
 
       <DeleteStampDialog

@@ -29,6 +29,11 @@ public class StampFormDataExtractor {
         // 時刻情報の安全な抽出
         String inTime = extractNullableString(stampEdit, "inTime");
         String outTime = extractNullableString(stampEdit, "outTime");
+        String breakStartTime = extractNullableString(stampEdit, "breakStartTime");
+        String breakEndTime = extractNullableString(stampEdit, "breakEndTime");
+
+        // 夜勤フラグの抽出
+        Boolean isNightShift = extractNullableBoolean(stampEdit, "isNightShift");
 
         // 従業員IDの抽出（カンマ区切り対策）
         Integer employeeId = extractEmployeeId(stampEdit);
@@ -36,7 +41,7 @@ public class StampFormDataExtractor {
         // IDの抽出（更新時のみ存在）
         Integer id = extractId(stampEdit);
 
-        return new StampEditData(id, employeeId, year, month, day, inTime, outTime);
+        return new StampEditData(id, employeeId, year, month, day, inTime, outTime, breakStartTime, breakEndTime, isNightShift);
     }
 
     /**
@@ -61,6 +66,24 @@ public class StampFormDataExtractor {
     private String extractNullableString(Map<String, Object> map, String fieldName) {
         Object value = map.get(fieldName);
         return value != null ? value.toString() : null;
+    }
+
+    /**
+     * オプションBoolean フィールドを抽出します。
+     *
+     * @param map       データを含むMap
+     * @param fieldName フィールド名
+     * @return 抽出されたBoolean（nullの場合はnull）
+     */
+    private Boolean extractNullableBoolean(Map<String, Object> map, String fieldName) {
+        Object value = map.get(fieldName);
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Boolean) {
+            return (Boolean) value;
+        }
+        return Boolean.parseBoolean(value.toString());
     }
 
     /**

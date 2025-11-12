@@ -6,6 +6,7 @@ describe("csv-generator", () => {
   const mockEntries: StampHistoryEntry[] = [
     {
       id: 1,
+      employeeId: 1,
       year: "2025",
       month: "01",
       day: "15",
@@ -15,10 +16,12 @@ describe("csv-generator", () => {
       breakStartTime: "12:00",
       breakEndTime: "12:45",
       overtimeMinutes: 60,
+      isNightShift: null,
       updateDate: "2025-01-15 18:05",
     },
     {
       id: 2,
+      employeeId: 1,
       year: "2025",
       month: "01",
       day: "16",
@@ -28,6 +31,7 @@ describe("csv-generator", () => {
       breakStartTime: null,
       breakEndTime: null,
       overtimeMinutes: 0,
+      isNightShift: null,
       updateDate: "2025-01-16 17:50",
     },
   ];
@@ -127,6 +131,7 @@ describe("csv-generator", () => {
       const entriesWithNull: StampHistoryEntry[] = [
         {
           id: null,
+          employeeId: 1,
           year: "2025",
           month: "01",
           day: "15",
@@ -136,6 +141,7 @@ describe("csv-generator", () => {
           breakStartTime: null,
           breakEndTime: null,
           overtimeMinutes: null,
+          isNightShift: null,
           updateDate: null,
         },
       ];

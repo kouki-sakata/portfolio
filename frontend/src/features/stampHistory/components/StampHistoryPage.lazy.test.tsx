@@ -24,6 +24,7 @@ const mockStampHistoryData = {
   entries: [
     {
       id: 1,
+      employeeId: 1,
       year: "2025",
       month: "10",
       day: "01",
@@ -33,10 +34,12 @@ const mockStampHistoryData = {
       breakStartTime: "12:00",
       breakEndTime: "12:45",
       overtimeMinutes: 45,
+      isNightShift: null,
       updateDate: "2025-10-01 18:00:00",
     },
     {
       id: 2,
+      employeeId: 1,
       year: "2025",
       month: "10",
       day: "02",
@@ -46,6 +49,7 @@ const mockStampHistoryData = {
       breakStartTime: null,
       breakEndTime: null,
       overtimeMinutes: 15,
+      isNightShift: null,
       updateDate: "2025-10-02 18:30:00",
     },
   ],

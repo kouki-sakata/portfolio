@@ -67,6 +67,9 @@ public class StampService {
             entity.setOutTime(stampTime);
         }
 
+        // 夜勤フラグを保存
+        entity.setIsNightShift(nightWorkFlag == 1);
+
         entity.setUpdateEmployeeId(employeeId);
         OffsetDateTime date = OffsetDateTime.now(ZoneOffset.UTC);
         entity.setUpdateDate(date);
@@ -106,6 +109,10 @@ public class StampService {
 
             entity.setBreakStartTime(existing.getBreakStartTime());
             entity.setBreakEndTime(existing.getBreakEndTime());
+            // 既存の夜勤フラグを保持（出勤時に設定されたものを維持）
+            if (entity.getIsNightShift() == null) {
+                entity.setIsNightShift(existing.getIsNightShift());
+            }
 
             mapper.update(entity);
         } else {

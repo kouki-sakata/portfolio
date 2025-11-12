@@ -112,6 +112,15 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
               </Badge>
             </div>
 
+            {/* 夜勤 */}
+            {entry.isNightShift && (
+              <div className="flex items-center justify-center rounded-md bg-purple-100 px-3 py-2">
+                <Badge className="bg-purple-700 font-semibold text-white">
+                  夜勤
+                </Badge>
+              </div>
+            )}
+
             {/* 更新日時 */}
             <div className="pt-2 text-muted-foreground text-xs">
               更新: {entry.updateDate ?? "-"}
@@ -124,7 +133,6 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             <Button
               aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を編集`}
               className="w-full"
-              disabled={!entry.id}
               onClick={() => onEdit(entry)}
               size="sm"
               variant="outline"

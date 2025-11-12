@@ -8,6 +8,7 @@ import { StampHistoryCard } from "./StampHistoryCard";
 describe("StampHistoryCard", () => {
   const mockEntry: StampHistoryEntry = {
     id: 1,
+    employeeId: 1,
     year: "2024",
     month: "11",
     day: "10",
@@ -17,6 +18,7 @@ describe("StampHistoryCard", () => {
     breakStartTime: "12:00",
     breakEndTime: "13:00",
     overtimeMinutes: 30,
+    isNightShift: null,
     updateDate: "2024/11/10 18:05",
   };
 
@@ -191,10 +193,11 @@ describe("StampHistoryCard", () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("disables edit and delete buttons when entry has no id", () => {
+  it("disables delete button but enables edit button when entry has no id", () => {
     const entryWithoutId: StampHistoryEntry = {
       ...mockEntry,
       id: null,
+      employeeId: 1,
     };
 
     render(
@@ -212,7 +215,9 @@ describe("StampHistoryCard", () => {
       name: /削除/i,
     });
 
-    expect(editButton).toBeDisabled();
+    // 編集ボタンは有効（新規作成を可能にするため）
+    expect(editButton).not.toBeDisabled();
+    // 削除ボタンは無効（存在しないレコードは削除できない）
     expect(deleteButton).toBeDisabled();
   });
 

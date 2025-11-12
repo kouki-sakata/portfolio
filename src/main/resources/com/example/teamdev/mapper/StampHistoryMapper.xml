@@ -27,11 +27,12 @@
             to_char(sh.out_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "outTime",
             to_char(sh.break_start_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakStartTime",
             to_char(sh.break_end_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakEndTime",
-            0 AS "overtimeMinutes",
+            CASE WHEN sh.id IS NOT NULL THEN 0 ELSE NULL END AS "overtimeMinutes",
             sh.in_time AS "inTimeRaw",
             sh.out_time AS "outTimeRaw",
             sh.break_start_time AS "breakStartTimeRaw",
             sh.break_end_time AS "breakEndTimeRaw",
+            sh.is_night_shift AS "isNightShift",
             to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
@@ -54,14 +55,14 @@
     <insert id="save" parameterType="com.example.teamdev.entity.StampHistory">
         INSERT INTO stamp_history (
             id, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
-            update_employee_id, update_date
+            is_night_shift, update_employee_id, update_date
         ) VALUES (
             DEFAULT, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
-            #{updateEmployeeId}, #{updateDate}
+            #{isNightShift}, #{updateEmployeeId}, #{updateDate}
         )
     </insert>
     <!--更新の追記-->
-    <!--動的SQL: in_time/out_time が null の場合は既存値を保持-->
+    <!--動的SQL: in_time/out_time が null の場合は既存値を保持、break_start_time/break_end_time/is_night_shift は常に更新（削除可能）-->
     <update id="update" parameterType="com.example.teamdev.entity.StampHistory">
         UPDATE stamp_history
         SET
@@ -74,12 +75,9 @@
             <if test="outTime != null">
                 out_time = #{outTime},
             </if>
-            <if test="breakStartTime != null">
-                break_start_time = #{breakStartTime},
-            </if>
-            <if test="breakEndTime != null">
-                break_end_time = #{breakEndTime},
-            </if>
+            break_start_time = #{breakStartTime},
+            break_end_time = #{breakEndTime},
+            is_night_shift = #{isNightShift},
             update_employee_id = #{updateEmployeeId},
             update_date = #{updateDate}
         WHERE id = #{id}
