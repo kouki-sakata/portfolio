@@ -3,6 +3,7 @@ package com.example.teamdev.service.stamp;
 import com.example.teamdev.dto.StampEditData;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -26,6 +27,13 @@ public class StampFormDataExtractor {
         String month = extractString(stampEdit, "month");
         String day = extractString(stampEdit, "day");
 
+        // LocalDateの生成（year/month/dayから）
+        LocalDate stampDate = LocalDate.of(
+                Integer.parseInt(year),
+                Integer.parseInt(month),
+                Integer.parseInt(day)
+        );
+
         // 時刻情報の安全な抽出
         String inTime = extractNullableString(stampEdit, "inTime");
         String outTime = extractNullableString(stampEdit, "outTime");
@@ -41,7 +49,7 @@ public class StampFormDataExtractor {
         // IDの抽出（更新時のみ存在）
         Integer id = extractId(stampEdit);
 
-        return new StampEditData(id, employeeId, year, month, day, inTime, outTime, breakStartTime, breakEndTime, isNightShift);
+        return new StampEditData(id, employeeId, year, month, day, stampDate, inTime, outTime, breakStartTime, breakEndTime, isNightShift);
     }
 
     /**
