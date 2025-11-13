@@ -16,6 +16,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -127,7 +128,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 10)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -545,7 +546,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 10)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -581,7 +582,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 10)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -617,7 +618,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 10)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -653,7 +654,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("11"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 11)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -714,7 +715,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("31"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 7, 31)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
@@ -750,7 +751,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("12"), eq("31"), eq(employeeId)))
+        when(mapper.getStampHistoryByStampDateEmployeeId(eq(LocalDate.of(2025, 12, 31)), eq(employeeId)))
             .thenReturn(existing);
 
         stampService.execute(homeForm, employeeId);
