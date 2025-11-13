@@ -2,6 +2,57 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.teamdev.mapper.NewsMapper">
 
+    <resultMap id="newsResultMap" type="com.example.teamdev.entity.News">
+        <id property="id" column="id" />
+        <result property="newsDate" column="news_date" />
+        <result property="title" column="title" />
+        <result property="content" column="content" />
+        <result property="label" column="label" />
+        <result property="releaseFlag" column="release_flag" />
+        <result property="updateDate" column="update_date" />
+    </resultMap>
+
+    <sql id="newsColumns">
+        id,
+        news_date,
+        title,
+        content,
+        label,
+        release_flag,
+        update_date
+    </sql>
+
+    <select id="getById" resultMap="newsResultMap">
+        SELECT
+        <include refid="newsColumns" />
+        FROM news
+        WHERE id = #{id}
+    </select>
+
+    <select id="getNewsByReleaseFlagTrue" resultMap="newsResultMap">
+        SELECT
+        <include refid="newsColumns" />
+        FROM news
+        WHERE release_flag = TRUE
+        ORDER BY news_date DESC
+    </select>
+
+    <select id="getNewsByReleaseFlagTrueWithLimit" resultMap="newsResultMap">
+        SELECT
+        <include refid="newsColumns" />
+        FROM news
+        WHERE release_flag = TRUE
+        ORDER BY news_date DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="getNewsOrderByNewsDateDesc" resultMap="newsResultMap">
+        SELECT
+        <include refid="newsColumns" />
+        FROM news
+        ORDER BY news_date DESC
+    </select>
+
 	<!-- お知らせを挿入 -->
 	<insert id="save" parameterType="com.example.teamdev.entity.News" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
 		INSERT INTO news (

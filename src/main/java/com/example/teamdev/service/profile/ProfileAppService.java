@@ -89,10 +89,11 @@ public class ProfileAppService {
         Timestamp now = Timestamp.from(clock.instant());
         metadataRepository.save(targetEmployeeId, updatedDocument, now);
 
-        ProfileChangeSet changeSet = computeChangeSet(before, updatedDocument);
+        ProfileMetadataDocument persistedDocument = metadataRepository.load(targetEmployeeId);
+        ProfileChangeSet changeSet = computeChangeSet(before, persistedDocument);
         auditService.recordUpdate(operatorId, targetEmployeeId, changeSet, now.toInstant());
 
-        return new ProfileAggregate(toSummary(target, now.toInstant()), updatedDocument);
+        return new ProfileAggregate(toSummary(target, now.toInstant()), persistedDocument);
     }
 
     public ProfileActivityPage listActivities(int operatorId, int targetEmployeeId, ProfileActivityQuery query) {

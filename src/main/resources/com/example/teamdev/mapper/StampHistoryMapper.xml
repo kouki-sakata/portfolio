@@ -49,6 +49,70 @@
         ORDER BY gd.date ASC
     </select>
 
+    <select id="getStampHistoryByYearMonthEmployeeIds" parameterType="map"
+            resultType="com.example.teamdev.entity.StampHistoryDisplay">
+        <choose>
+            <when test="employeeIds == null or employeeIds.size == 0 or datesInMonth == null or datesInMonth.size == 0">
+                SELECT NULL::INTEGER AS id WHERE 1 = 0
+            </when>
+            <otherwise>
+                WITH target_employees AS (
+                    <foreach collection="employeeIds" item="employeeId" index="idx" separator=" UNION ALL ">
+                        SELECT CAST(#{employeeId} AS INTEGER) AS employee_id,
+                               CAST(#{idx} AS INTEGER) AS sort_order
+                    </foreach>
+                ),
+                calendar AS (
+                    <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
+                        SELECT CAST(#{date} AS DATE) AS work_date
+                    </foreach>
+                ),
+                employee_calendar AS (
+                    SELECT te.employee_id,
+                           te.sort_order,
+                           cal.work_date
+                    FROM target_employees te
+                    CROSS JOIN calendar cal
+                )
+                SELECT
+                    sh.id AS id,
+                    to_char(ec.work_date, 'YYYY') AS year,
+                    to_char(ec.work_date, 'MM') AS month,
+                    to_char(ec.work_date, 'DD') AS day,
+                    CASE EXTRACT(DOW FROM ec.work_date)
+                        WHEN 0 THEN '日'
+                        WHEN 1 THEN '月'
+                        WHEN 2 THEN '火'
+                        WHEN 3 THEN '水'
+                        WHEN 4 THEN '木'
+                        WHEN 5 THEN '金'
+                        WHEN 6 THEN '土'
+                    END AS "dayOfWeek",
+                    ec.employee_id AS "employeeId",
+                    concat_ws(' ', COALESCE(emp.first_name, ''), COALESCE(emp.last_name, '')) AS "employeeName",
+                    concat_ws(' ', COALESCE(emp2.first_name, ''), COALESCE(emp2.last_name, '')) AS "updateEmployeeName",
+                    to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "inTime",
+                    to_char(sh.out_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "outTime",
+                    to_char(sh.break_start_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakStartTime",
+                    to_char(sh.break_end_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS "breakEndTime",
+                    CASE WHEN sh.id IS NOT NULL THEN 0 ELSE NULL END AS "overtimeMinutes",
+                    sh.is_night_shift AS "isNightShift",
+                    to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate",
+                    sh.in_time AS "inTimeRaw",
+                    sh.out_time AS "outTimeRaw",
+                    sh.break_start_time AS "breakStartTimeRaw",
+                    sh.break_end_time AS "breakEndTimeRaw"
+                FROM employee_calendar ec
+                LEFT JOIN stamp_history sh ON
+                    sh.employee_id = ec.employee_id
+                    AND sh.stamp_date = ec.work_date
+                LEFT JOIN employee emp ON emp.id = ec.employee_id
+                LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+                ORDER BY ec.sort_order, ec.work_date
+            </otherwise>
+        </choose>
+    </select>
+
     <!-- データを挿入または更新する -->
     <!--①saveStampHistory→saveに修正②ON DUPLICATE KEY UPDATEの重複のキー削除-->
     <!--③IFNULL関数追記-->
@@ -110,7 +174,7 @@
                                         AND sh.break_end_time > sh.break_start_time THEN
                                         EXTRACT(EPOCH FROM (sh.break_end_time - sh.break_start_time)) / 3600.0
                                     ELSE
-                                        COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                        COALESCE(e.schedule_break_minutes, 0)::numeric / 60.0
                                 END
                             ELSE 0
                         END
@@ -129,7 +193,7 @@
                                             AND sh.break_end_time > sh.break_start_time THEN
                                             EXTRACT(EPOCH FROM (sh.break_end_time - sh.break_start_time)) / 3600.0
                                         ELSE
-                                            COALESCE((e.profile_metadata->>'schedule')::jsonb->>'breakMinutes', '0')::numeric / 60.0
+                                            COALESCE(e.schedule_break_minutes, 0)::numeric / 60.0
                                     END
                                     - 8.0
                                 ELSE 0
@@ -142,9 +206,9 @@
                 SUM(
                     CASE
                         WHEN sh.in_time IS NOT NULL
-                            AND (e.profile_metadata->>'schedule')::jsonb->>'start' IS NOT NULL
+                            AND e.schedule_start IS NOT NULL
                             AND CAST(to_char(sh.in_time AT TIME ZONE 'Asia/Tokyo', 'HH24:MI') AS TIME)
-                                > CAST((e.profile_metadata->>'schedule')::jsonb->>'start' AS TIME)
+                                > e.schedule_start
                         THEN 1
                         ELSE 0
                     END

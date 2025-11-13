@@ -143,7 +143,22 @@ class ProfileAppServiceTest {
         void updateMetadataRecordsDiffAndSavesDocument() {
             when(employeeQueryService.getById(adminOperator.getId())).thenReturn(Optional.of(adminOperator));
             when(employeeQueryService.getById(targetEmployee.getId())).thenReturn(Optional.of(targetEmployee));
-            when(metadataRepository.load(targetEmployee.getId())).thenReturn(defaultMetadata);
+            ProfileMetadataDocument persistedMetadata = new ProfileMetadataDocument(
+                defaultMetadata.address(),
+                "未来戦略部",
+                defaultMetadata.employeeNumber(),
+                defaultMetadata.activityNote(),
+                defaultMetadata.location(),
+                defaultMetadata.manager(),
+                defaultMetadata.workStyle(),
+                defaultMetadata.schedule(),
+                defaultMetadata.status(),
+                defaultMetadata.joinedAt(),
+                defaultMetadata.avatarUrl()
+            );
+            when(metadataRepository.load(targetEmployee.getId()))
+                .thenReturn(defaultMetadata)
+                .thenReturn(persistedMetadata);
 
             ProfileMetadataUpdateCommand command = new ProfileMetadataUpdateCommand(
                 null,

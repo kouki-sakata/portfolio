@@ -7,9 +7,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.Objects;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.StringUtils;
 
 /**
  * employee.profile_metadata JSONB カラムを扱うリポジトリ。
@@ -20,6 +24,11 @@ public class ProfileMetadataRepository {
     private final JdbcTemplate jdbcTemplate;
     private final ObjectMapper objectMapper;
 
+    private static final String DEFAULT_SCHEDULE_START = "09:00";
+    private static final String DEFAULT_SCHEDULE_END = "18:00";
+    private static final int DEFAULT_BREAK_MINUTES = 60;
+    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm");
+
     public ProfileMetadataRepository(JdbcTemplate jdbcTemplate, ObjectMapper objectMapper) {
         this.jdbcTemplate = jdbcTemplate;
         this.objectMapper = objectMapper;
@@ -29,19 +38,34 @@ public class ProfileMetadataRepository {
      * プロフィールメタデータを取得します。
      */
     public ProfileMetadataDocument load(int employeeId) {
-        String json = jdbcTemplate.query(
-            "SELECT COALESCE(profile_metadata::text, '{}') FROM employee WHERE id = ?",
+        MetadataRow row = jdbcTemplate.query(
+            """
+            SELECT
+                COALESCE(profile_metadata::text, '{}') AS payload,
+                TO_CHAR(schedule_start, 'HH24:MI') AS schedule_start,
+                TO_CHAR(schedule_end, 'HH24:MI') AS schedule_end,
+                schedule_break_minutes
+            FROM employee
+            WHERE id = ?
+            """,
             ps -> ps.setInt(1, employeeId),
-            rs -> rs.next() ? rs.getString(1) : null
+            rs -> rs.next()
+                ? new MetadataRow(
+                    rs.getString("payload"),
+                    rs.getString("schedule_start"),
+                    rs.getString("schedule_end"),
+                    (Integer) rs.getObject("schedule_break_minutes")
+                )
+                : null
         );
 
-        if (json == null) {
+        if (row == null) {
             throw new IllegalArgumentException("Employee not found for id=" + employeeId);
         }
 
         try {
-            JsonNode root = objectMapper.readTree(json);
-            return toDocument(root);
+            JsonNode root = objectMapper.readTree(row.payload());
+            return toDocument(root, row);
         } catch (JsonProcessingException ex) {
             return defaultDocument();
         }
@@ -53,6 +77,9 @@ public class ProfileMetadataRepository {
     public void save(int employeeId, ProfileMetadataDocument document, Timestamp updatedAt) {
         Objects.requireNonNull(document, "document must not be null");
         String payload;
+        String scheduleStart = sanitizeTime(document.schedule().start(), DEFAULT_SCHEDULE_START);
+        String scheduleEnd = sanitizeTime(document.schedule().end(), DEFAULT_SCHEDULE_END);
+        int breakMinutes = sanitizeBreakMinutes(document.schedule().breakMinutes());
         try {
             payload = objectMapper.writeValueAsString(toJson(document));
         } catch (JsonProcessingException e) {
@@ -60,8 +87,12 @@ public class ProfileMetadataRepository {
         }
 
         int updated = jdbcTemplate.update(
-            "UPDATE employee SET profile_metadata = CAST(? AS jsonb), update_date = ? WHERE id = ?",
+            "UPDATE employee SET profile_metadata = CAST(? AS jsonb), schedule_start = CAST(? AS time), "
+                + "schedule_end = CAST(? AS time), schedule_break_minutes = ?, update_date = ? WHERE id = ?",
             payload,
+            scheduleStart,
+            scheduleEnd,
+            breakMinutes,
             updatedAt != null ? updatedAt : Timestamp.from(Instant.now()),
             employeeId
         );
@@ -70,10 +101,11 @@ public class ProfileMetadataRepository {
         }
     }
 
-    private ProfileMetadataDocument toDocument(JsonNode root) {
+    private ProfileMetadataDocument toDocument(JsonNode root, MetadataRow row) {
         if (root == null || root.isMissingNode()) {
             return defaultDocument();
         }
+        JsonNode scheduleNode = root.path("schedule");
         return new ProfileMetadataDocument(
             text(root, "address"),
             text(root, "department"),
@@ -83,9 +115,9 @@ public class ProfileMetadataRepository {
             text(root, "manager"),
             textOrDefault(root, "workStyle", "onsite"),
             new ProfileWorkScheduleDocument(
-                textOrDefault(root.path("schedule"), "start", "09:00"),
-                textOrDefault(root.path("schedule"), "end", "18:00"),
-                integerOrDefault(root.path("schedule"), "breakMinutes", 60)
+                coalesceScheduleValue(row.scheduleStart(), scheduleNode, "start", DEFAULT_SCHEDULE_START),
+                coalesceScheduleValue(row.scheduleEnd(), scheduleNode, "end", DEFAULT_SCHEDULE_END),
+                coalesceBreakMinutes(row.scheduleBreakMinutes(), scheduleNode)
             ),
             textOrDefault(root, "status", "active"),
             text(root, "joinedAt"),
@@ -105,12 +137,6 @@ public class ProfileMetadataRepository {
             .put("status", safe(document.status()))
             .put("joinedAt", safe(document.joinedAt()))
             .put("avatarUrl", safe(document.avatarUrl()));
-
-        com.fasterxml.jackson.databind.node.ObjectNode schedule = objectMapper.createObjectNode();
-        schedule.put("start", safe(document.schedule().start()));
-        schedule.put("end", safe(document.schedule().end()));
-        schedule.put("breakMinutes", document.schedule().breakMinutes());
-        root.set("schedule", schedule);
         return root;
     }
 
@@ -123,7 +149,7 @@ public class ProfileMetadataRepository {
             "",
             "",
             "onsite",
-            new ProfileWorkScheduleDocument("09:00", "18:00", 60),
+            new ProfileWorkScheduleDocument(DEFAULT_SCHEDULE_START, DEFAULT_SCHEDULE_END, DEFAULT_BREAK_MINUTES),
             "active",
             "",
             ""
@@ -148,4 +174,41 @@ public class ProfileMetadataRepository {
         JsonNode child = node.path(field);
         return child.isMissingNode() || !child.isInt() ? defaultValue : child.asInt(defaultValue);
     }
+
+    private String sanitizeTime(String value, String fallback) {
+        if (!StringUtils.hasText(value)) {
+            return fallback;
+        }
+        try {
+            LocalTime time = LocalTime.parse(value);
+            return TIME_FORMATTER.format(time);
+        } catch (DateTimeParseException ex) {
+            return fallback;
+        }
+    }
+
+    private int sanitizeBreakMinutes(int value) {
+        return value >= 0 ? value : DEFAULT_BREAK_MINUTES;
+    }
+
+    private String coalesceScheduleValue(String columnValue, JsonNode scheduleNode, String field, String defaultValue) {
+        if (StringUtils.hasText(columnValue)) {
+            return columnValue;
+        }
+        return textOrDefault(scheduleNode, field, defaultValue);
+    }
+
+    private int coalesceBreakMinutes(Integer columnValue, JsonNode scheduleNode) {
+        if (columnValue != null && columnValue >= 0) {
+            return columnValue;
+        }
+        return integerOrDefault(scheduleNode, "breakMinutes", DEFAULT_BREAK_MINUTES);
+    }
+
+    private record MetadataRow(
+        String payload,
+        String scheduleStart,
+        String scheduleEnd,
+        Integer scheduleBreakMinutes
+    ) {}
 }

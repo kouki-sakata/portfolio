@@ -17,7 +17,10 @@ import java.sql.Timestamp;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 打刻記録出力
@@ -76,26 +79,39 @@ public class StampOutputService {
     }
 
     private StampExportMaterial collectStampHistories(StampOutputRequest request) {
-        List<String> employeeNames = new ArrayList<>();
-        List<StampHistoryDisplay> histories = new ArrayList<>();
-        List<LocalDate> datesInMonth = createDateRange(request.year(), request.month());
-
-        for (Integer employeeId : request.employeeIds()) {
-            List<StampHistoryDisplay> stampHistoryList =
-                    mapper.getStampHistoryByYearMonthEmployeeId(
-                            request.year(), request.month(), employeeId, datesInMonth);
-
-            if (!stampHistoryList.isEmpty()) {
-                StampHistoryDisplay stampHistory = stampHistoryList.get(0);
-                String employeeName = stampHistory.getEmployeeName();
-                if (employeeName != null) {
-                    employeeNames.add(employeeName);
-                }
-            }
-            histories.addAll(stampHistoryList);
+        List<Integer> employeeIds = request.employeeIds();
+        if (employeeIds == null || employeeIds.isEmpty()) {
+            return new StampExportMaterial(List.of(), List.of());
         }
 
+        List<LocalDate> datesInMonth = createDateRange(request.year(), request.month());
+        List<StampHistoryDisplay> histories = mapper.getStampHistoryByYearMonthEmployeeIds(
+                request.year(), request.month(), employeeIds, datesInMonth
+        );
+
+        List<String> employeeNames = buildEmployeeNames(employeeIds, histories);
         return new StampExportMaterial(employeeNames, histories);
+    }
+
+    private List<String> buildEmployeeNames(List<Integer> employeeIds,
+            List<StampHistoryDisplay> histories) {
+        if (histories == null || histories.isEmpty()) {
+            return List.of();
+        }
+
+        Map<Integer, String> nameIndex = new LinkedHashMap<>();
+        for (StampHistoryDisplay history : histories) {
+            Integer employeeId = history.getEmployeeId();
+            if (employeeId == null || nameIndex.containsKey(employeeId)) {
+                continue;
+            }
+            nameIndex.put(employeeId, history.getEmployeeName());
+        }
+
+        return employeeIds.stream()
+                .map(nameIndex::get)
+                .filter(Objects::nonNull)
+                .toList();
     }
 
     private List<LocalDate> createDateRange(String year, String month) {

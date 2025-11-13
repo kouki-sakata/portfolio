@@ -7,9 +7,6 @@ import java.util.Optional;
 import org.apache.ibatis.annotations.Delete;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Result;
-import org.apache.ibatis.annotations.ResultMap;
-import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
 
 import com.example.teamdev.dto.api.news.NewsBulkPublishRequest;
@@ -21,7 +18,7 @@ import com.example.teamdev.entity.News;
  * データベーステーブル: news
  * </p>
  * <p>
- * 注意: snake_case (DB) → camelCase (Java Entity) マッピングを@Results で定義
+ * 注意: snake_case (DB) → camelCase (Java Entity) マッピングは XML の resultMap で定義
  * </p>
  */
 @Mapper
@@ -33,26 +30,14 @@ public interface NewsMapper {
 	 * DB: snake_case → Java Entity: camelCase
 	 * </p>
 	 */
-	@Results(id = "newsResultMap", value = {
-		@Result(property = "id", column = "id"),
-		@Result(property = "newsDate", column = "news_date"),
-		@Result(property = "title", column = "title"),
-		@Result(property = "content", column = "content"),
-		@Result(property = "label", column = "label"),
-		@Result(property = "releaseFlag", column = "release_flag"),
-		@Result(property = "updateDate", column = "update_date")
-	})
-	@Select("SELECT * FROM news WHERE id = #{id}")
-	Optional<News> getById(@Param("id") Integer id);
+    Optional<News> getById(@Param("id") Integer id);
 
 	/**
 	 * 公開フラグTRUEのレコードをすべて、お知らせ日付の降順で取得
 	 *
 	 * @return 公開お知らせリスト
 	 */
-	@ResultMap("newsResultMap")
-	@Select("SELECT * FROM news WHERE release_flag = TRUE ORDER BY news_date DESC")
-	List<News> getNewsByReleaseFlagTrue();
+    List<News> getNewsByReleaseFlagTrue();
 
 	/**
 	 * 公開フラグTRUEのレコードを指定件数まで、お知らせ日付の降順で取得
@@ -60,18 +45,14 @@ public interface NewsMapper {
 	 * @param limit 取得件数
 	 * @return 公開お知らせリスト（上限件数）
 	 */
-	@ResultMap("newsResultMap")
-	@Select("SELECT * FROM news WHERE release_flag = TRUE ORDER BY news_date DESC LIMIT #{limit}")
-	List<News> getNewsByReleaseFlagTrueWithLimit(@Param("limit") int limit);
+    List<News> getNewsByReleaseFlagTrueWithLimit(@Param("limit") int limit);
 
 	/**
 	 * すべてのお知らせを日付の降順で取得
 	 *
 	 * @return お知らせリスト
 	 */
-	@ResultMap("newsResultMap")
-	@Select("SELECT * FROM news ORDER BY news_date DESC")
-	List<News> getNewsOrderByNewsDateDesc();
+    List<News> getNewsOrderByNewsDateDesc();
 
 	/**
 	 * お知らせを挿入

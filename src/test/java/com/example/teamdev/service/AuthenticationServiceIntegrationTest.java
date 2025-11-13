@@ -2,19 +2,13 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
-import org.junit.jupiter.api.AfterEach;
+import com.example.teamdev.testconfig.PostgresContainerSupport;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.junit.jupiter.Container;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 
@@ -33,22 +27,8 @@ import static org.junit.jupiter.api.Assertions.*;
  * - サービス全体の動作フロー
  */
 @SpringBootTest
-@Testcontainers
 @Transactional  // 各テスト後に自動ロールバックしてデータをクリーンアップ
-class AuthenticationServiceIntegrationTest {
-
-    @Container
-    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
-            .withDatabaseName("testdb")
-            .withUsername("testuser")
-            .withPassword("testpass");
-
-    @DynamicPropertySource
-    static void configureProperties(DynamicPropertyRegistry registry) {
-        registry.add("spring.datasource.url", postgres::getJdbcUrl);
-        registry.add("spring.datasource.username", postgres::getUsername);
-        registry.add("spring.datasource.password", postgres::getPassword);
-    }
+class AuthenticationServiceIntegrationTest extends PostgresContainerSupport {
 
     @Autowired
     private AuthenticationService authenticationService;
