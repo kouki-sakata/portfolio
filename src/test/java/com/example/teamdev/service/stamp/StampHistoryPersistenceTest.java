@@ -13,6 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -458,8 +459,8 @@ class StampHistoryPersistenceTest {
         @DisplayName("異なる従業員IDでの新規登録が連続して動作")
         void multipleNewEntriesWithDifferentEmployees_shouldWorkCorrectly() {
             // Arrange
-            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", "09:00", "18:00", null, null, null);
-            StampEditData data2 = new StampEditData(null, 200, "2025", "10", "2", "10:00", "19:00", null, null, null);
+            StampEditData data1 = new StampEditData(null, 100, "2025", "10", "1", LocalDate.of(2025, 10, 1), "09:00", "18:00", null, null, null);
+            StampEditData data2 = new StampEditData(null, 200, "2025", "10", "2", LocalDate.of(2025, 10, 2), "10:00", "19:00", null, null, null);
 
             // Act
             boolean result1 = persistence.saveOrUpdate(data1, testInTime, testOutTime, UPDATE_EMPLOYEE_ID);

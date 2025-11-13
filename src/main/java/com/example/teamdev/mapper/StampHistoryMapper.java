@@ -24,8 +24,8 @@ public interface StampHistoryMapper {
             + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "
             + "is_night_shift AS isNightShift, update_employee_id AS updateEmployeeId, update_date AS updateDate "
             + "FROM stamp_history WHERE stamp_date = #{stampDate} "
-            + "AND employee_id = #{employee_id} LIMIT 1")
-    StampHistory getStampHistoryByStampDateEmployeeId(LocalDate stampDate, int employee_id);
+            + "AND employee_id = #{employeeId} LIMIT 1")
+    StampHistory getStampHistoryByStampDateEmployeeId(@Param("stampDate") LocalDate stampDate, @Param("employeeId") int employeeId);
 
     //対象年月、対象従業員IDの打刻記録情報を取得する
     //対象年月の日数分行を取得したいので、MySQLのSQL文でカレンダーテーブル（generated_dates）を作成し、右外部結合する

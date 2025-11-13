@@ -28,19 +28,25 @@ public class StampFormDataExtractor {
         String day = extractString(stampEdit, "day");
 
         // LocalDateの生成（year/month/dayから）
+        // すべてのフィールドが非空の場合のみLocalDateを構築
         LocalDate stampDate;
-        try {
-            stampDate = LocalDate.of(
-                    Integer.parseInt(year),
-                    Integer.parseInt(month),
-                    Integer.parseInt(day)
-            );
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid date format: year=%s, month=%s, day=%s", year, month, day), e);
-        } catch (java.time.DateTimeException e) {
-            throw new IllegalArgumentException(
-                    String.format("Invalid date: year=%s, month=%s, day=%s", year, month, day), e);
+        if (isNonEmpty(year) && isNonEmpty(month) && isNonEmpty(day)) {
+            try {
+                stampDate = LocalDate.of(
+                        Integer.parseInt(year),
+                        Integer.parseInt(month),
+                        Integer.parseInt(day)
+                );
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException(
+                        String.format("Invalid date format: year=%s, month=%s, day=%s", year, month, day), e);
+            } catch (java.time.DateTimeException e) {
+                throw new IllegalArgumentException(
+                        String.format("Invalid date: year=%s, month=%s, day=%s", year, month, day), e);
+            }
+        } else {
+            // いずれかのフィールドが欠けている場合はstampDateをnullとする
+            stampDate = null;
         }
 
         // 時刻情報の安全な抽出
@@ -59,6 +65,16 @@ public class StampFormDataExtractor {
         Integer id = extractId(stampEdit);
 
         return new StampEditData(id, employeeId, year, month, day, stampDate, inTime, outTime, breakStartTime, breakEndTime, isNightShift);
+    }
+
+    /**
+     * 文字列が非空（null でない かつ 空文字列でない）かどうかをチェックします。
+     *
+     * @param str チェック対象の文字列
+     * @return 非空の場合true
+     */
+    private boolean isNonEmpty(String str) {
+        return str != null && !str.isEmpty();
     }
 
     /**
