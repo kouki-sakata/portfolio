@@ -111,7 +111,6 @@ public class StampOutputService {
         return employeeIds.stream()
                 .map(nameIndex::get)
                 .filter(Objects::nonNull)
-                .distinct()
                 .toList();
     }
 
