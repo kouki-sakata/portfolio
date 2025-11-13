@@ -52,7 +52,6 @@ public abstract class PostgresContainerSupport {
 
             try {
                 initializeEmbeddedDatabase(embeddedPostgres);
-                Runtime.getRuntime().addShutdownHook(new Thread(() -> closeEmbedded(embeddedPostgres), "embedded-postgres-shutdown"));
                 log.info("Embedded PostgreSQL (port:{}) を起動しました", embeddedPostgres.getPort());
                 return embeddedPostgres;
             } catch (Exception e) {
@@ -72,10 +71,9 @@ public abstract class PostgresContainerSupport {
                 .withPassword(DATABASE_PASSWORD);
 
             container.start();
-            Runtime.getRuntime().addShutdownHook(new Thread(container::stop, "postgres-testcontainer-shutdown"));
             log.info("Testcontainers PostgreSQL({}) を起動しました", container.getDockerImageName());
             return container;
-        } catch (Throwable ex) {
+        } catch (Exception ex) {
             log.warn("Testcontainers PostgreSQLの起動に失敗したため、埋め込みPostgreSQLへフォールバックします: {}", ex.getMessage());
             return null;
         }
