@@ -19,9 +19,6 @@ CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_log_history_daily_check
 -- ==============================
 -- employee indexes
 -- ==============================
-CREATE UNIQUE INDEX CONCURRENTLY IF NOT EXISTS idx_employee_email_unique
-    ON employee (email);
-
 CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_employee_admin_flag
     ON employee (admin_flag);
 
