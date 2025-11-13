@@ -18,15 +18,14 @@ import java.util.Optional;
  */
 @Mapper
 public interface StampHistoryMapper {
-    //打刻記録テーブルから年・月・日・従業員IDが一致するレコードを取得する
+    //打刻記録テーブルから打刻日付・従業員IDが一致するレコードを取得する
     //※重複するレコードは存在しない前提のため1件取得
-    @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
+    @Select("SELECT id, stamp_date AS stampDate, year, month, day, employee_id AS employeeId, in_time AS inTime, "
             + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "
             + "is_night_shift AS isNightShift, update_employee_id AS updateEmployeeId, update_date AS updateDate "
-            + "FROM stamp_history WHERE year = #{year} AND month = #{month} AND day = #{day} "
+            + "FROM stamp_history WHERE stamp_date = #{stampDate} "
             + "AND employee_id = #{employee_id} LIMIT 1")
-    StampHistory getStampHistoryByYearMonthDayEmployeeId(String year,
-            String month, String day, int employee_id);
+    StampHistory getStampHistoryByStampDateEmployeeId(LocalDate stampDate, int employee_id);
 
     //対象年月、対象従業員IDの打刻記録情報を取得する
     //対象年月の日数分行を取得したいので、MySQLのSQL文でカレンダーテーブル（generated_dates）を作成し、右外部結合する
@@ -46,7 +45,7 @@ public interface StampHistoryMapper {
     );
 
     //指定のidで1レコードを取得する
-    @Select("SELECT id, year, month, day, employee_id AS employeeId, in_time AS inTime, "
+    @Select("SELECT id, stamp_date AS stampDate, year, month, day, employee_id AS employeeId, in_time AS inTime, "
             + "out_time AS outTime, break_start_time AS breakStartTime, break_end_time AS breakEndTime, "
             + "is_night_shift AS isNightShift, update_employee_id AS updateEmployeeId, update_date AS updateDate "
             + "FROM stamp_history WHERE id = #{id}")

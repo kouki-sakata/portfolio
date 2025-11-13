@@ -11,6 +11,7 @@
             to_char(gd.date, 'YYYY') AS year,
             to_char(gd.date, 'MM') AS month,
             to_char(gd.date, 'DD') AS day,
+            gd.date AS "stampDate",
             CASE EXTRACT(DOW FROM gd.date)
                 WHEN 0 THEN '日'
                 WHEN 1 THEN '月'
@@ -40,9 +41,7 @@
             </foreach>
         ) AS gd
         LEFT JOIN stamp_history sh ON
-            to_char(gd.date, 'YYYY') = sh.year AND
-            to_char(gd.date, 'MM') = sh.month AND
-            to_char(gd.date, 'DD') = sh.day AND
+            gd.date = sh.stamp_date AND
             sh.employee_id = #{employeeId}
         LEFT JOIN employee emp ON emp.id = #{employeeId}
         LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
@@ -79,6 +78,7 @@
                     to_char(ec.work_date, 'YYYY') AS year,
                     to_char(ec.work_date, 'MM') AS month,
                     to_char(ec.work_date, 'DD') AS day,
+                    ec.work_date AS "stampDate",
                     CASE EXTRACT(DOW FROM ec.work_date)
                         WHEN 0 THEN '日'
                         WHEN 1 THEN '月'
@@ -118,10 +118,10 @@
     <!--③IFNULL関数追記-->
     <insert id="save" parameterType="com.example.teamdev.entity.StampHistory">
         INSERT INTO stamp_history (
-            id, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
+            id, stamp_date, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
             is_night_shift, update_employee_id, update_date
         ) VALUES (
-            DEFAULT, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
+            DEFAULT, #{stampDate}, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
             #{isNightShift}, #{updateEmployeeId}, #{updateDate}
         )
     </insert>
@@ -130,6 +130,7 @@
     <update id="update" parameterType="com.example.teamdev.entity.StampHistory">
         UPDATE stamp_history
         SET
+            stamp_date = #{stampDate},
             year = #{year},
             month = #{month},
             day = #{day},
@@ -155,14 +156,14 @@
             sh.out_time AS departureTime
         FROM stamp_history sh
         WHERE sh.employee_id = #{employeeId}
-          AND TO_DATE(sh.year || sh.month || sh.day, 'YYYYMMDD') = #{date}
+          AND sh.stamp_date = #{date}
         LIMIT 1
     </select>
 
     <!--月次勤怠統計を取得する-->
     <select id="findMonthlyStatistics" resultType="com.example.teamdev.entity.MonthlyAttendanceStats">
         SELECT
-            to_char(DATE_TRUNC('month', CONCAT(sh.year, '-', sh.month, '-01')::date), 'YYYY-MM') AS month,
+            to_char(DATE_TRUNC('month', sh.stamp_date), 'YYYY-MM') AS month,
             COALESCE(
                 ROUND(
                     SUM(
@@ -217,9 +218,9 @@
         FROM stamp_history sh
         INNER JOIN employee e ON sh.employee_id = e.id
         WHERE sh.employee_id = #{employeeId}
-            AND to_char(CONCAT(sh.year, '-', sh.month, '-01')::date, 'YYYY-MM') >= #{startMonth}
-            AND to_char(CONCAT(sh.year, '-', sh.month, '-01')::date, 'YYYY-MM') <![CDATA[<=]]> #{endMonth}
-        GROUP BY to_char(DATE_TRUNC('month', CONCAT(sh.year, '-', sh.month, '-01')::date), 'YYYY-MM')
+            AND to_char(DATE_TRUNC('month', sh.stamp_date), 'YYYY-MM') >= #{startMonth}
+            AND to_char(DATE_TRUNC('month', sh.stamp_date), 'YYYY-MM') <![CDATA[<=]]> #{endMonth}
+        GROUP BY to_char(DATE_TRUNC('month', sh.stamp_date), 'YYYY-MM')
         ORDER BY month ASC
     </select>
 </mapper>

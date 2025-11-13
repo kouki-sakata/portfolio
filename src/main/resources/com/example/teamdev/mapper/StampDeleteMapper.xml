@@ -6,9 +6,7 @@
             parameterType="com.example.teamdev.entity.StampDelete"
     >
         DELETE FROM stamp_history
-        WHERE (year &gt; #{startYear} OR (year = #{startYear} AND month &gt;=
-        #{startMonth}))
-        AND (year &lt; #{endYear} OR (year = #{endYear} AND month &lt;=
-        #{endMonth}))
+        WHERE stamp_date &gt;= CAST(#{startYear} || '-' || LPAD(#{startMonth}, 2, '0') || '-01' AS DATE)
+          AND stamp_date &lt; (CAST(#{endYear} || '-' || LPAD(#{endMonth}, 2, '0') || '-01' AS DATE) + INTERVAL '1 month')
     </delete>
 </mapper>
