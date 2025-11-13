@@ -38,77 +38,15 @@ npm run generate:api # OpenAPI型生成
 
 ### フロントエンド設計パターン
 
-#### View Model変換パターン（News機能で確立）
-- **プレゼンテーション層変換**: APIレスポンス（`NewsResponse`）からUI専用モデル（`NewsViewModel`）への変換
-- **派生データ生成**: コンテンツ解析でタイトル・カテゴリを自動抽出（`deriveTitle`、`deriveCategory`）
-- **lib/ディレクトリ配置**: 各feature内で再利用可能なビジネスロジックをlibに集約
-- **カテゴリマッピング**: コンテンツ先頭の【カテゴリ】パターンを解析し、Badge variantに変換
-- **型安全性**: 元のAPIレスポンス型を拡張（`NewsViewModel = NewsResponse & { ... }`）し、型の一貫性を保持
-
-#### ProfileのView Model変換パターン（2025-11-03 確立）
-- **複数変換関数パターン**: 用途別に3つの変換関数を提供
-  - `createOverviewViewModel`: API → UI表示用モデル（閲覧画面）
-  - `createMetadataFormValues`: API → フォーム編集用モデル（編集画面）
-  - `createActivityViewModel`: アクティビティAPI → テーブル表示用モデル（履歴画面）
-- **型安全な正規化**: Nullable値のデフォルト処理（`toNullable`, `toWorkStyle`, `toStatus`）
-- **Enum制約**: `workStyle`, `status` など限定値をTypeScript型で保証
-- **スナップショット正規化**: 監査ログの before/after スナップショットを null-safe に変換
-
-#### TanStack Table統合パターン（News機能で確立）
-- **カラム定義のフック化**: `useNewsColumns`でテーブル列定義をUI層から分離し、コールバック注入でイベントハンドリング
-- **イベント伝播制御**: チェックボックス/ボタンの`stopPropagation`でテーブル行クリックと分離
-- **選択チェックUI標準化**: `DataTableSelectionCheckbox`でヒットエリア/フォーカスリング/イベント抑止を共通化
-- **レスポンシブ対応**: モバイル（アイコンのみ）⇔デスクトップ（テキスト表示）の条件分岐
-- **複数ソート・フィルタ**: `DataTableColumnHeader`によるカラムごとのソート/フィルタ機能
-- **共通DataTableコンポーネント**: `shared/components/data-table`で再利用可能なテーブル実装を提供
-
-#### 選択状態管理の分離（News機能で確立）
-- **状態管理のパターン**: TanStack Tableの`RowSelectionState`とアプリケーション側のID配列を同期
-- **双方向変換**: `tableRowSelection`（インデックス→boolean）と`handleRowSelectionChange`（インデックス→ID配列）でビュー⇔ロジックを橋渡し
-- **Set型による効率**: 選択チェック時にSet変換で高速検索（`selectedSet.has(news.id)`）
-- **バルク操作後の同期**: 失敗IDのみ保持、成功IDは自動削除（部分成功対応）
-- **useMemo最適化**: 選択状態の不要な再計算を防止（`newsItems`と`selectedNewsIds`の依存管理）
-
-#### React Query楽観的更新（News機能で確立）
-- **`onMutate`**: キャッシュ直接更新で即時UI反映（公開切り替え、削除等）、previousデータ保存
-- **`onError`**: previousデータでロールバック（エラー時の整合性保証）、トースト通知
-- **`onSettled`**: サーバー再検証（`queryClient.invalidateQueries`）で最終整合性確保
-- **複数キャッシュキー同時無効化**: list + published等、関連キャッシュの同期更新
-- **バルク操作の部分成功処理**: 成功/失敗を個別集計し、UIに反映（失敗IDのみ選択保持）
-
-#### ホーム打刻クロック同期パターン（2025-11-03 追加）
-- **JST固定の時刻生成**: `useHomeClock` が `formatLocalTimestamp`（Day.js + timezone）を利用して常に `Asia/Tokyo` のISOタイムスタンプを供給し、海外端末でも正しい打刻時間を維持
-- **UI/ロジックの分離**: `HomeClockPanel` が表示責務、`StampCard` が打刻操作責務を担い、`captureTimestamp` コールバックで時刻を共有
-- **フェールオーバー処理**: タイムゾーン計算に失敗した場合は `CLOCK_FALLBACK_MESSAGE` を表示し、`status: "error"` でボタン押下時のガードを提供
-- **遅延の吸収**: 打刻ボタン押下時に `captureTimestamp` を必ず呼び、APIレスポンス遅延があってもUI表示とサーバー送信が同じ時刻で同期
-
-#### Feature Flag UIトグルとフォールバック
-- `FeatureFlagProvider` + `FeatureFlagContext` が `/api/public/feature-flags` から取得した値をローカルストレージと同期し、起動直後から安定したフラグ状態を提供。
-- `shared/components/ui-wrapper/*` が shadcn/ui コンポーネントを安全にラップし、旗が無効な環境でもカスタムのフォールバック UI に自動切替（段階的ロールアウトやレガシー互換を両立）。
-- `NavigationProgress` と `AppLayout` が Feature Flag で切り替わる UI に対しても共通のナビゲーション UX（モバイルドロワー、ヘッダー）を維持。
-
-#### AdminGuardによるルート保護（2025-10-31 導入）
-- **認証取得中のUX**: `useAuth` の `loading` 状態ではフルスクリーン `LoadingSpinner` を表示し、ガード内で早期 return。
-- **権限分岐**: 未認証は `/signin` へ、非管理者は `/` へ `Navigate` でサーバーラウンドトリップなしに遷移。
-- **再利用性**: `AdminGuard` を `NewsManagementRoute` や `EmployeeAdminRoute` にラップし、Admin専用ページを統一ガードで保護。
-- **アクセシビリティ**: 子要素は変換せず Fragment を返すため、ガードは DOM 構造を汚染せず既存レイアウトを維持。
-
-#### グローバルエラーハンドリングとイベント連携
-- `shared/error-handling/GlobalErrorHandler` が API 例外を識別（認証/権限/ネットワーク/バリデーション）し、Toast 表示とロギングを一元管理。
-- `shared/api/interceptors/errorInterceptor` が Axios 401/403 を `authEvents` にエスカレートし、`AppProviders` でトースト + ルーターリダイレクトを統合。
-- `configureQueryClientErrorHandler` が React Query の QueryCache と組み合わせて 401 発生時に自動 logout + `/signin` リダイレクト、403 ではダッシュボードに戻すガードを実現。
-
-#### Repository + HTTPアダプター
-- `shared/repositories/IHttpClient` で HTTP 層を抽象化し、`httpClientAdapter` が fetch ベースクライアントを Repository から切り離す。
-- 各 Repository（`AuthRepository`, `HomeRepository` 等）は Zod スキーマで API 応答を検証し、依存逆転の原則 (DIP) を満たしたテスト容易な構造。
-- `defaultHttpClient` が axios レスポンスを RepositoryError（`TIMEOUT`/`NETWORK_ERROR`/`SERVER_ERROR` など）に正規化し、UI へ安定したエラーハンドリング契約を提供。
-
-#### プロフィール勤怠統計ビジュアライゼーション（2025-11-06 追加）
-- **React Query + Recharts**: `useProfileStatisticsQuery` が `/profile/me/statistics` をフェッチし、`ProfileStatisticsData` ビューモデルへ正規化。Recharts 3.3.0 と `ResponsiveContainer` でレスポンシブにライン/バーを描画。
-- **カード構成**: `ProfileSummaryCard`（ラインチャート + `MiniStat` でKPIを表示）と `ProfileMonthlyDetailCard`（BarChart + テーブル）で6か月推移を可視化。`constants/chartStyles.ts` にチャート軸・グリッド・ツールチップ設定を集約。
-- **フォールバック**: `ProfileSummaryCard`/`ProfileMonthlyDetailCard` は Skeleton と空状態カードを実装し、統計レスポンス待機中でも UI が崩れない。
-- **バックエンド集計**: `ProfileAppService#getProfileStatistics` が `StampHistoryMapper.findMonthlyStatistics` を呼び、JSONB の勤務予定を参照しながら BigDecimal で総労働/残業/遅刻カウンタを算出（有給はプレースホルダーで 0）。
-- **ギャップ注意**: `ProfileAttendanceStatisticsService` が既存の月次計算ロジックを保持する一方、`UserProfileRestController` に `/api/profile/me/statistics` の GET マッピングが未接続。重複ロジックの統合とルーティング追加を実施して初めて本機能が有効になる。
+- **View Model変換**: APIレスポンスからUI専用モデルへの変換、派生データ生成（`deriveTitle`/`deriveCategory`）、型安全な拡張（`NewsViewModel = NewsResponse & { ... }`）。Profile用に3つの変換関数（`createOverviewViewModel`/`createMetadataFormValues`/`createActivityViewModel`）を提供し、Nullable値のデフォルト処理とEnum制約を実装
+- **TanStack Table統合**: カラム定義のフック化（`useNewsColumns`）、選択チェックUI標準化（`DataTableSelectionCheckbox`）、レスポンシブ対応、複数ソート・フィルタ。選択状態管理は `RowSelectionState` とID配列を同期し、Set型による高速検索とバルク操作後の部分成功対応を実装
+- **React Query楽観的更新**: `onMutate`でキャッシュ直接更新、`onError`でロールバック、`onSettled`でサーバー再検証、複数キャッシュキー同時無効化、バルク操作の部分成功処理
+- **ホーム打刻クロック同期**: `useHomeClock` が JST固定（`formatLocalTimestamp` + Day.js timezone）のISOタイムスタンプを供給、UI/ロジック分離、フェールオーバー処理、遅延吸収
+- **Feature Flag管理**: `FeatureFlagProvider` が `/api/public/feature-flags` から取得しローカルストレージ同期、`ui-wrapper/*` でフォールバックUI提供、段階的ロールアウト対応
+- **認証ガード**: `AdminGuard` が認証取得中に `LoadingSpinner` 表示、未認証は `/signin` へ、非管理者は `/` へリダイレクト、DOM構造を汚染しない Fragment 返却
+- **エラーハンドリング**: `GlobalErrorHandler` が API 例外を識別（認証/権限/ネットワーク/バリデーション）、Toast 表示とロギング一元管理、`authEvents` で401/403をエスカレート、React Query の QueryCache と統合
+- **Repository パターン**: `IHttpClient` で HTTP 層を抽象化、Zod スキーマで API 応答検証、`RepositoryError` に正規化（`TIMEOUT`/`NETWORK_ERROR`/`SERVER_ERROR`）、依存逆転の原則 (DIP) を満たす
+- **プロフィール統計**: `useProfileStatisticsQuery` → `ProfileStatisticsData` → Recharts 3.3.0 で6か月推移を可視化、`constants/chartStyles.ts` でテーマ統一、Skeleton と空状態カード実装
 
 ## バックエンド
 
@@ -119,75 +57,43 @@ npm run generate:api # OpenAPI型生成
 - Springdoc OpenAPI 2.6.0
 
 ### MyBatis実装パターン
-- **動的SQL使い分け**:
-  - **アノテーションベース**: シンプルなクエリ（`@Delete` + `<script>`、`@Select` + `<foreach>`）
-  - **XML定義**: 複雑な更新ロジック（`bulkUpdate*`、条件分岐、複数カラム更新）
-  - **一括操作**: `<foreach>`で動的IN句生成（`deleteByIds`、`bulkUpdateReleaseFlag`）
+- **動的SQL使い分け**: シンプルなクエリはアノテーションベース（`@Delete` + `<script>`、`@Select` + `<foreach>`）、複雑な更新ロジックはXML定義（`bulkUpdate*`、条件分岐）、一括操作は `<foreach>` で動的IN句生成
 - **ResultMap定義**: snake_case→camelCase変換を一元管理、型安全なマッピング
-- **列マッピングの明示**: `StampHistoryMapper` では `SELECT *` を避け、各カラムを明示し `AS` でDTOプロパティへマッピング（2025-11-01 リファクタ）
+- **列マッピングの明示**: `SELECT *` を避け、各カラムを明示し `AS` でDTOプロパティへマッピング
 
 ### サービス層アーキテクチャ（SOLID原則）
 - **ファサードパターン**: EmployeeService、NewsManageService（読み取り専用の統合ポイント）
 - **単一責任の原則**: Query/Command分離（CQRS）
-- **専門サービス分離**:
-  - 認証: AuthenticationService、AuthSessionService
-  - 従業員: QueryService、CommandService、CacheService
-  - 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService、StampOutputService
-  - 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter、StampFormDataExtractor
-  - お知らせ: NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
-- **Controller層での組み立て**: NewsRestController が複数の専門サービスを注入し、エンドポイントごとに適切なサービスを呼び出す
+- **専門サービス分離**: 認証（AuthenticationService、AuthSessionService）、従業員（QueryService、CommandService、CacheService）、打刻（StampService、StampEditService、StampHistoryService、StampDeleteService、StampOutputService + サブコンポーネント）、お知らせ（NewsManage系の Registration/Release/Deletion/Bulk* サービス）
+- **Controller層での組み立て**: 複数の専門サービスを注入し、エンドポイントごとに適切なサービスを呼び出す
 
-### DDDアプローチの段階的導入（Profile機能で確立、2025-11-03）
-
-**注**: 既存機能（News, StampHistory）はMyBatis + 従来型Serviceパターンを継続使用。Profile機能は新しいDDDアプローチの実験場として位置づけ。
-
-#### Application Service層
-- **ProfileAppService**: ユースケースをオーケストレーション、トランザクション境界を制御
-- **責務**: 権限チェック → データ取得 → ドメインロジック適用 → 永続化 → 監査ログ記録
-- **依存関係**: Repository、専門サービス（ActivityQueryService、AuditService）、Clock
-
-#### Domain Model層（service/profile/model/）
-- **Aggregate**: `ProfileAggregate`（ルートエンティティ、トランザクション境界）
-- **Value Objects**: `ProfileMetadataDocument`、`ProfileWorkScheduleDocument`（不変、値による等価性）
-- **Command/Query Objects**: `ProfileMetadataUpdateCommand`（ユーザー意図）、`ProfileActivityQuery`（検索条件）
-- **Change Tracking**: `ProfileChangeSet`（変更差分記録、監査証跡）
-- **Page Objects**: `ProfileActivityPage`（ページネーション結果）
-
-#### Repository層
-- **ProfileMetadataRepository**: ドメインモデルの永続化・復元を担当
-- **JdbcTemplate経由でPostgreSQL JSONB直接操作**（MyBatisマッパー不使用）
-- **DocumentパターンでJSONBスキーマを型安全に管理**（JSON ↔ ドメインモデル変換をカプセル化）
-
-#### アクセス制御と監査
-- **enforceAccessメソッド**: 自己アクセス/管理者権限を検証（BusinessルールをApplication Service層で実施）
-- **ProfileAuditService**: 閲覧・更新イベントを`profile_activity_log`テーブルに記録（JSONB活用）
-
-#### DDDを採用すべきタイミング
-- ✅ 複雑なビジネスルール、頻繁に変わる要件、監査証跡が重要、柔軟なデータ構造
-- ❌ シンプルなCRUD、安定したスキーマ、単純なクエリ → 従来型（MyBatis）を継続
+### DDDアプローチの段階的導入（Profile機能、2025-11-03）
+**注**: 既存機能（News, StampHistory）はMyBatis + 従来型Serviceパターンを継続。Profile機能は新しいDDDアプローチの実験場。
+- **Application Service層**: `ProfileAppService` がユースケースをオーケストレーション、トランザクション境界を制御（権限チェック → データ取得 → ドメインロジック適用 → 永続化 → 監査ログ記録）
+- **Domain Model層**（service/profile/model/）: Aggregate（`ProfileAggregate`）、Value Objects（`ProfileMetadataDocument`、`ProfileWorkScheduleDocument`）、Command/Query Objects（`ProfileMetadataUpdateCommand`、`ProfileActivityQuery`）、Change Tracking（`ProfileChangeSet`）
+- **Repository層**: `ProfileMetadataRepository` が JdbcTemplate 経由で PostgreSQL JSONB を直接操作、Document パターンで JSONB スキーマを型安全に管理
+- **アクセス制御と監査**: `enforceAccessメソッド` で自己アクセス/管理者権限を検証、`ProfileAuditService` が閲覧・更新イベントを `profile_activity_log` に記録
+- **DDDを採用すべきタイミング**: ✅ 複雑なビジネスルール、頻繁に変わる要件、監査証跡が重要、柔軟なデータ構造 / ❌ シンプルなCRUD、安定したスキーマ → 従来型（MyBatis）を継続
 
 ### API層の実装パターン
-- **REST Controller層**: record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）で入力検証
-- **単体更新API**: `/api/stamps/{id}` PUT/DELETE が `StampRestController` の `resolveTimeValue` で未入力フィールドを既存値にフォールバックし、`StampEditService` のオーケストレーションと整合
-- **認証・認可**: `SecurityUtil#getCurrentEmployeeId()`で操作者取得、`@PreAuthorize`でロール制御（例: `hasRole('ADMIN')`）
+- **REST Controller層**: record DTO + Bean Validation（`@NotBlank`, `@Pattern`, `@Size`）で入力検証。`SecurityUtil#getCurrentEmployeeId()`で操作者取得、`@PreAuthorize`でロール制御
 - **Form Bridge パターン**: 既存のForm型（`ListForm`, `NewsManageForm`, `HomeForm`）でService層と接続
-- **型同期**: OpenAPI 3.0スキーマ → `@hey-api/openapi-ts`でTypeScript型自動生成
-- **バリデーション同期**:
-  - Backend: Bean Validation（record DTO）
-  - Frontend: Zod スキーマ（同一ルール・メッセージ）
-- **バルクAPI設計**:
-  - 部分成功レスポンス（`successCount`, `failureCount`, `results[]`）
-  - 上限設定（最大100件）、事前検証とトランザクション管理
-  - 個別の成否とエラーメッセージを返却
-  - try-catchでバリデーションエラーとシステムエラーを分離処理
-- **Map型レスポンス変換パターン**（打刻履歴）:
-  - Service層: `List<Map<String, Object>>`でカレンダー形式データ返却
-  - Controller層: record DTO（`StampHistoryEntryResponse`）に型安全変換
-- **バルクAPIエラー戦略**（News機能で確立）:
-  - `extractRootCause`メソッドでネストされた例外の根本原因を抽出
-  - バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理
-  - 部分成功時のログ出力（成功件数/失敗件数、`logger.info`で詳細記録）
-  - `ResponseStatusException`で適切なHTTPステータス返却（400: バリデーションエラー、500: システムエラー）
+- **型同期**: OpenAPI 3.0スキーマ → `@hey-api/openapi-ts`でTypeScript型自動生成。Backend Bean Validation と Frontend Zod スキーマで同一ルール・メッセージ
+- **バルクAPI設計**: 部分成功レスポンス（`successCount`, `failureCount`, `results[]`）、上限設定（最大100件）、事前検証とトランザクション管理、個別の成否とエラーメッセージを返却
+- **バルクAPIエラー戦略**: `extractRootCause`メソッドでネストされた例外の根本原因を抽出、バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理、部分成功時のログ出力、`ResponseStatusException`で適切なHTTPステータス返却（400/500）
+- **Map型レスポンス変換パターン**（打刻履歴）: Service層が `List<Map<String, Object>>` でカレンダー形式データ返却、Controller層が record DTO（`StampHistoryEntryResponse`）に型安全変換
+
+### スキーマ正規化とJSONB戦略
+
+#### 勤務スケジュールの正規化（V6マイグレーション、2025-11-13）
+- **通常カラム化完了**: `employee.schedule_start/end/break_minutes` へ移行、`profile_metadata.schedule` ブロックは削除済み
+- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が通常カラム経由で参照（JSONB依存を解消）
+- **GINインデックス**: `log_history.detail` に `jsonb_path_ops` 追加（監査ログ検索の高速化）
+
+#### JSONB活用指針
+- **✅ 使用推奨**: 柔軟なスキーマ（監査ログ、メタデータ補助情報）、頻繁に変わるスキーマ、ネストされた構造
+- **❌ 使用非推奨**: 頻繁な集計対象、インデックス必須項目、JOIN条件に使用する項目
+- **移行戦略**: `docs/issues/jsonb-dependency-reduction.md` 参照
 
 ### セキュリティ
 - セッションベース認証（8時間）、CSRF保護（Cookie + X-XSRF-TOKEN）
@@ -200,18 +106,60 @@ npm run generate:api # OpenAPI型生成
 ./gradlew bootRun    # Spring Boot起動
 ```
 
+## データベース設計
+
+### スキーマ戦略
+- **PostgreSQL 16**: 高度な JSONB サポート、GIN インデックス、トリガー機能
+- **MyBatis 3.0.4（従来機能）+ Repository（DDD機能）のハイブリッド**: 既存機能は MyBatis、新機能（Profile）は JdbcTemplate + Repository パターン
+- **正規化判断基準**: 頻繁な集計対象は通常カラム化（V6マイグレーション参照）、柔軟なスキーマはJSONB活用
+
+### マイグレーション管理
+- **Flyway**: バージョン管理された SQL マイグレーション（`src/main/resources/db/migration/`）
+- **マイグレーション履歴**:
+  - V1~V3: 初期スキーマ・データ・夜勤フラグ
+  - V4: パフォーマンスインデックス（13個）
+  - V5: `stamp_date` 正規化（DATE型導入 + トリガー双方向同期）
+  - V6: JSONB依存削減（勤務スケジュール通常カラム化）
+- **トランザクション制御**: Flyway:Transactional=false（DDL自動コミット対応）
+- **運用Runbook**: `docs/runbooks/performance-index-rollout.md`、`docs/runbooks/stamp-date-migration.md`
+
+### インデックス設計
+- **B-Tree インデックス**: 単一カラム（`idx_employee_name_search`）、複合カラム（`idx_log_history_daily_check`）
+- **GIN インデックス**: JSONB カラム（`log_history.detail` に `jsonb_path_ops`）
+- **部分インデックス**: 条件付きインデックス（`idx_stamp_history_stamp_date` は `stamp_date IS NOT NULL`）
+- **インデックス命名規則**: `idx_<table>_<column(s)>_<type>`
+
 ## テスト戦略
 
-1. **単体テスト**: JUnit 5 / Vitest（80%+ カバレッジ）
-   - Controller: `@WebMvcTest` + MockBean
-   - React: Testing Library + MSW
-2. **統合テスト**: Spring Boot Test + Testcontainers / MSW
-   - モック削減方針（実DBテスト強化、2025-10-15）
-3. **E2Eテスト**: Playwright（主要フロー）
-   - ファクトリ関数でテストデータ生成
-   - MSWモックサーバー（開発中）
-4. **契約テスト**: OpenAPI4j 1.0.7
-5. **パフォーマンステスト**: Lighthouse CI
+- **単体テスト**: JUnit 5 / Vitest（80%+ カバレッジ）。Controller は `@WebMvcTest` + MockBean、React は Testing Library + MSW
+- **統合テスト**: Spring Boot Test + Testcontainers / MSW。モック削減方針（実DBテスト強化、2025-10-15）
+- **E2Eテスト**: Playwright（主要フロー）。ファクトリ関数でテストデータ生成、MSWモックサーバー（開発中）
+- **契約テスト**: OpenAPI4j 1.0.7
+- **パフォーマンステスト**: Lighthouse CI
+
+## パフォーマンス最適化
+
+### インデックス戦略
+- **V4マイグレーション**（2025-10-XX）: 13個のインデックス追加
+  - `idx_log_history_update_date_desc`: 監査ログの日付降順検索
+  - `idx_log_history_daily_check`: 日次チェック（year/month/day複合）
+  - `idx_employee_name_search`: 従業員名検索（部分一致対応）
+  - `idx_stamp_history_year_month`: 打刻履歴の年月検索
+  - その他9個のインデックス
+- **V5_1マイグレーション**（2025-10-XX）: `stamp_history.stamp_date` インデックス（DATE型での高速検索）
+- **V6マイグレーション**（2025-11-13）: `log_history.detail` に GIN インデックス（`jsonb_path_ops`）
+
+### N+1クエリ解消パターン
+- **バッチフェッチパターン**: `StampHistoryMapper#getStampHistoryByYearMonthEmployeeIds` による一括取得
+- **CSV出力最適化**: `StampOutputService` が従業員ごとのループを廃止（100従業員×1か月で100クエリ→1クエリに削減）
+- **カレンダーテーブル展開**: JOINで全日付を埋め、欠損日を補完
+- **実績**: 従来の従業員ループを廃止し、単一クエリで全データを取得する設計に変更
+
+### 計測・監視
+- **Lighthouse CI**: フロントエンドパフォーマンス自動計測（LCP、TTI、バンドルサイズ）
+- **EXPLAIN (ANALYZE, BUFFERS)**: クエリ実行計画の分析とボトルネック特定
+- **運用Runbook**: `docs/runbooks/performance-index-rollout.md`、`docs/runbooks/stamp-date-migration.md`
+- **パフォーマンスドキュメント**: `docs/performance-tuning.md` に詳細な計測結果
 
 ## パフォーマンス目標
 
@@ -220,8 +168,7 @@ npm run generate:api # OpenAPI型生成
 
 ## CI/CD
 
-- **ci.yml**: フロントlint/test/build、バックテスト、Docker、SonarCloud
-- **feature.yml**: 命名規則、OWASPスキャン
+- **ci.yml**: フロントlint/test/build、バックテスト、Docker、SonarCloud / **feature.yml**: 命名規則、OWASPスキャン
 
 ## 環境・ポート
 
@@ -229,4 +176,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-06 (プロフィール勤怠統計ビジュアライゼーションとAPIギャップを追記)*
+*Last Updated: 2025-11-13 (JSONB依存削減、パフォーマンス最適化、データベース設計を追記)*

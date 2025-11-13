@@ -41,8 +41,8 @@ TeamDevelopBravo-main/
 - `/api/public/**` は `FeatureFlagRestController` が担当し、モダンUIフラグを匿名アクセスで提供（`FeatureFlagService` が Spring プロファイルに応じて値を決定）。
 - `DebugController` は dev/test プロファイル限定で `/api/debug` を公開し、CSRF ヘッダー／Cookie の整合性やリクエストヘッダーを可視化するデバッグ専用エンドポイント。
 
-### プロフィール統計レイヤー（2025-11-06 追加）
-- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が JSONB の勤務予定（start/end/breakMinutes）を参照して総労働時間・残業・遅刻回数を算出（有給は現状0でプレースホルダー）。
+### プロフィール統計レイヤー（2025-11-13 更新）
+- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が**通常カラム**（`e.schedule_start`, `e.schedule_end`, `e.schedule_break_minutes`）を参照して総労働時間・残業・遅刻回数を算出（有給は現状0でプレースホルダー）。**V6マイグレーション完了によりJSONB依存を解消**、型安全性とパフォーマンスを向上。
 - **アプリケーションサービス**: `ProfileAppService#getProfileStatistics` が集計結果を `ProfileStatisticsData` に折り込み、UI側の KPI（summary + monthly）に合わせた BigDecimal ベースのレスポンスを提供。
 - **レガシーサービスとの重複**: `ProfileAttendanceStatisticsService` も同種の統計計算を保持しているため、ロジックの一本化とデータソースの整合性確認が必要。
 - **フロント接続**: `useProfileStatisticsQuery` → `ProfileSummaryCard`（ラインチャート）/`ProfileMonthlyDetailCard`（BarChart + テーブル）が Recharts 3.3.0 で可視化。`constants/chartStyles.ts` でテーマに沿った配色を統一。
@@ -164,4 +164,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-11-06 (プロフィール統計レイヤーとAPIギャップを追記)*
+*Last Updated: 2025-11-13 (プロフィール統計レイヤーのJSONB依存削減を反映)*

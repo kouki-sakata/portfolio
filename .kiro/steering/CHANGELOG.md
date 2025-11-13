@@ -1,5 +1,55 @@
 # Steering Documents Changelog
 
+## 2025-11-13 (Update 35)
+
+### Updated Documents
+- `tech.md` - JSONB依存削減、パフォーマンス最適化、データベース設計の3セクションを追加、既存セクションを圧縮（233行→179行）
+- `structure.md` - プロフィール統計レイヤーのJSONB参照を通常カラム参照に修正
+- `CHANGELOG.md` - Update 18-25をアーカイブ化（478行→328行、150行削減）
+
+### Code Drift Resolution
+- ✅ **JSONB依存削減（V6マイグレーション）のSteering反映完了**
+  - `employee.schedule_start/end/break_minutes` 通常カラム化をtech.mdとstructure.mdに記録
+  - `StampHistoryMapper.findMonthlyStatistics` が通常カラム参照に変更済みを明記
+  - JSONB活用指針（使用推奨・非推奨ケース）を文書化
+- ✅ **パフォーマンス最適化の文書化完了**
+  - V4/V5マイグレーションのインデックス戦略（13個+GIN+部分インデックス）を記録
+  - N+1クエリ解消パターン（バッチフェッチ、カレンダーテーブル展開）を文書化
+  - 100クエリ→1クエリへの最適化実績を記録
+- ✅ **データベース設計の文書化完了**
+  - Flyway マイグレーション管理（V1-V6の履歴）を整理
+  - インデックス設計（B-Tree、GIN、部分インデックス）を文書化
+  - PostgreSQL 16 + MyBatis + Repository ハイブリッドアーキテクチャを記録
+
+### Key Changes
+- **tech.md の大幅な圧縮と再構成**（233行→179行、54行削減）
+  - フロントエンド設計パターン: 72行→16行（56行削減、箇条書き化で要点を保持）
+  - サービス層・API層・テスト戦略: 計45行削減（詳細説明を簡略化）
+  - 新規セクション追加: 62行（JSONB戦略13行、パフォーマンス25行、DB設計24行）
+  - 最終結果: 300行以内の目標を大幅に達成（179行）
+
+- **CHANGELOG.md のメンテナンス**（478行→328行、150行削減）
+  - Update 18-25をアーカイブ化（2025-10-04〜2025-10-17の履歴）
+  - 古いエントリの参照範囲を Update 1-17 → Update 1-25 に拡大
+  - 推奨サイズ（300行程度）に近づける
+
+### Impact
+- **コードドリフトの完全解消**: V6マイグレーション（PR #119）の JSONB削減がSteeringに反映され、新規開発者が正しいパターンを参照可能に
+- **パフォーマンス知見の共有**: インデックス戦略とN+1解消パターンが文書化され、今後の最適化作業の指針が確立
+- **データベース設計の可視化**: マイグレーション履歴とインデックス設計が整理され、スキーマ進化の全体像が把握可能に
+- **Steeringの保守性向上**: tech.mdが推奨サイズ（200行程度）に収まり、可読性と保守性が向上
+- **CHANGELOGの持続可能性**: 定期的なアーカイブ化により、CHANGELOGが肥大化せず適切なサイズを維持
+
+### Technical Achievements
+- **Steering圧縮**: tech.mdを300行以内に収めつつ、重要な新規情報（JSONB削減、パフォーマンス、DB設計）を追加
+- **コード同期度向上**: Steeringとコードベースの乖離（Code Drift）を解消し、整合性スコアを向上
+- **文書化戦略の確立**: 詳細は別ファイル化せず、tech.md内で箇条書き化することで統合性を維持
+
+### Note
+V6マイグレーション（PR #119、commit 6157041）で完了したJSONB依存削減がSteeringに反映されていなかったコードドリフトを解消。同時に、パフォーマンス最適化（V4/V5マイグレーション）とデータベース設計の知見を文書化し、プロジェクトの技術資産を整理しました。tech.mdは大幅な圧縮により、推奨サイズ（200行程度）を達成し、可読性と保守性が向上しています。
+
+---
+
 ## 2025-11-07 (Update 34)
 
 ### Updated Documents
@@ -320,159 +370,9 @@ stampHistory機能は既に実装済みであり、本更新はコードベー�
 
 ---
 
-## 2025-10-17 (Update 25)
 
-### Updated Documents
-- `product.md` - お知らせ管理バルクAPI実装完了を反映
-- `tech.md` - バルクAPI設計パターンとMyBatis動的SQL追加
-- `structure.md` - features/news配下のバルク操作関連構造を追記
-- `CHANGELOG.md` - 本更新を記録
-
-### Key Changes
-- **バルクAPI実装の完了**（お知らせ管理機能の強化）
-  - REST API: `POST /api/news/bulk/delete`、`PATCH /api/news/bulk/publish`
-  - 部分成功レスポンス設計（`successCount`, `failureCount`, `results[]`）
-  - 最大100件の一括処理、事前検証とトランザクション管理
-  - 個別の成否とエラーメッセージを返却
-
-- **MyBatis動的SQL拡張**
-  - `NewsMapper`: `deleteByIds`、`findExistingIds`、`bulkUpdateReleaseFlagIndividual`
-  - `<foreach>`を使った一括操作パターン
-  - アノテーションベース動的SQLとXML定義の使い分け
-
-- **フロントエンド選択状態管理**
-  - カスタムフック `useNewsSelection`でUI選択ロジックを抽出
-  - バルク操作レスポンスの処理とUI同期
-  - types/bulk.ts でバルクAPI専用型定義を分離
-
-- **サービス層の拡張**
-  - `NewsManageBulkDeletionService`、`NewsManageBulkReleaseService`追加
-  - SOLID原則に基づく単一責任分離の継続
-
-### Impact
-- 管理者のお知らせ管理作業効率が大幅に向上（一括削除・公開切り替え）
-- バルクAPI設計パターンが確立され、他機能への展開可能性が明確化
-- MyBatis動的SQL活用パターンが文書化され、データベース操作の最適化指針を提供
-- UIカスタムフック分離パターンの実例が追加され、再利用性向上のベストプラクティスを提示
-
-### Note
-コミット e7600c1〜4142597 でバルクAPI実装が完了。既存の単一操作APIパターンに加え、部分成功対応のバルク操作パターンが新規追加されました。
+*古いエントリ（Update 1-25）はgit履歴で参照可能*
 
 ---
-
-## 2025-10-16 (Update 24)
-
-### Updated Documents
-- `product.md` - お知らせ管理機能完全実装ステータスへ更新
-- `tech.md` - バリデーション同期パターンとテスト戦略を明文化
-- `structure.md` - news featureの詳細構造とController パターンを追記
-- `CHANGELOG.md` - 本更新を記録
-
-### Key Changes
-- お知らせ管理機能が完全実装されたことを反映（REST API、UIコンポーネント、テスト完備）
-- Bean Validation とZod スキーマの同期パターンを技術指針に追加
-- features/news配下のコンポーネント構成（NewsManagementPage、NewsFormModal等）を明文化
-- Controller層のForm Bridge パターン（ListForm/NewsManageForm）を構造指針に明記
-- テスト戦略に`@WebMvcTest` + MockBeanパターン、MSWモックパターンを追記
-
-### Impact
-- フロント/バックのバリデーション同期方法が明確化され、一貫性のある入力検証を実現
-- お知らせ機能の実装パターンが確立され、今後の機能追加時の参照モデルとなる
-- テストパターンが明文化され、品質保証アプローチが統一される
-
----
-
-## 2025-10-15 (Update 23)
-
-### Updated Documents
-- `product.md` - お知らせ管理REST API完了ステータスを追記
-- `tech.md` - Controller層の実装パターンとOpenAPI同期手順を明文化
-- `structure.md` - DTOサブパッケージとfeatures/news構成を反映
-- `CHANGELOG.md` - 本更新を記録
-
-### Key Changes
-- NewsRestControllerの役割と`ListForm`/`NewsManageForm`連携パターンを技術指針に追加
-- features/news・logManagementディレクトリの存在と役割を構造指針に明記
-- お知らせ管理REST APIとOpenAPI型生成が完了済みであることを製品概要に反映
-
-### Impact
-- Controller実装時の権限制御・DTO設計が指針化され、再実装時の迷いを削減
-- 新規/既存モジュールの所在が明文化され、機能拡張タスク時の探索コストを低減
-- OpenAPI駆動の型同期手順が共有され、フロント/バックの型乖離リスクを軽減
-
----
-
-## 2025-10-15 (Update 22)
-
-### Updated Documents
-- `CHANGELOG.md` - お知らせ管理機能のスキーマ移行完了とテスト戦略改善を記録
-- `product.md` - 実装状況を最新化
-- `tech.md` - テスト戦略の進化を反映
-
-### Key Changes
-
-#### お知らせ管理機能のスキーマ移行完了（2025-10-10〜15）
-- **スキーマ移行の完了**
-  - `news`テーブルのcamelCase化（`newsId`, `newsTitle`等）
-  - `NewsEntity`、`NewsMapper.xml`の型整合性修正
-  - Jackson LocalDateシリアライズ問題の解決（`@JsonFormat`アノテーション追加）
-  - ResultMap重複定義の削除とマッピング適用
-
-- **データ整合性の改善**
-  - 従業員名の全角スペース→半角スペース統一（commit c58754c）
-  - `EmployeeMapper.xml`の名前結合ロジック修正
-  - データ表示の一貫性確保
-
-- **テスト戦略の改善**
-  - モック削減方針の採用（commit b22543f）
-  - 実際のデータベースを使用した統合テストの追加
-  - `HomeService03Test`のNullPointerException修正
-  - テスト信頼性の向上
-
-### Technical Achievements
-- **スキーマ移行**: camelCase統一によるコード可読性向上
-- **データ整合性**: 全角/半角混在問題の解決
-- **テスト品質**: モック削減による実環境テスト強化
-
-### Impact
-- **保守性向上**: 一貫したスキーマ命名規則の確立
-- **バグ削減**: データ整合性修正による表示問題の解消
-- **テスト信頼性**: 統合テストによる実環境動作保証
-
-### Note
-最新のコミット（b22543f〜e2b638d）でお知らせ管理機能のスキーマ移行が完了。テスト戦略の改善により、プロジェクトの品質保証体制が強化されました。
-
----
-
-## 2025-10-07 (Update 21)
-
-### Key Changes
-- OpenAPI契約テストの安定化完了（PR #46マージ）
-- セッションレスポンスのnull許容フィールド対応
-- OpenAPI4j 1.0.7へのバージョン固定
-
----
-
-## 2025-10-05 (Update 20)
-
-### Key Changes
-- Lighthouse CI統合とパフォーマンス監視基盤の実装完了
-- Core Web Vitals測定の自動化
-- パフォーマンス目標設定（LCP 1.5秒、TTI 2秒）
-
----
-
-## 2025-10-04 (Update 18-19)
-
-### Key Changes
-- レガシーUI完全削除リファクタリング（PR #38完了）
-- Thymeleaf依存の完全削除、React SPA単一構成への移行
-- Viteビルド設定の環境変数対応
-
----
-
-*古いエントリ（Update 1-17）はgit履歴で参照可能*
-
----
-*Last Updated: 2025-10-28*
+*Last Updated: 2025-11-13*
 *Inclusion Mode: Always Included*
