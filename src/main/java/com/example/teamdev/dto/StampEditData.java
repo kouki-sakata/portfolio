@@ -1,5 +1,7 @@
 package com.example.teamdev.dto;
 
+import java.time.LocalDate;
+
 /**
  * 打刻編集データを保持するDTOクラス。
  * フォームデータから抽出した値を構造化して保持します。
@@ -11,6 +13,7 @@ public class StampEditData {
     private final String year;
     private final String month;
     private final String day;
+    private final LocalDate stampDate;
     private final String inTime;
     private final String outTime;
     private final String breakStartTime;
@@ -25,6 +28,7 @@ public class StampEditData {
      * @param year           年
      * @param month          月
      * @param day            日
+     * @param stampDate      打刻日付（YYYY-MM-DD形式）
      * @param inTime         出勤時刻
      * @param outTime        退勤時刻
      * @param breakStartTime 休憩開始時刻
@@ -32,13 +36,14 @@ public class StampEditData {
      * @param isNightShift   夜勤フラグ
      */
     public StampEditData(Integer id, Integer employeeId, String year,
-            String month, String day, String inTime, String outTime,
+            String month, String day, LocalDate stampDate, String inTime, String outTime,
             String breakStartTime, String breakEndTime, Boolean isNightShift) {
         this.id = id;
         this.employeeId = employeeId;
         this.year = year;
         this.month = month;
         this.day = day;
+        this.stampDate = stampDate;
         this.inTime = inTime;
         this.outTime = outTime;
         this.breakStartTime = breakStartTime;
@@ -65,6 +70,10 @@ public class StampEditData {
 
     public String getDay() {
         return day;
+    }
+
+    public LocalDate getStampDate() {
+        return stampDate;
     }
 
     public String getInTime() {
