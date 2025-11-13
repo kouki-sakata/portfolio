@@ -1,4 +1,3 @@
--- Flyway:Transactional=false
 -- V6: Reduce JSONB dependencies by normalizing schedule fields and indexing profile audit JSONB.
 
 ALTER TABLE employee
@@ -42,5 +41,5 @@ ALTER TABLE employee
     ALTER COLUMN schedule_end SET NOT NULL,
     ALTER COLUMN schedule_break_minutes SET NOT NULL;
 
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_log_history_detail_gin
+CREATE INDEX IF NOT EXISTS idx_log_history_detail_gin
     ON log_history USING gin (detail jsonb_path_ops);

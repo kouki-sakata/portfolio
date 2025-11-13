@@ -51,6 +51,3 @@ CREATE TRIGGER trg_stamp_history_sync_stamp_date
     BEFORE INSERT OR UPDATE ON stamp_history
     FOR EACH ROW
     EXECUTE FUNCTION sync_stamp_history_stamp_date();
-
-CREATE INDEX CONCURRENTLY IF NOT EXISTS idx_stamp_history_stamp_date
-    ON stamp_history (employee_id, stamp_date);

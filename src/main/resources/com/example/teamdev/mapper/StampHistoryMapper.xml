@@ -52,7 +52,6 @@
     <select id="getStampHistoryByYearMonthEmployeeIds" parameterType="map"
             resultType="com.example.teamdev.entity.StampHistoryDisplay">
         <choose>
-        <choose>
             <when test="employeeIds == null or employeeIds.size == 0 or datesInMonth == null or datesInMonth.size == 0">
                 SELECT NULL::INTEGER AS id WHERE 1 = 0
             </when>
@@ -113,7 +112,6 @@
                 LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
                 ORDER BY ec.sort_order, ec.work_date
             </otherwise>
-        </choose>
         </choose>
     </select>
 
