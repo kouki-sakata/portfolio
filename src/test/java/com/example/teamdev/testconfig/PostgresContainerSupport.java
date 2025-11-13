@@ -50,10 +50,15 @@ public abstract class PostgresContainerSupport {
                 .setPort(0)
                 .start();
 
-            initializeEmbeddedDatabase(embeddedPostgres);
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> closeEmbedded(embeddedPostgres), "embedded-postgres-shutdown"));
-            log.info("Embedded PostgreSQL (port:{}) を起動しました", embeddedPostgres.getPort());
-            return embeddedPostgres;
+            try {
+                initializeEmbeddedDatabase(embeddedPostgres);
+                Runtime.getRuntime().addShutdownHook(new Thread(() -> closeEmbedded(embeddedPostgres), "embedded-postgres-shutdown"));
+                log.info("Embedded PostgreSQL (port:{}) を起動しました", embeddedPostgres.getPort());
+                return embeddedPostgres;
+            } catch (Exception e) {
+                closeEmbedded(embeddedPostgres);
+                throw new IllegalStateException("埋め込みPostgreSQLの初期化に失敗しました", e);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("埋め込みPostgreSQLの起動に失敗しました", e);
         }
