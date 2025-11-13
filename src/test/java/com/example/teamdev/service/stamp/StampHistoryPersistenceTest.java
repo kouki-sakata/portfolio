@@ -60,6 +60,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "1",
+                LocalDate.of(2025, 10, 1),
                 "09:00",
                 "18:00",
                 null,  // breakStartTime
@@ -100,6 +101,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "15",
+                LocalDate.of(2025, 10, 15),
                 "10:00",
                 null,
                 null,  // breakStartTime
@@ -134,6 +136,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "20",
+                LocalDate.of(2025, 10, 20),
                 null,
                 "18:00",
                 null,  // breakStartTime
@@ -168,6 +171,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "25",
+                LocalDate.of(2025, 10, 25),
                 null,
                 null,
                 null,  // breakStartTime
@@ -207,6 +211,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "1",
+                LocalDate.of(2025, 10, 1),
                 "09:30",
                 "18:30",
                 null,  // breakStartTime
@@ -254,6 +259,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "5",
+                LocalDate.of(2025, 10, 5),
                 null,
                 null,
                 null,  // breakStartTime
@@ -295,6 +301,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "10",
+                LocalDate.of(2025, 10, 10),
                 "09:00",
                 "18:00",
                 null,  // breakStartTime
@@ -324,6 +331,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "12",
+                LocalDate.of(2025, 10, 12),
                 "10:00",
                 null,
                 null,  // breakStartTime
@@ -415,6 +423,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "1",
+                LocalDate.of(2025, 10, 1),
                 "09:00",
                 null,
                 null,  // breakStartTime
@@ -436,6 +445,7 @@ class StampHistoryPersistenceTest {
                 "2025",
                 "10",
                 "1",
+                LocalDate.of(2025, 10, 1),
                 "09:00",
                 "18:00",
                 null,  // breakStartTime

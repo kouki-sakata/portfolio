@@ -97,7 +97,7 @@ public class StampServiceTest {
         homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF); // 夜勤ではない
 
         // レコードが存在しない場合
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(null);
 
         InvalidStampStateException exception = assertThrows(
@@ -187,7 +187,7 @@ public class StampServiceTest {
         existing.setInTime(OffsetDateTime.now().minusHours(1));
         existing.setOutTime(null);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.ATTENDANCE);
@@ -216,7 +216,7 @@ public class StampServiceTest {
         existing.setInTime(OffsetDateTime.now().minusHours(8));
         existing.setOutTime(OffsetDateTime.now().minusHours(1));
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.DEPARTURE);
@@ -246,7 +246,7 @@ public class StampServiceTest {
         existing.setInTime(existingInTime);
         existing.setOutTime(null);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.DEPARTURE);
@@ -276,7 +276,7 @@ public class StampServiceTest {
         existing.setInTime(null);
         existing.setOutTime(existingOutTime);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.ATTENDANCE);
@@ -301,7 +301,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         OffsetDateTime toggleTime = OffsetDateTime.now();
@@ -335,7 +335,7 @@ public class StampServiceTest {
         existing.setBreakStartTime(breakStart);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         OffsetDateTime toggleTime = OffsetDateTime.now();
@@ -369,7 +369,7 @@ public class StampServiceTest {
         existing.setBreakEndTime(breakStart.plusMinutes(45));
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         assertThrows(DuplicateStampException.class, () ->
@@ -399,7 +399,7 @@ public class StampServiceTest {
         existing.setInTime(null);
         existing.setOutTime(null);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.DEPARTURE);
@@ -423,7 +423,7 @@ public class StampServiceTest {
     @Test
     void toggleBreak_shouldThrowException_whenNoAttendanceRecord() {
         // レコードが存在しない場合
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(null);
 
         OffsetDateTime toggleTime = OffsetDateTime.now();
@@ -453,7 +453,7 @@ public class StampServiceTest {
         existing.setOutTime(null);
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         OffsetDateTime toggleTime = OffsetDateTime.now();
@@ -482,7 +482,7 @@ public class StampServiceTest {
         existing.setOutTime(OffsetDateTime.now().minusHours(1));
         existing.setEmployeeId(employeeId);
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         OffsetDateTime toggleTime = OffsetDateTime.now();
@@ -510,7 +510,7 @@ public class StampServiceTest {
         existing.setInTime(OffsetDateTime.now().minusHours(8));
         existing.setOutTime(OffsetDateTime.now().minusHours(1));
 
-        when(mapper.getStampHistoryByYearMonthDayEmployeeId(any(), any(), any(), anyInt()))
+        when(mapper.getStampHistoryByStampDateEmployeeId(any(LocalDate.class), anyInt()))
             .thenReturn(existing);
 
         homeForm.setStampType(StampType.ATTENDANCE);
