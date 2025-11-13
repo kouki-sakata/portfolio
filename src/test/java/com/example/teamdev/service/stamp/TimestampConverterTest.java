@@ -8,6 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,13 +35,11 @@ class TimestampConverterTest {
         @DisplayName("正常系: 標準的な日時が正しく変換される")
         void convertToTimestamp_withValidDateTime_shouldConvertCorrectly() {
             // Arrange
-            String year = "2025";
-            String month = "10";
-            String day = "15";
+            LocalDate date = LocalDate.of(2025, 10, 15);
             String time = "09:30";
 
             // Act
-            Timestamp result = converter.convertToTimestamp(year, month, day, time);
+            Timestamp result = converter.convertToTimestamp(date, time);
 
             // Assert
             assertNotNull(result);
@@ -52,7 +51,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 時刻がnullの場合はnullを返す")
         void convertToTimestamp_withNullTime_shouldReturnNull() {
             // Act
-            Timestamp result = converter.convertToTimestamp("2025", "5", "20", null);
+            Timestamp result = converter.convertToTimestamp(LocalDate.of(2025, 5, 20), null);
 
             // Assert
             assertNull(result, "時刻がnullの場合はnullを返す");
@@ -62,7 +61,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 時刻が空文字の場合はnullを返す")
         void convertToTimestamp_withEmptyTime_shouldReturnNull() {
             // Act
-            Timestamp result = converter.convertToTimestamp("2025", "3", "10", "");
+            Timestamp result = converter.convertToTimestamp(LocalDate.of(2025, 3, 10), "");
 
             // Assert
             assertNull(result, "時刻が空文字の場合はnullを返す");
@@ -78,34 +77,12 @@ class TimestampConverterTest {
         })
         @DisplayName("境界値: 特殊な日付が正しく変換される")
         void convertToTimestamp_withBoundaryDates_shouldConvertCorrectly(
-                String year, String month, String day, String time) {
+                int year, int month, int day, String time) {
             // Act
-            Timestamp result = converter.convertToTimestamp(year, month, day, time);
+            Timestamp result = converter.convertToTimestamp(LocalDate.of(year, month, day), time);
 
             // Assert
             assertNotNull(result, "境界値日付も正しく変換される");
-        }
-
-        @Test
-        @DisplayName("異常系: 無効な日付フォーマットで例外をスロー")
-        void convertToTimestamp_withInvalidDateFormat_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.convertToTimestamp("2025", "13", "1", "10:00")
-            );
-            assertTrue(exception.getMessage().contains("Invalid date/time format"));
-        }
-
-        @Test
-        @DisplayName("異常系: 存在しない日付で例外をスロー")
-        void convertToTimestamp_withNonExistentDate_shouldThrowException() {
-            // Act & Assert (2月30日は存在しない)
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.convertToTimestamp("2025", "2", "30", "10:00")
-            );
-            assertTrue(exception.getMessage().contains("Invalid date/time format"));
         }
 
         @Test
@@ -114,7 +91,7 @@ class TimestampConverterTest {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> converter.convertToTimestamp("2025", "10", "15", "25:00")
+                () -> converter.convertToTimestamp(LocalDate.of(2025, 10, 15), "25:00")
             );
             assertTrue(exception.getMessage().contains("Invalid date/time format"));
         }
@@ -123,12 +100,23 @@ class TimestampConverterTest {
         @DisplayName("正常系: 1桁の月日も正しく処理される")
         void convertToTimestamp_withSingleDigitMonthDay_shouldConvertCorrectly() {
             // Act
-            Timestamp result = converter.convertToTimestamp("2025", "5", "3", "08:05");
+            Timestamp result = converter.convertToTimestamp(LocalDate.of(2025, 5, 3), "08:05");
 
             // Assert
             assertNotNull(result);
             LocalDateTime expected = LocalDateTime.of(2025, 5, 3, 8, 5);
             assertEquals(Timestamp.valueOf(expected), result);
+        }
+
+        @Test
+        @DisplayName("異常系: dateがnullで例外をスロー")
+        void convertToTimestamp_withNullDate_shouldThrowException() {
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> converter.convertToTimestamp(null, "10:00")
+            );
+            assertEquals("Date is required", exception.getMessage());
         }
     }
 
@@ -140,7 +128,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 出勤時刻が正しく変換される")
         void convertInTime_withValidInTime_shouldConvertCorrectly() {
             // Act
-            Timestamp result = converter.convertInTime("2025", "10", "1", "09:00");
+            Timestamp result = converter.convertInTime(LocalDate.of(2025, 10, 1), "09:00");
 
             // Assert
             assertNotNull(result);
@@ -152,7 +140,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 出勤時刻がnullの場合はnullを返す")
         void convertInTime_withNullInTime_shouldReturnNull() {
             // Act
-            Timestamp result = converter.convertInTime("2025", "10", "1", null);
+            Timestamp result = converter.convertInTime(LocalDate.of(2025, 10, 1), null);
 
             // Assert
             assertNull(result);
@@ -167,9 +155,9 @@ class TimestampConverterTest {
         })
         @DisplayName("境界値: 様々な出勤時刻パターンが正しく変換される")
         void convertInTime_withVariousTimes_shouldConvertCorrectly(
-                String year, String month, String day, String inTime) {
+                int year, int month, int day, String inTime) {
             // Act
-            Timestamp result = converter.convertInTime(year, month, day, inTime);
+            Timestamp result = converter.convertInTime(LocalDate.of(year, month, day), inTime);
 
             // Assert
             assertNotNull(result);
@@ -184,7 +172,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 退勤時刻が正しく変換される")
         void convertOutTime_withValidOutTime_shouldConvertCorrectly() {
             // Act
-            Timestamp result = converter.convertOutTime("2025", "10", "1", "18:00");
+            Timestamp result = converter.convertOutTime(LocalDate.of(2025, 10, 1), "18:00");
 
             // Assert
             assertNotNull(result);
@@ -196,7 +184,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: 退勤時刻がnullの場合はnullを返す")
         void convertOutTime_withNullOutTime_shouldReturnNull() {
             // Act
-            Timestamp result = converter.convertOutTime("2025", "10", "1", null);
+            Timestamp result = converter.convertOutTime(LocalDate.of(2025, 10, 1), null);
 
             // Assert
             assertNull(result);
@@ -211,9 +199,9 @@ class TimestampConverterTest {
         })
         @DisplayName("境界値: 様々な退勤時刻パターンが正しく変換される")
         void convertOutTime_withVariousTimes_shouldConvertCorrectly(
-                String year, String month, String day, String outTime) {
+                int year, int month, int day, String outTime) {
             // Act
-            Timestamp result = converter.convertOutTime(year, month, day, outTime);
+            Timestamp result = converter.convertOutTime(LocalDate.of(year, month, day), outTime);
 
             // Assert
             assertNotNull(result);
@@ -228,7 +216,7 @@ class TimestampConverterTest {
         @DisplayName("正常系: LocalDateTimeに正しく変換される")
         void parseToLocalDateTime_withValidInput_shouldConvertCorrectly() {
             // Act
-            LocalDateTime result = converter.parseToLocalDateTime("2025", "10", "15", "14:30");
+            LocalDateTime result = converter.parseToLocalDateTime(LocalDate.of(2025, 10, 15), "14:30");
 
             // Assert
             LocalDateTime expected = LocalDateTime.of(2025, 10, 15, 14, 30);
@@ -236,36 +224,14 @@ class TimestampConverterTest {
         }
 
         @Test
-        @DisplayName("異常系: yearがnullで例外をスロー")
-        void parseToLocalDateTime_withNullYear_shouldThrowException() {
+        @DisplayName("異常系: dateがnullで例外をスロー")
+        void parseToLocalDateTime_withNullDate_shouldThrowException() {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime(null, "10", "15", "10:00")
+                () -> converter.parseToLocalDateTime(null, "10:00")
             );
-            assertEquals("Year is required", exception.getMessage());
-        }
-
-        @Test
-        @DisplayName("異常系: monthがnullで例外をスロー")
-        void parseToLocalDateTime_withNullMonth_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", null, "15", "10:00")
-            );
-            assertEquals("Month is required", exception.getMessage());
-        }
-
-        @Test
-        @DisplayName("異常系: dayがnullで例外をスロー")
-        void parseToLocalDateTime_withNullDay_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", "10", null, "10:00")
-            );
-            assertEquals("Day is required", exception.getMessage());
+            assertEquals("Date is required", exception.getMessage());
         }
 
         @Test
@@ -274,42 +240,9 @@ class TimestampConverterTest {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", "10", "15", null)
+                () -> converter.parseToLocalDateTime(LocalDate.of(2025, 10, 15), null)
             );
             assertEquals("Time is required", exception.getMessage());
-        }
-
-        @Test
-        @DisplayName("異常系: yearが空文字で例外をスロー")
-        void parseToLocalDateTime_withEmptyYear_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("", "10", "15", "10:00")
-            );
-            assertEquals("Year is required", exception.getMessage());
-        }
-
-        @Test
-        @DisplayName("異常系: monthが空文字で例外をスロー")
-        void parseToLocalDateTime_withEmptyMonth_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", "", "15", "10:00")
-            );
-            assertEquals("Month is required", exception.getMessage());
-        }
-
-        @Test
-        @DisplayName("異常系: dayが空文字で例外をスロー")
-        void parseToLocalDateTime_withEmptyDay_shouldThrowException() {
-            // Act & Assert
-            IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", "10", "", "10:00")
-            );
-            assertEquals("Day is required", exception.getMessage());
         }
 
         @Test
@@ -318,7 +251,7 @@ class TimestampConverterTest {
             // Act & Assert
             IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> converter.parseToLocalDateTime("2025", "10", "15", "")
+                () -> converter.parseToLocalDateTime(LocalDate.of(2025, 10, 15), "")
             );
             assertEquals("Time is required", exception.getMessage());
         }
@@ -332,9 +265,9 @@ class TimestampConverterTest {
         })
         @DisplayName("境界値: 特殊な日時パターンが正しく変換される")
         void parseToLocalDateTime_withBoundaryDates_shouldConvertCorrectly(
-                String year, String month, String day, String time) {
+                int year, int month, int day, String time) {
             // Act
-            LocalDateTime result = converter.parseToLocalDateTime(year, month, day, time);
+            LocalDateTime result = converter.parseToLocalDateTime(LocalDate.of(year, month, day), time);
 
             // Assert
             assertNotNull(result);
@@ -349,13 +282,11 @@ class TimestampConverterTest {
         @DisplayName("convertInTimeとconvertOutTimeで同じ日付が使用できる")
         void convertInTimeAndOutTime_withSameDate_shouldWorkTogether() {
             // Arrange
-            String year = "2025";
-            String month = "10";
-            String day = "15";
+            LocalDate date = LocalDate.of(2025, 10, 15);
 
             // Act
-            Timestamp inTime = converter.convertInTime(year, month, day, "09:00");
-            Timestamp outTime = converter.convertOutTime(year, month, day, "18:00");
+            Timestamp inTime = converter.convertInTime(date, "09:00");
+            Timestamp outTime = converter.convertOutTime(date, "18:00");
 
             // Assert
             assertNotNull(inTime);
@@ -367,8 +298,8 @@ class TimestampConverterTest {
         @DisplayName("nullと有効値の混在が正しく処理される")
         void convertMixedNullAndValidValues_shouldHandleCorrectly() {
             // Act
-            Timestamp inTime = converter.convertInTime("2025", "10", "1", "09:00");
-            Timestamp nullOutTime = converter.convertOutTime("2025", "10", "1", null);
+            Timestamp inTime = converter.convertInTime(LocalDate.of(2025, 10, 1), "09:00");
+            Timestamp nullOutTime = converter.convertOutTime(LocalDate.of(2025, 10, 1), null);
 
             // Assert
             assertNotNull(inTime, "出勤時刻は設定される");

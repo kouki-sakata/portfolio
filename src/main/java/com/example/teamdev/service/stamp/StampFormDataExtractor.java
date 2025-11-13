@@ -28,11 +28,20 @@ public class StampFormDataExtractor {
         String day = extractString(stampEdit, "day");
 
         // LocalDateの生成（year/month/dayから）
-        LocalDate stampDate = LocalDate.of(
-                Integer.parseInt(year),
-                Integer.parseInt(month),
-                Integer.parseInt(day)
-        );
+        LocalDate stampDate;
+        try {
+            stampDate = LocalDate.of(
+                    Integer.parseInt(year),
+                    Integer.parseInt(month),
+                    Integer.parseInt(day)
+            );
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid date format: year=%s, month=%s, day=%s", year, month, day), e);
+        } catch (java.time.DateTimeException e) {
+            throw new IllegalArgumentException(
+                    String.format("Invalid date: year=%s, month=%s, day=%s", year, month, day), e);
+        }
 
         // 時刻情報の安全な抽出
         String inTime = extractNullableString(stampEdit, "inTime");
