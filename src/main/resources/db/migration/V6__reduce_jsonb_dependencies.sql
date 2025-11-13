@@ -10,12 +10,12 @@ WITH schedule_source AS (
     SELECT
         id,
         CASE
-            WHEN (profile_metadata->'schedule'->>'start') ~ '^[0-2][0-9]:[0-5][0-9]$'
+            WHEN (profile_metadata->'schedule'->>'start') ~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$'
                 THEN (profile_metadata->'schedule'->>'start')::time
             ELSE NULL
         END AS schedule_start,
         CASE
-            WHEN (profile_metadata->'schedule'->>'end') ~ '^[0-2][0-9]:[0-5][0-9]$'
+            WHEN (profile_metadata->'schedule'->>'end') ~ '^(?:[01][0-9]|2[0-3]):[0-5][0-9]$'
                 THEN (profile_metadata->'schedule'->>'end')::time
             ELSE NULL
         END AS schedule_end,
