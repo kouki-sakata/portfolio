@@ -11,7 +11,16 @@ SET stamp_date = make_date(year::integer, month::integer, day::integer)
 WHERE stamp_date IS NULL
   AND year ~ '^[0-9]{4}$'
   AND month ~ '^[0-9]{1,2}$'
-  AND day ~ '^[0-9]{1,2}$';
+  AND day ~ '^[0-9]{1,2}$'
+  AND month::int BETWEEN 1 AND 12
+  AND day::int BETWEEN 1 AND CASE
+        WHEN month::int IN (4, 6, 9, 11) THEN 30
+        WHEN month::int = 2 THEN CASE
+                WHEN (year::int % 400 = 0) OR (year::int % 100 <> 0 AND year::int % 4 = 0) THEN 29
+                ELSE 28
+            END
+        ELSE 31
+    END;
 
 CREATE OR REPLACE FUNCTION sync_stamp_history_stamp_date()
 RETURNS trigger AS
