@@ -561,6 +561,16 @@ public class StampServiceTest {
         assertEquals("10", captured.getDay());
         assertNotNull(captured.getOutTime());
         assertEquals(OffsetDateTime.of(2025, 7, 11, 0, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -597,6 +607,16 @@ public class StampServiceTest {
         assertEquals("10", captured.getDay());
         assertNotNull(captured.getOutTime());
         assertEquals(OffsetDateTime.of(2025, 7, 11, 2, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -633,6 +653,16 @@ public class StampServiceTest {
         assertEquals("10", captured.getDay());
         assertNotNull(captured.getOutTime());
         assertEquals(OffsetDateTime.of(2025, 7, 11, 5, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -668,6 +698,16 @@ public class StampServiceTest {
         assertEquals("07", captured.getMonth());
         assertEquals("11", captured.getDay());
         assertNotNull(captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -694,6 +734,16 @@ public class StampServiceTest {
         assertEquals("10", captured.getDay());
         assertNotNull(captured.getInTime());
         assertEquals(OffsetDateTime.of(2025, 7, 10, 23, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getInTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.ATTENDANCE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -730,6 +780,16 @@ public class StampServiceTest {
         assertEquals("31", captured.getDay());
         assertNotNull(captured.getOutTime());
         assertEquals(OffsetDateTime.of(2025, 8, 1, 2, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 
     /**
@@ -766,5 +826,15 @@ public class StampServiceTest {
         assertEquals("31", captured.getDay());
         assertNotNull(captured.getOutTime());
         assertEquals(OffsetDateTime.of(2026, 1, 1, 3, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+
+        // ログ履歴が正しく記録されることを確認
+        verify(logHistoryService, times(1)).execute(
+            eq(AppConstants.LogHistory.FUNCTION_STAMP),
+            eq(StampType.DEPARTURE.getLogHistoryOperationType()),
+            any(Timestamp.class),
+            eq(employeeId),
+            eq(employeeId),
+            any(Timestamp.class)
+        );
     }
 }
