@@ -105,9 +105,7 @@
                 FROM employee_calendar ec
                 LEFT JOIN stamp_history sh ON
                     sh.employee_id = ec.employee_id
-                    AND to_char(ec.work_date, 'YYYY') = sh.year
-                    AND to_char(ec.work_date, 'MM') = sh.month
-                    AND to_char(ec.work_date, 'DD') = sh.day
+                    AND sh.stamp_date = ec.work_date
                 LEFT JOIN employee emp ON emp.id = ec.employee_id
                 LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
                 ORDER BY ec.sort_order, ec.work_date
