@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.teamdev.entity.StampHistoryDisplay;
 import com.example.teamdev.testconfig.PostgresContainerSupport;
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -84,6 +84,8 @@ class StampHistoryMapperBatchFetchTest extends PostgresContainerSupport {
         return id;
     }
 
+    private static final ZoneOffset JST = ZoneOffset.ofHours(9);
+
     private void insertStamp(int employeeId, String year, String month, String day,
             LocalDateTime inTime, LocalDateTime outTime) {
         jdbcTemplate.update(
@@ -95,8 +97,8 @@ class StampHistoryMapperBatchFetchTest extends PostgresContainerSupport {
                 month,
                 day,
                 employeeId,
-                Timestamp.valueOf(inTime),
-                Timestamp.valueOf(outTime),
+                inTime.atOffset(JST),
+                outTime.atOffset(JST),
                 employeeId
         );
     }
