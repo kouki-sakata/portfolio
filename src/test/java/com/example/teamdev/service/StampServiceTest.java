@@ -525,4 +525,245 @@ public class StampServiceTest {
         verify(mapper, never()).update(any());
         verify(mapper, never()).save(any());
     }
+
+    /**
+     * 夜勤境界テスト: 深夜0時ちょうどの退勤（夜勤フラグON）
+     * 日付が前日になることを確認
+     */
+    @Test
+    void execute_shouldNormalizeDateToPreviousDay_whenNightWorkDepartureBoundary_Midnight() {
+        // 翌日0時ちょうどの退勤を想定
+        LocalDateTime midnightLeaveTime = LocalDateTime.of(2025, 7, 11, 0, 0, 0);
+        homeForm.setStampTime(midnightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON);
+
+        // 前日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 10, 22, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグONで0時の退勤 → 前日（7月10日）として記録される
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("10", captured.getDay());
+        assertNotNull(captured.getOutTime());
+        assertEquals(OffsetDateTime.of(2025, 7, 11, 0, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 深夜2時の退勤（夜勤フラグON）
+     * 日付が前日になることを確認
+     */
+    @Test
+    void execute_shouldNormalizeDateToPreviousDay_whenNightWorkDepartureAt2AM() {
+        // 翌日午前2時の退勤を想定
+        LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 7, 11, 2, 0, 0);
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON);
+
+        // 前日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 10, 21, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグONで2時の退勤 → 前日（7月10日）として記録される
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("10", captured.getDay());
+        assertNotNull(captured.getOutTime());
+        assertEquals(OffsetDateTime.of(2025, 7, 11, 2, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 深夜5時の退勤（夜勤フラグON）
+     * 日付が前日になることを確認
+     */
+    @Test
+    void execute_shouldNormalizeDateToPreviousDay_whenNightWorkDepartureAt5AM() {
+        // 翌日午前5時の退勤を想定
+        LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 7, 11, 5, 0, 0);
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON);
+
+        // 前日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 10, 20, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("10"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグONで5時の退勤 → 前日（7月10日）として記録される
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("10", captured.getDay());
+        assertNotNull(captured.getOutTime());
+        assertEquals(OffsetDateTime.of(2025, 7, 11, 5, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 深夜2時の退勤（夜勤フラグOFF）
+     * 日付が当日のままであることを確認
+     */
+    @Test
+    void execute_shouldNotNormalizeDate_whenNonNightWorkDepartureAt2AM() {
+        // 翌日午前2時の退勤（夜勤フラグOFF）
+        LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 7, 11, 2, 0, 0);
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF);
+
+        // 当日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 11, 0, 30, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("11"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグOFFの場合は日付が変わらない（7月11日のまま）
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("11", captured.getDay());
+        assertNotNull(captured.getOutTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 夜勤出勤（23時の出勤）
+     * 夜勤フラグがOFFでも出勤は当日として記録される
+     */
+    @Test
+    void execute_shouldRecordNightShiftAttendance_when23pmAttendance() {
+        // 23時の出勤を想定
+        LocalDateTime lateAttendanceTime = LocalDateTime.of(2025, 7, 10, 23, 0, 0);
+        homeForm.setStampTime(lateAttendanceTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.ATTENDANCE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_OFF);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).save(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 出勤は打刻時刻の日付で記録される（7月10日）
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("10", captured.getDay());
+        assertNotNull(captured.getInTime());
+        assertEquals(OffsetDateTime.of(2025, 7, 10, 23, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getInTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 月末から月初への夜勤退勤（夜勤フラグON）
+     * 日付が前月の末日になることを確認
+     */
+    @Test
+    void execute_shouldNormalizeDateToPreviousMonth_whenNightWorkDepartureAcrossMonth() {
+        // 翌月1日午前2時の退勤を想定
+        LocalDateTime nightLeaveTime = LocalDateTime.of(2025, 8, 1, 2, 0, 0);
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON);
+
+        // 前月末日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 7, 31, 22, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("07"), eq("31"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグONで8月1日の退勤 → 前日（7月31日）として記録される
+        assertEquals("2025", captured.getYear());
+        assertEquals("07", captured.getMonth());
+        assertEquals("31", captured.getDay());
+        assertNotNull(captured.getOutTime());
+        assertEquals(OffsetDateTime.of(2025, 8, 1, 2, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+    }
+
+    /**
+     * 夜勤境界テスト: 年末から年始への夜勤退勤（夜勤フラグON）
+     * 日付が前年の末日になることを確認
+     */
+    @Test
+    void execute_shouldNormalizeDateToPreviousYear_whenNightWorkDepartureAcrossYear() {
+        // 翌年1月1日午前3時の退勤を想定
+        LocalDateTime nightLeaveTime = LocalDateTime.of(2026, 1, 1, 3, 0, 0);
+        homeForm.setStampTime(nightLeaveTime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + "+09:00");
+        homeForm.setStampType(StampType.DEPARTURE);
+        homeForm.setNightWorkFlag(AppConstants.Stamp.NIGHT_WORK_FLAG_ON);
+
+        // 前年末日の出勤打刻済みのレコードをモック
+        StampHistory existing = new StampHistory();
+        existing.setId(1);
+        existing.setInTime(OffsetDateTime.of(2025, 12, 31, 21, 0, 0, 0, ZoneOffset.ofHours(9)));
+        existing.setOutTime(null);
+        existing.setEmployeeId(employeeId);
+
+        when(mapper.getStampHistoryByYearMonthDayEmployeeId(eq("2025"), eq("12"), eq("31"), eq(employeeId)))
+            .thenReturn(existing);
+
+        stampService.execute(homeForm, employeeId);
+
+        ArgumentCaptor<StampHistory> captor = ArgumentCaptor.forClass(StampHistory.class);
+        verify(mapper, times(1)).update(captor.capture());
+        StampHistory captured = captor.getValue();
+
+        // 夜勤フラグONで2026年1月1日の退勤 → 前日（2025年12月31日）として記録される
+        assertEquals("2025", captured.getYear());
+        assertEquals("12", captured.getMonth());
+        assertEquals("31", captured.getDay());
+        assertNotNull(captured.getOutTime());
+        assertEquals(OffsetDateTime.of(2026, 1, 1, 3, 0, 0, 0, ZoneOffset.ofHours(9)), captured.getOutTime());
+    }
 }
