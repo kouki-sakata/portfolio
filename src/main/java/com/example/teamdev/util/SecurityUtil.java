@@ -3,23 +3,21 @@ package com.example.teamdev.util;
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.security.TeamDevelopUserDetails;
+import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Component;
+import org.springframework.security.core.userdetails.UserDetails;
 
 /**
  * Spring Securityに関連するユーティリティクラス
  */
-@Component
 public class SecurityUtil {
 
-    private static SecurityUtil instance;
-
-    private final EmployeeMapper employeeMapper;
+    private static EmployeeMapper employeeMapper;
 
     public SecurityUtil(EmployeeMapper employeeMapper) {
-        this.employeeMapper = employeeMapper;
-        instance = this;
+        SecurityUtil.employeeMapper = employeeMapper;
     }
 
     /**
@@ -27,16 +25,7 @@ public class SecurityUtil {
      * @return 従業員ID、取得できない場合はnull
      */
     public static Integer getCurrentEmployeeId() {
-        return getInstance().getCurrentEmployeeIdInternal();
-    }
-
-    private Integer getCurrentEmployeeIdInternal() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals(AppConstants.Security.ANONYMOUS_USER)) {
-            Employee currentEmployee = employeeMapper.getEmployeeByEmail(authentication.getName());
-            return currentEmployee != null ? currentEmployee.getId() : null;
-        }
-        return null;
+        return resolveEmployee().map(Employee::getId).orElse(null);
     }
 
     /**
@@ -44,15 +33,7 @@ public class SecurityUtil {
      * @return 従業員エンティティ、取得できない場合はnull
      */
     public static Employee getCurrentEmployee() {
-        return getInstance().getCurrentEmployeeInternal();
-    }
-
-    private Employee getCurrentEmployeeInternal() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication != null && authentication.isAuthenticated() && !authentication.getName().equals(AppConstants.Security.ANONYMOUS_USER)) {
-            return employeeMapper.getEmployeeByEmail(authentication.getName());
-        }
-        return null;
+        return resolveEmployee().orElse(null);
     }
 
     /**
@@ -60,14 +41,37 @@ public class SecurityUtil {
      * @return 管理者の場合true、それ以外はfalse
      */
     public static boolean isCurrentUserAdmin() {
-        Employee currentEmployee = getInstance().getCurrentEmployeeInternal();
-        return currentEmployee != null && currentEmployee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN;
+        return resolveEmployee()
+            .map(employee -> employee.getAdminFlag() == AppConstants.Employee.ADMIN_FLAG_ADMIN)
+            .orElse(false);
     }
 
-    private static SecurityUtil getInstance() {
-        if (instance == null) {
-            throw new IllegalStateException("SecurityUtil bean has not been initialized");
+    private static Optional<Employee> resolveEmployee() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return Optional.empty();
         }
-        return instance;
+
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof TeamDevelopUserDetails userDetails) {
+            return Optional.ofNullable(userDetails.getEmployee());
+        }
+
+        if (principal instanceof UserDetails springUser) {
+            return lookupEmployee(springUser.getUsername());
+        }
+
+        if (principal instanceof String username) {
+            return lookupEmployee(username);
+        }
+
+        return Optional.empty();
+    }
+
+    private static Optional<Employee> lookupEmployee(String username) {
+        if (username == null || username.isBlank() || employeeMapper == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(employeeMapper.getEmployeeByEmail(username));
     }
 }

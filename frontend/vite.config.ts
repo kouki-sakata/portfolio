@@ -93,6 +93,16 @@ export default defineConfig(({ command, mode }) => {
         provider: "v8",
         reporter: ["text", "html", "lcov"],
         reportsDirectory: "./coverage",
+        // カバレッジ閾値（参考値として表示、ビルドは失敗させない）
+        // Vitestでは閾値を設定するとデフォルトでビルドが失敗するため、
+        // 目標値は以下にコメントで記載（実際の閾値チェックは無効化）
+        // 目標: statements 70%, branches 65%, functions 70%, lines 70%
+        // thresholds: {
+        //   statements: 70,
+        //   branches: 65,
+        //   functions: 70,
+        //   lines: 70,
+        // },
       },
     },
   };
