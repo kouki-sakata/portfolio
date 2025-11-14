@@ -61,8 +61,17 @@ public class StampDeleteService {
      */
     public boolean validateYearMonthRange(StampDeleteForm stampDeleteForm) {
         try {
-            int startMonthInt = Integer.parseInt(stampDeleteForm.getStartMonth());
-            int endMonthInt = Integer.parseInt(stampDeleteForm.getEndMonth());
+            // null/空チェック
+            String startMonth = stampDeleteForm.getStartMonth();
+            String endMonth = stampDeleteForm.getEndMonth();
+
+            if (startMonth == null || startMonth.isEmpty() ||
+                endMonth == null || endMonth.isEmpty()) {
+                return false;
+            }
+
+            int startMonthInt = Integer.parseInt(startMonth);
+            int endMonthInt = Integer.parseInt(endMonth);
 
             // 月の妥当性チェック（1-12の範囲）
             if (startMonthInt < 1 || startMonthInt > 12 ||

@@ -38,9 +38,12 @@ public class DateFormatUtil {
      * 文字列型の日付を yyyy/MM/dd 形式に変換
      *
      * @param dateStr yyyy-MM-dd または yyyy/MM/dd 形式の日付文字列
-     * @return yyyy/MM/dd形式の日付文字列
+     * @return yyyy/MM/dd形式の日付文字列、nullの場合はnull
      */
     public static String formatDate(String dateStr) {
+        if (dateStr == null) {
+            return null;
+        }
         // すでにスラッシュ形式ならそのまま返す
         if (dateStr.matches("\\d{4}/\\d{2}/\\d{2}")) {
             return dateStr;

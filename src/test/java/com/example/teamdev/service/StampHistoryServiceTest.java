@@ -42,19 +42,20 @@ class StampHistoryServiceTest {
     @Mock
     private ProfileMetadataRepository profileMetadataRepository;
 
-    @Mock
-    private ObjectMapper objectMapper;
-
     private StampHistoryService service;
 
     private ProfileMetadataDocument defaultMetadata;
     private Clock clock;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
         // 固定の時刻を設定（2024年1月15日）
         Instant fixedInstant = Instant.parse("2024-01-15T12:00:00Z");
         clock = Clock.fixed(fixedInstant, ZoneId.systemDefault());
+
+        // 実際のObjectMapperインスタンスを使用（モックではない）
+        objectMapper = new ObjectMapper();
 
         // サービスを手動で作成
         service = new StampHistoryService(mapper, objectMapper, profileMetadataRepository, clock);

@@ -87,6 +87,11 @@ class DateFormatUtilTest {
     // ========================================
 
     @Test
+    void formatDate_nullを渡すとnullを返す() {
+        assertNull(DateFormatUtil.formatDate((String) null));
+    }
+
+    @Test
     void formatDate_不正なフォーマットは元の文字列を返す() {
         String invalid = "2024年1月15日";
         assertEquals(invalid, DateFormatUtil.formatDate(invalid));
