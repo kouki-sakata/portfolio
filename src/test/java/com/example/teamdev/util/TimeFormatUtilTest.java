@@ -96,13 +96,14 @@ class TimeFormatUtilTest {
     }
 
     @Test
-    void formatTime_文字列_1文字の場合そのまま返す() {
-        assertEquals("9", TimeFormatUtil.formatTime("9"));
+    void formatTime_文字列_1文字の不正入力は空文字列を返す() {
+        assertEquals("", TimeFormatUtil.formatTime("9"));
     }
 
     @Test
     void formatTime_文字列_6文字以上の場合最初の5文字を返す() {
-        assertEquals("15:45", TimeFormatUtil.formatTime("15:45:30.123"));
+        // HH:mm:ss（有効フォーマット）のケースをテスト
+        assertEquals("15:45", TimeFormatUtil.formatTime("15:45:30"));
     }
 
     @Test
