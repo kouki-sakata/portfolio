@@ -8,12 +8,10 @@ import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.stereotype.Component;
 
 /**
  * Spring Securityに関連するユーティリティクラス
  */
-@Component
 public class SecurityUtil {
 
     private static EmployeeMapper employeeMapper;
