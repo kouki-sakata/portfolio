@@ -38,7 +38,7 @@ describe('useStampHistoryExport', () => {
     vi.mocked(csvGenerator.generateCsvContent).mockReturnValue('csv,content');
     vi.mocked(csvGenerator.generateCsvBlob).mockReturnValue(new Blob(['test'], { type: 'text/csv' }));
     vi.mocked(blobDownloader.generateFilename).mockReturnValue('test.csv');
-    vi.mocked(blobDownloader.downloadBlob).mockImplementation(() => {});
+    vi.mocked(blobDownloader.downloadBlob).mockReturnValue(undefined);
     vi.mocked(toastHook.toast).mockImplementation(() => ({ id: 'test-id', dismiss: vi.fn(), update: vi.fn() }));
   });
 
