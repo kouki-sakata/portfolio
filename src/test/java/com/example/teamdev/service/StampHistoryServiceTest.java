@@ -161,8 +161,11 @@ class StampHistoryServiceTest {
         String month = "02";
         int employeeId = 1;
 
+        // 2024年2月は29日まであるので、29日分のデータを生成
+        List<StampHistoryDisplay> mockData = createMockStampHistoryListForYearMonth(year, month);
+
         when(mapper.getStampHistoryByYearMonthEmployeeId(anyString(), anyString(), anyInt(), anyList()))
-            .thenReturn(new ArrayList<>());
+            .thenReturn(mockData);
         when(profileMetadataRepository.load(employeeId)).thenReturn(defaultMetadata);
 
         try (MockedStatic<OvertimeCalculator> mockedCalculator = mockStatic(OvertimeCalculator.class)) {
@@ -185,8 +188,11 @@ class StampHistoryServiceTest {
         String month = "02";
         int employeeId = 1;
 
+        // 2023年2月は28日まであるので、28日分のデータを生成
+        List<StampHistoryDisplay> mockData = createMockStampHistoryListForYearMonth(year, month);
+
         when(mapper.getStampHistoryByYearMonthEmployeeId(anyString(), anyString(), anyInt(), anyList()))
-            .thenReturn(new ArrayList<>());
+            .thenReturn(mockData);
         when(profileMetadataRepository.load(employeeId)).thenReturn(defaultMetadata);
 
         try (MockedStatic<OvertimeCalculator> mockedCalculator = mockStatic(OvertimeCalculator.class)) {
@@ -204,17 +210,13 @@ class StampHistoryServiceTest {
 
     @Test
     void execute_打刻記録がない日も含めて全日付を返す() {
-        // Given: 一部の日付にのみ打刻記録がある
+        // Given: 2024年1月の全日付分のデータ
         String year = "2024";
         String month = "01";
         int employeeId = 1;
 
-        // 1日、15日、31日のみデータがある
-        List<StampHistoryDisplay> mockData = List.of(
-            createStampHistoryDisplay(1, "2024", "01", "01", "月"),
-            createStampHistoryDisplay(15, "2024", "01", "15", "月"),
-            createStampHistoryDisplay(31, "2024", "01", "31", "水")
-        );
+        // 2024年1月は31日まであるので、31日分のデータを生成
+        List<StampHistoryDisplay> mockData = createMockStampHistoryListForYearMonth(year, month);
 
         when(mapper.getStampHistoryByYearMonthEmployeeId(anyString(), anyString(), anyInt(), anyList()))
             .thenReturn(mockData);
@@ -228,7 +230,7 @@ class StampHistoryServiceTest {
             // When
             List<Map<String, Object>> result = service.execute(year, month, employeeId);
 
-            // Then: 月の全日付（31日分）がカバーされる
+            // Then: 月の全日付（31日分）が返される
             assertEquals(31, result.size());
         }
     }
@@ -378,6 +380,26 @@ class StampHistoryServiceTest {
                 "01",
                 String.format("%02d", day),
                 "月"
+            ));
+        }
+        return list;
+    }
+
+    /**
+     * 指定された年月の全日付分のStampHistoryDisplayリストを作成
+     */
+    private List<StampHistoryDisplay> createMockStampHistoryListForYearMonth(String year, String month) {
+        List<StampHistoryDisplay> list = new ArrayList<>();
+        LocalDate startDate = LocalDate.of(Integer.parseInt(year), Integer.parseInt(month), 1);
+        int daysInMonth = startDate.lengthOfMonth();
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            list.add(createStampHistoryDisplay(
+                day,
+                year,
+                month,
+                String.format("%02d", day),
+                "月" // 簡略化のため全て月曜日
             ));
         }
         return list;
