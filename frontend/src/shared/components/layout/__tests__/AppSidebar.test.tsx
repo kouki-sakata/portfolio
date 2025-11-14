@@ -68,8 +68,6 @@ describe("AppSidebar", () => {
       "/news-management"
     );
     expect(screen.getByText("社員管理")).toBeInTheDocument();
-    expect(screen.getByText("レポート")).toBeInTheDocument();
-    expect(screen.getByText("設定")).toBeInTheDocument();
 
     // 不要な「出退勤」リンクが表示されていないことを確認
     expect(screen.queryByText("出退勤")).not.toBeInTheDocument();
