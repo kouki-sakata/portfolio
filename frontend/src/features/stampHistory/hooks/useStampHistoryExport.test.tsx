@@ -1,27 +1,25 @@
-import { renderHook, waitFor } from '@testing-library/react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { useStampHistoryExport } from './useStampHistoryExport';
-import * as batchProcessor from '../lib/batch-processor';
-import * as csvGenerator from '../lib/csv-generator';
-import * as blobDownloader from '../lib/blob-downloader';
-import * as toastHook from '@/hooks/use-toast';
-import type { ReactNode } from 'react';
-import type { StampHistoryEntry } from '../types';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { renderHook, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import * as toastHook from "@/hooks/use-toast";
+import * as batchProcessor from "../lib/batch-processor";
+import * as blobDownloader from "../lib/blob-downloader";
+import * as csvGenerator from "../lib/csv-generator";
+import type { StampHistoryEntry } from "../types";
+import { useStampHistoryExport } from "./useStampHistoryExport";
 
 // モックの準備
-vi.mock('../lib/batch-processor');
-vi.mock('../lib/csv-generator');
-vi.mock('../lib/blob-downloader');
-vi.mock('@/hooks/use-toast');
+vi.mock("../lib/batch-processor");
+vi.mock("../lib/csv-generator");
+vi.mock("../lib/blob-downloader");
+vi.mock("@/hooks/use-toast");
 
-describe('useStampHistoryExport', () => {
+describe("useStampHistoryExport", () => {
   let queryClient: QueryClient;
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
   beforeEach(() => {
@@ -35,11 +33,17 @@ describe('useStampHistoryExport', () => {
     vi.clearAllMocks();
 
     // デフォルトモック実装
-    vi.mocked(csvGenerator.generateCsvContent).mockReturnValue('csv,content');
-    vi.mocked(csvGenerator.generateCsvBlob).mockReturnValue(new Blob(['test'], { type: 'text/csv' }));
-    vi.mocked(blobDownloader.generateFilename).mockReturnValue('test.csv');
+    vi.mocked(csvGenerator.generateCsvContent).mockReturnValue("csv,content");
+    vi.mocked(csvGenerator.generateCsvBlob).mockReturnValue(
+      new Blob(["test"], { type: "text/csv" })
+    );
+    vi.mocked(blobDownloader.generateFilename).mockReturnValue("test.csv");
     vi.mocked(blobDownloader.downloadBlob).mockReturnValue(undefined);
-    vi.mocked(toastHook.toast).mockImplementation(() => ({ id: 'test-id', dismiss: vi.fn(), update: vi.fn() }));
+    vi.mocked(toastHook.toast).mockImplementation(() => ({
+      id: "test-id",
+      dismiss: vi.fn(),
+      update: vi.fn(),
+    }));
   });
 
   afterEach(() => {
@@ -50,27 +54,30 @@ describe('useStampHistoryExport', () => {
   // 小規模データのエクスポート
   // ========================================
 
-  it('小規模データセット（1000件以下）をバッチ処理なしでエクスポートする', async () => {
+  it("小規模データセット（1000件以下）をバッチ処理なしでエクスポートする", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
-    const entries: StampHistoryEntry[] = Array.from({ length: 100 }, (_, i) => ({
-      id: i,
-      employeeId: 1,
-      year: '2024',
-      month: '01',
-      day: String(i + 1).padStart(2, '0'),
-      dayOfWeek: '月',
-      inTime: '09:00',
-      outTime: '18:00',
-      breakStartTime: '12:00',
-      breakEndTime: '13:00',
-      overtimeMinutes: 0,
-      isNightShift: false,
-      updateDate: '2024-01-01',
-    }));
+    const entries: StampHistoryEntry[] = Array.from(
+      { length: 100 },
+      (_, i) => ({
+        id: i,
+        employeeId: 1,
+        year: "2024",
+        month: "01",
+        day: String(i + 1).padStart(2, "0"),
+        dayOfWeek: "月",
+        inTime: "09:00",
+        outTime: "18:00",
+        breakStartTime: "12:00",
+        breakEndTime: "13:00",
+        overtimeMinutes: 0,
+        isNightShift: false,
+        updateDate: "2024-01-01",
+      })
+    );
 
     // エクスポート実行
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(result.current.isExporting).toBe(false);
@@ -82,7 +89,7 @@ describe('useStampHistoryExport', () => {
     // generateCsvContent が呼ばれる
     expect(csvGenerator.generateCsvContent).toHaveBeenCalledWith(
       entries,
-      expect.objectContaining({ format: 'csv' })
+      expect.objectContaining({ format: "csv" })
     );
 
     // ダウンロードが実行される
@@ -91,7 +98,7 @@ describe('useStampHistoryExport', () => {
     // 成功トーストが表示される
     expect(toastHook.toast).toHaveBeenCalledWith(
       expect.objectContaining({
-        title: 'エクスポート完了',
+        title: "エクスポート完了",
       })
     );
   });
@@ -100,28 +107,33 @@ describe('useStampHistoryExport', () => {
   // 大規模データのバッチエクスポート
   // ========================================
 
-  it('大規模データセット（1000件超）の場合バッチ処理を使用する', async () => {
+  it("大規模データセット（1000件超）の場合バッチ処理を使用する", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
-    const entries: StampHistoryEntry[] = Array.from({ length: 2500 }, (_, i) => ({
-      id: i,
-      employeeId: 1,
-      year: '2024',
-      month: '01',
-      day: '01',
-      dayOfWeek: '月',
-      inTime: null,
-      outTime: null,
-      breakStartTime: null,
-      breakEndTime: null,
-      overtimeMinutes: null,
-      isNightShift: null,
-      updateDate: null,
-    }));
+    const entries: StampHistoryEntry[] = Array.from(
+      { length: 2500 },
+      (_, i) => ({
+        id: i,
+        employeeId: 1,
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
+        inTime: null,
+        outTime: null,
+        breakStartTime: null,
+        breakEndTime: null,
+        overtimeMinutes: null,
+        isNightShift: null,
+        updateDate: null,
+      })
+    );
 
-    vi.mocked(batchProcessor.generateCsvInBatches).mockResolvedValue('batched,csv');
+    vi.mocked(batchProcessor.generateCsvInBatches).mockResolvedValue(
+      "batched,csv"
+    );
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(result.current.isExporting).toBe(false);
@@ -139,7 +151,7 @@ describe('useStampHistoryExport', () => {
   // 進捗状態の更新
   // ========================================
 
-  it('進捗状態を正しく更新する', async () => {
+  it("進捗状態を正しく更新する", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
     // 初期状態
@@ -147,16 +159,16 @@ describe('useStampHistoryExport', () => {
       current: 0,
       total: 0,
       percentage: 0,
-      phase: 'preparing',
+      phase: "preparing",
     });
 
     const entries: StampHistoryEntry[] = Array.from({ length: 50 }, () => ({
       id: 1,
       employeeId: 1,
-      year: '2024',
-      month: '01',
-      day: '01',
-      dayOfWeek: '月',
+      year: "2024",
+      month: "01",
+      day: "01",
+      dayOfWeek: "月",
       inTime: null,
       outTime: null,
       breakStartTime: null,
@@ -166,10 +178,10 @@ describe('useStampHistoryExport', () => {
       updateDate: null,
     }));
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
-      expect(result.current.progress.phase).toBe('complete');
+      expect(result.current.progress.phase).toBe("complete");
     });
 
     expect(result.current.progress.percentage).toBe(100);
@@ -179,10 +191,10 @@ describe('useStampHistoryExport', () => {
   // エラーハンドリング
   // ========================================
 
-  it('エクスポートエラーを適切に処理する', async () => {
+  it("エクスポートエラーを適切に処理する", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
-    const error = new Error('Export failed');
+    const error = new Error("Export failed");
     vi.mocked(csvGenerator.generateCsvContent).mockImplementation(() => {
       throw error;
     });
@@ -191,10 +203,10 @@ describe('useStampHistoryExport', () => {
       {
         id: 1,
         employeeId: 1,
-        year: '2024',
-        month: '01',
-        day: '01',
-        dayOfWeek: '月',
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
         inTime: null,
         outTime: null,
         breakStartTime: null,
@@ -205,7 +217,7 @@ describe('useStampHistoryExport', () => {
       },
     ];
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(result.current.error).toBeDefined();
@@ -214,8 +226,8 @@ describe('useStampHistoryExport', () => {
     // エラートーストが表示される
     expect(toastHook.toast).toHaveBeenCalledWith(
       expect.objectContaining({
-        variant: 'destructive',
-        title: 'エクスポートエラー',
+        variant: "destructive",
+        title: "エクスポートエラー",
       })
     );
   });
@@ -224,21 +236,20 @@ describe('useStampHistoryExport', () => {
   // カスタムコールバック
   // ========================================
 
-  it('成功時にonSuccessコールバックを呼び出す', async () => {
+  it("成功時にonSuccessコールバックを呼び出す", async () => {
     const onSuccess = vi.fn();
-    const { result } = renderHook(
-      () => useStampHistoryExport({ onSuccess }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useStampHistoryExport({ onSuccess }), {
+      wrapper,
+    });
 
     const entries: StampHistoryEntry[] = [
       {
         id: 1,
         employeeId: 1,
-        year: '2024',
-        month: '01',
-        day: '01',
-        dayOfWeek: '月',
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
         inTime: null,
         outTime: null,
         breakStartTime: null,
@@ -249,32 +260,31 @@ describe('useStampHistoryExport', () => {
       },
     ];
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(onSuccess).toHaveBeenCalled();
     });
   });
 
-  it('エラー時にonErrorコールバックを呼び出す', async () => {
+  it("エラー時にonErrorコールバックを呼び出す", async () => {
     const onError = vi.fn();
-    const { result } = renderHook(
-      () => useStampHistoryExport({ onError }),
-      { wrapper }
-    );
+    const { result } = renderHook(() => useStampHistoryExport({ onError }), {
+      wrapper,
+    });
 
     vi.mocked(csvGenerator.generateCsvContent).mockImplementation(() => {
-      throw new Error('Test error');
+      throw new Error("Test error");
     });
 
     const entries: StampHistoryEntry[] = [
       {
         id: 1,
         employeeId: 1,
-        year: '2024',
-        month: '01',
-        day: '01',
-        dayOfWeek: '月',
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
         inTime: null,
         outTime: null,
         breakStartTime: null,
@@ -285,7 +295,7 @@ describe('useStampHistoryExport', () => {
       },
     ];
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(expect.any(Error));
@@ -296,8 +306,8 @@ describe('useStampHistoryExport', () => {
   // フォーマット別のエクスポート
   // ========================================
 
-  it.each(['csv', 'tsv', 'excel-csv'] as const)(
-    '%s形式でエクスポートする',
+  it.each(["csv", "tsv", "excel-csv"] as const)(
+    "%s形式でエクスポートする",
     async (format) => {
       const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
@@ -305,10 +315,10 @@ describe('useStampHistoryExport', () => {
         {
           id: 1,
           employeeId: 1,
-          year: '2024',
-          month: '01',
-          day: '01',
-          dayOfWeek: '月',
+          year: "2024",
+          month: "01",
+          day: "01",
+          dayOfWeek: "月",
           inTime: null,
           outTime: null,
           breakStartTime: null,
@@ -334,17 +344,17 @@ describe('useStampHistoryExport', () => {
   // reset機能
   // ========================================
 
-  it('ミューテーション状態をリセットする', async () => {
+  it("ミューテーション状態をリセットする", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
     const entries: StampHistoryEntry[] = [
       {
         id: 1,
         employeeId: 1,
-        year: '2024',
-        month: '01',
-        day: '01',
-        dayOfWeek: '月',
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
         inTime: null,
         outTime: null,
         breakStartTime: null,
@@ -355,7 +365,7 @@ describe('useStampHistoryExport', () => {
       },
     ];
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(result.current.isExporting).toBe(false);
@@ -370,12 +380,12 @@ describe('useStampHistoryExport', () => {
   // エッジケース
   // ========================================
 
-  it('空配列のエントリでもエクスポートできる', async () => {
+  it("空配列のエントリでもエクスポートできる", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
     const entries: StampHistoryEntry[] = [];
 
-    result.current.exportData({ entries, format: 'csv' });
+    result.current.exportData({ entries, format: "csv" });
 
     await waitFor(() => {
       expect(result.current.isExporting).toBe(false);
@@ -383,21 +393,21 @@ describe('useStampHistoryExport', () => {
 
     expect(csvGenerator.generateCsvContent).toHaveBeenCalledWith(
       entries,
-      expect.objectContaining({ format: 'csv' })
+      expect.objectContaining({ format: "csv" })
     );
   });
 
-  it('exportAsyncを使用して非同期でエクスポートできる', async () => {
+  it("exportAsyncを使用して非同期でエクスポートできる", async () => {
     const { result } = renderHook(() => useStampHistoryExport(), { wrapper });
 
     const entries: StampHistoryEntry[] = [
       {
         id: 1,
         employeeId: 1,
-        year: '2024',
-        month: '01',
-        day: '01',
-        dayOfWeek: '月',
+        year: "2024",
+        month: "01",
+        day: "01",
+        dayOfWeek: "月",
         inTime: null,
         outTime: null,
         breakStartTime: null,
@@ -408,7 +418,7 @@ describe('useStampHistoryExport', () => {
       },
     ];
 
-    const exportResult = result.current.exportAsync({ entries, format: 'csv' });
+    const exportResult = result.current.exportAsync({ entries, format: "csv" });
 
     await expect(exportResult).resolves.toBeDefined();
   });
