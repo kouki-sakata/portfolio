@@ -9,17 +9,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
+import java.time.Clock;
 import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,16 +42,23 @@ class StampHistoryServiceTest {
     @Mock
     private ProfileMetadataRepository profileMetadataRepository;
 
-    @Spy
-    private ObjectMapper objectMapper = new ObjectMapper();
+    @Mock
+    private ObjectMapper objectMapper;
 
-    @InjectMocks
     private StampHistoryService service;
 
     private ProfileMetadataDocument defaultMetadata;
+    private Clock clock;
 
     @BeforeEach
     void setUp() {
+        // 固定の時刻を設定（2024年1月15日）
+        Instant fixedInstant = Instant.parse("2024-01-15T12:00:00Z");
+        clock = Clock.fixed(fixedInstant, ZoneId.systemDefault());
+
+        // サービスを手動で作成
+        service = new StampHistoryService(mapper, objectMapper, profileMetadataRepository, clock);
+
         // デフォルトのProfileMetadataを準備
         ProfileWorkScheduleDocument schedule = new ProfileWorkScheduleDocument(
             "09:00",
@@ -302,10 +310,10 @@ class StampHistoryServiceTest {
         assertNotNull(result);
         assertEquals(3, result.size());
 
-        int currentYear = LocalDate.now().getYear();
-        assertEquals(String.valueOf(currentYear - 1), result.get(0));
-        assertEquals(String.valueOf(currentYear), result.get(1));
-        assertEquals(String.valueOf(currentYear + 1), result.get(2));
+        // Clockで固定された年（2024年）を基準に検証
+        assertEquals("2023", result.get(0)); // 2024 - 1
+        assertEquals("2024", result.get(1)); // 2024
+        assertEquals("2025", result.get(2)); // 2024 + 1
     }
 
     // ========================================

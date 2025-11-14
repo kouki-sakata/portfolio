@@ -122,20 +122,40 @@ class TimeFormatUtilTest {
     @Test
     void formatTime_LocalDateTimeをtoStringした場合の挙動() {
         // LocalDateTime.toString() は "2024-01-15T14:30:00" のような形式
-        // TimeFormatUtil は toString() の最初の5文字を返す
+        // 無効な時刻フォーマットなので空文字列を返す
         LocalDateTime ldt = LocalDateTime.of(2024, 1, 15, 14, 30, 0);
         String result = TimeFormatUtil.formatTime(ldt.toString());
-        assertEquals("2024-", result); // 最初の5文字
+        assertEquals("", result); // 無効なフォーマット
     }
 
     @Test
     void formatTime_数値を文字列化した場合() {
-        assertEquals("12345", TimeFormatUtil.formatTime("123456"));
+        // 無効な時刻フォーマットなので空文字列を返す
+        assertEquals("", TimeFormatUtil.formatTime("123456"));
     }
 
     @Test
     void formatTime_特殊文字を含む文字列() {
-        assertEquals("##:##", TimeFormatUtil.formatTime("##:##:##"));
+        // 無効な時刻フォーマットなので空文字列を返す
+        assertEquals("", TimeFormatUtil.formatTime("##:##:##"));
+    }
+
+    @Test
+    void formatTime_範囲外の時刻は空文字列を返す() {
+        // 時間が24以上
+        assertEquals("", TimeFormatUtil.formatTime("24:00:00"));
+        // 分が60以上
+        assertEquals("", TimeFormatUtil.formatTime("12:60:00"));
+        // 秒が60以上
+        assertEquals("", TimeFormatUtil.formatTime("12:30:60"));
+    }
+
+    @Test
+    void formatTime_不正なフォーマットは空文字列を返す() {
+        assertEquals("", TimeFormatUtil.formatTime("12-30"));
+        assertEquals("", TimeFormatUtil.formatTime("12:30:00:00"));
+        assertEquals("", TimeFormatUtil.formatTime("abc"));
+        assertEquals("", TimeFormatUtil.formatTime(""));
     }
 
     // ========================================

@@ -286,13 +286,51 @@ class StampDeleteServiceTest {
     }
 
     @Test
-    void validateYearMonthRange_月が13以上でもNumberFormatExceptionは発生しない() {
+    void validateYearMonthRange_月が13以上の場合falseを返す() {
         // Given
         StampDeleteForm form = createForm("2024", "13", "2024", "14");
 
-        // When & Then: 例外は発生せず、妥当性チェックとして true が返る
-        // （数値として比較されるため、202413 <= 202414 は true）
-        assertTrue(service.validateYearMonthRange(form));
+        // When
+        boolean result = service.validateYearMonthRange(form);
+
+        // Then: 月は1-12の範囲でなければならないため、falseを返す
+        assertFalse(result);
+    }
+
+    @Test
+    void validateYearMonthRange_月が0以下の場合falseを返す() {
+        // Given
+        StampDeleteForm form = createForm("2024", "0", "2024", "1");
+
+        // When
+        boolean result = service.validateYearMonthRange(form);
+
+        // Then: 月は1-12の範囲でなければならないため、falseを返す
+        assertFalse(result);
+    }
+
+    @Test
+    void validateYearMonthRange_開始月のみ範囲外の場合falseを返す() {
+        // Given
+        StampDeleteForm form = createForm("2024", "15", "2024", "12");
+
+        // When
+        boolean result = service.validateYearMonthRange(form);
+
+        // Then
+        assertFalse(result);
+    }
+
+    @Test
+    void validateYearMonthRange_終了月のみ範囲外の場合falseを返す() {
+        // Given
+        StampDeleteForm form = createForm("2024", "1", "2024", "13");
+
+        // When
+        boolean result = service.validateYearMonthRange(form);
+
+        // Then
+        assertFalse(result);
     }
 
     // ========================================

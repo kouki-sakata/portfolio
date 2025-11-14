@@ -1,5 +1,6 @@
 package com.example.teamdev.service;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,23 @@ public class StampHistoryService{
 
 	@Autowired
 	private ProfileMetadataRepository profileMetadataRepository;
+
+	private final Clock clock;
+
+	/**
+	 * コンストラクタ
+	 * Clockが提供されていない場合はシステムデフォルトのClockを使用
+	 */
+	public StampHistoryService(
+			StampHistoryMapper mapper,
+			ObjectMapper objectMapper,
+			ProfileMetadataRepository profileMetadataRepository,
+			@Autowired(required = false) Clock clock) {
+		this.mapper = mapper;
+		this.objectMapper = objectMapper;
+		this.profileMetadataRepository = profileMetadataRepository;
+		this.clock = clock != null ? clock : Clock.systemDefaultZone();
+	}
 
 	//打刻記録取得
 	public List<Map<String,Object>> execute(String year, String month, int employeeId) {
@@ -77,7 +95,7 @@ public class StampHistoryService{
 	public List<String> getYearList() {
 
 		// システム日付の属する年-1, システム日付の属する年, システム日付の属する年+1
-		int targetYear = LocalDate.now().getYear();
+		int targetYear = LocalDate.now(clock).getYear();
 
         // 結果を格納するリスト
         List<String> yearList = new ArrayList<>();
