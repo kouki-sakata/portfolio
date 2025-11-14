@@ -93,6 +93,13 @@ export default defineConfig(({ command, mode }) => {
         provider: "v8",
         reporter: ["text", "html", "lcov"],
         reportsDirectory: "./coverage",
+        // カバレッジ閾値（参考値として表示、ビルドは失敗させない）
+        thresholds: {
+          statements: 70,
+          branches: 65,
+          functions: 70,
+          lines: 70,
+        },
       },
     },
   };

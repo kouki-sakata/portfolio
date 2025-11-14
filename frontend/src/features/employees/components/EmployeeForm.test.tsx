@@ -68,12 +68,15 @@ describe('EmployeeForm', () => {
     const submitButton = screen.getByRole('button', { name: '登録する' });
     await user.click(submitButton);
 
+    // 最初のエラーメッセージが表示されるまで待機
     await waitFor(() => {
       expect(screen.getByText('名は必須です')).toBeInTheDocument();
-      expect(screen.getByText('姓は必須です')).toBeInTheDocument();
-      expect(screen.getByText('メールアドレスは必須です')).toBeInTheDocument();
-      expect(screen.getByText('パスワードは8文字以上で入力してください')).toBeInTheDocument();
     });
+
+    // 残りのエラーメッセージも表示されていることを確認
+    expect(screen.getByText('姓は必須です')).toBeInTheDocument();
+    expect(screen.getByText('メールアドレスは必須です')).toBeInTheDocument();
+    expect(screen.getByText('パスワードは8文字以上で入力してください')).toBeInTheDocument();
 
     expect(mockOnSubmit).not.toHaveBeenCalled();
   });

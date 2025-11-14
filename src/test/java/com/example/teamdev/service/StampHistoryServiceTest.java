@@ -16,6 +16,7 @@ import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.sql.Timestamp;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -283,7 +284,7 @@ class StampHistoryServiceTest {
         int employeeId = 1;
 
         // When & Then
-        assertThrows(Exception.class, () -> {
+        assertThrows(DateTimeException.class, () -> {
             service.execute(year, month, employeeId);
         });
     }

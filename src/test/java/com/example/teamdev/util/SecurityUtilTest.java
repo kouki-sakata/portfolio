@@ -331,6 +331,9 @@ class SecurityUtilTest {
         // Then
         assertEquals(id1, id2);
         assertEquals(emp1.getId(), emp2.getId());
+
+        // SecurityUtilはキャッシュを持たないため、呼び出しごとにMapperが呼ばれる
+        verify(employeeMapper, times(4)).getEmployeeByEmail("test@example.com");
     }
 
     @Test
