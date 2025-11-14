@@ -127,12 +127,6 @@ export const AppHeader = ({ className, onMenuClick }: AppHeaderProps) => {
                   >
                     プロフィール
                   </NavLink>
-                  <NavLink
-                    className="block px-4 py-2 text-gray-700 text-sm transition-colors hover:bg-gray-50"
-                    to="/settings"
-                  >
-                    設定
-                  </NavLink>
                 </div>
 
                 <div className="border-gray-100 border-t py-1">

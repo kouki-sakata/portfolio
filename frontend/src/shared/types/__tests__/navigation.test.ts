@@ -8,7 +8,7 @@ import type {
 } from "../navigation";
 
 const HOME_ICON = "home" satisfies NavigationItem["icon"];
-const SETTINGS_ICON = "settings" satisfies NavigationItem["icon"];
+const PROFILE_ICON = "user-circle" satisfies NavigationItem["icon"];
 
 describe("Navigation Types", () => {
   describe("NavigationItem", () => {
@@ -31,7 +31,7 @@ describe("Navigation Types", () => {
         id: "notifications",
         label: "通知",
         href: "/notifications",
-        icon: SETTINGS_ICON,
+        icon: PROFILE_ICON,
         badge: 5,
         active: true,
         disabled: false,
@@ -44,10 +44,10 @@ describe("Navigation Types", () => {
 
     it("badgeが未定義でも型エラーが発生しない", () => {
       const item: NavigationItem = {
-        id: "settings",
-        label: "設定",
-        href: "/settings",
-        icon: SETTINGS_ICON,
+        id: "profile",
+        label: "プロフィール",
+        href: "/profile",
+        icon: PROFILE_ICON,
       };
 
       expect(item.badge).toBeUndefined();
@@ -80,10 +80,10 @@ describe("Navigation Types", () => {
         id: "secondary",
         items: [
           {
-            id: "settings",
-            label: "設定",
-            href: "/settings",
-            icon: SETTINGS_ICON,
+            id: "profile",
+            label: "プロフィール",
+            href: "/profile",
+            icon: PROFILE_ICON,
           },
         ],
       };
@@ -153,10 +153,10 @@ describe("Navigation Types", () => {
           icon: HOME_ICON,
         },
         {
-          id: "settings",
-          label: "設定",
-          href: "/settings",
-          icon: SETTINGS_ICON,
+          id: "profile",
+          label: "プロフィール",
+          href: "/profile",
+          icon: PROFILE_ICON,
           badge: 2,
         },
       ];
@@ -186,13 +186,13 @@ describe("Navigation Types", () => {
           ],
         },
         {
-          id: "settings",
+          id: "profile",
           items: [
             {
-              id: "settings",
-              label: "設定",
-              href: "/settings",
-              icon: SETTINGS_ICON,
+              id: "profile",
+              label: "プロフィール",
+              href: "/profile",
+              icon: PROFILE_ICON,
             },
           ],
         },

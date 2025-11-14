@@ -56,24 +56,6 @@ const navigationGroups: NavigationGroup[] = [
         icon: "users",
         requiresAdmin: true,
       },
-      {
-        id: "reports",
-        label: "レポート",
-        href: "/reports",
-        icon: "file-text",
-        requiresAdmin: true,
-      },
-    ],
-  },
-  {
-    id: "settings",
-    items: [
-      {
-        id: "settings",
-        label: "設定",
-        href: "/settings",
-        icon: "settings",
-      },
     ],
   },
 ];
