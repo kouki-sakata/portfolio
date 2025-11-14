@@ -66,7 +66,19 @@ class StampHistoryServiceTest {
             "18:00",
             60
         );
-        defaultMetadata = new ProfileMetadataDocument(schedule);
+        defaultMetadata = new ProfileMetadataDocument(
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            schedule,
+            "",
+            "",
+            ""
+        );
     }
 
     // ========================================
