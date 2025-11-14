@@ -78,11 +78,12 @@ describe('BulkActionBar', () => {
   it('選択件数が1件の場合も正しく表示する', () => {
     render(
       <BulkActionBar
-        selectedIds={[1]}
         onBulkDeleteClick={mockOnBulkDeleteClick}
         publishMutation={publishMutation}
+        selectedIds={[1]}
         unpublishMutation={unpublishMutation}
       />
+    );
     );
 
     expect(screen.getByText('選択中: 1件')).toBeInTheDocument();
