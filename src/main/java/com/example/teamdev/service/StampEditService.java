@@ -94,11 +94,11 @@ public class StampEditService {
         // Step 1: データ抽出
         StampEditData data = dataExtractor.extractFromMap(stampEdit);
 
-        // Step 2: 時刻を直接OffsetDateTimeに変換
+        // Step 2: 時刻を直接OffsetDateTimeに変換（LocalDateを使用）
         java.time.OffsetDateTime inTime = parseToOffsetDateTime(
-            data.getYear(), data.getMonth(), data.getDay(), data.getInTime());
+            data.getStampDate(), data.getInTime());
         java.time.OffsetDateTime outTime = parseToOffsetDateTime(
-            data.getYear(), data.getMonth(), data.getDay(), data.getOutTime());
+            data.getStampDate(), data.getOutTime());
 
         // Step 3: 退勤時刻調整
         java.time.OffsetDateTime adjustedOutTime = outTimeAdjuster.adjustOutTimeIfNeeded(inTime, outTime);
@@ -111,22 +111,17 @@ public class StampEditService {
      * 日付と時刻文字列を直接OffsetDateTimeに変換します。
      * 中間のTimestamp変換を排除し、パフォーマンスを改善します。
      *
-     * @param year  年（YYYY）
-     * @param month 月（MM）
-     * @param day   日（DD）
-     * @param time  時刻（HH:mm）
+     * @param date 打刻日付
+     * @param time 時刻（HH:mm）
      * @return JST（+09:00）のOffsetDateTime
      */
-    private java.time.OffsetDateTime parseToOffsetDateTime(String year, String month,
-                                                             String day, String time) {
+    private java.time.OffsetDateTime parseToOffsetDateTime(java.time.LocalDate date,
+                                                             String time) {
         if (time == null || time.isEmpty()) {
             return null;
         }
-        // Zero-pad month and day to ensure ISO 8601 compliance
-        String paddedMonth = String.format("%02d", Integer.parseInt(month));
-        String paddedDay = String.format("%02d", Integer.parseInt(day));
-        String isoString = String.format("%s-%s-%sT%s:00+09:00",
-                                          year, paddedMonth, paddedDay, time);
+        // LocalDateからISO形式の文字列を生成（LocalDateは既にゼロパディング済み）
+        String isoString = String.format("%sT%s:00+09:00", date.toString(), time);
         return java.time.OffsetDateTime.parse(isoString, java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 

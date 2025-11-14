@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Optional;
@@ -66,6 +67,7 @@ public class StampHistoryPersistence {
         StampHistory entity = new StampHistory();
 
         // 基本情報の設定
+        entity.setStampDate(data.getStampDate());
         entity.setYear(data.getYear());
         entity.setMonth(data.getMonth());
         entity.setDay(data.getDay());
@@ -76,8 +78,8 @@ public class StampHistoryPersistence {
         entity.setOutTime(outTime);
 
         // 休憩時間の設定 - 文字列をOffsetDateTimeに変換
-        entity.setBreakStartTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakStartTime()));
-        entity.setBreakEndTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakEndTime()));
+        entity.setBreakStartTime(parseBreakTime(data.getStampDate(), data.getBreakStartTime()));
+        entity.setBreakEndTime(parseBreakTime(data.getStampDate(), data.getBreakEndTime()));
 
         // 夜勤フラグの設定
         entity.setIsNightShift(data.getIsNightShift());
@@ -120,8 +122,8 @@ public class StampHistoryPersistence {
         entity.setOutTime(outTime);
 
         // 休憩時間の更新 - 文字列をOffsetDateTimeに変換
-        entity.setBreakStartTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakStartTime()));
-        entity.setBreakEndTime(parseBreakTime(data.getYear(), data.getMonth(), data.getDay(), data.getBreakEndTime()));
+        entity.setBreakStartTime(parseBreakTime(data.getStampDate(), data.getBreakStartTime()));
+        entity.setBreakEndTime(parseBreakTime(data.getStampDate(), data.getBreakEndTime()));
 
         // 夜勤フラグの更新（nullも設定可能）
         entity.setIsNightShift(data.getIsNightShift());
@@ -148,21 +150,16 @@ public class StampHistoryPersistence {
     /**
      * 日付と時刻文字列をOffsetDateTimeに変換します。
      *
-     * @param year  年
-     * @param month 月
-     * @param day   日
-     * @param time  時刻（HH:mm形式）
+     * @param date 打刻日付
+     * @param time 時刻（HH:mm形式）
      * @return JST（+09:00）のOffsetDateTime、timeがnullの場合はnull
      */
-    private OffsetDateTime parseBreakTime(String year, String month, String day, String time) {
+    private OffsetDateTime parseBreakTime(LocalDate date, String time) {
         if (time == null || time.isBlank()) {
             return null;
         }
-        // Zero-pad month and day to ensure ISO 8601 compliance
-        String paddedMonth = String.format("%02d", Integer.parseInt(month));
-        String paddedDay = String.format("%02d", Integer.parseInt(day));
-        String isoString = String.format("%s-%s-%sT%s:00+09:00",
-                                          year, paddedMonth, paddedDay, time);
+        // LocalDateを使って ISO 8601 形式の日時文字列を構築
+        String isoString = String.format("%sT%s:00+09:00", date.toString(), time);
         return OffsetDateTime.parse(isoString, java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 

@@ -6,6 +6,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -52,6 +53,7 @@ class StampFormDataExtractorTest {
                 () -> assertEquals("2025", result.getYear(), "year"),
                 () -> assertEquals("10", result.getMonth(), "month"),
                 () -> assertEquals("15", result.getDay(), "day"),
+                () -> assertEquals(LocalDate.of(2025, 10, 15), result.getStampDate(), "stampDate"),
                 () -> assertEquals("09:00", result.getInTime(), "inTime"),
                 () -> assertEquals("18:00", result.getOutTime(), "outTime"),
                 () -> assertTrue(result.isNewEntry(), "新規登録判定"),
@@ -81,6 +83,7 @@ class StampFormDataExtractorTest {
                 "更新データが正しく抽出されること",
                 () -> assertEquals(999, result.getId(), "ID"),
                 () -> assertEquals(200, result.getEmployeeId(), "employeeId"),
+                () -> assertEquals(LocalDate.of(2025, 5, 20), result.getStampDate(), "stampDate"),
                 () -> assertFalse(result.isNewEntry(), "更新判定")
             );
         }
@@ -103,6 +106,7 @@ class StampFormDataExtractorTest {
             // Assert
             assertAll(
                 "null時刻が正しく処理されること",
+                () -> assertEquals(LocalDate.of(2025, 3, 10), result.getStampDate(), "stampDate"),
                 () -> assertNull(result.getInTime(), "inTimeはnull"),
                 () -> assertNull(result.getOutTime(), "outTimeはnull"),
                 () -> assertFalse(result.hasInTime(), "出勤時刻なし"),
@@ -263,8 +267,62 @@ class StampFormDataExtractorTest {
                 () -> assertEquals(777, result.getEmployeeId(), "employeeId"),
                 () -> assertEquals("2025", result.getYear(), "year"),
                 () -> assertEquals("7", result.getMonth(), "month"),
-                () -> assertEquals("7", result.getDay(), "day")
+                () -> assertEquals("7", result.getDay(), "day"),
+                () -> assertEquals(LocalDate.of(2025, 7, 7), result.getStampDate(), "stampDate")
             );
+        }
+
+        @Test
+        @DisplayName("異常系: 日付形式が不正な場合は例外をスロー")
+        void extractFromMap_withInvalidDateFormat_shouldThrowException() {
+            // Arrange
+            Map<String, Object> stampEdit = new HashMap<>();
+            stampEdit.put("employeeId", "100");
+            stampEdit.put("year", "abc");
+            stampEdit.put("month", "10");
+            stampEdit.put("day", "15");
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractor.extractFromMap(stampEdit)
+            );
+            assertTrue(exception.getMessage().contains("Invalid date format"));
+        }
+
+        @Test
+        @DisplayName("異常系: 無効な日付の場合は例外をスロー（2月30日）")
+        void extractFromMap_withInvalidDate_shouldThrowException() {
+            // Arrange
+            Map<String, Object> stampEdit = new HashMap<>();
+            stampEdit.put("employeeId", "100");
+            stampEdit.put("year", "2025");
+            stampEdit.put("month", "2");
+            stampEdit.put("day", "30");
+
+            // Act & Assert
+            IllegalArgumentException exception = assertThrows(
+                IllegalArgumentException.class,
+                () -> extractor.extractFromMap(stampEdit)
+            );
+            assertTrue(exception.getMessage().contains("Invalid date"));
+        }
+
+        @Test
+        @DisplayName("境界値: 閏年の2月29日は正しく処理される")
+        void extractFromMap_withLeapYearDate_shouldHandleCorrectly() {
+            // Arrange
+            Map<String, Object> stampEdit = new HashMap<>();
+            stampEdit.put("employeeId", "100");
+            stampEdit.put("year", "2024");
+            stampEdit.put("month", "2");
+            stampEdit.put("day", "29");
+
+            // Act
+            StampEditData result = extractor.extractFromMap(stampEdit);
+
+            // Assert
+            assertEquals(LocalDate.of(2024, 2, 29), result.getStampDate(), "閏年の2月29日");
         }
     }
 }

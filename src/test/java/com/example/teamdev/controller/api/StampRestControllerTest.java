@@ -21,6 +21,7 @@ import com.example.teamdev.service.StampEditService;
 import com.example.teamdev.util.SecurityUtil;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -102,6 +103,7 @@ class StampRestControllerTest {
             "2025",
             "10",
             "02",
+            LocalDate.of(2025, 10, 2),
             10,
             inTime,
             outTime,
@@ -150,6 +152,7 @@ class StampRestControllerTest {
             "2025",
             "11",
             "01",
+            now.toLocalDate(),
             999,
             now,
             null,
@@ -204,6 +207,7 @@ class StampRestControllerTest {
             "2025",
             "09",
             "30",
+            LocalDate.of(2025, 9, 30),
             10,
             null,
             null,
@@ -251,6 +255,7 @@ class StampRestControllerTest {
             "2025",
             "10",
             "15",
+            LocalDate.of(2025, 10, 15),
             10,
             inTime,
             outTime,
@@ -300,6 +305,7 @@ class StampRestControllerTest {
             "2025",
             "10",
             "20",
+            LocalDate.of(2025, 10, 20),
             10,
             inTime,
             outTime,
@@ -349,6 +355,7 @@ class StampRestControllerTest {
             "2025",
             "10",
             "25",
+            LocalDate.of(2025, 10, 25),
             10,
             inTime,
             outTime,
@@ -389,6 +396,7 @@ class StampRestControllerTest {
             "2025",
             "10",
             "30",
+            LocalDate.of(2025, 10, 30),
             10,
             inTime,
             outTime,
@@ -627,6 +635,7 @@ class StampRestControllerTest {
             "2025",
             "12",
             "01",
+            LocalDate.of(2025, 12, 1),
             10,
             inTime,
             outTime,

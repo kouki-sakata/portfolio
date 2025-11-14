@@ -1,5 +1,6 @@
 package com.example.teamdev.entity;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -27,6 +28,13 @@ public class StampHistoryDisplay {
 	 * 日
 	 */
 	private String day;
+	/**
+	 * 打刻日付（YYYY-MM-DD形式、DATE型）
+	 *
+	 * Note: year/month/day カラムとの互換性維持のため、両方のフィールドを保持。
+	 * CSV出力では従来フォーマット（年,月,日）を維持するため、year/month/dayを使用。
+	 */
+	private LocalDate stampDate;
 	/**
 	 * 曜日
 	 */

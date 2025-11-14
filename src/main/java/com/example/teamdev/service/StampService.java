@@ -56,6 +56,7 @@ public class StampService {
         String day = String.format("%02d", targetDate.getDayOfMonth());
 
         StampHistory entity = new StampHistory();
+        entity.setStampDate(targetDate);
         entity.setYear(year);
         entity.setMonth(month);
         entity.setDay(day);
@@ -75,9 +76,9 @@ public class StampService {
         entity.setUpdateDate(date);
 
         // Upsert behavior portable across DBs:
-        // If a record for (employeeId, year, month, day) exists, update it;
+        // If a record for (employeeId, stamp_date) exists, update it;
         // otherwise insert a new record. When updating, only set in/out time if not already present.
-        StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
+        StampHistory existing = mapper.getStampHistoryByStampDateEmployeeId(targetDate, employeeId);
         if (existing != null) {
             entity.setId(existing.getId());
 
@@ -148,7 +149,7 @@ public class StampService {
         String month = String.format("%02d", targetDate.getMonthValue());
         String day = String.format("%02d", targetDate.getDayOfMonth());
 
-        StampHistory existing = mapper.getStampHistoryByYearMonthDayEmployeeId(year, month, day, employeeId);
+        StampHistory existing = mapper.getStampHistoryByStampDateEmployeeId(targetDate, employeeId);
         OffsetDateTime updateDate = OffsetDateTime.now(ZoneOffset.UTC);
 
         // 状態チェック: 出勤打刻がない場合はエラー
@@ -164,6 +165,7 @@ public class StampService {
         // 休憩時刻の更新
         StampHistory entity = new StampHistory();
         entity.setId(existing.getId());
+        entity.setStampDate(targetDate);
         entity.setYear(year);
         entity.setMonth(month);
         entity.setDay(day);

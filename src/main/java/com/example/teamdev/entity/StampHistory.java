@@ -1,5 +1,6 @@
 package com.example.teamdev.entity;
 
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
 import lombok.AllArgsConstructor;
@@ -32,6 +33,14 @@ public class StampHistory {
 	 * 日
 	 */
 	private String day;
+	/**
+	 * 打刻日付（YYYY-MM-DD形式、DATE型）
+	 *
+	 * Note: year/month/day カラムとの互換性維持のため、両方のフィールドを保持。
+	 * V5マイグレーションでDBトリガーにより自動同期される。
+	 * 今後はこのフィールドを主要な日付ソースとして使用する。
+	 */
+	private LocalDate stampDate;
 	//フィールド名をキャメルケースに修正
 	/**
 	 * 従業員ID
