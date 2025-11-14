@@ -11,10 +11,6 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 
 ## Project Context
 
-### test account
-- email:test@gmail.com
-- password:testtest
-
 ### Paths
 - Steering: `.kiro/steering/`
 - Specs: `.kiro/specs/`
@@ -29,7 +25,7 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Use `/prompts:kiro-spec-status [feature-name]` to check progress
 
 ## Development Guidelines
-- Think in English, but generate responses in Japanese (思考は英語、回答の生成は日本語で行うように)
+- Think in English, generate responses in English
 
 ## Minimal Workflow
 - Phase 0 (optional): `/prompts:kiro-steering`, `/prompts:kiro-steering-custom`
@@ -53,7 +49,6 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Load entire `.kiro/steering/` as project memory
 - Default files: `product.md`, `tech.md`, `structure.md`
 - Custom files are supported (managed via `/prompts:kiro-steering-custom`)
-
 
 # Repository Guidelines
 
