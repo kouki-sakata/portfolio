@@ -2,10 +2,12 @@ package com.example.teamdev.util;
 
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
+import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.security.TeamDevelopUserDetails;
 import java.util.Optional;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 /**
@@ -14,8 +16,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class SecurityUtil {
 
-    private SecurityUtil() {
-        // 静的ユーティリティとするため明示的にインスタンス化を禁止
+    private static EmployeeMapper employeeMapper;
+
+    public SecurityUtil(EmployeeMapper employeeMapper) {
+        SecurityUtil.employeeMapper = employeeMapper;
     }
 
     /**
@@ -55,6 +59,21 @@ public class SecurityUtil {
             return Optional.ofNullable(userDetails.getEmployee());
         }
 
+        if (principal instanceof UserDetails springUser) {
+            return lookupEmployee(springUser.getUsername());
+        }
+
+        if (principal instanceof String username) {
+            return lookupEmployee(username);
+        }
+
         return Optional.empty();
+    }
+
+    private static Optional<Employee> lookupEmployee(String username) {
+        if (username == null || username.isBlank() || employeeMapper == null) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(employeeMapper.getEmployeeByEmail(username));
     }
 }

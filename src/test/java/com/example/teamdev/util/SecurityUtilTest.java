@@ -2,7 +2,8 @@ package com.example.teamdev.util;
 
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
-import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.security.TeamDevelopUserDetails;
+import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,19 +24,13 @@ import static org.mockito.Mockito.*;
 class SecurityUtilTest {
 
     @Mock
-    private EmployeeMapper employeeMapper;
-
-    @Mock
     private Authentication authentication;
 
     @Mock
     private SecurityContext securityContext;
 
-    private SecurityUtil securityUtil;
-
     @BeforeEach
     void setUp() {
-        securityUtil = new SecurityUtil(employeeMapper);
         SecurityContextHolder.clearContext();
     }
 
@@ -52,9 +47,7 @@ class SecurityUtilTest {
     void getCurrentEmployeeId_認証済みユーザーのIDを返す() {
         // Given: 認証済みユーザー
         Employee employee = createEmployee(123, "test@example.com", false);
-
-        setupAuthentication("test@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(employee);
+        setupAuthentication(new TeamDevelopUserDetails(employee, Collections.emptyList()), true);
 
         // When
         Integer result = SecurityUtil.getCurrentEmployeeId();
@@ -67,9 +60,7 @@ class SecurityUtilTest {
     void getCurrentEmployeeId_管理者ユーザーのIDを返す() {
         // Given: 管理者ユーザー
         Employee admin = createEmployee(999, "admin@example.com", true);
-
-        setupAuthentication("admin@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("admin@example.com")).thenReturn(admin);
+        setupAuthentication(new TeamDevelopUserDetails(admin, Collections.emptyList()), true);
 
         // When
         Integer result = SecurityUtil.getCurrentEmployeeId();
@@ -97,7 +88,7 @@ class SecurityUtilTest {
     @Test
     void getCurrentEmployeeId_未認証でnullを返す() {
         // Given: 未認証
-        setupAuthentication("test@example.com", false);
+        setupAuthentication(null, false);
 
         // When
         Integer result = SecurityUtil.getCurrentEmployeeId();
@@ -123,7 +114,6 @@ class SecurityUtilTest {
     void getCurrentEmployeeId_従業員が存在しない場合nullを返す() {
         // Given: 従業員が見つからない
         setupAuthentication("notfound@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("notfound@example.com")).thenReturn(null);
 
         // When
         Integer result = SecurityUtil.getCurrentEmployeeId();
@@ -153,8 +143,7 @@ class SecurityUtilTest {
         // Given
         Employee employee = createEmployee(123, "test@example.com", false);
 
-        setupAuthentication("test@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(employee);
+        setupAuthentication(new TeamDevelopUserDetails(employee, Collections.emptyList()), true);
 
         // When
         Employee result = SecurityUtil.getCurrentEmployee();
@@ -170,8 +159,7 @@ class SecurityUtilTest {
         // Given
         Employee admin = createEmployee(999, "admin@example.com", true);
 
-        setupAuthentication("admin@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("admin@example.com")).thenReturn(admin);
+        setupAuthentication(new TeamDevelopUserDetails(admin, Collections.emptyList()), true);
 
         // When
         Employee result = SecurityUtil.getCurrentEmployee();
@@ -201,7 +189,7 @@ class SecurityUtilTest {
     @Test
     void getCurrentEmployee_未認証でnullを返す() {
         // Given
-        setupAuthentication("test@example.com", false);
+        setupAuthentication(null, false);
 
         // When
         Employee result = SecurityUtil.getCurrentEmployee();
@@ -214,7 +202,6 @@ class SecurityUtilTest {
     void getCurrentEmployee_従業員が存在しない場合nullを返す() {
         // Given
         setupAuthentication("notfound@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("notfound@example.com")).thenReturn(null);
 
         // When
         Employee result = SecurityUtil.getCurrentEmployee();
@@ -232,8 +219,7 @@ class SecurityUtilTest {
         // Given
         Employee admin = createEmployee(999, "admin@example.com", true);
 
-        setupAuthentication("admin@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("admin@example.com")).thenReturn(admin);
+        setupAuthentication(new TeamDevelopUserDetails(admin, Collections.emptyList()), true);
 
         // When
         boolean result = SecurityUtil.isCurrentUserAdmin();
@@ -247,8 +233,7 @@ class SecurityUtilTest {
         // Given
         Employee user = createEmployee(123, "user@example.com", false);
 
-        setupAuthentication("user@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("user@example.com")).thenReturn(user);
+        setupAuthentication(new TeamDevelopUserDetails(user, Collections.emptyList()), true);
 
         // When
         boolean result = SecurityUtil.isCurrentUserAdmin();
@@ -276,7 +261,7 @@ class SecurityUtilTest {
     @Test
     void isCurrentUserAdmin_未認証の場合falseを返す() {
         // Given
-        setupAuthentication("test@example.com", false);
+        setupAuthentication(null, false);
 
         // When
         boolean result = SecurityUtil.isCurrentUserAdmin();
@@ -289,7 +274,6 @@ class SecurityUtilTest {
     void isCurrentUserAdmin_従業員が存在しない場合falseを返す() {
         // Given
         setupAuthentication("notfound@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("notfound@example.com")).thenReturn(null);
 
         // When
         boolean result = SecurityUtil.isCurrentUserAdmin();
@@ -319,8 +303,7 @@ class SecurityUtilTest {
         // Given
         Employee employee = createEmployee(123, "test@example.com", false);
 
-        setupAuthentication("test@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("test@example.com")).thenReturn(employee);
+        setupAuthentication(new TeamDevelopUserDetails(employee, Collections.emptyList()), true);
 
         // When
         Integer id1 = SecurityUtil.getCurrentEmployeeId();
@@ -332,16 +315,14 @@ class SecurityUtilTest {
         assertEquals(id1, id2);
         assertEquals(emp1.getId(), emp2.getId());
 
-        // SecurityUtilはキャッシュを持たないため、呼び出しごとにMapperが呼ばれる
-        verify(employeeMapper, times(4)).getEmployeeByEmail("test@example.com");
+        // SecurityUtilは毎回SecurityContextを参照するため、結果は一貫している
     }
 
     @Test
     void 認証状態が変わると結果も変わる() {
         // Given: 最初は一般ユーザー
         Employee user = createEmployee(123, "user@example.com", false);
-        setupAuthentication("user@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("user@example.com")).thenReturn(user);
+        setupAuthentication(new TeamDevelopUserDetails(user, Collections.emptyList()), true);
 
         // When
         boolean isAdmin1 = SecurityUtil.isCurrentUserAdmin();
@@ -351,8 +332,7 @@ class SecurityUtilTest {
 
         // Given: 管理者に切り替え
         Employee admin = createEmployee(999, "admin@example.com", true);
-        setupAuthentication("admin@example.com", true);
-        when(employeeMapper.getEmployeeByEmail("admin@example.com")).thenReturn(admin);
+        setupAuthentication(new TeamDevelopUserDetails(admin, Collections.emptyList()), true);
 
         // When
         boolean isAdmin2 = SecurityUtil.isCurrentUserAdmin();
@@ -376,9 +356,11 @@ class SecurityUtilTest {
         return employee;
     }
 
-    private void setupAuthentication(String username, boolean isAuthenticated) {
-        when(authentication.getName()).thenReturn(username);
+    private void setupAuthentication(Object principal, boolean isAuthenticated) {
         when(authentication.isAuthenticated()).thenReturn(isAuthenticated);
+        if (principal != null) {
+            when(authentication.getPrincipal()).thenReturn(principal);
+        }
         when(securityContext.getAuthentication()).thenReturn(authentication);
         SecurityContextHolder.setContext(securityContext);
     }

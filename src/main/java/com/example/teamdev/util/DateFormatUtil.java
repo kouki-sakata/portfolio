@@ -2,6 +2,7 @@ package com.example.teamdev.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.ResolverStyle;
 
 /**
  * 日付を yyyy-MM-dd から yyyy/MM/dd 形式に変換
@@ -13,9 +14,11 @@ public class DateFormatUtil {
 
     // 入力フォーマット（2種類）
     private static final DateTimeFormatter INPUT_FORMAT_HYPHEN = DateTimeFormatter.ofPattern(
-            "yyyy-MM-dd");
+                    "uuuu-MM-dd")
+            .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter INPUT_FORMAT_SLASH = DateTimeFormatter.ofPattern(
-            "yyyy/MM/dd");
+                    "uuuu/MM/dd")
+            .withResolverStyle(ResolverStyle.STRICT);
 
     // 出力フォーマット
     private static final DateTimeFormatter OUTPUT_FORMAT = DateTimeFormatter.ofPattern(
