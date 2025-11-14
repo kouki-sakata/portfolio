@@ -3,11 +3,12 @@ package com.example.teamdev.service;
 import com.example.teamdev.constant.AppConstants;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.security.TeamDevelopUserDetails;
 import com.example.teamdev.util.MessageUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -41,14 +42,6 @@ public class CustomUserDetailsService implements UserDetailsService {
             authorities.add(new SimpleGrantedAuthority("ROLE_" + AppConstants.Employee.USER_AUTHORITY));
         }
 
-        return new User(
-            employee.getEmail(),
-            employee.getPassword(),
-            true, // enabled
-            true, // accountNonExpired
-            true, // credentialsNonExpired
-            true, // accountNonLocked
-            authorities
-        );
+        return new TeamDevelopUserDetails(employee, authorities);
     }
 }
