@@ -6,6 +6,7 @@ import com.example.teamdev.service.profile.ProfileMetadataRepository;
 import com.example.teamdev.service.profile.model.ProfileMetadataDocument;
 import com.example.teamdev.service.profile.model.ProfileWorkScheduleDocument;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +56,9 @@ class StampHistoryServiceTest {
         clock = Clock.fixed(fixedInstant, ZoneId.systemDefault());
 
         // 実際のObjectMapperインスタンスを使用（モックではない）
+        // Java 8日時型（OffsetDateTime等）をサポートするためJavaTimeModuleを登録
         objectMapper = new ObjectMapper();
+        objectMapper.registerModule(new JavaTimeModule());
 
         // サービスを手動で作成
         service = new StampHistoryService(mapper, objectMapper, profileMetadataRepository, clock);
