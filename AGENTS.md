@@ -87,6 +87,21 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Conduct internal reasoning in English but deliver repository communications in Japanese, matching the project convention.
 When a shell command fails with “failed in sandbox”, use the permission request tool (with `with_escalated_permissions`) to ask the user for approval before retrying.
 
-## Document Editing & File Generation Policy
-All document creation and editing must use cat <<'EOF' or cat >>EOF.
-Do not use write (high token cost and risk of full-file overwrite).
+## File Editing (Codex)
+- For **editing existing files**, the agent MUST use the `applyEdits` tool.
+- The agent MUST NOT use `writeFile` or any full-file overwrite tools.
+- The user (or editor) provides:
+  - file path
+  - selected range (start line/column, end line/column)
+- The agent returns **only the replacement text** for that range.
+  - No full-file output
+  - No explanations unless explicitly requested
+
+### New Files
+- For **creating new files**, the agent should NOT use `applyEdits`.
+- Instead, it should generate a shell snippet using:
+  ```bash
+  cat <<'EOF' > path/to/file.ext
+  ...content...
+  EOF
+

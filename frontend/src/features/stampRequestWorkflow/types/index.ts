@@ -15,6 +15,10 @@ export type StampRequestListItem = {
   submittedAt: string;
   submittedTimestamp: number;
   employeeName?: string | null;
+  originalInTime?: string | null;
+  originalOutTime?: string | null;
+  originalBreakStartTime?: string | null;
+  originalBreakEndTime?: string | null;
   requestedInTime?: string | null;
   requestedOutTime?: string | null;
   requestedBreakStartTime?: string | null;
@@ -31,6 +35,14 @@ export type StampRequestListResponse = {
   pageSize: number;
 };
 
+export type PendingRequestFilters = {
+  page: number;
+  pageSize: number;
+  status?: string;
+  search?: string;
+  sort?: string;
+};
+
 export type StampRequestCreatePayload = {
   stampHistoryId: number;
   requestedInTime?: string | null;
@@ -44,4 +56,26 @@ export type StampRequestCreatePayload = {
 export type StampRequestCancelPayload = {
   requestId: number;
   reason: string;
+};
+
+export type StampRequestApprovalPayload = {
+  requestId: number;
+  approvalNote?: string | null;
+};
+
+export type StampRequestRejectionPayload = {
+  requestId: number;
+  rejectionReason: string;
+};
+
+export type StampRequestBulkPayload = {
+  requestIds: number[];
+  approvalNote?: string | null;
+  rejectionReason?: string;
+};
+
+export type StampRequestBulkOperationResult = {
+  successCount: number;
+  failureCount: number;
+  failedRequestIds: number[];
 };

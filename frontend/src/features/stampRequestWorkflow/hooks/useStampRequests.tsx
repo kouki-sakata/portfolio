@@ -2,18 +2,23 @@ import {
   useMutation,
   useQuery,
   useQueryClient,
-  type UseMutationResult,
   type QueryClient,
+  type UseMutationResult,
 } from "@tanstack/react-query";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
-import { toast } from "@/hooks/use-toast";
 import * as api from "@/features/stampRequestWorkflow/api/stampRequestApi";
 import type {
+  PendingRequestFilters,
+  StampRequestApprovalPayload,
+  StampRequestBulkOperationResult,
+  StampRequestBulkPayload,
   StampRequestCancelPayload,
   StampRequestCreatePayload,
   StampRequestListResponse,
+  StampRequestRejectionPayload,
 } from "@/features/stampRequestWorkflow/types";
+import { toast } from "@/hooks/use-toast";
 import { queryKeys } from "@/shared/utils/queryUtils";
 
 export type MyRequestFilters = {
@@ -24,9 +29,18 @@ export type MyRequestFilters = {
   sort: string;
 };
 
+const isConflictError = (error: unknown): boolean => {
+  if (typeof error === "object" && error !== null) {
+    const status = (error as { status?: number }).status;
+    return typeof status === "number" && status === 409;
+  }
+  return false;
+};
+
 export const stampRequestQueryKeys = {
   root: queryKeys.stampRequests.all,
   my: (params: MyRequestFilters) => queryKeys.stampRequests.my(params),
+  pending: (params: PendingRequestFilters) => queryKeys.stampRequests.pending(params),
 };
 
 const invalidateWorkflowCaches = async (queryClient: QueryClient) => {
@@ -40,6 +54,14 @@ export const useMyStampRequestsQuery = (params: MyRequestFilters) =>
   useQuery<StampRequestListResponse>({
     queryKey: stampRequestQueryKeys.my(params),
     queryFn: () => api.fetchMyRequests(params),
+    staleTime: QUERY_CONFIG.stampRequests.staleTime,
+    gcTime: QUERY_CONFIG.stampRequests.gcTime,
+  });
+
+export const usePendingStampRequestsQuery = (params: PendingRequestFilters) =>
+  useQuery<StampRequestListResponse>({
+    queryKey: stampRequestQueryKeys.pending(params),
+    queryFn: () => api.fetchPendingRequests(params),
     staleTime: QUERY_CONFIG.stampRequests.staleTime,
     gcTime: QUERY_CONFIG.stampRequests.gcTime,
   });
@@ -100,6 +122,111 @@ export const useCancelStampRequestMutation = (): UseMutationResult<
       toast({
         title: "取消に失敗しました",
         description: message,
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useApproveRequestMutation = (): UseMutationResult<
+  void,
+  unknown,
+  StampRequestApprovalPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: StampRequestApprovalPayload) =>
+      api.approveRequest(payload),
+    onSuccess: async () => {
+      toast({
+        title: "承認しました",
+        description: "選択した申請を承認しました。",
+      });
+      await invalidateWorkflowCaches(queryClient);
+    },
+  });
+};
+
+export const useRejectRequestMutation = (): UseMutationResult<
+  void,
+  unknown,
+  StampRequestRejectionPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: StampRequestRejectionPayload) =>
+      api.rejectRequest(payload),
+    onSuccess: async () => {
+      toast({
+        title: "却下しました",
+        description: "理由を添えて却下を完了しました。",
+      });
+      await invalidateWorkflowCaches(queryClient);
+    },
+  });
+};
+
+const mutationSuccessToast = (
+  title: string,
+  result: StampRequestBulkOperationResult
+) => {
+  toast({
+    title,
+    description: `${result.successCount}件処理しました`,
+  });
+  if (result.failureCount > 0) {
+    toast({
+      title: "一部の申請の処理に失敗しました",
+      description: `${result.failureCount}件が失敗しました`,
+      variant: "destructive",
+    });
+  }
+};
+
+export const useBulkApproveRequestsMutation = (): UseMutationResult<
+  StampRequestBulkOperationResult,
+  unknown,
+  StampRequestBulkPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: StampRequestBulkPayload) =>
+      api.bulkApproveRequests(payload),
+    onSuccess: async (result) => {
+      mutationSuccessToast("一括承認が完了しました", result);
+      await invalidateWorkflowCaches(queryClient);
+    },
+    onError: () => {
+      toast({
+        title: "一括承認に失敗しました",
+        description: "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+export const useBulkRejectRequestsMutation = (): UseMutationResult<
+  StampRequestBulkOperationResult,
+  unknown,
+  StampRequestBulkPayload
+> => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: StampRequestBulkPayload) =>
+      api.bulkRejectRequests(payload),
+    onSuccess: async (result) => {
+      mutationSuccessToast("一括却下が完了しました", result);
+      await invalidateWorkflowCaches(queryClient);
+    },
+    onError: () => {
+      toast({
+        title: "一括却下に失敗しました",
+        description: "操作を完了できませんでした。",
         variant: "destructive",
       });
     },

@@ -102,6 +102,15 @@ const stampRequestKeys = {
       sort?: string;
     } = {}
   ) => ["stampRequests", "my", params] as const,
+  pending: (
+    params: {
+      status?: string;
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      sort?: string;
+    } = {}
+  ) => ["stampRequests", "pending", params] as const,
   detail: (id: number) => ["stampRequests", "detail", id] as const,
 } as const;
 

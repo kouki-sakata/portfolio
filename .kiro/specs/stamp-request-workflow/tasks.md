@@ -12,24 +12,24 @@
   - Wire keyboard navigation (↑/↓/j/k + Enter), `WorkflowCommandPalette` actions (new request + status filters + settings shortcut), unread indicators, and Sonner toasts so the list/detail workspace behaves exactly as defined.
   - _Requirements: 1,2,6,8,10_
 
-- [ ] 2. Deliver administrator UI via TDD
-- [ ] 2.1 Create pending list, bulk bar, and approval/rejection dialog tests first
+- [x] 2. Deliver administrator UI via TDD
+- [x] 2.1 Create pending list, bulk bar, and approval/rejection dialog tests first
   - Validate AdminGuard routing, TanStack Table selection limits, bulk action prompts, comparison dialog fields, audit timeline renderings, and conflict toast handling before implementation so parallel work stays safe.
   - Specify responsive layouts and RBAC redirect behavior to guarantee UX consistency.
   - Extend specs to cover admin-only visuals: employee name on cards/detail header, sidebar bulk checkboxes, BulkActionBar count + pinned placement, role-aware quick actions, and command palette options for status filters + bulk affordances.
   - _Requirements: 3,4,7,8,10_
-- [ ] 2.2 Implement admin UI routes and interactions to satisfy the tests
+- [x] 2.2 Implement admin UI routes and interactions to satisfy the tests
   - Wire PendingRequestsAdminPage, BulkActionBar, detail/comparison/approval/rejection dialogs, and audit timeline visualizations with React Query mutations, optimistic removal, and responsive layouts.
   - Surface partial-success messaging and enforce ≤50 selection logic per the preceding specs.
   - Implement WorkflowSidebar quick actions + hover affordances for admin operations, ensure bulk select stays sticky at 384px width, and align command palette, keyboard hints, and Sonner toasts with the shared workspace requirements.
   - _Requirements: 3,4,7,8,10_
 
-- [ ] 3. Enforce access control, query projections, and error semantics through tests
-- [ ] 3.1 Build controller/security tests ahead of implementation
+- [x] 3. Enforce access control, query projections, and error semantics through tests
+- [x] 3.1 Build controller/security tests ahead of implementation
   - Use MockMvc/Spring Security to prove only authenticated employees can hit create/my-requests/cancel routes, admins gate pending/approval/bulk endpoints, and unauthorized users see 401/403 while responses still include pagination metadata.
   - Add query projection tests that expect badges, timestamps, audit fragments, and error payload shapes, ensuring the API contract remains behavior-first.
   - _Requirements: 1,2,3,4,6,7,8,9_
-- [ ] 3.2 Implement/adjust controllers, PreAuthorize annotations, and response mappers to make the tests pass
+- [x] 3.2 Implement/adjust controllers, PreAuthorize annotations, and response mappers to make the tests pass
   - Wire DTOs to services, normalize validation/conflict errors, guarantee pagination counts + filters, and sanitize payloads before persistence so the verified boundary behavior holds.
   - _Requirements: 1,2,3,4,6,7,8,9_
 

@@ -1,9 +1,14 @@
 import { api } from "@/shared/api/axiosClient";
 
 import type {
+  PendingRequestFilters,
+  StampRequestApprovalPayload,
+  StampRequestBulkOperationResult,
+  StampRequestBulkPayload,
   StampRequestCancelPayload,
   StampRequestCreatePayload,
   StampRequestListResponse,
+  StampRequestRejectionPayload,
 } from "@/features/stampRequestWorkflow/types";
 
 const ENDPOINT = "/stamp-requests" as const;
@@ -40,4 +45,53 @@ export const cancelStampRequest = ({
 }: StampRequestCancelPayload) =>
   api.post<void>(`${ENDPOINT}/${requestId}/cancel`, {
     cancellationReason: reason,
+  });
+
+export const fetchPendingRequests = async (
+  params: PendingRequestFilters
+): Promise<StampRequestListResponse> => {
+  const { status, page, pageSize, search, sort } = params;
+  return api.get<StampRequestListResponse>(`${ENDPOINT}/pending`, {
+    params: {
+      status: status && status !== "ALL" ? status : undefined,
+      page,
+      size: pageSize,
+      search,
+      sort,
+    },
+  });
+};
+
+export const approveRequest = ({
+  requestId,
+  approvalNote,
+}: StampRequestApprovalPayload) =>
+  api.post<void>(`${ENDPOINT}/${requestId}/approve`, {
+    approvalNote: approvalNote && approvalNote.length > 0 ? approvalNote : undefined,
+  });
+
+export const rejectRequest = ({
+  requestId,
+  rejectionReason,
+}: StampRequestRejectionPayload) =>
+  api.post<void>(`${ENDPOINT}/${requestId}/reject`, {
+    rejectionReason,
+  });
+
+export const bulkApproveRequests = ({
+  requestIds,
+  approvalNote,
+}: StampRequestBulkPayload): Promise<StampRequestBulkOperationResult> =>
+  api.post<StampRequestBulkOperationResult>(`${ENDPOINT}/bulk/approve`, {
+    requestIds,
+    approvalNote,
+  });
+
+export const bulkRejectRequests = ({
+  requestIds,
+  rejectionReason,
+}: StampRequestBulkPayload): Promise<StampRequestBulkOperationResult> =>
+  api.post<StampRequestBulkOperationResult>(`${ENDPOINT}/bulk/reject`, {
+    requestIds,
+    rejectionReason,
   });

@@ -3,6 +3,7 @@ CLAUDE.md
 .mcp.json
 .claude
 *__snapshots__/
+.gradle-cache/
 
 # Compiled class files
 *.class

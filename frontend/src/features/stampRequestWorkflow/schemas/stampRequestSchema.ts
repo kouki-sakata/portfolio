@@ -71,3 +71,18 @@ export const stampRequestCancellationSchema = z.object({
     .min(10, "10文字以上500文字以下で理由を入力してください")
     .max(500, "10文字以上500文字以下で理由を入力してください"),
 });
+
+export const stampRequestApprovalNoteSchema = z.object({
+  approvalNote: z
+    .string()
+    .max(500, "500文字以内で入力してください")
+    .optional()
+    .or(z.literal("")),
+});
+
+export const stampRequestRejectionSchema = z.object({
+  rejectionReason: z
+    .string()
+    .min(10, "理由は10文字以上500文字以下で入力してください")
+    .max(500, "理由は10文字以上500文字以下で入力してください"),
+});

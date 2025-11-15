@@ -23,6 +23,7 @@ import {
   employeeAdminRouteLoader,
   homeRouteLoader,
   newsManagementLoader,
+  pendingRequestsRouteLoader,
   stampHistoryRouteLoader,
 } from "@/app/providers/routeLoaders";
 import { Toaster } from "@/components/ui/toaster";
@@ -72,6 +73,14 @@ const StampRequestWorkflowRoute = lazy(() =>
   import("@/features/stampRequestWorkflow/routes/MyRequestsRoute").then(
     (module) => ({
       default: module.MyRequestsRoute,
+    })
+  )
+);
+
+const PendingRequestsRoute = lazy(() =>
+  import("@/features/stampRequestWorkflow/routes/PendingRequestsRoute").then(
+    (module) => ({
+      default: module.PendingRequestsRoute,
     })
   )
 );
@@ -170,6 +179,11 @@ const router = createBrowserRouter([
           {
             path: "stamp-requests/my",
             element: <StampRequestWorkflowRoute />,
+          },
+          {
+            path: "stamp-requests/pending",
+            element: <PendingRequestsRoute />,
+            loader: () => pendingRequestsRouteLoader(queryClient),
           },
           {
             path: "news",
