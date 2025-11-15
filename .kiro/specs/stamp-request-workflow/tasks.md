@@ -62,8 +62,8 @@
   - Publish DTOs plus OpenAPI updates (create, my-requests, pending, detail, approve/reject/cancel, bulk endpoints with pagination + error payload schemas) so API clients regenerate types off a passing contract suite.
   - _Requirements: 1,2,3,4,6,7,8,9_
 
-- [ ] 7. Comprehensive integration verification
-- [ ] 7.1 Compose backend + frontend integration tests
+- [x] 7. Comprehensive integration verification
+- [x] 7.1 Compose backend + frontend integration tests
   - Orchestrate Spring Boot + React integration suites (MockMvc/Testcontainers + MSW/Vitest harness) that run the full request workflow without browser automation, covering submission→approval→cancellation flows, conflict handling, audit surfacing, and RBAC redirects.
   - Validate React Query caches and API payloads wire together by simulating real fetch/mutation cycles so mismatched contracts surface before E2E.
   - _Requirements: 1,2,3,4,6,7,8,9,10_
