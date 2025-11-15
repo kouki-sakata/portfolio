@@ -86,3 +86,7 @@ Project memory keeps persistent guidance (steering, specs notes, component docs)
 - Fetch current library documentation through Context7 prior to coding, then confirm assumptions inside the spec tasks.
 - Conduct internal reasoning in English but deliver repository communications in Japanese, matching the project convention.
 When a shell command fails with “failed in sandbox”, use the permission request tool (with `with_escalated_permissions`) to ask the user for approval before retrying.
+
+## Document Editing & File Generation Policy
+All document creation and editing must use cat <<'EOF' or cat >>EOF.
+Do not use write (high token cost and risk of full-file overwrite).

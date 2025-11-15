@@ -1,5 +1,26 @@
 # Steering Documents Changelog
 
+## 2025-11-15 (Update 36)
+
+### Updated Documents
+- `product.md` - 勤怠申請ワークフローUIのパターンを新規追加し、プロフィール勤怠統計APIを「完了済み」に更新。開発中セクションで `/stamp-requests` API/DB 未整備の警告を掲示。
+- `tech.md` - フロントエンド設計パターンに打刻申請ワークフロー（フィルタ、⌘K、Zod、React Queryキャッシュ）を追加。バックエンド節に `/stamp-requests` API 未実装ギャップを明記。
+- `structure.md` - features/ツリーへ `stampRequestWorkflow/` を追加し、`ProfileAppService#getProfileStatistics` を唯一の統計ファサードとして記載。打刻申請ワークフロー構造とバックエンド不足を整理。
+- `CHANGELOG.md` - Update 36 を記録。
+
+### Code Drift Warnings
+- ⚠️ **打刻申請ワークフロー（UI先行 / API未実装）**
+  - Frontend: `frontend/src/app/providers/AppProviders.tsx` が `/stamp-requests/my` を公開し、`stampRequestWorkflow/api/stampRequestApi.ts` から `/stamp-requests` POST/GET/cancel を実行、`RequestCorrectionModal`/`CancellationDialog` が React Query 連動で運用開始済み。
+  - Backend: `rg "stamp-requests" src/main/java src/main/resources/db/migration openapi -n` が0件で、Controller/Service/Flyway/OpenAPI が全て未作成。Plan.md（Week1-3）に設計メモのみ存在し、UIを本番有効化すると 404 が発生するため、 spec 起票→API実装→Flyway 追加の順で差分解消が必要。
+
+### Impact
+- プロフィール統計に関する過去のドリフト（API未配線/サービス重複）は完全に解消済みであることを steering 上で明確化し、新メンバーが最新アーキテクチャを把握しやすくなった。
+- 打刻申請ワークフローの UI/UX パターンを steering に取り込み、React Query キャッシュ戦略やモーダル設計を再利用できる形で残した。
+- `/stamp-requests` のサーバー実装ギャップを全ファイルで強調したことで、コードレビューや spec タスク化の優先度を即座に判断できる。
+
+### Note
+Stamp Request Workflow の UI は `features/stampHistory` と密結合しながら完成している一方、バックエンド/API/DB/仕様は Plan.md に留まっている。 steering 上でも UI 先行であることとギャップ箇所（REST、Flyway、OpenAPI）を明文化し、AI-DLC の spec タスク化トリガーとして扱えるようにした。
+
 ## 2025-11-13 (Update 35)
 
 ### Updated Documents

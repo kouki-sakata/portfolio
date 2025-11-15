@@ -47,6 +47,7 @@ npm run generate:api # OpenAPI型生成
 - **エラーハンドリング**: `GlobalErrorHandler` が API 例外を識別（認証/権限/ネットワーク/バリデーション）、Toast 表示とロギング一元管理、`authEvents` で401/403をエスカレート、React Query の QueryCache と統合
 - **Repository パターン**: `IHttpClient` で HTTP 層を抽象化、Zod スキーマで API 応答検証、`RepositoryError` に正規化（`TIMEOUT`/`NETWORK_ERROR`/`SERVER_ERROR`）、依存逆転の原則 (DIP) を満たす
 - **プロフィール統計**: `useProfileStatisticsQuery` → `ProfileStatisticsData` → Recharts 3.3.0 で6か月推移を可視化、`constants/chartStyles.ts` でテーマ統一、Skeleton と空状態カード実装
+- **打刻申請ワークフローUI**: `StampHistoryPage` 上で `RequestCorrectionModal`/`RequestStatusBadge` を組み合わせて申請モーダルを起動し、`features/stampRequestWorkflow` 配下の `MyRequestsPage` がサイドバー（検索+Statusタブ+Sort Select）、詳細パネル、⌘Kコマンドパレットを lazy route (`/stamp-requests/my`) で提供。`useWorkflowFilters` が status/search/sort/page をstate管理し、`QUERY_CONFIG.stampRequests` (stale 60s / gc 5min) と `invalidateWorkflowCaches` が `stampRequests` + `stampHistory` クエリを連動無効化、`stampRequestCreateSchema` / `stampRequestCancellationSchema` が夜勤跨ぎの時系列・Cancel理由10〜500文字を検証する
 
 ## バックエンド
 
@@ -82,6 +83,11 @@ npm run generate:api # OpenAPI型生成
 - **バルクAPI設計**: 部分成功レスポンス（`successCount`, `failureCount`, `results[]`）、上限設定（最大100件）、事前検証とトランザクション管理、個別の成否とエラーメッセージを返却
 - **バルクAPIエラー戦略**: `extractRootCause`メソッドでネストされた例外の根本原因を抽出、バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理、部分成功時のログ出力、`ResponseStatusException`で適切なHTTPステータス返却（400/500）
 - **Map型レスポンス変換パターン**（打刻履歴）: Service層が `List<Map<String, Object>>` でカレンダー形式データ返却、Controller層が record DTO（`StampHistoryEntryResponse`）に型安全変換
+
+### ギャップ: 打刻申請API（2025-11-15 時点）
+- `frontend/src/features/stampRequestWorkflow/api/stampRequestApi.ts` が `/stamp-requests` POST/GET/取消 API を呼び出し、`AppProviders` も `/stamp-requests/my` ルートを公開しているが、`src/main/java` には `rg "stamp-requests"` で一致がなく、REST Controller/Service/Mapper が未実装
+- OpenAPI (`openapi/openapi.yaml`) や Flyway (`src/main/resources/db/migration/`) にも `stamp_requests` テーブル/エンドポイント記述が存在しない。`Plan.md` に Week1-3 の設計（テーブル、通知、権限制御）が残っているため、実装フェーズへ進む前に spec/task 化が必要
+- Frontendは React Query キャッシュやZodスキーマまで完成しているため、契約未整備のままデプロイすると 404/501 エラーになる。API定義とバックエンド実装を整備するまで UI をベータ/feature flag に留める判断を推奨
 
 ### スキーマ正規化とJSONB戦略
 
@@ -176,4 +182,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-13 (JSONB依存削減、パフォーマンス最適化、データベース設計を追記)*
+*Last Updated: 2025-11-15 (打刻申請ワークフローUIパターンとAPIギャップを追記)*

@@ -32,6 +32,12 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ロールベースアクセス制御（自身は閲覧・編集可、管理者は全員アクセス可）
 - DDD（Domain-Driven Design）アーキテクチャによる柔軟な実装
 
+### 勤怠申請ワークフロー（2025-11-15 UI先行）
+- 打刻履歴テーブルから `RequestCorrectionModal` を呼び出し、申請中レコードには `RequestStatusBadge` を表示して状態（PENDING/APPROVED/REJECTED/CANCELLED）を共有
+- `/stamp-requests/my` は `MyRequestsPage` の3ペイン構成（フィルタサイドバー・詳細パネル・⌘Kコマンドパレット）で申請検索/閲覧/取消を一画面に統合
+- `useWorkflowFilters` が status/search/sort/page をReact stateで保持し、`useMyStampRequestsQuery` が1分stale/5分gcで `stampRequests` キャッシュを管理、取消・再申請時は `invalidateWorkflowCaches` が `stampHistory` と二重無効化
+- Zodベースの `stampRequestCreateSchema` / `stampRequestCancellationSchema` で夜勤跨ぎ・休憩帯の前後関係を検証し、`reason` フィールドは10〜500文字のPoVを強制しつつ、モーダル送信後はトースト通知とフィルタリセットを自動化
+
 ## 主要な価値提案
 
 ### 技術的優位性
@@ -102,16 +108,20 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - アクティビティ履歴のページネーション対応
   - 変更差分追跡（ProfileChangeSet）と監査ログ記録
   - 包括的テストカバレッジ（8コンポーネントすべてにテスト完備）
+- ✅ プロフィール勤怠統計API公開（2025-11-07）
+  - `UserProfileRestController#getSelfStatistics` が `ProfileAppService#getProfileStatistics` を単一ソースとして参照し、Attendance summary + monthly breakdown を1レスポンスで返却
+  - Recharts 3.3.0（ProfileSummaryCard/ProfileMonthlyDetailCard/MiniStat）が `profileApi.fetchProfileStatistics` 経由でデータ同期し、UI側は `ProfileStatisticsResponse` に依存
+  - 旧 `ProfileAttendanceStatisticsService` は削除済みで、集計ロジックは `StampHistoryMapper.findMonthlyStatistics` + 通常カラム参照に収束
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
   - お知らせ管理 Playwright テスト（news-management.spec.ts、現在スキップ状態）
-- ⚠️ プロフィール勤怠統計ダッシュボード
-  - Rechartsベースの統計UI（ProfileSummaryCard/ProfileMonthlyDetailCard、MiniStat）が実装済み
-  - `/api/profile/me/statistics` エンドポイント未公開のため、API統合はペンディング（2025-11-06 時点）
+- ⚠️ 勤怠申請ワークフロー API/DB 整備
+  - `AppProviders` は `/stamp-requests/my` を `StampRequestWorkflowRoute` で公開し、`stampRequestWorkflow/api/stampRequestApi.ts` から `/stamp-requests` POST/GET/cancel を呼び出す実装が先行
+  - バックエンド（controller/service/mapper）と OpenAPI/Flyway (`db/migration` 内) に該当エンドポイント/テーブルが存在せず、`Plan.md` Week1-3 の設計メモ段階で停止。UI/axios を本番運用する前にAPI仕様の確定と実装計画を spec 化する必要あり
 - 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
 - 📋 外部システム連携API、プッシュ通知、生体認証
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-11-06 (プロフィール勤怠統計UIとAPIギャップを反映)*
+*Last Updated: 2025-11-15 (勤怠申請ワークフローUIとプロフィール統計API公開を反映)*
