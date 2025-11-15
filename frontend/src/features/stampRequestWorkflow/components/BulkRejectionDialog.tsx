@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import type { UseMutationResult } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +13,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { stampRequestRejectionSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
 import type {
   StampRequestBulkOperationResult,
   StampRequestBulkPayload,
 } from "@/features/stampRequestWorkflow/types";
-import { stampRequestRejectionSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
 import { toast } from "@/hooks/use-toast";
 
 export type BulkRejectionDialogProps = {
@@ -91,7 +91,10 @@ export const BulkRejectionDialog = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmitForm)}>
+        <form
+          className="space-y-4"
+          onSubmit={form.handleSubmit(handleSubmitForm)}
+        >
           <div className="space-y-2">
             <Label htmlFor="bulk-rejection-reason">却下理由</Label>
             <Textarea
@@ -102,14 +105,18 @@ export const BulkRejectionDialog = ({
               {...form.register("rejectionReason")}
             />
             {form.formState.errors.rejectionReason ? (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {form.formState.errors.rejectionReason.message}
               </p>
             ) : null}
           </div>
 
           <DialogFooter>
-            <Button onClick={() => onOpenChange(false)} type="button" variant="outline">
+            <Button
+              onClick={() => onOpenChange(false)}
+              type="button"
+              variant="outline"
+            >
               閉じる
             </Button>
             <Button

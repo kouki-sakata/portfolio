@@ -5,14 +5,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CancellationDialog } from "@/features/stampRequestWorkflow/components/CancellationDialog";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import {
-  useMyStampRequestsQuery,
   type MyRequestFilters,
+  useMyStampRequestsQuery,
 } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
 import { useWorkflowFilters } from "@/features/stampRequestWorkflow/hooks/useWorkflowFilters";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
@@ -24,6 +30,12 @@ const STATUS_TABS = [
   { value: "REJECTED", label: "却下" },
   { value: "CANCELLED", label: "取消" },
 ];
+
+const SIDEBAR_SKELETON_IDS = [
+  "sidebar-skeleton-1",
+  "sidebar-skeleton-2",
+  "sidebar-skeleton-3",
+] as const;
 
 export const MyRequestsPage = () => {
   const { user } = useAuth();
@@ -60,18 +72,15 @@ export const MyRequestsPage = () => {
           <h1 className="font-bold text-3xl">勤怠ワークフロー</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-full border p-1" role="group">
-            <Button
-              aria-pressed={true}
-              size="sm"
-              variant="secondary"
-            >
+          <fieldset className="inline-flex rounded-full border p-1">
+            <legend className="sr-only">ビュー切替</legend>
+            <Button aria-pressed={true} size="sm" variant="secondary">
               従業員ビュー
             </Button>
             <Button aria-pressed={false} size="sm" variant="ghost">
               管理者ビュー
             </Button>
-          </div>
+          </fieldset>
           <Button
             aria-label="⌘K コマンド"
             onClick={() => setCommandOpen(true)}
@@ -94,9 +103,7 @@ export const MyRequestsPage = () => {
           filters={filters}
           isLoading={isLoading}
           onNextPage={() => filterState.setPage(filters.page + 1)}
-          onPrevPage={() =>
-            filterState.setPage(Math.max(0, filters.page - 1))
-          }
+          onPrevPage={() => filterState.setPage(Math.max(0, filters.page - 1))}
           onSearch={filterState.setSearch}
           onSelectRequest={handleSelectRequest}
           onSortChange={filterState.setSort}
@@ -111,10 +118,10 @@ export const MyRequestsPage = () => {
       </div>
 
       <WorkflowCommandPalette
-      onFilterSelect={handleTableFilter}
-      onOpenChange={setCommandOpen}
-      open={isCommandOpen}
-    />
+        onFilterSelect={handleTableFilter}
+        onOpenChange={setCommandOpen}
+        open={isCommandOpen}
+      />
 
       {cancelRequestId ? (
         <CancellationDialog
@@ -156,6 +163,55 @@ const WorkflowSidebar = ({
   onPrevPage,
   isLoading,
 }: WorkflowSidebarProps) => {
+  const renderRequestList = () => {
+    if (isLoading) {
+      return SIDEBAR_SKELETON_IDS.map((id) => (
+        <Skeleton className="h-24 w-full" key={id} />
+      ));
+    }
+
+    if (requests.length === 0) {
+      return (
+        <p className="text-center text-muted-foreground text-sm">
+          該当する申請がありません。
+        </p>
+      );
+    }
+
+    return requests.map((request) => {
+      const isActive = selectedId === request.id;
+      return (
+        <button
+          aria-pressed={selectedId === request.id}
+          className="w-full rounded-lg border p-3 text-left transition hover:bg-muted"
+          key={request.id}
+          onClick={() => onSelectRequest(request.id)}
+          type="button"
+        >
+          <div className="flex items-center justify-between">
+            <RequestStatusBadge ariaHidden status={request.status} />
+            {request.unread ? (
+              <span className="inline-flex items-center">
+                <span className="sr-only">未読リクエスト</span>
+                <span
+                  aria-hidden="true"
+                  className="h-2 w-2 rounded-full bg-red-500"
+                />
+              </span>
+            ) : null}
+          </div>
+          <p className="mt-2 text-muted-foreground text-sm">
+            {obfuscateReason(request.reason, isActive)}
+          </p>
+          <div className="mt-3 flex items-center justify-between text-muted-foreground text-xs">
+            <span>{request.dateLabel}</span>
+            <span>↑↓で移動・Enterで開く</span>
+          </div>
+        </button>
+      );
+    });
+  };
+
   return (
     <aside
       className="w-full rounded-xl border bg-card shadow-sm lg:w-[384px]"
@@ -168,12 +224,12 @@ const WorkflowSidebar = ({
             検索
           </Label>
           <Input
-            id="workflow-search"
             aria-label="検索"
             className="border-0 p-0 shadow-none focus-visible:ring-0"
+            id="workflow-search"
+            onChange={(event) => onSearch(event.target.value)}
             placeholder="検索"
             value={filters.search}
-            onChange={(event) => onSearch(event.target.value)}
           />
         </div>
         <div
@@ -186,20 +242,18 @@ const WorkflowSidebar = ({
               aria-controls={`tab-${tab.value}`}
               aria-selected={filters.status === tab.value}
               key={tab.value}
+              onClick={() => onStatusChange(tab.value)}
               role="tab"
               size="sm"
-              variant={
-                filters.status === tab.value ? "secondary" : "ghost"
-              }
-              onClick={() => onStatusChange(tab.value)}
+              variant={filters.status === tab.value ? "secondary" : "ghost"}
             >
               {tab.label}
             </Button>
           ))}
         </div>
         <Select
-          value={filters.sort}
           onValueChange={(value) => onSortChange(value)}
+          value={filters.sort}
         >
           <SelectTrigger className="mt-4">
             <SelectValue placeholder="並び順" />
@@ -213,47 +267,7 @@ const WorkflowSidebar = ({
       </div>
 
       <div className="max-h-[520px] overflow-y-auto">
-        <div className="space-y-2 p-4">
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, index) => (
-              <Skeleton className="h-24 w-full" key={`skeleton-${index}`} />
-            ))
-          ) : requests.length === 0 ? (
-            <p className="text-center text-muted-foreground text-sm">
-              該当する申請がありません。
-            </p>
-          ) : (
-            requests.map((request) => {
-              const isActive = selectedId === request.id;
-              return (
-                <button
-                  aria-pressed={selectedId === request.id}
-                  className="w-full rounded-lg border p-3 text-left transition hover:bg-muted"
-                  key={request.id}
-                  onClick={() => onSelectRequest(request.id)}
-                  type="button"
-                >
-                  <div className="flex items-center justify-between">
-                    <RequestStatusBadge ariaHidden status={request.status} />
-                    {request.unread ? (
-                      <span
-                        aria-label="未読リクエスト"
-                        className="h-2 w-2 rounded-full bg-red-500"
-                      />
-                    ) : null}
-                  </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {obfuscateReason(request.reason, isActive)}
-                  </p>
-                  <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                    <span>{request.dateLabel}</span>
-                    <span>↑↓で移動・Enterで開く</span>
-                  </div>
-                </button>
-              );
-            })
-          )}
-        </div>
+        <div className="space-y-2 p-4">{renderRequestList()}</div>
       </div>
 
       <div className="flex items-center justify-between border-t p-4">
@@ -291,7 +305,9 @@ const WorkflowDetailPanel = ({
   if (!request) {
     return (
       <div className="flex flex-1 items-center justify-center rounded-xl border bg-card shadow-sm">
-        <p className="text-muted-foreground">申請を選択すると詳細が表示されます。</p>
+        <p className="text-muted-foreground">
+          申請を選択すると詳細が表示されます。
+        </p>
       </div>
     );
   }
@@ -303,7 +319,9 @@ const WorkflowDetailPanel = ({
       <div className="border-b p-6">
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs text-muted-foreground">REQUEST #{request.id}</p>
+            <p className="text-muted-foreground text-xs">
+              REQUEST #{request.id}
+            </p>
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-2xl">{request.dateLabel}</h2>
               <RequestStatusBadge status={request.status} />
@@ -318,29 +336,38 @@ const WorkflowDetailPanel = ({
       <div className="space-y-6 p-6">
         <section className="grid gap-4 md:grid-cols-2">
           <InfoCell label="提出日時" value={request.submittedAt} />
-          <InfoCell label="希望勤務時間" value={`${request.requestedInTime ?? "--"} 〜 ${request.requestedOutTime ?? "--"}`} />
-          <InfoCell label="休憩" value={`${request.requestedBreakStartTime ?? "--"} 〜 ${request.requestedBreakEndTime ?? "--"}`} />
+          <InfoCell
+            label="希望勤務時間"
+            value={`${request.requestedInTime ?? "--"} 〜 ${request.requestedOutTime ?? "--"}`}
+          />
+          <InfoCell
+            label="休憩"
+            value={`${request.requestedBreakStartTime ?? "--"} 〜 ${request.requestedBreakEndTime ?? "--"}`}
+          />
           <InfoCell label="ステータス" value={request.status} />
         </section>
 
         <section>
-          <h3 className="font-semibold text-sm text-muted-foreground">申請理由</h3>
+          <h3 className="font-semibold text-muted-foreground text-sm">
+            申請理由
+          </h3>
           <p className="mt-2 whitespace-pre-wrap text-sm">{request.reason}</p>
         </section>
 
         {request.rejectionReason ? (
-          <section className="rounded-lg bg-rose-50 p-4 text-sm text-rose-900">
-            <h3 className="font-semibold text-xs uppercase tracking-wide">却下理由</h3>
-            <p className="mt-2 whitespace-pre-wrap">{request.rejectionReason}</p>
+          <section className="rounded-lg bg-rose-50 p-4 text-rose-900 text-sm">
+            <h3 className="font-semibold text-xs uppercase tracking-wide">
+              却下理由
+            </h3>
+            <p className="mt-2 whitespace-pre-wrap">
+              {request.rejectionReason}
+            </p>
           </section>
         ) : null}
 
         {canCancel ? (
           <div className="flex justify-end">
-            <Button
-              onClick={() => onCancel(request.id)}
-              variant="destructive"
-            >
+            <Button onClick={() => onCancel(request.id)} variant="destructive">
               申請を取り消す
             </Button>
           </div>
@@ -352,10 +379,8 @@ const WorkflowDetailPanel = ({
 
 const InfoCell = ({ label, value }: { label: string; value: string }) => (
   <div className="rounded-lg border p-4">
-    <p className="text-xs text-muted-foreground">{label}</p>
-    <p className="mt-1 font-semibold text-lg">
-      {value || "-"}
-    </p>
+    <p className="text-muted-foreground text-xs">{label}</p>
+    <p className="mt-1 font-semibold text-lg">{value || "-"}</p>
   </div>
 );
 

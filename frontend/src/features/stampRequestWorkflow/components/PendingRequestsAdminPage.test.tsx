@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 import { PendingRequestsAdminPage } from "./PendingRequestsAdminPage";
@@ -73,7 +73,7 @@ const sampleRequest = (): StampRequestListItem => ({
   status: "PENDING",
   reason: "退勤が記録されていないため修正します。",
   submittedAt: "2025-11-12 10:00",
-  submittedTimestamp: 1731396000000,
+  submittedTimestamp: 1_731_396_000_000,
   employeeName: "太郎 山田",
   requestedInTime: "09:30",
   requestedOutTime: "18:30",

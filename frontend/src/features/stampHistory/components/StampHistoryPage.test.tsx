@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
 import { fetchStampHistory } from "@/features/stampHistory/api";
+import type { StampHistoryResponse } from "@/features/stampHistory/types";
 import { queryKeys } from "@/shared/utils/queryUtils";
 import { StampHistoryPage } from "./StampHistoryPage";
 
@@ -25,41 +26,43 @@ vi.mock("@/features/auth/hooks/useAuth", () => ({
 
 vi.mock("@/features/stampHistory/api", async (importOriginal) => {
   const actual = (await importOriginal()) as StampHistoryApiModule;
+  const mockResponse: StampHistoryResponse = {
+    entries: [
+      {
+        id: 1,
+        employeeId: 1,
+        year: "2025",
+        month: "11",
+        day: "07",
+        dayOfWeek: "FRI",
+        inTime: "09:00",
+        outTime: "18:00",
+        breakStartTime: "12:00",
+        breakEndTime: "13:00",
+        overtimeMinutes: 30,
+        isNightShift: false,
+        updateDate: "2025/11/07",
+        requestStatus: "PENDING",
+        requestId: 10,
+      },
+    ],
+    years: ["2025"],
+    months: ["11"],
+    selectedYear: "2025",
+    selectedMonth: "11",
+    summary: {
+      totalWorkingDays: 0,
+      presentDays: 0,
+      absentDays: 0,
+      totalWorkingHours: 0,
+      averageWorkingHours: 0,
+      totalOvertimeMinutes: 0,
+    },
+  };
+
   return {
     ...actual,
-    fetchStampHistory: vi.fn(async () => ({
-      entries: [
-        {
-          id: 1,
-          employeeId: 1,
-          year: "2025",
-          month: "11",
-          day: "07",
-          dayOfWeek: "FRI",
-          inTime: "09:00",
-          outTime: "18:00",
-          breakStartTime: "12:00",
-          breakEndTime: "13:00",
-          overtimeMinutes: 30,
-          isNightShift: false,
-          updateDate: "2025/11/07",
-          requestStatus: "PENDING",
-          requestId: 10,
-        },
-      ],
-      years: ["2025"],
-      months: ["11"],
-      selectedYear: "2025",
-      selectedMonth: "11",
-      summary: {
-        totalWorkingDays: 0,
-        presentDays: 0,
-        absentDays: 0,
-        totalWorkingHours: 0,
-        averageWorkingHours: 0,
-        totalOvertimeMinutes: 0,
-      },
-    })),
+    fetchStampHistory: vi.fn(async () => mockResponse),
   } satisfies StampHistoryApiModule;
 });
 

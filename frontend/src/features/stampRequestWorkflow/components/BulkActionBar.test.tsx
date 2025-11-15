@@ -21,8 +21,7 @@ describe("BulkActionBar", () => {
       />
     );
 
-    expect(screen.getByText("3件選択中"))
-      .toBeInTheDocument();
+    expect(screen.getByText("3件選択中")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "承認" }));
     expect(onApproveSelected).toHaveBeenCalledTimes(1);

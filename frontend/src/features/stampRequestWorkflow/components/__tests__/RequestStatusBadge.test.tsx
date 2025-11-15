@@ -25,8 +25,8 @@ describe("RequestStatusBadge", () => {
 
   it("falls back to neutral badge for NONE", () => {
     renderBadge("NONE");
-    expect(
-      screen.getByRole("status", { name: "未申請" })
-    ).toHaveClass("bg-slate-200");
+    expect(screen.getByRole("status", { name: "未申請" })).toHaveClass(
+      "bg-slate-200"
+    );
   });
 });

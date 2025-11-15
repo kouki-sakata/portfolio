@@ -155,14 +155,14 @@ export const RequestCorrectionModal = ({
               {...form.register("reason")}
             />
             {form.formState.errors.reason ? (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {form.formState.errors.reason.message}
               </p>
             ) : null}
           </div>
 
           {form.formState.errors.requestedOutTime ? (
-            <p className="text-sm text-destructive">
+            <p className="text-destructive text-sm">
               {form.formState.errors.requestedOutTime.message}
             </p>
           ) : null}

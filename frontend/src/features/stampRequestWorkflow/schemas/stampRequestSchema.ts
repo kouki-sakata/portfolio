@@ -3,11 +3,13 @@ import { z } from "zod";
 const TIME_PATTERN = /^([0-1]\d|2[0-3]):[0-5]\d$/;
 
 const toMinutes = (value?: string | null) => {
-  if (!value || !TIME_PATTERN.test(value)) {
+  if (!(value && TIME_PATTERN.test(value))) {
     return null;
   }
   const [hours, minutes] = value.split(":");
-  return Number.parseInt(hours ?? "0", 10) * 60 + Number.parseInt(minutes ?? "0", 10);
+  return (
+    Number.parseInt(hours ?? "0", 10) * 60 + Number.parseInt(minutes ?? "0", 10)
+  );
 };
 
 const isChronological = (data: {

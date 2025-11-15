@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { Suspense, type ReactNode } from "react";
+import { type ReactNode, Suspense } from "react";
 import { describe, expect, it, vi } from "vitest";
 
 import { PendingRequestsRoute } from "./PendingRequestsRoute";
@@ -26,11 +26,14 @@ vi.mock("@/shared/components/loading/SuspenseWrapper", () => ({
   ),
 }));
 
-vi.mock("@/features/stampRequestWorkflow/components/PendingRequestsAdminPage", () => ({
-  PendingRequestsAdminPage: () => (
-    <div data-testid="pending-admin-page">pending-admin</div>
-  ),
-}));
+vi.mock(
+  "@/features/stampRequestWorkflow/components/PendingRequestsAdminPage",
+  () => ({
+    PendingRequestsAdminPage: () => (
+      <div data-testid="pending-admin-page">pending-admin</div>
+    ),
+  })
+);
 
 describe("PendingRequestsRoute", () => {
   it("wraps admin page with guard and suspense boundary", async () => {

@@ -1,5 +1,3 @@
-import { api } from "@/shared/api/axiosClient";
-
 import type {
   PendingRequestFilters,
   StampRequestApprovalPayload,
@@ -10,6 +8,7 @@ import type {
   StampRequestListResponse,
   StampRequestRejectionPayload,
 } from "@/features/stampRequestWorkflow/types";
+import { api } from "@/shared/api/axiosClient";
 
 const ENDPOINT = "/stamp-requests" as const;
 
@@ -24,7 +23,7 @@ export type MyRequestQuery = {
 export const createStampRequest = (payload: StampRequestCreatePayload) =>
   api.post(`${ENDPOINT}`, payload);
 
-export const fetchMyRequests = async (
+export const fetchMyRequests = (
   params: MyRequestQuery
 ): Promise<StampRequestListResponse> => {
   const { status, page, pageSize, search, sort } = params;
@@ -47,7 +46,7 @@ export const cancelStampRequest = ({
     cancellationReason: reason,
   });
 
-export const fetchPendingRequests = async (
+export const fetchPendingRequests = (
   params: PendingRequestFilters
 ): Promise<StampRequestListResponse> => {
   const { status, page, pageSize, search, sort } = params;
@@ -67,7 +66,8 @@ export const approveRequest = ({
   approvalNote,
 }: StampRequestApprovalPayload) =>
   api.post<void>(`${ENDPOINT}/${requestId}/approve`, {
-    approvalNote: approvalNote && approvalNote.length > 0 ? approvalNote : undefined,
+    approvalNote:
+      approvalNote && approvalNote.length > 0 ? approvalNote : undefined,
   });
 
 export const rejectRequest = ({

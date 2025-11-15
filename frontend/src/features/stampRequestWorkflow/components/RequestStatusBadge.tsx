@@ -46,10 +46,10 @@ export const RequestStatusBadge = ({
   const style = STATUS_STYLES[status];
   return (
     <Badge
-      aria-label={style.label}
       aria-hidden={ariaHidden}
+      aria-label={style.label}
       className={cn(
-        "h-6 rounded-full px-3 py-1 text-xs font-semibold",
+        "h-6 rounded-full px-3 py-1 font-semibold text-xs",
         style.className,
         className
       )}

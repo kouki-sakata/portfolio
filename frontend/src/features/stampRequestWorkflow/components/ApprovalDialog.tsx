@@ -13,9 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useApproveRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
-import {
-  stampRequestApprovalNoteSchema,
-} from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
+import { stampRequestApprovalNoteSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 import { toast } from "@/hooks/use-toast";
 
@@ -29,7 +27,11 @@ export type ApprovalFormValues = {
   approvalNote?: string;
 };
 
-export const ApprovalDialog = ({ request, open, onOpenChange }: ApprovalDialogProps) => {
+export const ApprovalDialog = ({
+  request,
+  open,
+  onOpenChange,
+}: ApprovalDialogProps) => {
   const mutation = useApproveRequestMutation();
   const form = useForm<ApprovalFormValues>({
     resolver: zodResolver(stampRequestApprovalNoteSchema),
@@ -74,7 +76,9 @@ export const ApprovalDialog = ({ request, open, onOpenChange }: ApprovalDialogPr
           <div className="grid gap-3 rounded-lg border p-4 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">従業員</span>
-              <span className="font-semibold">{request.employeeName ?? "-"}</span>
+              <span className="font-semibold">
+                {request.employeeName ?? "-"}
+              </span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">ステータス</span>
@@ -84,8 +88,14 @@ export const ApprovalDialog = ({ request, open, onOpenChange }: ApprovalDialogPr
           <div className="grid gap-2 rounded-lg border p-4 text-sm">
             <p className="text-muted-foreground text-xs">勤務時間</p>
             <div className="flex flex-col gap-2">
-              <span>原本: {formatRange(request.originalInTime, request.originalOutTime)}</span>
-              <span>修正案: {formatRange(request.requestedInTime, request.requestedOutTime)}</span>
+              <span>
+                原本:{" "}
+                {formatRange(request.originalInTime, request.originalOutTime)}
+              </span>
+              <span>
+                修正案:{" "}
+                {formatRange(request.requestedInTime, request.requestedOutTime)}
+              </span>
             </div>
           </div>
           <div className="rounded-lg border p-4 text-sm">
@@ -105,13 +115,17 @@ export const ApprovalDialog = ({ request, open, onOpenChange }: ApprovalDialogPr
                 {...form.register("approvalNote")}
               />
               {form.formState.errors.approvalNote ? (
-                <p className="text-sm text-destructive">
+                <p className="text-destructive text-sm">
                   {form.formState.errors.approvalNote.message}
                 </p>
               ) : null}
             </div>
             <DialogFooter>
-              <Button onClick={() => onOpenChange(false)} type="button" variant="outline">
+              <Button
+                onClick={() => onOpenChange(false)}
+                type="button"
+                variant="outline"
+              >
                 閉じる
               </Button>
               <Button disabled={mutation.isPending} type="submit">
@@ -126,7 +140,7 @@ export const ApprovalDialog = ({ request, open, onOpenChange }: ApprovalDialogPr
 };
 
 const formatRange = (start?: string | null, end?: string | null) => {
-  if (!start || !end) {
+  if (!(start && end)) {
     return "--";
   }
   return `${start} - ${end}`;

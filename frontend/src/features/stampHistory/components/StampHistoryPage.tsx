@@ -125,16 +125,13 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
-  const handleRequestCorrection = useCallback(
-    (entry: StampHistoryEntry) => {
-      if (!entry.id) {
-        return;
-      }
-      setRequestTarget(entry);
-      setRequestDialogOpen(true);
-    },
-    []
-  );
+  const handleRequestCorrection = useCallback((entry: StampHistoryEntry) => {
+    if (!entry.id) {
+      return;
+    }
+    setRequestTarget(entry);
+    setRequestDialogOpen(true);
+  }, []);
 
   const createDummyEntry = useCallback(
     (

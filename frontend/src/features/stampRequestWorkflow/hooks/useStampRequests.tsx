@@ -1,13 +1,22 @@
 import {
+  type QueryClient,
+  type UseMutationResult,
   useMutation,
   useQuery,
   useQueryClient,
-  type QueryClient,
-  type UseMutationResult,
 } from "@tanstack/react-query";
 
 import { QUERY_CONFIG } from "@/app/config/queryClient";
-import * as api from "@/features/stampRequestWorkflow/api/stampRequestApi";
+import {
+  approveRequest,
+  bulkApproveRequests,
+  bulkRejectRequests,
+  cancelStampRequest,
+  createStampRequest,
+  fetchMyRequests,
+  fetchPendingRequests,
+  rejectRequest,
+} from "@/features/stampRequestWorkflow/api/stampRequestApi";
 import type {
   PendingRequestFilters,
   StampRequestApprovalPayload,
@@ -29,18 +38,11 @@ export type MyRequestFilters = {
   sort: string;
 };
 
-const isConflictError = (error: unknown): boolean => {
-  if (typeof error === "object" && error !== null) {
-    const status = (error as { status?: number }).status;
-    return typeof status === "number" && status === 409;
-  }
-  return false;
-};
-
 export const stampRequestQueryKeys = {
   root: queryKeys.stampRequests.all,
   my: (params: MyRequestFilters) => queryKeys.stampRequests.my(params),
-  pending: (params: PendingRequestFilters) => queryKeys.stampRequests.pending(params),
+  pending: (params: PendingRequestFilters) =>
+    queryKeys.stampRequests.pending(params),
 };
 
 const invalidateWorkflowCaches = async (queryClient: QueryClient) => {
@@ -53,7 +55,7 @@ const invalidateWorkflowCaches = async (queryClient: QueryClient) => {
 export const useMyStampRequestsQuery = (params: MyRequestFilters) =>
   useQuery<StampRequestListResponse>({
     queryKey: stampRequestQueryKeys.my(params),
-    queryFn: () => api.fetchMyRequests(params),
+    queryFn: () => fetchMyRequests(params),
     staleTime: QUERY_CONFIG.stampRequests.staleTime,
     gcTime: QUERY_CONFIG.stampRequests.gcTime,
   });
@@ -61,7 +63,7 @@ export const useMyStampRequestsQuery = (params: MyRequestFilters) =>
 export const usePendingStampRequestsQuery = (params: PendingRequestFilters) =>
   useQuery<StampRequestListResponse>({
     queryKey: stampRequestQueryKeys.pending(params),
-    queryFn: () => api.fetchPendingRequests(params),
+    queryFn: () => fetchPendingRequests(params),
     staleTime: QUERY_CONFIG.stampRequests.staleTime,
     gcTime: QUERY_CONFIG.stampRequests.gcTime,
   });
@@ -75,7 +77,7 @@ export const useCreateStampRequestMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestCreatePayload) =>
-      api.createStampRequest(payload),
+      createStampRequest(payload),
     onSuccess: async () => {
       toast({
         title: "リクエストを送信しました",
@@ -106,7 +108,7 @@ export const useCancelStampRequestMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestCancelPayload) =>
-      api.cancelStampRequest(payload),
+      cancelStampRequest(payload),
     onSuccess: async () => {
       toast({
         title: "申請を取り消しました",
@@ -137,7 +139,7 @@ export const useApproveRequestMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestApprovalPayload) =>
-      api.approveRequest(payload),
+      approveRequest(payload),
     onSuccess: async () => {
       toast({
         title: "承認しました",
@@ -157,7 +159,7 @@ export const useRejectRequestMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestRejectionPayload) =>
-      api.rejectRequest(payload),
+      rejectRequest(payload),
     onSuccess: async () => {
       toast({
         title: "却下しました",
@@ -194,7 +196,7 @@ export const useBulkApproveRequestsMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestBulkPayload) =>
-      api.bulkApproveRequests(payload),
+      bulkApproveRequests(payload),
     onSuccess: async (result) => {
       mutationSuccessToast("一括承認が完了しました", result);
       await invalidateWorkflowCaches(queryClient);
@@ -218,7 +220,7 @@ export const useBulkRejectRequestsMutation = (): UseMutationResult<
 
   return useMutation({
     mutationFn: (payload: StampRequestBulkPayload) =>
-      api.bulkRejectRequests(payload),
+      bulkRejectRequests(payload),
     onSuccess: async (result) => {
       mutationSuccessToast("一括却下が完了しました", result);
       await invalidateWorkflowCaches(queryClient);

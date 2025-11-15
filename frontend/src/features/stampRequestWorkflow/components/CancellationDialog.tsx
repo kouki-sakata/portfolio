@@ -69,7 +69,7 @@ export const CancellationDialog = ({
               {...form.register("reason")}
             />
             {form.formState.errors.reason ? (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {form.formState.errors.reason.message}
               </p>
             ) : null}

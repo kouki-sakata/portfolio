@@ -2,9 +2,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-import { RequestCorrectionModal } from "@/features/stampRequestWorkflow/components/RequestCorrectionModal";
 import { mockStampHistoryEntry } from "@/features/stampRequestWorkflow/__fixtures__/requests";
+import { RequestCorrectionModal } from "@/features/stampRequestWorkflow/components/RequestCorrectionModal";
 
 const mutateAsync = vi.fn();
 
@@ -56,7 +55,9 @@ describe("RequestCorrectionModal", () => {
     fireEvent.change(screen.getByLabelText("修正理由"), {
       target: { value: "短い" },
     });
-    await userEvent.click(screen.getByRole("button", { name: "リクエスト送信" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "リクエスト送信" })
+    );
 
     expect(
       await screen.findByText("理由は10文字以上500文字以下で入力してください")
@@ -74,7 +75,9 @@ describe("RequestCorrectionModal", () => {
       },
     });
 
-    await userEvent.click(screen.getByRole("button", { name: "リクエスト送信" }));
+    await userEvent.click(
+      screen.getByRole("button", { name: "リクエスト送信" })
+    );
 
     await waitFor(() => {
       expect(mutateAsync).toHaveBeenCalledWith({

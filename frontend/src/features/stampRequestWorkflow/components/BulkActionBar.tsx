@@ -21,7 +21,7 @@ export const BulkActionBar = ({
 
   return (
     <div
-      className="fixed bottom-6 left-1/2 z-20 w-full max-w-4xl -translate-x-1/2 rounded-full border bg-card/95 px-6 py-3 shadow-xl backdrop-blur"
+      className="-translate-x-1/2 fixed bottom-6 left-1/2 z-20 w-full max-w-4xl rounded-full border bg-card/95 px-6 py-3 shadow-xl backdrop-blur"
       data-testid="bulk-bar"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">

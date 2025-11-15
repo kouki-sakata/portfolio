@@ -32,7 +32,7 @@ const baseRequest: StampRequestListItem = {
   status: "PENDING",
   reason: "退勤時刻が誤って記録されたため修正します。",
   submittedAt: "2025-11-12 08:15",
-  submittedTimestamp: 1731388800000,
+  submittedTimestamp: 1_731_388_800_000,
   employeeName: "佐藤 花子",
   requestedInTime: "08:00",
   requestedOutTime: "17:00",
@@ -63,10 +63,7 @@ describe("RejectionDialog", () => {
       screen.getByText("理由は10文字以上500文字以下で入力してください")
     ).toBeInTheDocument();
 
-    await user.type(
-      screen.getByLabelText("却下理由"),
-      "証跡と一致しません。"
-    );
+    await user.type(screen.getByLabelText("却下理由"), "証跡と一致しません。");
     await user.click(screen.getByRole("button", { name: "却下を確定" }));
 
     await waitFor(() => {

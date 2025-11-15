@@ -62,10 +62,9 @@ describe("MyRequestsPage", () => {
     expect(
       screen.getByRole("heading", { name: "勤怠ワークフロー" })
     ).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "従業員ビュー" })).toHaveAttribute(
-      "aria-pressed",
-      "true"
-    );
+    expect(
+      screen.getByRole("button", { name: "従業員ビュー" })
+    ).toHaveAttribute("aria-pressed", "true");
     expect(
       screen.getByRole("button", { name: "⌘K コマンド" })
     ).toBeInTheDocument();
@@ -81,7 +80,9 @@ describe("MyRequestsPage", () => {
     const sidebar = screen.getByTestId("workflow-sidebar");
     expect(sidebar.className).toContain("lg:w-[384px]");
     expect(sidebar).toHaveTextContent("検索");
-    expect(screen.getAllByLabelText("未読リクエスト").length).toBeGreaterThan(0);
+    expect(screen.getAllByLabelText("未読リクエスト").length).toBeGreaterThan(
+      0
+    );
     expect(screen.getAllByRole("status", { name: "審査中" })).toHaveLength(1);
   });
 
@@ -130,7 +131,9 @@ describe("MyRequestsPage", () => {
     renderPage();
 
     await userEvent.click(screen.getByRole("button", { name: "⌘K コマンド" }));
-    await userEvent.click(screen.getByRole("menuitem", { name: "保留のみ表示" }));
+    await userEvent.click(
+      screen.getByRole("menuitem", { name: "保留のみ表示" })
+    );
     expect(mockUseMyRequests).toHaveBeenLastCalledWith(
       expect.objectContaining({ status: "PENDING" })
     );

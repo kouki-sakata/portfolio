@@ -162,8 +162,8 @@ class StampRequestRestControllerTest {
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void pendingRequestsReturnPayload() throws Exception {
         StampRequest pending = buildRequest(920, employee.getId());
-        when(queryService.getPendingRequests(0, 20)).thenReturn(List.of(pending));
-        when(queryService.countPendingRequests()).thenReturn(1);
+        when(queryService.getPendingRequests(0, 20, null, null, "recent")).thenReturn(List.of(pending));
+        when(queryService.countPendingRequests(null, null)).thenReturn(1);
 
         mockMvc.perform(get("/api/stamp-requests/pending"))
             .andExpect(status().isOk())

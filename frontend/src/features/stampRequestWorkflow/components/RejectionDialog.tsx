@@ -13,9 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useRejectRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
-import {
-  stampRequestRejectionSchema,
-} from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
+import { stampRequestRejectionSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 import { toast } from "@/hooks/use-toast";
 
@@ -29,7 +27,11 @@ export type RejectionFormValues = {
   rejectionReason: string;
 };
 
-export const RejectionDialog = ({ request, open, onOpenChange }: RejectionDialogProps) => {
+export const RejectionDialog = ({
+  request,
+  open,
+  onOpenChange,
+}: RejectionDialogProps) => {
   const mutation = useRejectRequestMutation();
   const form = useForm<RejectionFormValues>({
     resolver: zodResolver(stampRequestRejectionSchema),
@@ -70,7 +72,10 @@ export const RejectionDialog = ({ request, open, onOpenChange }: RejectionDialog
           </DialogDescription>
         </DialogHeader>
 
-        <form className="space-y-4" onSubmit={form.handleSubmit(handleSubmitForm)}>
+        <form
+          className="space-y-4"
+          onSubmit={form.handleSubmit(handleSubmitForm)}
+        >
           <div className="space-y-2">
             <Label htmlFor="rejection-reason">却下理由</Label>
             <Textarea
@@ -81,17 +86,25 @@ export const RejectionDialog = ({ request, open, onOpenChange }: RejectionDialog
               {...form.register("rejectionReason")}
             />
             {form.formState.errors.rejectionReason ? (
-              <p className="text-sm text-destructive">
+              <p className="text-destructive text-sm">
                 {form.formState.errors.rejectionReason.message}
               </p>
             ) : null}
           </div>
 
           <DialogFooter>
-            <Button onClick={() => onOpenChange(false)} type="button" variant="outline">
+            <Button
+              onClick={() => onOpenChange(false)}
+              type="button"
+              variant="outline"
+            >
               閉じる
             </Button>
-            <Button disabled={mutation.isPending} type="submit" variant="destructive">
+            <Button
+              disabled={mutation.isPending}
+              type="submit"
+              variant="destructive"
+            >
               却下を確定
             </Button>
           </DialogFooter>

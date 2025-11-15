@@ -1,31 +1,45 @@
 import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { ApprovalDialog } from "@/features/stampRequestWorkflow/components/ApprovalDialog";
+import { BulkActionBar } from "@/features/stampRequestWorkflow/components/BulkActionBar";
+import { BulkRejectionDialog } from "@/features/stampRequestWorkflow/components/BulkRejectionDialog";
+import { RejectionDialog } from "@/features/stampRequestWorkflow/components/RejectionDialog";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import {
   useBulkApproveRequestsMutation,
   useBulkRejectRequestsMutation,
   usePendingStampRequestsQuery,
 } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
-import { ApprovalDialog } from "@/features/stampRequestWorkflow/components/ApprovalDialog";
-import { BulkRejectionDialog } from "@/features/stampRequestWorkflow/components/BulkRejectionDialog";
-import { RejectionDialog } from "@/features/stampRequestWorkflow/components/RejectionDialog";
-import { BulkActionBar } from "@/features/stampRequestWorkflow/components/BulkActionBar";
+import type {
+  PendingRequestFilters,
+  StampRequestListItem,
+} from "@/features/stampRequestWorkflow/types";
+import { toast } from "@/hooks/use-toast";
 import {
   DataTable,
   DataTableColumnHeader,
   DataTableSelectionCheckbox,
 } from "@/shared/components/data-table";
-import { toast } from "@/hooks/use-toast";
-import type { PendingRequestFilters, StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 
 const MAX_BULK_SELECTION = 50;
+const PENDING_SKELETON_IDS = [
+  "pending-skeleton-1",
+  "pending-skeleton-2",
+  "pending-skeleton-3",
+] as const;
 type AdminFilters = PendingRequestFilters & {
   search: string;
   sort: string;
@@ -59,8 +73,12 @@ export const PendingRequestsAdminPage = () => {
   const [bulkRejectionDialogOpen, setBulkRejectionDialogOpen] = useState(false);
 
   useEffect(() => {
-    if (!activeRequestId && requests.length > 0) {
-      setActiveRequestId(requests[0].id);
+    if (activeRequestId) {
+      return;
+    }
+    const firstRequest = requests[0];
+    if (firstRequest) {
+      setActiveRequestId(firstRequest.id);
     }
   }, [activeRequestId, requests]);
 
@@ -120,7 +138,9 @@ export const PendingRequestsAdminPage = () => {
     />
   ) : (
     <div className="flex flex-1 items-center justify-center rounded-xl border bg-card shadow-sm">
-      <p className="text-muted-foreground">申請を選択すると詳細が表示されます。</p>
+      <p className="text-muted-foreground">
+        申請を選択すると詳細が表示されます。
+      </p>
     </div>
   );
 
@@ -149,11 +169,14 @@ export const PendingRequestsAdminPage = () => {
               <Input
                 className="border-0 p-0 shadow-none focus-visible:ring-0"
                 id="pending-search"
+                onChange={(event) =>
+                  setFilters((prev) => ({
+                    ...prev,
+                    search: event.target.value,
+                  }))
+                }
                 placeholder="従業員名や理由で検索"
                 value={filters.search}
-                onChange={(event) =>
-                  setFilters((prev) => ({ ...prev, search: event.target.value }))
-                }
               />
             </div>
             <div className="flex space-x-2 overflow-x-auto" role="tablist">
@@ -161,20 +184,22 @@ export const PendingRequestsAdminPage = () => {
                 <Button
                   aria-selected={filters.status === tab.value}
                   key={tab.value}
+                  onClick={() =>
+                    setFilters((prev) => ({ ...prev, status: tab.value }))
+                  }
                   role="tab"
                   size="sm"
                   variant={filters.status === tab.value ? "secondary" : "ghost"}
-                  onClick={() => setFilters((prev) => ({ ...prev, status: tab.value }))}
                 >
                   {tab.label}
                 </Button>
               ))}
             </div>
             <Select
-              value={filters.sort}
               onValueChange={(value) =>
                 setFilters((prev) => ({ ...prev, sort: value }))
               }
+              value={filters.sort}
             >
               <SelectTrigger>
                 <SelectValue placeholder="並び順" />
@@ -190,11 +215,11 @@ export const PendingRequestsAdminPage = () => {
           <div className="min-h-[420px] p-4">
             {isLoading ? (
               <div className="space-y-3">
-                {Array.from({ length: 3 }).map((_, index) => (
+                {PENDING_SKELETON_IDS.map((id) => (
                   <Skeleton
                     className="h-20 w-full"
                     data-testid="pending-row-skeleton"
-                    key={`skeleton-${index}`}
+                    key={id}
                   />
                 ))}
               </div>
@@ -202,12 +227,12 @@ export const PendingRequestsAdminPage = () => {
               <DataTable
                 columns={columns}
                 data={requests}
+                emptyMessage="保留中の申請はありません"
                 enableRowSelection
                 loading={isLoading}
                 onRowClick={(row) => setActiveRequestId(row.id)}
                 onRowSelectionChange={handleRowSelectionChange}
                 rowSelection={rowSelection}
-                emptyMessage="保留中の申請はありません"
               />
             )}
           </div>
@@ -239,8 +264,8 @@ export const PendingRequestsAdminPage = () => {
       <BulkRejectionDialog
         mutation={bulkRejectMutation}
         onCompleted={handleClearSelection}
-        open={bulkRejectionDialogOpen}
         onOpenChange={setBulkRejectionDialogOpen}
+        open={bulkRejectionDialogOpen}
         requestCount={selectedIds.length}
         requestIds={selectedIds}
       />
@@ -248,8 +273,8 @@ export const PendingRequestsAdminPage = () => {
   );
 };
 
-const useRequestColumns = () => {
-  return useMemo<ColumnDef<StampRequestListItem>[]>(
+const useRequestColumns = () =>
+  useMemo<ColumnDef<StampRequestListItem>[]>(
     () => [
       {
         id: "select",
@@ -261,7 +286,9 @@ const useRequestColumns = () => {
               table.getIsAllPageRowsSelected() ||
               (table.getIsSomePageRowsSelected() && "indeterminate")
             }
-            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
           />
         ),
         cell: ({ row }) => (
@@ -281,7 +308,9 @@ const useRequestColumns = () => {
         ),
         cell: ({ row }) => (
           <div className="flex flex-col">
-            <span className="font-medium">{row.original.employeeName ?? "-"}</span>
+            <span className="font-medium">
+              {row.original.employeeName ?? "-"}
+            </span>
             <span className="text-muted-foreground text-xs">
               {row.original.dateLabel}
             </span>
@@ -294,7 +323,7 @@ const useRequestColumns = () => {
           <DataTableColumnHeader column={column} title="理由" />
         ),
         cell: ({ row }) => (
-          <p className="line-clamp-2 text-sm text-muted-foreground">
+          <p className="line-clamp-2 text-muted-foreground text-sm">
             {row.original.reason}
           </p>
         ),
@@ -304,14 +333,11 @@ const useRequestColumns = () => {
         header: ({ column }) => (
           <DataTableColumnHeader column={column} title="ステータス" />
         ),
-        cell: ({ row }) => (
-          <RequestStatusBadge status={row.original.status} />
-        ),
+        cell: ({ row }) => <RequestStatusBadge status={row.original.status} />,
       },
     ],
     []
   );
-};
 
 const WorkflowDetailPanel = ({
   request,
@@ -321,48 +347,60 @@ const WorkflowDetailPanel = ({
   request: StampRequestListItem;
   onApprove: () => void;
   onReject: () => void;
-}) => {
-  return (
-    <div className="flex flex-1 flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm">
-      <div className="flex items-center justify-between border-b pb-4">
-        <div>
-          <p className="text-xs text-muted-foreground">REQUEST #{request.id}</p>
-          <div className="flex items-center gap-2">
-            <h2 className="font-semibold text-2xl">{request.employeeName ?? "-"}</h2>
-            <RequestStatusBadge status={request.status} />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <Button onClick={onReject} variant="destructive">
-            却下
-          </Button>
-          <Button onClick={onApprove}>承認</Button>
+}) => (
+  <div className="flex flex-1 flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm">
+    <div className="flex items-center justify-between border-b pb-4">
+      <div>
+        <p className="text-muted-foreground text-xs">REQUEST #{request.id}</p>
+        <div className="flex items-center gap-2">
+          <h2 className="font-semibold text-2xl">
+            {request.employeeName ?? "-"}
+          </h2>
+          <RequestStatusBadge status={request.status} />
         </div>
       </div>
-
-      <div className="grid gap-4 md:grid-cols-2">
-        <InfoCell label="提出日時" value={request.submittedAt} />
-        <InfoCell label="原本" value={formatRange(request.originalInTime, request.originalOutTime)} />
-        <InfoCell label="修正案" value={formatRange(request.requestedInTime, request.requestedOutTime)} />
+      <div className="flex gap-2">
+        <Button onClick={onReject} variant="destructive">
+          却下
+        </Button>
+        <Button onClick={onApprove}>承認</Button>
       </div>
-
-      <section>
-        <h3 className="font-semibold text-sm text-muted-foreground">申請理由</h3>
-        <p className="mt-2 whitespace-pre-wrap text-sm">{request.reason}</p>
-      </section>
     </div>
-  );
-};
 
-const InfoCell = ({ label, value }: { label: string; value?: string | null }) => (
+    <div className="grid gap-4 md:grid-cols-2">
+      <InfoCell label="提出日時" value={request.submittedAt} />
+      <InfoCell
+        label="原本"
+        value={formatRange(request.originalInTime, request.originalOutTime)}
+      />
+      <InfoCell
+        label="修正案"
+        value={formatRange(request.requestedInTime, request.requestedOutTime)}
+      />
+    </div>
+
+    <section>
+      <h3 className="font-semibold text-muted-foreground text-sm">申請理由</h3>
+      <p className="mt-2 whitespace-pre-wrap text-sm">{request.reason}</p>
+    </section>
+  </div>
+);
+
+const InfoCell = ({
+  label,
+  value,
+}: {
+  label: string;
+  value?: string | null;
+}) => (
   <div className="rounded-lg border p-4">
-    <p className="text-xs text-muted-foreground">{label}</p>
+    <p className="text-muted-foreground text-xs">{label}</p>
     <p className="mt-1 font-semibold text-lg">{value ?? "-"}</p>
   </div>
 );
 
 const formatRange = (start?: string | null, end?: string | null) => {
-  if (!start || !end) {
+  if (!(start && end)) {
     return "--";
   }
   return `${start} - ${end}`;

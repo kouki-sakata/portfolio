@@ -95,9 +95,7 @@ export const newsManagementLoader = async (queryClient: QueryClient) => {
   }
 };
 
-export const pendingRequestsRouteLoader = async (
-  queryClient: QueryClient
-) => {
+export const pendingRequestsRouteLoader = async (queryClient: QueryClient) => {
   try {
     const session = await queryClient.fetchQuery({
       queryKey: queryKeys.auth.session(),

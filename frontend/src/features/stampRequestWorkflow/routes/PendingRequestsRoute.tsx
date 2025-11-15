@@ -6,11 +6,11 @@ import { AdminGuard } from "@/shared/components/guards/AdminGuard";
 import { PageSuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 
 const PendingRequestsAdminPage = lazy(() =>
-  import("@/features/stampRequestWorkflow/components/PendingRequestsAdminPage").then(
-    (module) => ({
-      default: module.PendingRequestsAdminPage,
-    })
-  )
+  import(
+    "@/features/stampRequestWorkflow/components/PendingRequestsAdminPage"
+  ).then((module) => ({
+    default: module.PendingRequestsAdminPage,
+  }))
 );
 
 export const PendingRequestsRoute = () => {
