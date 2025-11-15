@@ -84,7 +84,7 @@
     <select id="findAll" resultMap="StampRequestResultMap">
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
-        ORDER BY created_at DESC
+        ORDER BY created_at DESC, id DESC
     </select>
 
     <!-- 従業員IDで取得（作成日降順） -->
@@ -92,7 +92,7 @@
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
         WHERE employee_id = #{employeeId}
-        ORDER BY created_at DESC
+        ORDER BY created_at DESC, id DESC
     </select>
 
     <!-- 従業員ID + ステータスで取得 -->
@@ -100,8 +100,8 @@
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
         WHERE employee_id = #{employeeId}
-          AND status = #{status}
-        ORDER BY created_at DESC
+          AND status = #{status}::stamp_request_status
+        ORDER BY created_at DESC, id DESC
     </select>
 
     <!-- PENDING状態のリクエストを従業員ID + 勤怠履歴IDで検索（重複チェック用） -->
@@ -118,16 +118,16 @@
     <select id="findByStatus" resultMap="StampRequestResultMap">
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
-        WHERE status = #{status}
-        ORDER BY created_at DESC
+        WHERE status = #{status}::stamp_request_status
+        ORDER BY created_at DESC, id DESC
     </select>
 
     <!-- ステータスで取得（ページネーション付き） -->
     <select id="findByStatusWithPagination" resultMap="StampRequestResultMap">
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
-        WHERE status = #{status}
-        ORDER BY created_at DESC
+        WHERE status = #{status}::stamp_request_status
+        ORDER BY created_at DESC, id DESC
         LIMIT #{limit} OFFSET #{offset}
     </select>
 
@@ -135,7 +135,7 @@
     <select id="countByStatus" resultType="int">
         SELECT COUNT(*)
         FROM stamp_request
-        WHERE status = #{status}
+        WHERE status = #{status}::stamp_request_status
     </select>
 
     <!-- 勤怠履歴IDに紐づく最新のリクエストを取得（バッジ表示用） -->
@@ -143,7 +143,7 @@
         SELECT <include refid="selectAllColumns"/>
         FROM stamp_request
         WHERE stamp_history_id = #{stampHistoryId}
-        ORDER BY created_at DESC
+        ORDER BY created_at DESC, id DESC
         LIMIT 1
     </select>
 

@@ -1,5 +1,19 @@
 # Steering Documents Changelog
 
+## 2025-11-15 (Update 37)
+
+### Updated Documents
+- `product.md` - 勤怠申請ワークフローを「E2E実装済み」として整理し、`StampRequestRestController`/サービス群/V7マイグレーションのパターンと OpenAPI 同期ギャップを記録。
+- `tech.md` - Stamp Request API セクションを追加し、`StampRequestStore`・MyBatis・MockMvc の連携、V7 インデックスを技術指針に反映。ギャップ部分を「OpenAPI/契約同期」に更新。
+- `structure.md` - service/dto/mapper の構造に StampRequest 系クラスを追加し、ワークフロー節をバックエンド+フロント接続の両面で再記述。frontend ツリーの `stampRequestWorkflow` コメントを最新化。
+
+### Code Drift Warnings
+- ⚠️ `openapi/openapi.yaml` に `/api/stamp-requests/**` のパス/スキーマが未追加のため、`npm run generate:api-types`/`generate:zod-schemas` では型が生成されず `features/stampRequestWorkflow/types.ts` が手書きのまま。OpenAPI追記→型再生成→contract test 追従まで spec 化が必要。
+
+### Impact
+- Steering が実際の Spring Boot + Flyway 実装（V7）と整合し、モバイル勤怠申請フローの API/DB/キャッシュパターンを新規メンバーが把握できる。
+- Drift 警告が契約未整備によるリリースリスク（TypeScript 型の乖離）を明示し、次の spec タスクへ誘導する。
+
 ## 2025-11-15 (Update 36)
 
 ### Updated Documents

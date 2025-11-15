@@ -84,10 +84,15 @@ npm run generate:api # OpenAPI型生成
 - **バルクAPIエラー戦略**: `extractRootCause`メソッドでネストされた例外の根本原因を抽出、バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理、部分成功時のログ出力、`ResponseStatusException`で適切なHTTPステータス返却（400/500）
 - **Map型レスポンス変換パターン**（打刻履歴）: Service層が `List<Map<String, Object>>` でカレンダー形式データ返却、Controller層が record DTO（`StampHistoryEntryResponse`）に型安全変換
 
-### ギャップ: 打刻申請API（2025-11-15 時点）
-- `frontend/src/features/stampRequestWorkflow/api/stampRequestApi.ts` が `/stamp-requests` POST/GET/取消 API を呼び出し、`AppProviders` も `/stamp-requests/my` ルートを公開しているが、`src/main/java` には `rg "stamp-requests"` で一致がなく、REST Controller/Service/Mapper が未実装
-- OpenAPI (`openapi/openapi.yaml`) や Flyway (`src/main/resources/db/migration/`) にも `stamp_requests` テーブル/エンドポイント記述が存在しない。`Plan.md` に Week1-3 の設計（テーブル、通知、権限制御）が残っているため、実装フェーズへ進む前に spec/task 化が必要
-- Frontendは React Query キャッシュやZodスキーマまで完成しているため、契約未整備のままデプロイすると 404/501 エラーになる。API定義とバックエンド実装を整備するまで UI をベータ/feature flag に留める判断を推奨
+### 打刻申請ワークフローAPI（2025-11-15）
+- `StampRequestRestController` が `/api/stamp-requests` 以下の create/my/pending/detail/approve/reject/cancel/bulk を単一クラスで提供し、`SecurityConfig` で `requestMatchers(HttpMethod.POST, "/api/stamp-requests")` や `hasRole('ADMIN')` を細かく制御。DTOは `StampRequestListResponse`/`StampRequestResponse` が ISO8601 + epoch timestamp を同時に返し、UIの履歴・バッジ描画を簡素化。
+- `StampRequestRegistrationService`（理由10〜500文字/時刻順序/未来日禁止/重複防止）、`ApprovalService`・`Rejection`・`Cancellation`・`BulkOperationService`（MAX 50件 + 部分成功 + 共通理由検証）、`QueryService`（status/search/sort/page + EmployeeMapperキャッシュ）が `StampRequestStore` を共有。`StampRequestStore` は `@Autowired(required=false)` な `StampRequestMapper`/`Clock` を受け取り、Mapper未注入（@WebMvcTest等）時はインメモリ実装へフォールバックしてサービスコードを変更せずにテストできる。
+- MyBatisは `src/main/resources/com/example/teamdev/mapper/StampRequestMapper.xml` で ResultMap + pagination + partial index活用クエリを定義し、`stamp_request_status` ENUMへのキャストや snapshot 列の明示更新を徹底。`StampRequestMapper` インターフェースは `findPendingByEmployeeIdAndStampHistoryId` など重複チェック専用クエリを提供。
+- `StampRequestRestControllerTest`（@WebMvcTest + SecurityConfig）が happy path/認可/バリデーション/バルク操作をMockMvcでカバーし、`@Tag("api")` で `./gradlew apiTest` 対象に含めることでリグレッションを防止。
+
+### ギャップ: Stamp Request OpenAPI/契約
+- `/api/stamp-requests/**` の実装は完了したが `openapi/openapi.yaml` にパス/スキーマが未登録のため、`npm run generate:api-types` `npm run generate:zod-schemas` が stamp request DTO を生成できず、`features/stampRequestWorkflow/types.ts` に独自型が残る。
+- Contract test (`-PenableOpenApiContract`) や `@hey-api/openapi-ts` がこの機能を認識しない状態なので、OpenAPIへ追記→型再生成→MSW/Playwrightモック更新を spec / task として追跡する。
 
 ### スキーマ正規化とJSONB戦略
 
@@ -126,6 +131,7 @@ npm run generate:api # OpenAPI型生成
   - V4: パフォーマンスインデックス（13個）
   - V5: `stamp_date` 正規化（DATE型導入 + トリガー双方向同期）
   - V6: JSONB依存削減（勤務スケジュール通常カラム化）
+  - V7: 打刻申請テーブル（`stamp_request` + ENUM + snapshot列 + updated_atトリガー + 重複防止インデックス）
 - **トランザクション制御**: Flyway:Transactional=false（DDL自動コミット対応）
 - **運用Runbook**: `docs/runbooks/performance-index-rollout.md`、`docs/runbooks/stamp-date-migration.md`
 
@@ -133,6 +139,7 @@ npm run generate:api # OpenAPI型生成
 - **B-Tree インデックス**: 単一カラム（`idx_employee_name_search`）、複合カラム（`idx_log_history_daily_check`）
 - **GIN インデックス**: JSONB カラム（`log_history.detail` に `jsonb_path_ops`）
 - **部分インデックス**: 条件付きインデックス（`idx_stamp_history_stamp_date` は `stamp_date IS NOT NULL`）
+- **ワークフロー専用インデックス**: `idx_stamp_request_employee_status`（My Requests）、`idx_stamp_request_status_created`（Pending admin）、`idx_stamp_request_pending_unique`（PENDING重複防止）、`idx_stamp_request_stamp_history`（Status Badge用最新取得）
 - **インデックス命名規則**: `idx_<table>_<column(s)>_<type>`
 
 ## テスト戦略
@@ -154,6 +161,7 @@ npm run generate:api # OpenAPI型生成
   - その他9個のインデックス
 - **V5_1マイグレーション**（2025-10-XX）: `stamp_history.stamp_date` インデックス（DATE型での高速検索）
 - **V6マイグレーション**（2025-11-13）: `log_history.detail` に GIN インデックス（`jsonb_path_ops`）
+- **V7マイグレーション**（2025-11-15）: `stamp_request` に employee/status複合・status/created DESC・partial unique（PENDING重複防止）・`stamp_history_id` ルックアップ用インデックスを追加し、My Requests/Pending/Admin一括処理のフィルタリングを高速化
 
 ### N+1クエリ解消パターン
 - **バッチフェッチパターン**: `StampHistoryMapper#getStampHistoryByYearMonthEmployeeIds` による一括取得
@@ -182,4 +190,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-15 (打刻申請ワークフローUIパターンとAPIギャップを追記)*
+*Last Updated: 2025-11-15 (打刻申請API/V7マイグレーション反映 + OpenAPIギャップ警告)*

@@ -114,16 +114,19 @@ class StampRequestMapperPersistenceTest extends StampRequestMapperTestBase {
         int stampHistoryId2 = insertStampHistory(employeeId, LocalDate.of(2025, 11, 2));
         int stampHistoryId3 = insertStampHistory(employeeId, LocalDate.of(2025, 11, 3));
 
-        insertStampRequest(employeeId, stampHistoryId1, LocalDate.of(2025, 11, 1), "PENDING", "PENDING1");
-        insertStampRequest(employeeId, stampHistoryId2, LocalDate.of(2025, 11, 2), "APPROVED", "APPROVED1");
-        insertStampRequest(employeeId, stampHistoryId3, LocalDate.of(2025, 11, 3), "PENDING", "PENDING2");
+        String pendingReason1 = "PENDING1 request";
+        String pendingReason2 = "PENDING2 request";
+
+        insertStampRequest(employeeId, stampHistoryId1, LocalDate.of(2025, 11, 1), "PENDING", pendingReason1);
+        insertStampRequest(employeeId, stampHistoryId2, LocalDate.of(2025, 11, 2), "APPROVED", "APPROVED1 request");
+        insertStampRequest(employeeId, stampHistoryId3, LocalDate.of(2025, 11, 3), "PENDING", pendingReason2);
 
         List<StampRequest> pendingRequests = stampRequestMapper.findByEmployeeIdAndStatus(employeeId, "PENDING");
 
         assertThat(pendingRequests).hasSize(2);
         assertThat(pendingRequests)
                 .extracting(StampRequest::getReason)
-                .containsExactly("PENDING2", "PENDING1"); // 作成日降順
+                .containsExactly(pendingReason2, pendingReason1); // 作成日降順
     }
 
     @Test

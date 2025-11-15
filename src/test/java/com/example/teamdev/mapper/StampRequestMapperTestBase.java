@@ -87,13 +87,19 @@ public abstract class StampRequestMapperTestBase extends PostgresContainerSuppor
             String status,
             String reason
     ) {
+        String normalizedReason = ensureReasonLength(reason);
+
         Integer id = jdbcTemplate.queryForObject(
                 """
                 INSERT INTO stamp_request (
                     employee_id, stamp_history_id, stamp_date, status,
                     requested_in_time, requested_is_night_shift, reason,
                     created_at, updated_at
-                ) VALUES (?, ?, ?, ?::stamp_request_status, ?, ?, ?, NOW(), NOW())
+                ) VALUES (
+                    ?, ?, ?, ?::stamp_request_status,
+                    ?, ?, ?,
+                    clock_timestamp(), clock_timestamp()
+                )
                 RETURNING id
                 """,
                 Integer.class,
@@ -103,8 +109,21 @@ public abstract class StampRequestMapperTestBase extends PostgresContainerSuppor
                 status,
                 OffsetDateTime.of(stampDate.getYear(), stampDate.getMonthValue(), stampDate.getDayOfMonth(), 9, 0, 0, 0, JST),
                 false,
-                reason
+                normalizedReason
         );
         return id != null ? id : 0;
+    }
+
+    private String ensureReasonLength(String reason) {
+        String base = reason == null ? "テスト用理由" : reason;
+        if (base.length() >= 10) {
+            return base;
+        }
+
+        StringBuilder builder = new StringBuilder(base);
+        while (builder.length() < 10) {
+            builder.append(" - seed");
+        }
+        return builder.toString();
     }
 }

@@ -32,11 +32,11 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
 - ロールベースアクセス制御（自身は閲覧・編集可、管理者は全員アクセス可）
 - DDD（Domain-Driven Design）アーキテクチャによる柔軟な実装
 
-### 勤怠申請ワークフロー（2025-11-15 UI先行）
-- 打刻履歴テーブルから `RequestCorrectionModal` を呼び出し、申請中レコードには `RequestStatusBadge` を表示して状態（PENDING/APPROVED/REJECTED/CANCELLED）を共有
-- `/stamp-requests/my` は `MyRequestsPage` の3ペイン構成（フィルタサイドバー・詳細パネル・⌘Kコマンドパレット）で申請検索/閲覧/取消を一画面に統合
-- `useWorkflowFilters` が status/search/sort/page をReact stateで保持し、`useMyStampRequestsQuery` が1分stale/5分gcで `stampRequests` キャッシュを管理、取消・再申請時は `invalidateWorkflowCaches` が `stampHistory` と二重無効化
-- Zodベースの `stampRequestCreateSchema` / `stampRequestCancellationSchema` で夜勤跨ぎ・休憩帯の前後関係を検証し、`reason` フィールドは10〜500文字のPoVを強制しつつ、モーダル送信後はトースト通知とフィルタリセットを自動化
+### 勤怠申請ワークフロー（2025-11-15 E2E実装）
+- `StampRequestRestController` が `/api/stamp-requests` 以下に作成・個人一覧・保留一覧・詳細・承認/却下/取消・バルク承認/却下エンドポイントを提供し、Spring Securityで `hasRole('ADMIN')` を強制。`StampRequestListResponse/StampRequestResponse` でUI専用フィールド（氏名、epoch timestamp）まで返却する。
+- `StampRequestRegistrationService`（理由/時刻/重複検証）、`ApprovalService`（PENDINGのみ更新）、`CancellationService`、`BulkOperationService`（MAX 50件 + 部分成功）、`QueryService`（検索/ソート/名前キャッシュ）が `StampRequestStore` 経由で MyBatis とインメモリを差し替え可能にし、テストと本番で同一ファサードを保つ。
+- Flyway `V7__create_stamp_request_table.sql` が `stamp_request_status` ENUM、スナップショット列、`idx_stamp_request_employee_status` + `idx_stamp_request_status_created` + partial unique index を追加し、`update_stamp_request_updated_at` トリガーで監査フィールドを自動更新。
+- React側は `RequestCorrectionModal`/`RequestStatusBadge` を打刻一覧と共有し、`MyRequestsPage`（3ペイン + ⌘K）、`PendingRequestsRoute`（管理者向けフィルタ + Rechartsなしリスト）が `useWorkflowFilters` + `useMyStampRequestsQuery` + `invalidateWorkflowCaches` で stampHistory と stampRequests の Cache 一貫性を保つ。
 
 ## 主要な価値提案
 
@@ -112,16 +112,20 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - `UserProfileRestController#getSelfStatistics` が `ProfileAppService#getProfileStatistics` を単一ソースとして参照し、Attendance summary + monthly breakdown を1レスポンスで返却
   - Recharts 3.3.0（ProfileSummaryCard/ProfileMonthlyDetailCard/MiniStat）が `profileApi.fetchProfileStatistics` 経由でデータ同期し、UI側は `ProfileStatisticsResponse` に依存
   - 旧 `ProfileAttendanceStatisticsService` は削除済みで、集計ロジックは `StampHistoryMapper.findMonthlyStatistics` + 通常カラム参照に収束
+- ✅ 勤怠申請ワークフロー API + DB 実装（2025-11-15）
+  - `StampRequestRestController` が create/my/pending/detail/approve/reject/cancel/bulk 操作を1コントローラーに集約し、Spring Securityで `@PreAuthorize`（ADMIN限定）と `SecurityUtil` を組み合わせて権限制御。
+  - `StampRequestRegistrationService`/`ApprovalService`/`CancellationService`/`BulkOperationService`/`QueryService` が `StampRequestStore` 経由で MyBatis ↔ インメモリ永続化を切り替え、理由/時刻/重複検証や MAX 50 件のバルク制限をビジネスルールとして保持。
+  - Flyway `V7__create_stamp_request_table.sql` が ENUM・スナップショット列・部分一意インデックス + updated_at トリガーを導入し、`StampRequestMapper.xml` + DTO（`StampRequestResponse/ListResponse`）が UI に必要な氏名/epoch timestamp を整形。MockMvc（`StampRequestRestControllerTest`）がAPIハッピーパス/権限制御を網羅。
 
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
   - お知らせ管理 Playwright テスト（news-management.spec.ts、現在スキップ状態）
-- ⚠️ 勤怠申請ワークフロー API/DB 整備
-  - `AppProviders` は `/stamp-requests/my` を `StampRequestWorkflowRoute` で公開し、`stampRequestWorkflow/api/stampRequestApi.ts` から `/stamp-requests` POST/GET/cancel を呼び出す実装が先行
-  - バックエンド（controller/service/mapper）と OpenAPI/Flyway (`db/migration` 内) に該当エンドポイント/テーブルが存在せず、`Plan.md` Week1-3 の設計メモ段階で停止。UI/axios を本番運用する前にAPI仕様の確定と実装計画を spec 化する必要あり
+- ⚠️ 勤怠申請ワークフロー OpenAPI/型同期
+  - Spring Boot 側は `/api/stamp-requests/**` を公開済みだが、`openapi/openapi.yaml` に当該パス・スキーマが未登録のため `npm run generate:api` で型が生成されず、`features/stampRequestWorkflow/types.ts` が手書きで乖離。
+  - Stamp request DTO を OpenAPI に追加し、contract test (`-PenableOpenApiContract`) と `@hey-api/openapi-ts`/`openapi-zod-client` の再生成を完了するまで本番公開前のギャップ扱い（specチケット化が必要）。
 - 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
 - 📋 外部システム連携API、プッシュ通知、生体認証
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-11-15 (勤怠申請ワークフローUIとプロフィール統計API公開を反映)*
+*Last Updated: 2025-11-15 (勤怠申請API実装とOpenAPIギャップ警告を反映)*
