@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.teamdev.mapper.StampRequestMapper">
+
+    <!-- リクエストを挿入 (自動生成されたIDを返す) -->
+    <insert id="save" parameterType="com.example.teamdev.entity.StampRequest"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO stamp_request (
+            employee_id,
+            stamp_history_id,
+            stamp_date,
+            status,
+            original_in_time,
+            original_out_time,
+            original_break_start_time,
+            original_break_end_time,
+            original_is_night_shift,
+            requested_in_time,
+            requested_out_time,
+            requested_break_start_time,
+            requested_break_end_time,
+            requested_is_night_shift,
+            reason,
+            approval_note,
+            rejection_reason,
+            cancellation_reason,
+            approval_employee_id,
+            rejection_employee_id,
+            created_at,
+            updated_at,
+            approved_at,
+            rejected_at,
+            cancelled_at
+        ) VALUES (
+            #{employeeId},
+            #{stampHistoryId},
+            #{stampDate},
+            #{status},
+            #{originalInTime},
+            #{originalOutTime},
+            #{originalBreakStartTime},
+            #{originalBreakEndTime},
+            #{originalIsNightShift},
+            #{requestedInTime},
+            #{requestedOutTime},
+            #{requestedBreakStartTime},
+            #{requestedBreakEndTime},
+            #{requestedIsNightShift},
+            #{reason},
+            #{approvalNote},
+            #{rejectionReason},
+            #{cancellationReason},
+            #{approvalEmployeeId},
+            #{rejectionEmployeeId},
+            #{createdAt},
+            #{updatedAt},
+            #{approvedAt},
+            #{rejectedAt},
+            #{cancelledAt}
+        )
+    </insert>
+
+    <!-- リクエストを更新 -->
+    <update id="update" parameterType="com.example.teamdev.entity.StampRequest">
+        UPDATE stamp_request
+        SET
+            status = #{status},
+            approval_note = #{approvalNote},
+            rejection_reason = #{rejectionReason},
+            cancellation_reason = #{cancellationReason},
+            approval_employee_id = #{approvalEmployeeId},
+            rejection_employee_id = #{rejectionEmployeeId},
+            updated_at = #{updatedAt},
+            approved_at = #{approvedAt},
+            rejected_at = #{rejectedAt},
+            cancelled_at = #{cancelledAt}
+        WHERE id = #{id}
+    </update>
+
+</mapper>

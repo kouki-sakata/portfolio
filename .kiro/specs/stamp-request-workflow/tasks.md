@@ -52,12 +52,12 @@
   - Reuse single-item logic inside bulk services, aggregating per-item errors and emitting observability logs demanded by the suite.
   - _Requirements: 3,4,7,8,9_
 
-- [ ] 6. Drive stamp request persistence and contracts through tests
-- [ ] 6.1 Author persistence integration tests before schema work
+- [x] 6. Drive stamp request persistence and contracts through tests
+- [x] 6.1 Author persistence integration tests before schema work
   - Use Flyway + Testcontainers to codify expectations for the stamp_request lifecycle: immutable original/requested snapshots, status enum transitions, updated_at trigger, and pending-only unique constraint so failing migrations reveal contract gaps immediately.
   - Add Mapper-level tests covering pagination order, duplicate detection, and counts, asserting required indexes (employee+status, status+created_at, pending partial, stamp_history_id) exist for the targeted latency budgets.
   - _Requirements: 1,2,3,4,6,7,9_
-- [ ] 6.2 Implement migration, domain model, mapper, and OpenAPI payloads to satisfy tests
+- [x] 6.2 Implement migration, domain model, mapper, and OpenAPI payloads to satisfy tests
   - Ship Flyway V7 schema + trigger + grants, domain/entity validations, MyBatis mapper/XML, and helper queries that expose latest request state back to stamp history without breaking the new tests.
   - Publish DTOs plus OpenAPI updates (create, my-requests, pending, detail, approve/reject/cancel, bulk endpoints with pagination + error payload schemas) so API clients regenerate types off a passing contract suite.
   - _Requirements: 1,2,3,4,6,7,8,9_
