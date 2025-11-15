@@ -1,0 +1,22 @@
+{
+  "feature_name": "stamp-request-workflow",
+  "created_at": "2025-11-15T10:30:00+09:00",
+  "updated_at": "2025-11-15T16:30:00+09:00",
+  "language": "en",
+  "phase": "tasks-generated",
+  "approvals": {
+    "requirements": {
+      "generated": true,
+      "approved": true
+    },
+    "design": {
+      "generated": true,
+      "approved": true
+    },
+    "tasks": {
+      "generated": true,
+      "approved": true
+    }
+  },
+  "ready_for_implementation": true
+}

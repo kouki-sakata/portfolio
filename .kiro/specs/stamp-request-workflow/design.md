@@ -1,0 +1,3107 @@
+# Stamp Request Workflow - Technical Design Document
+
+## 1. Architecture Overview
+
+### System Context
+
+The Stamp Request Workflow feature introduces a formal approval process for stamp corrections, sitting between employees and administrators. It integrates seamlessly with the existing stamp history management system while adding a new workflow layer that ensures proper authorization and audit trails.
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     TeamDevelop Bravo SPA                        │
+├─────────────────────────────────────────────────────────────────┤
+│  Employee Interface                │  Administrator Interface   │
+│  ┌──────────────────────┐         │  ┌──────────────────────┐  │
+│  │ Stamp History Page   │         │  │ Pending Requests     │  │
+│  │ - View records       │         │  │ - Review requests    │  │
+│  │ - Request correction │         │  │ - Approve/Reject     │  │
+│  │ - Track status       │         │  │ - Bulk operations    │  │
+│  └──────────────────────┘         │  └──────────────────────┘  │
+│  ┌──────────────────────┐         │  ┌──────────────────────┐  │
+│  │ My Requests Page     │         │  │ Admin Dashboard      │  │
+│  │ - View own requests  │         │  │ - Request metrics    │  │
+│  │ - Cancel pending     │         │  │ - Audit trails       │  │
+│  └──────────────────────┘         │  └──────────────────────┘  │
+├─────────────────────────────────────────────────────────────────┤
+│                      REST API Layer                              │
+│  /api/stamp-requests (Employee + Admin endpoints)               │
+├─────────────────────────────────────────────────────────────────┤
+│              Spring Boot Backend Services                        │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │ Request Workflow Services (CQRS Pattern)                 │   │
+│  │ - QueryService (reads)                                   │   │
+│  │ - RegistrationService (create)                           │   │
+│  │ - ApprovalService (approve/reject)                       │   │
+│  │ - CancellationService (cancel)                           │   │
+│  │ - BulkOperationService (batch approve/reject)            │   │
+│  │ - NotificationService (async emails)                     │   │
+│  └─────────────────────────────────────────────────────────┘   │
+├─────────────────────────────────────────────────────────────────┤
+│                     Data Layer (MyBatis)                         │
+│  ┌─────────────┐  ┌────────────────┐  ┌──────────────────┐    │
+│  │ employee    │  │ stamp_history  │  │ stamp_request    │    │
+│  │ - User auth │  │ - Source data  │  │ - Workflow state │    │
+│  │ - Admin flag│  │ - Modified on  │  │ - Approval audit │    │
+│  │             │  │   approval     │  │                  │    │
+│  └─────────────┘  └────────────────┘  └──────────────────┘    │
+│  ┌─────────────┐                                                │
+│  │ log_history │                                                │
+│  │ - Audit log │                                                │
+│  │ - JSONB     │                                                │
+│  └─────────────┘                                                │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Component Interaction Flow
+
+**Employee Request Submission:**
+1. Employee clicks "Request Correction" on stamp history record
+2. Frontend modal displays pre-filled current stamp values
+3. Employee modifies values and provides reason
+4. Frontend validates (client-side Zod schema)
+5. POST /api/stamp-requests creates PENDING request
+6. Backend validates business rules and creates stamp_request record
+7. Employee sees success toast, modal closes, status badge updates
+
+**Administrator Approval:**
+1. Admin views pending requests list (TanStack Table)
+2. Admin clicks on request to view detail comparison
+3. Admin clicks "Approve" and optionally adds note
+4. POST /api/stamp-requests/{id}/approve validates no conflicts
+5. Backend updates stamp_history with requested values
+6. Backend updates stamp_request status to APPROVED
+7. Backend logs audit trail to log_history
+8. Admin sees success toast, request removed from pending list
+
+### Integration Points
+
+- **stamp_history table**: Source data for requests; modified upon approval
+- **employee table**: User authentication, admin authorization
+- **log_history table**: Comprehensive audit trail with JSONB detail
+- **Spring Security**: @PreAuthorize for endpoint protection
+- **React Query**: Optimistic updates, cache invalidation
+
+> **Note:** Email notifications are intentionally out of scope for this release. Earlier drafts referencing SMTP integrations should be disregarded.
+
+---
+
+## 2. Database Design
+
+### 2.1 stamp_request Table Schema
+
+```sql
+CREATE TABLE stamp_request (
+    -- Primary key
+    id INTEGER GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+
+    -- Foreign keys
+    employee_id INTEGER NOT NULL REFERENCES employee(id) ON DELETE CASCADE,
+    stamp_history_id INTEGER NOT NULL REFERENCES stamp_history(id) ON DELETE CASCADE,
+    approval_employee_id INTEGER REFERENCES employee(id) ON DELETE SET NULL,
+
+    -- Denormalized stamp date snapshot (JST基準)
+    stamp_date DATE NOT NULL,
+
+    -- Original stamp values (immutable snapshot)
+    original_in_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    original_out_time TIMESTAMP WITH TIME ZONE,
+    original_break_start_time TIMESTAMP WITH TIME ZONE,
+    original_break_end_time TIMESTAMP WITH TIME ZONE,
+    original_is_night_shift BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- Requested stamp values
+    requested_in_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    requested_out_time TIMESTAMP WITH TIME ZONE,
+    requested_break_start_time TIMESTAMP WITH TIME ZONE,
+    requested_break_end_time TIMESTAMP WITH TIME ZONE,
+    requested_is_night_shift BOOLEAN NOT NULL DEFAULT FALSE,
+
+    -- Request metadata
+    reason TEXT NOT NULL CHECK (length(reason) BETWEEN 10 AND 500),
+    status VARCHAR(20) NOT NULL DEFAULT 'PENDING'
+        CHECK (status IN ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED')),
+
+    -- Approval/rejection metadata
+    approval_note TEXT CHECK (length(approval_note) <= 500),
+    rejection_reason TEXT CHECK (length(rejection_reason) BETWEEN 10 AND 500),
+    cancellation_reason TEXT CHECK (length(cancellation_reason) BETWEEN 10 AND 500),
+
+    -- Timestamps (audit trail)
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    rejected_at TIMESTAMP WITH TIME ZONE,
+    cancelled_at TIMESTAMP WITH TIME ZONE,
+
+    -- Constraints
+    CONSTRAINT uk_employee_stamp_pending
+        UNIQUE (employee_id, stamp_history_id, status)
+        WHERE status = 'PENDING',
+
+    CONSTRAINT chk_approval_note
+        CHECK (
+            (status = 'APPROVED' AND approval_employee_id IS NOT NULL AND approved_at IS NOT NULL)
+            OR status != 'APPROVED'
+        ),
+
+    CONSTRAINT chk_rejection
+        CHECK (
+            (status = 'REJECTED' AND rejection_reason IS NOT NULL AND rejected_at IS NOT NULL)
+            OR status != 'REJECTED'
+        ),
+
+    CONSTRAINT chk_cancellation
+        CHECK (
+            (status = 'CANCELLED' AND cancellation_reason IS NOT NULL AND cancelled_at IS NOT NULL)
+            OR status != 'CANCELLED'
+        )
+);
+
+-- Indexes for performance
+CREATE INDEX idx_stamp_request_employee_status
+    ON stamp_request(employee_id, status);
+
+CREATE INDEX idx_stamp_request_status_created
+    ON stamp_request(status, created_at DESC);
+
+CREATE INDEX idx_stamp_request_stamp_history
+    ON stamp_request(stamp_history_id);
+
+-- Partial index for active requests (hot path optimization)
+CREATE INDEX idx_stamp_request_pending
+    ON stamp_request(created_at DESC)
+    WHERE status = 'PENDING';
+
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_stamp_request_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_stamp_request_updated_at
+    BEFORE UPDATE ON stamp_request
+    FOR EACH ROW
+    EXECUTE FUNCTION update_stamp_request_updated_at();
+```
+
+**Design Rationale:**
+
+1. **Immutable Original Values**: Preserve complete snapshot of original stamp for audit and comparison
+2. **Stamp Date Snapshot**: `stamp_date` keeps the working day (JST) inline with `stamp_history`, eliminating extra JOINs in APIs
+3. **State Machine**: Status transitions are enforced via CHECK constraints
+4. **Unique Constraint**: Prevent duplicate PENDING requests for same stamp record
+5. **Partial Index**: Optimize hot path (pending requests query) with WHERE clause
+6. **Audit Timestamps**: Separate timestamps for each status transition
+7. **Flexible Approvals**: approval_note is optional, rejection_reason is mandatory
+
+### 2.2 Migration Strategy
+
+**V7__create_stamp_request_workflow.sql**
+
+```sql
+-- V7: Add stamp request workflow tables and indexes
+
+-- Create stamp_request table
+CREATE TABLE stamp_request (
+    -- [Full schema from above]
+);
+
+-- Create indexes
+-- [All indexes from above]
+
+-- Create trigger
+-- [Trigger from above]
+
+-- Grant permissions
+GRANT SELECT, INSERT, UPDATE ON stamp_request TO teamdev_user;
+GRANT USAGE, SELECT ON SEQUENCE stamp_request_id_seq TO teamdev_user;
+```
+
+**Seed Data for Testing (R__seed_stamp_request_data.sql)**
+
+```sql
+-- R__seed_stamp_request_data.sql
+-- Repeatable migration for test data (dev/test environments only)
+
+-- Only run in dev/test profiles
+DO $$
+BEGIN
+    IF current_setting('app.environment', true) IN ('dev', 'test') THEN
+        -- Insert sample pending requests
+        INSERT INTO stamp_request (
+            employee_id, stamp_history_id, stamp_date,
+            original_in_time, requested_in_time,
+            reason, status
+        )
+        SELECT
+            2, -- Employee ID 2 (non-admin)
+            sh.id,
+            sh.stamp_date,
+            sh.in_time,
+            sh.in_time - INTERVAL '15 minutes',
+            'システムエラーにより出勤時刻が15分遅れて記録されました',
+            'PENDING'
+        FROM stamp_history sh
+        WHERE sh.employee_id = 2
+        LIMIT 3
+        ON CONFLICT DO NOTHING;
+    END IF;
+END $$;
+```
+
+### 2.3 State Machine Diagram
+
+```
+         ┌─────────┐
+         │ PENDING │
+         └────┬────┘
+              │
+      ┌───────┼───────┐
+      │       │       │
+      ▼       ▼       ▼
+┌──────────┐ ┌────────┐ ┌───────────┐
+│ APPROVED │ │REJECTED│ │ CANCELLED │
+└──────────┘ └────────┘ └───────────┘
+  (Admin)    (Admin)    (Employee)
+
+Valid Transitions:
+- PENDING → APPROVED (admin action, updates stamp_history)
+- PENDING → REJECTED (admin action, no stamp_history change)
+- PENDING → CANCELLED (employee action, no stamp_history change)
+- No transitions allowed from terminal states
+```
+
+---
+
+## 3. Backend Design
+
+### 3.1 Entity Layer
+
+**StampRequest.java**
+
+```java
+package com.example.teamdev.entity;
+
+import java.time.OffsetDateTime;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+/**
+ * 打刻修正リクエストエンティティ
+ * データベーステーブル: stamp_request
+ */
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class StampRequest {
+    // Primary key
+    private Integer id;
+
+    // Foreign keys
+    @NotNull
+    private Integer employeeId;
+
+    @NotNull
+    private Integer stampHistoryId;
+
+    private Integer approvalEmployeeId;
+
+    @NotNull
+    private LocalDate stampDate;
+
+    // Original stamp values (immutable snapshot)
+    @NotNull
+    private OffsetDateTime originalInTime;
+    private OffsetDateTime originalOutTime;
+    private OffsetDateTime originalBreakStartTime;
+    private OffsetDateTime originalBreakEndTime;
+    @NotNull
+    private Boolean originalIsNightShift;
+
+    // Requested stamp values
+    @NotNull
+    private OffsetDateTime requestedInTime;
+    private OffsetDateTime requestedOutTime;
+    private OffsetDateTime requestedBreakStartTime;
+    private OffsetDateTime requestedBreakEndTime;
+    @NotNull
+    private Boolean requestedIsNightShift;
+
+    // Request metadata
+    @NotBlank
+    @Size(min = 10, max = 500)
+    private String reason;
+
+    @NotBlank
+    @Pattern(regexp = "^(PENDING|APPROVED|REJECTED|CANCELLED)$")
+    private String status;
+
+    // Approval/rejection metadata
+    @Size(max = 500)
+    private String approvalNote;
+
+    @Size(min = 10, max = 500)
+    private String rejectionReason;
+
+    @Size(min = 10, max = 500)
+    private String cancellationReason;
+
+    // Audit timestamps
+    @NotNull
+    private OffsetDateTime createdAt;
+
+    @NotNull
+    private OffsetDateTime updatedAt;
+
+    private OffsetDateTime approvedAt;
+    private OffsetDateTime rejectedAt;
+    private OffsetDateTime cancelledAt;
+}
+```
+
+### 3.2 DTO Layer
+
+**Request DTOs**
+
+```java
+package com.example.teamdev.dto.api.stamprequest;
+
+import java.time.OffsetDateTime;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
+/**
+ * 打刻修正リクエスト作成リクエスト
+ */
+public record StampRequestCreateRequest(
+    @NotNull(message = "打刻履歴IDは必須です")
+    Integer stampHistoryId,
+
+    @NotNull(message = "修正後の出勤時刻は必須です")
+    OffsetDateTime requestedInTime,
+
+    OffsetDateTime requestedOutTime,
+    OffsetDateTime requestedBreakStartTime,
+    OffsetDateTime requestedBreakEndTime,
+
+    @NotNull(message = "夜勤フラグは必須です")
+    Boolean requestedIsNightShift,
+
+    @NotBlank(message = "理由は必須です")
+    @Size(min = 10, max = 500, message = "理由は10文字以上500文字以下で入力してください")
+    String reason
+) {}
+
+/**
+ * 承認リクエスト
+ */
+public record StampRequestApprovalRequest(
+    @Size(max = 500, message = "承認メモは500文字以下で入力してください")
+    String approvalNote
+) {}
+
+/**
+ * 却下リクエスト
+ */
+public record StampRequestRejectionRequest(
+    @NotBlank(message = "却下理由は必須です")
+    @Size(min = 10, max = 500, message = "却下理由は10文字以上500文字以下で入力してください")
+    String rejectionReason
+) {}
+
+/**
+ * キャンセルリクエスト
+ */
+public record StampRequestCancellationRequest(
+    @NotBlank(message = "キャンセル理由は必須です")
+    @Size(min = 10, max = 500, message = "キャンセル理由は10文字以上500文字以下で入力してください")
+    String cancellationReason
+) {}
+
+/**
+ * 一括承認リクエスト
+ */
+public record StampRequestBulkApprovalRequest(
+    @NotNull(message = "リクエストIDリストは必須です")
+    @Size(min = 1, max = 50, message = "一度に処理できるのは1件以上50件以下です")
+    List<Integer> requestIds,
+
+    @Size(max = 500, message = "承認メモは500文字以下で入力してください")
+    String approvalNote
+) {}
+
+/**
+ * 一括却下リクエスト
+ */
+public record StampRequestBulkRejectionRequest(
+    @NotNull(message = "リクエストIDリストは必須です")
+    @Size(min = 1, max = 50, message = "一度に処理できるのは1件以上50件以下です")
+    List<Integer> requestIds,
+
+    @NotBlank(message = "却下理由は必須です")
+    @Size(min = 10, max = 500, message = "却下理由は10文字以上500文字以下で入力してください")
+    String rejectionReason
+) {}
+```
+
+**Response DTOs**
+
+```java
+package com.example.teamdev.dto.api.stamprequest;
+
+import java.time.OffsetDateTime;
+import java.util.List;
+
+/**
+ * 打刻修正リクエストレスポンス
+ */
+public record StampRequestResponse(
+    Integer id,
+    Integer employeeId,
+    String employeeName, // Derived: firstName + " " + lastName
+    Integer stampHistoryId,
+    String stampDate,
+
+    // Original values
+    String originalInTime,
+    String originalOutTime,
+    String originalBreakStartTime,
+    String originalBreakEndTime,
+    Boolean originalIsNightShift,
+
+    // Requested values
+    String requestedInTime,
+    String requestedOutTime,
+    String requestedBreakStartTime,
+    String requestedBreakEndTime,
+    Boolean requestedIsNightShift,
+
+    // Metadata
+    String reason,
+    String status,
+    String approvalNote,
+    String rejectionReason,
+    String cancellationReason,
+
+    // Approver info
+    Integer approvalEmployeeId,
+    String approvalEmployeeName, // Derived
+
+    // Timestamps
+    String createdAt,
+    String updatedAt,
+    String approvedAt,
+    String rejectedAt,
+    String cancelledAt
+) {}
+
+/**
+ * 打刻修正リクエスト一覧レスポンス
+ */
+public record StampRequestListResponse(
+    List<StampRequestResponse> requests,
+    Integer totalCount,
+    Integer pageNumber,
+    Integer pageSize
+) {}
+
+/**
+ * 一括操作結果
+ */
+public record StampRequestBulkOperationResponse(
+    Integer successCount,
+    Integer failureCount,
+    List<OperationResult> results
+) {
+    public record OperationResult(
+        Integer requestId,
+        Boolean success,
+        String errorMessage
+    ) {}
+}
+```
+
+### 3.3 Service Layer (SOLID Principles)
+
+**StampRequestQueryService.java**
+
+```java
+package com.example.teamdev.service;
+
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.mapper.StampRequestMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 打刻修正リクエスト照会サービス (読み取り専用)
+ * CQRS: Query側
+ */
+@Service
+@Transactional(readOnly = true)
+public class StampRequestQueryService {
+
+    private final StampRequestMapper mapper;
+
+    public StampRequestQueryService(StampRequestMapper mapper) {
+        this.mapper = mapper;
+    }
+
+    /**
+     * 従業員自身のリクエスト一覧を取得
+     *
+     * @param employeeId 従業員ID
+     * @param status フィルタ (null=全件, "PENDING", "APPROVED", "REJECTED", "CANCELLED")
+     * @param page ページ番号 (0-indexed)
+     * @param size ページサイズ
+     * @return リクエスト一覧
+     */
+    public List<StampRequest> getEmployeeRequests(
+        Integer employeeId,
+        String status,
+        Integer page,
+        Integer size
+    ) {
+        int offset = page * size;
+        return mapper.findByEmployeeId(employeeId, status, offset, size);
+    }
+
+    /**
+     * 全従業員の保留中リクエスト一覧を取得 (管理者向け)
+     *
+     * @param page ページ番号 (0-indexed)
+     * @param size ページサイズ
+     * @return 保留中リクエスト一覧
+     */
+    public List<StampRequest> getPendingRequests(Integer page, Integer size) {
+        int offset = page * size;
+        return mapper.findPendingRequests(offset, size);
+    }
+
+    /**
+     * リクエスト詳細を取得
+     *
+     * @param requestId リクエストID
+     * @return リクエスト詳細
+     */
+    public Optional<StampRequest> getRequestDetail(Integer requestId) {
+        return mapper.findById(requestId);
+    }
+
+    /**
+     * 重複する保留中リクエストを検索
+     *
+     * @param employeeId 従業員ID
+     * @param stampHistoryId 打刻履歴ID
+     * @return 重複リクエスト (存在しない場合はempty)
+     */
+    public Optional<StampRequest> findDuplicatePending(
+        Integer employeeId,
+        Integer stampHistoryId
+    ) {
+        return mapper.findPendingByEmployeeAndStamp(employeeId, stampHistoryId);
+    }
+
+    /**
+     * 従業員のリクエスト件数をカウント
+     *
+     * @param employeeId 従業員ID
+     * @param status フィルタ (null=全件)
+     * @return 件数
+     */
+    public Integer countEmployeeRequests(Integer employeeId, String status) {
+        return mapper.countByEmployeeId(employeeId, status);
+    }
+
+    /**
+     * 保留中リクエストの総件数を取得
+     *
+     * @return 件数
+     */
+    public Integer countPendingRequests() {
+        return mapper.countPending();
+    }
+}
+```
+
+**StampRequestRegistrationService.java**
+
+```java
+package com.example.teamdev.service;
+
+import com.example.teamdev.entity.StampHistory;
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.DuplicateStampRequestException;
+import com.example.teamdev.mapper.StampHistoryMapper;
+import com.example.teamdev.mapper.StampRequestMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.sql.Timestamp;
+
+/**
+ * 打刻修正リクエスト登録サービス
+ * CQRS: Command側 (作成)
+ */
+@Service
+@Transactional
+public class StampRequestRegistrationService {
+
+    private final StampRequestMapper requestMapper;
+    private final StampHistoryMapper stampHistoryMapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public StampRequestRegistrationService(
+        StampRequestMapper requestMapper,
+        StampHistoryMapper stampHistoryMapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.requestMapper = requestMapper;
+        this.stampHistoryMapper = stampHistoryMapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
+
+    /**
+     * 打刻修正リクエストを作成
+     *
+     * @param request リクエストDTO
+     * @param employeeId 従業員ID (認証コンテキストから取得)
+     * @return 作成されたリクエスト
+     * @throws DuplicateStampRequestException 同じ打刻に対する保留中リクエストが存在する場合
+     * @throws IllegalArgumentException バリデーションエラー
+     */
+    public StampRequest createRequest(
+        StampRequestCreateRequest request,
+        Integer employeeId
+    ) {
+        // 1. 打刻履歴の存在確認
+        StampHistory stampHistory = stampHistoryMapper.findById(request.stampHistoryId())
+            .orElseThrow(() -> new IllegalArgumentException(
+                "打刻履歴が見つかりません: " + request.stampHistoryId()
+            ));
+
+        // 2. 権限確認 (自身の打刻のみ修正可能)
+        if (!stampHistory.getEmployeeId().equals(employeeId)) {
+            throw new IllegalArgumentException(
+                "他の従業員の打刻は修正できません"
+            );
+        }
+
+        // 3. 重複チェック
+        requestMapper.findPendingByEmployeeAndStamp(employeeId, request.stampHistoryId())
+            .ifPresent(existing -> {
+                throw new DuplicateStampRequestException(
+                    "この打刻に対する保留中のリクエストが既に存在します"
+                );
+            });
+
+        // 4. ビジネスルール検証
+        validateStampTimes(request);
+
+        // 5. エンティティ作成
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        StampRequest entity = new StampRequest();
+        entity.setEmployeeId(employeeId);
+        entity.setStampHistoryId(request.stampHistoryId());
+        entity.setStampDate(stampHistory.getStampDate());
+
+        // Original values (snapshot)
+        entity.setOriginalInTime(stampHistory.getInTime());
+        entity.setOriginalOutTime(stampHistory.getOutTime());
+        entity.setOriginalBreakStartTime(stampHistory.getBreakStartTime());
+        entity.setOriginalBreakEndTime(stampHistory.getBreakEndTime());
+        entity.setOriginalIsNightShift(stampHistory.getIsNightShift() != null
+            ? stampHistory.getIsNightShift() : false);
+
+        // Requested values
+        entity.setRequestedInTime(request.requestedInTime());
+        entity.setRequestedOutTime(request.requestedOutTime());
+        entity.setRequestedBreakStartTime(request.requestedBreakStartTime());
+        entity.setRequestedBreakEndTime(request.requestedBreakEndTime());
+        entity.setRequestedIsNightShift(request.requestedIsNightShift());
+
+        entity.setReason(request.reason());
+        entity.setStatus("PENDING");
+        entity.setCreatedAt(now);
+        entity.setUpdatedAt(now);
+
+        // 6. 保存
+        requestMapper.insert(entity);
+
+        // 7. 監査ログ記録
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(
+            4, // displayName: 打刻修正リクエスト
+            10, // operationType: リクエスト作成
+            null,
+            employeeId,
+            employeeId,
+            timestamp
+        );
+
+        return entity;
+    }
+
+    private void validateStampTimes(StampRequestCreateRequest request) {
+        // in_time は未来でない
+        if (request.requestedInTime().isAfter(OffsetDateTime.now(clock))) {
+            throw new IllegalArgumentException("出勤時刻は未来の時刻を指定できません");
+        }
+
+        // break times の順序検証
+        if (request.requestedBreakStartTime() != null
+            && request.requestedBreakEndTime() != null) {
+            if (request.requestedBreakStartTime()
+                .isAfter(request.requestedBreakEndTime())) {
+                throw new IllegalArgumentException(
+                    "休憩開始時刻は休憩終了時刻より前である必要があります"
+                );
+            }
+
+            // 休憩は in_time と out_time の間
+            if (request.requestedOutTime() != null) {
+                if (request.requestedBreakStartTime()
+                    .isBefore(request.requestedInTime()) ||
+                    request.requestedBreakEndTime()
+                    .isAfter(request.requestedOutTime())) {
+                    throw new IllegalArgumentException(
+                        "休憩時間は出勤時刻と退勤時刻の間である必要があります"
+                    );
+                }
+            }
+        }
+    }
+}
+```
+
+**StampRequestApprovalService.java**
+
+```java
+package com.example.teamdev.service;
+
+import com.example.teamdev.entity.StampHistory;
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampConflictException;
+import com.example.teamdev.mapper.StampHistoryMapper;
+import com.example.teamdev.mapper.StampRequestMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.sql.Timestamp;
+
+/**
+ * 打刻修正リクエスト承認サービス
+ * CQRS: Command側 (承認/却下)
+ */
+@Service
+@Transactional
+public class StampRequestApprovalService {
+
+    private final StampRequestMapper requestMapper;
+    private final StampHistoryMapper stampHistoryMapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public StampRequestApprovalService(
+        StampRequestMapper requestMapper,
+        StampHistoryMapper stampHistoryMapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.requestMapper = requestMapper;
+        this.stampHistoryMapper = stampHistoryMapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
+
+    /**
+     * リクエストを承認
+     *
+     * @param requestId リクエストID
+     * @param approverId 承認者ID (管理者)
+     * @param approvalNote 承認メモ (optional)
+     * @return 更新されたリクエスト
+     * @throws IllegalArgumentException リクエストが存在しない or 承認不可能な状態
+     * @throws StampConflictException 打刻履歴が変更されている場合
+     */
+    public StampRequest approveRequest(
+        Integer requestId,
+        Integer approverId,
+        String approvalNote
+    ) {
+        // 1. リクエスト取得
+        StampRequest request = requestMapper.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "リクエストが見つかりません: " + requestId
+            ));
+
+        // 2. ステータス確認
+        if (!"PENDING".equals(request.getStatus())) {
+            throw new IllegalArgumentException(
+                "このリクエストは既に処理済みです: " + request.getStatus()
+            );
+        }
+
+        // 3. 打刻履歴の競合チェック (楽観的ロック)
+        StampHistory stampHistory = stampHistoryMapper.findById(request.getStampHistoryId())
+            .orElseThrow(() -> new IllegalArgumentException(
+                "打刻履歴が見つかりません"
+            ));
+
+        if (hasConflict(stampHistory, request)) {
+            throw new StampConflictException(
+                "打刻履歴が他の処理により変更されています。最新の状態を確認してください。"
+            );
+        }
+
+        // 4. 打刻履歴を更新
+        stampHistory.setInTime(request.getRequestedInTime());
+        stampHistory.setOutTime(request.getRequestedOutTime());
+        stampHistory.setBreakStartTime(request.getRequestedBreakStartTime());
+        stampHistory.setBreakEndTime(request.getRequestedBreakEndTime());
+        stampHistory.setIsNightShift(request.getRequestedIsNightShift());
+        stampHistory.setUpdateEmployeeId(approverId);
+        stampHistory.setUpdateDate(OffsetDateTime.now(clock));
+
+        stampHistoryMapper.update(stampHistory);
+
+        // 5. リクエストステータスを更新
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        request.setStatus("APPROVED");
+        request.setApprovalEmployeeId(approverId);
+        request.setApprovalNote(approvalNote);
+        request.setApprovedAt(now);
+        request.setUpdatedAt(now);
+
+        requestMapper.update(request);
+
+        // 6. 監査ログ記録
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(
+            4, // displayName: 打刻修正リクエスト
+            11, // operationType: リクエスト承認
+            null,
+            request.getEmployeeId(),
+            approverId,
+            timestamp
+        );
+
+        return request;
+    }
+
+    /**
+     * リクエストを却下
+     *
+     * @param requestId リクエストID
+     * @param rejecterId 却下者ID (管理者)
+     * @param rejectionReason 却下理由 (mandatory)
+     * @return 更新されたリクエスト
+     */
+    public StampRequest rejectRequest(
+        Integer requestId,
+        Integer rejecterId,
+        String rejectionReason
+    ) {
+        // 1. リクエスト取得
+        StampRequest request = requestMapper.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "リクエストが見つかりません: " + requestId
+            ));
+
+        // 2. ステータス確認
+        if (!"PENDING".equals(request.getStatus())) {
+            throw new IllegalArgumentException(
+                "このリクエストは既に処理済みです: " + request.getStatus()
+            );
+        }
+
+        // 3. リクエストステータスを更新 (打刻履歴は変更しない)
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        request.setStatus("REJECTED");
+        request.setApprovalEmployeeId(rejecterId);
+        request.setRejectionReason(rejectionReason);
+        request.setRejectedAt(now);
+        request.setUpdatedAt(now);
+
+        requestMapper.update(request);
+
+        // 4. 監査ログ記録
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(
+            4, // displayName: 打刻修正リクエスト
+            12, // operationType: リクエスト却下
+            null,
+            request.getEmployeeId(),
+            rejecterId,
+            timestamp
+        );
+
+        return request;
+    }
+
+    /**
+     * 打刻履歴が変更されているかチェック (楽観的ロック)
+     */
+    private boolean hasConflict(StampHistory current, StampRequest request) {
+        return !current.getInTime().equals(request.getOriginalInTime()) ||
+               !nullSafeEquals(current.getOutTime(), request.getOriginalOutTime()) ||
+               !nullSafeEquals(current.getBreakStartTime(),
+                   request.getOriginalBreakStartTime()) ||
+               !nullSafeEquals(current.getBreakEndTime(),
+                   request.getOriginalBreakEndTime());
+    }
+
+    private <T> boolean nullSafeEquals(T a, T b) {
+        if (a == null && b == null) return true;
+        if (a == null || b == null) return false;
+        return a.equals(b);
+    }
+}
+```
+
+**StampRequestCancellationService.java**
+
+```java
+package com.example.teamdev.service;
+
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.mapper.StampRequestMapper;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.time.Clock;
+import java.time.OffsetDateTime;
+import java.sql.Timestamp;
+
+/**
+ * 打刻修正リクエストキャンセルサービス
+ * CQRS: Command側 (キャンセル)
+ */
+@Service
+@Transactional
+public class StampRequestCancellationService {
+
+    private final StampRequestMapper mapper;
+    private final LogHistoryRegistrationService logHistoryService;
+    private final Clock clock;
+
+    public StampRequestCancellationService(
+        StampRequestMapper mapper,
+        LogHistoryRegistrationService logHistoryService,
+        Clock clock
+    ) {
+        this.mapper = mapper;
+        this.logHistoryService = logHistoryService;
+        this.clock = clock;
+    }
+
+    /**
+     * リクエストをキャンセル (従業員のみ実行可能)
+     *
+     * @param requestId リクエストID
+     * @param employeeId 従業員ID (認証コンテキストから取得)
+     * @param cancellationReason キャンセル理由
+     * @return 更新されたリクエスト
+     */
+    public StampRequest cancelRequest(
+        Integer requestId,
+        Integer employeeId,
+        String cancellationReason
+    ) {
+        // 1. リクエスト取得
+        StampRequest request = mapper.findById(requestId)
+            .orElseThrow(() -> new IllegalArgumentException(
+                "リクエストが見つかりません: " + requestId
+            ));
+
+        // 2. 権限確認 (自身のリクエストのみキャンセル可能)
+        if (!request.getEmployeeId().equals(employeeId)) {
+            throw new IllegalArgumentException(
+                "他の従業員のリクエストはキャンセルできません"
+            );
+        }
+
+        // 3. ステータス確認
+        if (!"PENDING".equals(request.getStatus())) {
+            throw new IllegalArgumentException(
+                "このリクエストはキャンセルできません (既に処理済み): "
+                + request.getStatus()
+            );
+        }
+
+        // 4. リクエストステータスを更新
+        OffsetDateTime now = OffsetDateTime.now(clock);
+        request.setStatus("CANCELLED");
+        request.setCancellationReason(cancellationReason);
+        request.setCancelledAt(now);
+        request.setUpdatedAt(now);
+
+        mapper.update(request);
+
+        // 5. 監査ログ記録
+        Timestamp timestamp = Timestamp.from(clock.instant());
+        logHistoryService.execute(
+            4, // displayName: 打刻修正リクエスト
+            13, // operationType: リクエストキャンセル
+            null,
+            employeeId,
+            employeeId,
+            timestamp
+        );
+
+        return request;
+    }
+}
+```
+
+**StampRequestBulkOperationService.java**
+
+```java
+package com.example.teamdev.service;
+
+import com.example.teamdev.dto.api.stamprequest.StampRequestBulkOperationResponse;
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.mapper.StampRequestMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * 打刻修正リクエスト一括操作サービス
+ * 部分成功対応: 失敗したアイテムは個別にエラーメッセージを返す
+ */
+@Service
+@Transactional
+public class StampRequestBulkOperationService {
+
+    private static final Logger logger = LoggerFactory.getLogger(
+        StampRequestBulkOperationService.class
+    );
+    private static final int MAX_BATCH_SIZE = 50;
+
+    private final StampRequestApprovalService approvalService;
+    private final StampRequestMapper mapper;
+
+    public StampRequestBulkOperationService(
+        StampRequestApprovalService approvalService,
+        StampRequestMapper mapper
+    ) {
+        this.approvalService = approvalService;
+        this.mapper = mapper;
+    }
+
+    /**
+     * 一括承認
+     *
+     * @param requestIds リクエストIDリスト (最大50件)
+     * @param approverId 承認者ID
+     * @param approvalNote 共通承認メモ
+     * @return 一括操作結果
+     */
+    public StampRequestBulkOperationResponse bulkApprove(
+        List<Integer> requestIds,
+        Integer approverId,
+        String approvalNote
+    ) {
+        validateBatchSize(requestIds);
+
+        List<StampRequestBulkOperationResponse.OperationResult> results =
+            new ArrayList<>();
+        int successCount = 0;
+
+        for (Integer requestId : requestIds) {
+            try {
+                approvalService.approveRequest(requestId, approverId, approvalNote);
+                results.add(new StampRequestBulkOperationResponse.OperationResult(
+                    requestId, true, null
+                ));
+                successCount++;
+            } catch (Exception e) {
+                logger.warn("Failed to approve request {}: {}",
+                    requestId, e.getMessage());
+                results.add(new StampRequestBulkOperationResponse.OperationResult(
+                    requestId, false, e.getMessage()
+                ));
+            }
+        }
+
+        int failureCount = requestIds.size() - successCount;
+        logger.info("Bulk approval completed: {} succeeded, {} failed",
+            successCount, failureCount);
+
+        return new StampRequestBulkOperationResponse(
+            successCount, failureCount, results
+        );
+    }
+
+    /**
+     * 一括却下
+     *
+     * @param requestIds リクエストIDリスト (最大50件)
+     * @param rejecterId 却下者ID
+     * @param rejectionReason 共通却下理由
+     * @return 一括操作結果
+     */
+    public StampRequestBulkOperationResponse bulkReject(
+        List<Integer> requestIds,
+        Integer rejecterId,
+        String rejectionReason
+    ) {
+        validateBatchSize(requestIds);
+
+        List<StampRequestBulkOperationResponse.OperationResult> results =
+            new ArrayList<>();
+        int successCount = 0;
+
+        for (Integer requestId : requestIds) {
+            try {
+                approvalService.rejectRequest(
+                    requestId, rejecterId, rejectionReason
+                );
+                results.add(new StampRequestBulkOperationResponse.OperationResult(
+                    requestId, true, null
+                ));
+                successCount++;
+            } catch (Exception e) {
+                logger.warn("Failed to reject request {}: {}",
+                    requestId, e.getMessage());
+                results.add(new StampRequestBulkOperationResponse.OperationResult(
+                    requestId, false, e.getMessage()
+                ));
+            }
+        }
+
+        int failureCount = requestIds.size() - successCount;
+        logger.info("Bulk rejection completed: {} succeeded, {} failed",
+            successCount, failureCount);
+
+        return new StampRequestBulkOperationResponse(
+            successCount, failureCount, results
+        );
+    }
+
+    private void validateBatchSize(List<Integer> requestIds) {
+        if (requestIds == null || requestIds.isEmpty()) {
+            throw new IllegalArgumentException("リクエストIDリストが空です");
+        }
+        if (requestIds.size() > MAX_BATCH_SIZE) {
+            throw new IllegalArgumentException(String.format(
+                "一度に処理できるのは%d件までです (リクエスト: %d件)",
+                MAX_BATCH_SIZE, requestIds.size()
+            ));
+        }
+    }
+}
+```
+
+### 3.4 Mapper Layer (MyBatis)
+
+**StampRequestMapper.java (Interface)**
+
+```java
+package com.example.teamdev.mapper;
+
+import com.example.teamdev.entity.StampRequest;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import java.util.List;
+import java.util.Optional;
+
+/**
+ * 打刻修正リクエストMapper
+ * 動的SQL: XMLで定義 (複雑なクエリ)
+ * 単純なクエリ: アノテーションで定義
+ */
+@Mapper
+public interface StampRequestMapper {
+
+    /**
+     * ID検索
+     */
+    Optional<StampRequest> findById(@Param("id") Integer id);
+
+    /**
+     * 従業員IDとステータスで検索 (ページネーション)
+     * XMLマッパーで定義
+     */
+    List<StampRequest> findByEmployeeId(
+        @Param("employeeId") Integer employeeId,
+        @Param("status") String status, // null=全件
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 保留中リクエスト一覧 (ページネーション)
+     * XMLマッパーで定義
+     */
+    List<StampRequest> findPendingRequests(
+        @Param("offset") Integer offset,
+        @Param("limit") Integer limit
+    );
+
+    /**
+     * 重複チェック: 同じ従業員+打刻に対する保留中リクエスト
+     * XMLマッパーで定義
+     */
+    Optional<StampRequest> findPendingByEmployeeAndStamp(
+        @Param("employeeId") Integer employeeId,
+        @Param("stampHistoryId") Integer stampHistoryId
+    );
+
+    /**
+     * 挿入
+     * XMLマッパーで定義 (useGeneratedKeys=true)
+     */
+    int insert(StampRequest request);
+
+    /**
+     * 更新
+     * XMLマッパーで定義
+     */
+    int update(StampRequest request);
+
+    /**
+     * 従業員のリクエスト件数カウント
+     * XMLマッパーで定義
+     */
+    Integer countByEmployeeId(
+        @Param("employeeId") Integer employeeId,
+        @Param("status") String status
+    );
+
+    /**
+     * 保留中リクエスト件数カウント
+     * XMLマッパーで定義
+     */
+    Integer countPending();
+}
+```
+
+**StampRequestMapper.xml (MyBatis XML)**
+
+```xml
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.teamdev.mapper.StampRequestMapper">
+
+    <!-- ResultMap: snake_case → camelCase -->
+    <resultMap id="stampRequestResultMap" type="com.example.teamdev.entity.StampRequest">
+        <id property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="stampHistoryId" column="stamp_history_id"/>
+        <result property="approvalEmployeeId" column="approval_employee_id"/>
+
+        <result property="originalInTime" column="original_in_time"/>
+        <result property="originalOutTime" column="original_out_time"/>
+        <result property="originalBreakStartTime" column="original_break_start_time"/>
+        <result property="originalBreakEndTime" column="original_break_end_time"/>
+        <result property="originalIsNightShift" column="original_is_night_shift"/>
+
+        <result property="requestedInTime" column="requested_in_time"/>
+        <result property="requestedOutTime" column="requested_out_time"/>
+        <result property="requestedBreakStartTime" column="requested_break_start_time"/>
+        <result property="requestedBreakEndTime" column="requested_break_end_time"/>
+        <result property="requestedIsNightShift" column="requested_is_night_shift"/>
+
+        <result property="reason" column="reason"/>
+        <result property="status" column="status"/>
+        <result property="approvalNote" column="approval_note"/>
+        <result property="rejectionReason" column="rejection_reason"/>
+        <result property="cancellationReason" column="cancellation_reason"/>
+
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="approvedAt" column="approved_at"/>
+        <result property="rejectedAt" column="rejected_at"/>
+        <result property="cancelledAt" column="cancelled_at"/>
+    </resultMap>
+
+    <!-- ID検索 -->
+    <select id="findById" resultMap="stampRequestResultMap">
+        SELECT * FROM stamp_request WHERE id = #{id}
+    </select>
+
+    <!-- 従業員IDとステータスで検索 -->
+    <select id="findByEmployeeId" resultMap="stampRequestResultMap">
+        SELECT * FROM stamp_request
+        WHERE employee_id = #{employeeId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 保留中リクエスト一覧 (全従業員) -->
+    <select id="findPendingRequests" resultMap="stampRequestResultMap">
+        SELECT * FROM stamp_request
+        WHERE status = 'PENDING'
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 重複チェック -->
+    <select id="findPendingByEmployeeAndStamp" resultMap="stampRequestResultMap">
+        SELECT * FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND stamp_history_id = #{stampHistoryId}
+          AND status = 'PENDING'
+        LIMIT 1
+    </select>
+
+    <!-- 挿入 -->
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO stamp_request (
+            employee_id, stamp_history_id,
+            original_in_time, original_out_time,
+            original_break_start_time, original_break_end_time,
+            original_is_night_shift,
+            requested_in_time, requested_out_time,
+            requested_break_start_time, requested_break_end_time,
+            requested_is_night_shift,
+            reason, status, created_at, updated_at
+        ) VALUES (
+            #{employeeId}, #{stampHistoryId},
+            #{originalInTime}, #{originalOutTime},
+            #{originalBreakStartTime}, #{originalBreakEndTime},
+            #{originalIsNightShift},
+            #{requestedInTime}, #{requestedOutTime},
+            #{requestedBreakStartTime}, #{requestedBreakEndTime},
+            #{requestedIsNightShift},
+            #{reason}, #{status}, #{createdAt}, #{updatedAt}
+        )
+    </insert>
+
+    <!-- 更新 -->
+    <update id="update">
+        UPDATE stamp_request SET
+            status = #{status},
+            approval_employee_id = #{approvalEmployeeId},
+            approval_note = #{approvalNote},
+            rejection_reason = #{rejectionReason},
+            cancellation_reason = #{cancellationReason},
+            updated_at = #{updatedAt},
+            approved_at = #{approvedAt},
+            rejected_at = #{rejectedAt},
+            cancelled_at = #{cancelledAt}
+        WHERE id = #{id}
+    </update>
+
+    <!-- 従業員のリクエスト件数カウント -->
+    <select id="countByEmployeeId" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM stamp_request
+        WHERE employee_id = #{employeeId}
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+    </select>
+
+    <!-- 保留中リクエスト件数カウント -->
+    <select id="countPending" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM stamp_request
+        WHERE status = 'PENDING'
+    </select>
+
+</mapper>
+```
+
+### 3.5 Controller Layer
+
+**StampRequestRestController.java**
+
+```java
+package com.example.teamdev.controller.api;
+
+import com.example.teamdev.dto.api.stamprequest.*;
+import com.example.teamdev.entity.Employee;
+import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.mapper.EmployeeMapper;
+import com.example.teamdev.service.*;
+import com.example.teamdev.util.SecurityUtil;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/stamp-requests")
+@Tag(name = "Stamp Request Workflow", description = "打刻修正リクエスト API")
+public class StampRequestRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(
+        StampRequestRestController.class
+    );
+
+    private final StampRequestQueryService queryService;
+    private final StampRequestRegistrationService registrationService;
+    private final StampRequestApprovalService approvalService;
+    private final StampRequestCancellationService cancellationService;
+    private final StampRequestBulkOperationService bulkOperationService;
+    private final EmployeeMapper employeeMapper;
+
+    public StampRequestRestController(
+        StampRequestQueryService queryService,
+        StampRequestRegistrationService registrationService,
+        StampRequestApprovalService approvalService,
+        StampRequestCancellationService cancellationService,
+        StampRequestBulkOperationService bulkOperationService,
+        EmployeeMapper employeeMapper
+    ) {
+        this.queryService = queryService;
+        this.registrationService = registrationService;
+        this.approvalService = approvalService;
+        this.cancellationService = cancellationService;
+        this.bulkOperationService = bulkOperationService;
+        this.employeeMapper = employeeMapper;
+    }
+
+    /**
+     * リクエスト作成 (従業員)
+     */
+    @PostMapping
+    @Operation(summary = "打刻修正リクエスト作成")
+    public ResponseEntity<StampRequestResponse> createRequest(
+        @Valid @RequestBody StampRequestCreateRequest request
+    ) {
+        Integer employeeId = requireCurrentEmployeeId();
+
+        StampRequest created = registrationService.createRequest(request, employeeId);
+        StampRequestResponse response = toResponse(created);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /**
+     * 自身のリクエスト一覧取得 (従業員)
+     */
+    @GetMapping("/my-requests")
+    @Operation(summary = "自身の打刻修正リクエスト一覧取得")
+    public ResponseEntity<StampRequestListResponse> getMyRequests(
+        @RequestParam(required = false) String status,
+        @RequestParam(defaultValue = "0") Integer page,
+        @RequestParam(defaultValue = "20") Integer size
+    ) {
+        Integer employeeId = requireCurrentEmployeeId();
+
+        List<StampRequest> requests = queryService.getEmployeeRequests(
+            employeeId, status, page, size
+        );
+        Integer totalCount = queryService.countEmployeeRequests(employeeId, status);
+
+        List<StampRequestResponse> responses = requests.stream()
+            .map(this::toResponse)
+            .toList();
+
+        return ResponseEntity.ok(new StampRequestListResponse(
+            responses, totalCount, page, size
+        ));
+    }
+
+    /**
+     * 保留中リクエスト一覧取得 (管理者)
+     */
+    @GetMapping("/pending")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "保留中リクエスト一覧取得 (管理者)")
+    public ResponseEntity<StampRequestListResponse> getPendingRequests(
+        @RequestParam(defaultValue = "0") Integer page,
+        @RequestParam(defaultValue = "20") Integer size
+    ) {
+        List<StampRequest> requests = queryService.getPendingRequests(page, size);
+        Integer totalCount = queryService.countPendingRequests();
+
+        List<StampRequestResponse> responses = requests.stream()
+            .map(this::toResponse)
+            .toList();
+
+        return ResponseEntity.ok(new StampRequestListResponse(
+            responses, totalCount, page, size
+        ));
+    }
+
+    /**
+     * リクエスト詳細取得
+     */
+    @GetMapping("/{id}")
+    @Operation(summary = "リクエスト詳細取得")
+    public ResponseEntity<StampRequestResponse> getRequestDetail(
+        @PathVariable Integer id
+    ) {
+        Integer employeeId = requireCurrentEmployeeId();
+
+        StampRequest request = queryService.getRequestDetail(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "リクエストが見つかりません"
+            ));
+
+        // 権限チェック: 自身のリクエスト or 管理者のみ閲覧可能
+        if (!isAdmin() && !request.getEmployeeId().equals(employeeId)) {
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN, "このリクエストを閲覧する権限がありません"
+            );
+        }
+
+        return ResponseEntity.ok(toResponse(request));
+    }
+
+    /**
+     * リクエスト承認 (管理者)
+     */
+    @PostMapping("/{id}/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "リクエスト承認 (管理者)")
+    public ResponseEntity<Void> approveRequest(
+        @PathVariable Integer id,
+        @Valid @RequestBody StampRequestApprovalRequest request
+    ) {
+        Integer approverId = requireCurrentEmployeeId();
+
+        try {
+            approvalService.approveRequest(id, approverId, request.approvalNote());
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Failed to approve request {}", id, e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "承認処理に失敗しました: " + extractRootCause(e)
+            );
+        }
+    }
+
+    /**
+     * リクエスト却下 (管理者)
+     */
+    @PostMapping("/{id}/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "リクエスト却下 (管理者)")
+    public ResponseEntity<Void> rejectRequest(
+        @PathVariable Integer id,
+        @Valid @RequestBody StampRequestRejectionRequest request
+    ) {
+        Integer rejecterId = requireCurrentEmployeeId();
+
+        try {
+            approvalService.rejectRequest(
+                id, rejecterId, request.rejectionReason()
+            );
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Failed to reject request {}", id, e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "却下処理に失敗しました: " + extractRootCause(e)
+            );
+        }
+    }
+
+    /**
+     * リクエストキャンセル (従業員)
+     */
+    @PostMapping("/{id}/cancel")
+    @Operation(summary = "リクエストキャンセル (従業員)")
+    public ResponseEntity<Void> cancelRequest(
+        @PathVariable Integer id,
+        @Valid @RequestBody StampRequestCancellationRequest request
+    ) {
+        Integer employeeId = requireCurrentEmployeeId();
+
+        try {
+            cancellationService.cancelRequest(
+                id, employeeId, request.cancellationReason()
+            );
+            return ResponseEntity.noContent().build();
+        } catch (Exception e) {
+            logger.error("Failed to cancel request {}", id, e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "キャンセル処理に失敗しました: " + extractRootCause(e)
+            );
+        }
+    }
+
+    /**
+     * 一括承認 (管理者)
+     */
+    @PostMapping("/bulk/approve")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "リクエスト一括承認 (管理者)")
+    public ResponseEntity<StampRequestBulkOperationResponse> bulkApprove(
+        @Valid @RequestBody StampRequestBulkApprovalRequest request
+    ) {
+        Integer approverId = requireCurrentEmployeeId();
+
+        try {
+            StampRequestBulkOperationResponse result =
+                bulkOperationService.bulkApprove(
+                    request.requestIds(), approverId, request.approvalNote()
+                );
+
+            if (result.failureCount() > 0) {
+                logger.warn("Bulk approve partial success: {} of {} succeeded",
+                    result.successCount(), request.requestIds().size());
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            logger.error("Bulk approve failed", e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "一括承認に失敗しました: " + extractRootCause(e)
+            );
+        }
+    }
+
+    /**
+     * 一括却下 (管理者)
+     */
+    @PostMapping("/bulk/reject")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "リクエスト一括却下 (管理者)")
+    public ResponseEntity<StampRequestBulkOperationResponse> bulkReject(
+        @Valid @RequestBody StampRequestBulkRejectionRequest request
+    ) {
+        Integer rejecterId = requireCurrentEmployeeId();
+
+        try {
+            StampRequestBulkOperationResponse result =
+                bulkOperationService.bulkReject(
+                    request.requestIds(), rejecterId, request.rejectionReason()
+                );
+
+            if (result.failureCount() > 0) {
+                logger.warn("Bulk reject partial success: {} of {} succeeded",
+                    result.successCount(), request.requestIds().size());
+            }
+
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getMessage());
+        } catch (Exception e) {
+            logger.error("Bulk reject failed", e);
+            throw new ResponseStatusException(
+                HttpStatus.INTERNAL_SERVER_ERROR,
+                "一括却下に失敗しました: " + extractRootCause(e)
+            );
+        }
+    }
+
+    // Helper methods
+
+    private Integer requireCurrentEmployeeId() {
+        Integer employeeId = SecurityUtil.getCurrentEmployeeId();
+        if (employeeId == null) {
+            throw new ResponseStatusException(
+                HttpStatus.UNAUTHORIZED, "認証が必要です"
+            );
+        }
+        return employeeId;
+    }
+
+    private boolean isAdmin() {
+        Integer employeeId = SecurityUtil.getCurrentEmployeeId();
+        if (employeeId == null) return false;
+
+        Optional<Employee> employee = employeeMapper.findById(employeeId);
+        return employee.map(e -> e.getAdminFlag() == 1).orElse(false);
+    }
+
+    private StampRequestResponse toResponse(StampRequest request) {
+        // Fetch employee name
+        String employeeName = employeeMapper.findById(request.getEmployeeId())
+            .map(e -> e.getFirstName() + " " + e.getLastName())
+            .orElse("Unknown");
+
+        // Fetch approver name (if applicable)
+        String approvalEmployeeName = null;
+        if (request.getApprovalEmployeeId() != null) {
+            approvalEmployeeName = employeeMapper.findById(
+                request.getApprovalEmployeeId()
+            ).map(e -> e.getFirstName() + " " + e.getLastName())
+             .orElse(null);
+        }
+
+        // Convert timestamps to ISO 8601 strings
+        return new StampRequestResponse(
+            request.getId(),
+            request.getEmployeeId(),
+            employeeName,
+            request.getStampHistoryId(),
+            request.getStampDate() != null ? request.getStampDate().toString() : null,
+
+            // Original values
+            request.getOriginalInTime() != null
+                ? request.getOriginalInTime().toString() : null,
+            request.getOriginalOutTime() != null
+                ? request.getOriginalOutTime().toString() : null,
+            request.getOriginalBreakStartTime() != null
+                ? request.getOriginalBreakStartTime().toString() : null,
+            request.getOriginalBreakEndTime() != null
+                ? request.getOriginalBreakEndTime().toString() : null,
+            request.getOriginalIsNightShift(),
+
+            // Requested values
+            request.getRequestedInTime() != null
+                ? request.getRequestedInTime().toString() : null,
+            request.getRequestedOutTime() != null
+                ? request.getRequestedOutTime().toString() : null,
+            request.getRequestedBreakStartTime() != null
+                ? request.getRequestedBreakStartTime().toString() : null,
+            request.getRequestedBreakEndTime() != null
+                ? request.getRequestedBreakEndTime().toString() : null,
+            request.getRequestedIsNightShift(),
+
+            // Metadata
+            request.getReason(),
+            request.getStatus(),
+            request.getApprovalNote(),
+            request.getRejectionReason(),
+            request.getCancellationReason(),
+
+            // Approver info
+            request.getApprovalEmployeeId(),
+            approvalEmployeeName,
+
+            // Timestamps
+            request.getCreatedAt() != null
+                ? request.getCreatedAt().toString() : null,
+            request.getUpdatedAt() != null
+                ? request.getUpdatedAt().toString() : null,
+            request.getApprovedAt() != null
+                ? request.getApprovedAt().toString() : null,
+            request.getRejectedAt() != null
+                ? request.getRejectedAt().toString() : null,
+            request.getCancelledAt() != null
+                ? request.getCancelledAt().toString() : null
+        );
+    }
+
+    private String extractRootCause(Exception e) {
+        Throwable cause = e;
+        while (cause.getCause() != null && cause.getCause() != cause) {
+            cause = cause.getCause();
+        }
+        String message = cause.getMessage();
+        return message != null ? message : "Unknown error";
+    }
+}
+```
+
+### 3.6 Security & Validation
+
+**Spring Security Configuration (existing)**
+
+```java
+// In SecurityConfig.java
+
+.requestMatchers(HttpMethod.POST, "/api/stamp-requests").authenticated()
+.requestMatchers(HttpMethod.GET, "/api/stamp-requests/my-requests").authenticated()
+.requestMatchers(HttpMethod.GET, "/api/stamp-requests/{id}").authenticated()
+.requestMatchers(HttpMethod.POST, "/api/stamp-requests/{id}/cancel").authenticated()
+.requestMatchers("/api/stamp-requests/pending/**").hasRole("ADMIN")
+.requestMatchers("/api/stamp-requests/{id}/approve").hasRole("ADMIN")
+.requestMatchers("/api/stamp-requests/{id}/reject").hasRole("ADMIN")
+.requestMatchers("/api/stamp-requests/bulk/**").hasRole("ADMIN")
+```
+
+**Custom Validators**
+
+```java
+package com.example.teamdev.validation;
+
+import jakarta.validation.Constraint;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
+import jakarta.validation.Payload;
+import java.lang.annotation.*;
+import java.time.OffsetDateTime;
+
+/**
+ * カスタムバリデーション: 時刻の順序チェック
+ */
+@Documented
+@Constraint(validatedBy = ValidTimeSequence.Validator.class)
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ValidTimeSequence {
+    String message() default "時刻の順序が不正です";
+    Class<?>[] groups() default {};
+    Class<? extends Payload>[] payload() default {};
+
+    class Validator implements ConstraintValidator<
+        ValidTimeSequence, StampRequestCreateRequest
+    > {
+        @Override
+        public boolean isValid(
+            StampRequestCreateRequest request,
+            ConstraintValidatorContext context
+        ) {
+            if (request == null) return true;
+
+            OffsetDateTime inTime = request.requestedInTime();
+            OffsetDateTime breakStart = request.requestedBreakStartTime();
+            OffsetDateTime breakEnd = request.requestedBreakEndTime();
+            OffsetDateTime outTime = request.requestedOutTime();
+
+            // break_start < break_end
+            if (breakStart != null && breakEnd != null) {
+                if (breakStart.isAfter(breakEnd)) {
+                    return false;
+                }
+            }
+
+            // in_time < out_time (if both present)
+            if (inTime != null && outTime != null) {
+                if (inTime.isAfter(outTime)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
+}
+```
+
+---
+
+## 4. Frontend Design
+
+### 4.1 Module Structure
+
+```
+frontend/src/features/stampRequest/
+├── api/
+│   └── stampRequestApi.ts                      # REST API client
+├── components/
+│   ├── WorkflowPage.tsx                        # Dual-role workspace (list + detail)
+│   ├── WorkflowSidebar.tsx                     # Left pane (search, tabs, list, bulk select)
+│   ├── WorkflowDetailPanel.tsx                 # Right pane (info grid, actions, reasons)
+│   ├── WorkflowCommandPalette.tsx              # ⌘K / Ctrl+K command launcher
+│   ├── WorkflowActionBar.tsx                   # Header actions + role switcher
+│   ├── RequestCorrectionModal.tsx              # Employee: request submission form
+│   ├── ApprovalDialog.tsx                      # Admin: approve with optional note
+│   ├── RejectionDialog.tsx                     # Admin: reject with mandatory reason
+│   ├── CancellationDialog.tsx                  # Employee: cancel with reason
+│   ├── BulkActionBar.tsx                       # Admin: bulk approve/reject UI
+│   └── RequestStatusBadge.tsx                  # Status badge (NEW/PENDING/APPROVED/REJECTED)
+├── hooks/
+│   ├── useStampRequests.ts                     # React Query hooks (queries + mutations)
+│   ├── useWorkflowKeyboardNavigation.ts        # ↑/↓, j/k, Enter, ⌘K bindings
+│   ├── useWorkflowFilters.ts                   # Status tabs, search, unread toggles
+│   └── useRequestMutations.ts                  # Mutations separated for clarity
+├── lib/
+│   ├── requestViewModel.ts                     # API → UI transformations (list + detail)
+│   └── statusBadge.ts                          # Status badge color mapping + icons
+├── routes/
+│   └── StampRequestRoute.tsx                   # Feature routing (workflow workspace)
+├── schemas/
+│   └── stampRequestSchema.ts                   # Zod validation schemas
+└── types/
+    └── index.ts                                # TypeScript types
+```
+
+### 4.2 Component Specifications
+
+**RequestCorrectionModal.tsx**
+
+```tsx
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateStampRequestMutation } from "../hooks/useStampRequests";
+import { stampRequestCreateSchema } from "../schemas/stampRequestSchema";
+import type { StampHistory } from "@/types";
+
+interface RequestCorrectionModalProps {
+    open: boolean;
+    onClose: () => void;
+    stampHistory: StampHistory; // Pre-fill from selected stamp record
+}
+
+export function RequestCorrectionModal({
+    open,
+    onClose,
+    stampHistory
+}: RequestCorrectionModalProps) {
+    const createMutation = useCreateStampRequestMutation();
+
+    const { control, handleSubmit, formState: { errors } } = useForm({
+        resolver: zodResolver(stampRequestCreateSchema),
+        defaultValues: {
+            stampHistoryId: stampHistory.id,
+            requestedInTime: stampHistory.inTime,
+            requestedOutTime: stampHistory.outTime,
+            requestedBreakStartTime: stampHistory.breakStartTime,
+            requestedBreakEndTime: stampHistory.breakEndTime,
+            requestedIsNightShift: stampHistory.isNightShift ?? false,
+            reason: "",
+        }
+    });
+
+    const onSubmit = async (data: StampRequestCreateRequest) => {
+        await createMutation.mutateAsync(data);
+        onClose();
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onClose}>
+            <DialogContent className="max-w-2xl">
+                <DialogHeader>
+                    <DialogTitle>打刻修正リクエスト</DialogTitle>
+                </DialogHeader>
+
+                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    {/* Time inputs: in_time, out_time, break_start, break_end */}
+                    {/* Use Controller + DateTimePicker components */}
+
+                    <div>
+                        <label>修正理由 (必須: 10-500文字)</label>
+                        <Controller
+                            name="reason"
+                            control={control}
+                            render={({ field }) => (
+                                <Textarea
+                                    {...field}
+                                    placeholder="修正が必要な理由を詳しく記入してください"
+                                    rows={4}
+                                />
+                            )}
+                        />
+                        {errors.reason && (
+                            <p className="text-sm text-destructive">
+                                {errors.reason.message}
+                            </p>
+                        )}
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                        <Button type="button" variant="outline" onClick={onClose}>
+                            キャンセル
+                        </Button>
+                        <Button type="submit" disabled={createMutation.isPending}>
+                            リクエスト送信
+                        </Button>
+                    </div>
+                </form>
+            </DialogContent>
+        </Dialog>
+    );
+}
+```
+
+**PendingRequestsAdminPage.tsx**
+
+```tsx
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { DataTable } from "@/shared/components/DataTable";
+import { BulkActionBar } from "../components/BulkActionBar";
+import { useRequestColumns } from "../hooks/useRequestColumns";
+import { usePendingStampRequestsQuery } from "../hooks/useStampRequests";
+
+export function PendingRequestsAdminPage() {
+    const [page, setPage] = useState(0);
+    const [pageSize, setPageSize] = useState(20);
+    const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+
+    const { data, isLoading } = usePendingStampRequestsQuery(page, pageSize);
+
+    const columns = useRequestColumns({
+        onApprove: (id) => {/* Open approval dialog */},
+        onReject: (id) => {/* Open rejection dialog */},
+    });
+
+    const handleSelectionChange = (newSelection: Set<number>) => {
+        setSelectedIds(newSelection);
+    };
+
+    return (
+        <div className="container mx-auto py-6">
+            <h1 className="text-2xl font-bold mb-6">保留中の打刻修正リクエスト</h1>
+
+            {selectedIds.size > 0 && (
+                <BulkActionBar
+                    selectedIds={Array.from(selectedIds)}
+                    onClearSelection={() => setSelectedIds(new Set())}
+                />
+            )}
+
+            <DataTable
+                columns={columns}
+                data={data?.requests ?? []}
+                isLoading={isLoading}
+                enableRowSelection
+                onSelectionChange={handleSelectionChange}
+                pagination={{
+                    page,
+                    pageSize,
+                    totalCount: data?.totalCount ?? 0,
+                    onPageChange: setPage,
+                    onPageSizeChange: setPageSize,
+                }}
+            />
+        </div>
+    );
+}
+```
+
+### 4.3 State Management (React Query)
+
+**useStampRequests.ts**
+
+```tsx
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  type UseQueryOptions,
+} from "@tanstack/react-query";
+import { QUERY_CONFIG } from "@/app/config/queryClient";
+import { toast } from "@/hooks/use-toast";
+import { queryKeys } from "@/shared/utils/queryUtils";
+import * as api from "../api/stampRequestApi";
+import type {
+  StampRequestListResponse,
+  StampRequestCreateRequest,
+  StampRequestBulkOperationResponse,
+} from "@/types";
+
+export const stampRequestQueryKeys = {
+  all: queryKeys.stampRequest.all,
+  myRequests: (status?: string) => [...queryKeys.stampRequest.all, "my", status],
+  pending: (page: number, size: number) =>
+    [...queryKeys.stampRequest.all, "pending", page, size],
+  detail: (id: number) => queryKeys.stampRequest.detail(id),
+} as const;
+
+// Query: 自身のリクエスト一覧
+export const useMyStampRequestsQuery = (
+  status?: string,
+  page = 0,
+  size = 20
+) =>
+  useQuery<StampRequestListResponse>({
+    queryKey: stampRequestQueryKeys.myRequests(status),
+    queryFn: () => api.fetchMyRequests(status, page, size),
+    staleTime: QUERY_CONFIG.stampRequest.staleTime,
+    gcTime: QUERY_CONFIG.stampRequest.gcTime,
+  });
+
+// Query: 保留中リクエスト一覧 (管理者)
+export const usePendingStampRequestsQuery = (page = 0, size = 20) =>
+  useQuery<StampRequestListResponse>({
+    queryKey: stampRequestQueryKeys.pending(page, size),
+    queryFn: () => api.fetchPendingRequests(page, size),
+    staleTime: QUERY_CONFIG.stampRequest.staleTime,
+    gcTime: QUERY_CONFIG.stampRequest.gcTime,
+  });
+
+// Mutation: リクエスト作成
+export const useCreateStampRequestMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (payload: StampRequestCreateRequest) =>
+      api.createStampRequest(payload),
+    onSuccess: async () => {
+      toast({
+        title: "リクエストを送信しました",
+        description: "管理者による承認をお待ちください。",
+      });
+
+      // Invalidate related queries
+      await queryClient.invalidateQueries({
+        queryKey: stampRequestQueryKeys.myRequests(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "リクエスト送信に失敗しました",
+        description: error.message || "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Mutation: 一括承認
+export const useBulkApproveRequestsMutation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    StampRequestBulkOperationResponse,
+    unknown,
+    { requestIds: number[]; approvalNote?: string }
+  >({
+    mutationFn: ({ requestIds, approvalNote }) =>
+      api.bulkApproveRequests(requestIds, approvalNote),
+    onSuccess: async (result) => {
+      if (result.successCount > 0) {
+        toast({
+          title: "一括承認が完了しました",
+          description: `${result.successCount}件のリクエストを承認しました。`,
+        });
+      }
+      if (result.failureCount > 0) {
+        toast({
+          title: "一部のリクエストで承認に失敗しました",
+          description: `失敗: ${result.failureCount}件`,
+          variant: "destructive",
+        });
+      }
+
+      // Invalidate queries
+      await queryClient.invalidateQueries({
+        queryKey: stampRequestQueryKeys.pending(),
+      });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.stampHistory.all,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "一括承認に失敗しました",
+        description: "時間を空けて再度お試しください。",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
+// Additional mutations: approve, reject, cancel, bulkReject...
+```
+
+### 4.4 API Client Layer
+
+**stampRequestApi.ts**
+
+```tsx
+import { api } from "@/shared/api/axiosClient";
+import type {
+  StampRequestListResponse,
+  StampRequestResponse,
+  StampRequestCreateRequest,
+  StampRequestBulkOperationResponse,
+} from "@/types";
+
+const ENDPOINT = "/stamp-requests" as const;
+
+export const createStampRequest = (
+  payload: StampRequestCreateRequest
+): Promise<StampRequestResponse> =>
+  api.post<StampRequestResponse>(ENDPOINT, payload, undefined);
+
+export const fetchMyRequests = (
+  status?: string,
+  page = 0,
+  size = 20
+): Promise<StampRequestListResponse> =>
+  api.get<StampRequestListResponse>(
+    `${ENDPOINT}/my-requests`,
+    { status, page, size }
+  );
+
+export const fetchPendingRequests = (
+  page = 0,
+  size = 20
+): Promise<StampRequestListResponse> =>
+  api.get<StampRequestListResponse>(
+    `${ENDPOINT}/pending`,
+    { page, size }
+  );
+
+export const getRequestDetail = (id: number): Promise<StampRequestResponse> =>
+  api.get<StampRequestResponse>(`${ENDPOINT}/${id}`, undefined);
+
+export const approveRequest = (
+  id: number,
+  approvalNote?: string
+): Promise<void> =>
+  api.post<void>(`${ENDPOINT}/${id}/approve`, { approvalNote }, undefined);
+
+export const rejectRequest = (
+  id: number,
+  rejectionReason: string
+): Promise<void> =>
+  api.post<void>(`${ENDPOINT}/${id}/reject`, { rejectionReason }, undefined);
+
+export const cancelRequest = (
+  id: number,
+  cancellationReason: string
+): Promise<void> =>
+  api.post<void>(`${ENDPOINT}/${id}/cancel`, { cancellationReason }, undefined);
+
+export const bulkApproveRequests = (
+  requestIds: number[],
+  approvalNote?: string
+): Promise<StampRequestBulkOperationResponse> =>
+  api.post<StampRequestBulkOperationResponse>(
+    `${ENDPOINT}/bulk/approve`,
+    { requestIds, approvalNote },
+    undefined
+  );
+
+export const bulkRejectRequests = (
+  requestIds: number[],
+  rejectionReason: string
+): Promise<StampRequestBulkOperationResponse> =>
+  api.post<StampRequestBulkOperationResponse>(
+    `${ENDPOINT}/bulk/reject`,
+    { requestIds, rejectionReason },
+    undefined
+  );
+```
+
+### 4.5 Routing
+
+**StampRequestRoute.tsx**
+
+```tsx
+import { lazy } from "react";
+import { AdminGuard } from "@/shared/components/guards/AdminGuard";
+
+const RequestCorrectionModal = lazy(() =>
+  import("../components/RequestCorrectionModal").then((m) => ({
+    default: m.RequestCorrectionModal,
+  }))
+);
+const MyRequestsPage = lazy(() =>
+  import("../components/MyRequestsPage").then((m) => ({
+    default: m.MyRequestsPage,
+  }))
+);
+const PendingRequestsAdminPage = lazy(() =>
+  import("../components/PendingRequestsAdminPage").then((m) => ({
+    default: m.PendingRequestsAdminPage,
+  }))
+);
+
+export const stampRequestRoutes = [
+  {
+    path: "/stamp-requests/my",
+    element: <MyRequestsPage />,
+  },
+  {
+    path: "/stamp-requests/pending",
+    element: (
+      <AdminGuard>
+        <PendingRequestsAdminPage />
+      </AdminGuard>
+    ),
+  },
+];
+```
+
+### 4.6 Workflow Workspace UX Specification
+
+#### 4.6.1 System Overview
+- List + detail split workspace shared by employees and admins; role-aware actions are layered without changing the navigation shell.
+- `WorkflowPage.tsx` pins a 384px sidebar for the request list while keeping the detail pane fluid; header and action bars react to the active role.
+
+#### 4.6.2 Layout Composition
+**Header (WorkflowActionBar + WorkflowCommandPalette trigger)**
+- Shows the 「勤怠ワークフロー」 title, role toggle (従業員/管理者), ⌘K command button, new request CTA, and user summary.
+- Employee view exposes create/edit/cancel/resubmit triggers; admin view adds entry points for bulk approve/reject flows.
+
+**Left Sidebar (WorkflowSidebar)**
+- Fixed width 384px wrapped in `ScrollArea`; includes search (ID/employee/reason), status Tabs (全て/新規/保留/承認/却下) with count badges, and sort dropdown (新しい順 default, plus 古い順/ステータス順/未読優先).
+- Cards display status badge/icon, request ID, date, type, reason (2-line clamp), submittedAt, unread indicator (pulsing red dot), shortcut hint (↑↓ / Enter / ⌘K), hover quick actions, and employee name for admins.
+- Admin-only bulk selection checkboxes power `BulkActionBar`; when empty they remain hidden to keep the employee view clean.
+
+**Right Detail Panel (WorkflowDetailPanel)**
+- Header shows request ID, status badge, unread badge, and applicant name (admin only); subheader surfaces submitted timestamp + actor metadata.
+- Basic info grid covers 対象日/修正種別/勤務時間/提出日時 with 2-column layout separated by `Separator` components.
+- Subsequent sections: 申請理由 (full text), 却下理由 (conditional red background section), and action cluster that switches by role/status (employee edit/cancel when pending, resubmit when rejected; admin approve/reject for 新規 or 保留).
+
+#### 4.6.3 Interaction & Navigation
+- Keyboard shortcuts: ↑/↓ or j/k to move list focus, Enter to open detail, ⌘K / Ctrl+K to open the command palette; hints appear in sidebar footer and tooltip copy.
+- Command palette actions: 新規申請作成, status filter toggles (All/Pending/Approved/Rejected), navigation to 設定. Results update sidebar filters instantly via `useWorkflowFilters`.
+- Visual feedback distinguishes selection (primary background + ring), focus (gray background for keyboard), hover (gray background + border emphasis), and unread (animated red dot until detail is opened).
+- Detail panel mount/unmount uses shadcn/ui fade + slide animations to keep the experience smooth.
+
+#### 4.6.4 Visual Language & Status Semantics
+- Status colors/icons: NEW=blue, PENDING=yellow, APPROVED=green, REJECTED=red via `RequestStatusBadge` (Lucide icons + Tailwind tokens).
+- Sonner toasts handle success/error for create/edit/cancel/approve/reject/bulk actions with contextual copy.
+
+#### 4.6.5 Admin-exclusive Enhancements
+- Bulk selection (checkboxes + `BulkActionBar`) shows selected count, enforces ≤50 selection, and offers one-click approve/reject buttons pinned to the viewport bottom.
+- Sidebar and detail header surface `employeeName`; list cards also surface unread vs read state per admin to triage quickly.
+
+#### 4.6.6 Request Data Contract
+```typescript
+interface Request {
+  id: string;              // 申請ID (例: R001)
+  employeeName: string;    // 従業員名 (admin list/detail)
+  date: string;            // 対象日 (YYYY/MM/DD)
+  type: string;            // 修正種別 (打刻修正など)
+  status: "pending" | "approved" | "rejected" | "new";
+  reason: string;          // 申請理由テキスト
+  submittedAt: string;     // 提出日時 (表示用)
+  submittedTimestamp: number; // ソート用 (desc default)
+  timeFrom: string;        // 勤務開始時刻
+  timeTo: string;          // 勤務終了時刻
+  isUnread?: boolean;      // 未読フラグ
+}
+```
+- `requestViewModel.ts` adapts API payloads into this shape so list/detail panes consume consistent props and sorting works uniformly.
+
+#### 4.6.7 Tech + Component Mapping
+- React + TypeScript + shadcn/ui (Command, Tabs, ScrollArea, Separator, DropdownMenu, Button, Badge, Input, Checkbox) + Tailwind CSS, Lucide React icons, and Sonner toasts implement the layout + feedback requirements.
+- `useWorkflowKeyboardNavigation` encapsulates shortcut handling; `WorkflowCommandPalette.tsx` renders the ⌘K modal with command groups described above.
+- Animations rely on existing Tailwind keyframes (fade-in, slide-in) to animate detail panel transitions without extra JS libs.
+
+---
+
+## 5. Testing Strategy
+
+### 6.1 Unit Tests
+
+**Service Layer Tests (JUnit 5 + Mockito)**
+
+```java
+@ExtendWith(MockitoExtension.class)
+class StampRequestRegistrationServiceTest {
+
+    @Mock
+    private StampRequestMapper requestMapper;
+
+    @Mock
+    private StampHistoryMapper stampHistoryMapper;
+
+    @Mock
+    private LogHistoryRegistrationService logHistoryService;
+
+    @InjectMocks
+    private StampRequestRegistrationService service;
+
+    private Clock fixedClock = Clock.fixed(
+        Instant.parse("2025-01-15T10:00:00Z"),
+        ZoneOffset.UTC
+    );
+
+    @Test
+    void shouldCreateRequest_whenValidInput() {
+        // Given
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            123, // stampHistoryId
+            OffsetDateTime.now(fixedClock),
+            null, null, null, false,
+            "システムエラーにより出勤時刻が遅れて記録されました"
+        );
+
+        StampHistory stampHistory = new StampHistory();
+        stampHistory.setId(123);
+        stampHistory.setEmployeeId(1);
+        stampHistory.setStampDate(LocalDate.of(2025, 1, 15));
+        stampHistory.setInTime(OffsetDateTime.now(fixedClock).minusHours(1));
+
+        when(stampHistoryMapper.findById(123)).thenReturn(Optional.of(stampHistory));
+        when(requestMapper.findPendingByEmployeeAndStamp(1, 123))
+            .thenReturn(Optional.empty());
+
+        // When
+        StampRequest result = service.createRequest(request, 1);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStatus()).isEqualTo("PENDING");
+        verify(requestMapper).insert(any(StampRequest.class));
+        verify(logHistoryService).execute(anyInt(), anyInt(), any(), anyInt(),
+            anyInt(), any(Timestamp.class));
+    }
+
+    @Test
+    void shouldThrowException_whenDuplicatePendingRequest() {
+        // Given
+        StampRequestCreateRequest request = /* ... */;
+        StampHistory stampHistory = /* ... */;
+        StampRequest existing = new StampRequest();
+        existing.setStatus("PENDING");
+
+        when(stampHistoryMapper.findById(123)).thenReturn(Optional.of(stampHistory));
+        when(requestMapper.findPendingByEmployeeAndStamp(1, 123))
+            .thenReturn(Optional.of(existing));
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 1))
+            .isInstanceOf(DuplicateStampRequestException.class)
+            .hasMessageContaining("保留中のリクエストが既に存在します");
+    }
+}
+```
+
+### 6.2 Integration Tests
+
+**Controller Tests (@WebMvcTest + MockBean)**
+
+```java
+@WebMvcTest(StampRequestRestController.class)
+class StampRequestRestControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private StampRequestQueryService queryService;
+
+    @MockBean
+    private StampRequestRegistrationService registrationService;
+
+    @MockBean
+    private StampRequestApprovalService approvalService;
+
+    @Test
+    @WithMockUser(username = "user", roles = "ADMIN")
+    void shouldApprovePendingRequest_whenAdmin() throws Exception {
+        // Given
+        Integer requestId = 1;
+        StampRequestApprovalRequest request =
+            new StampRequestApprovalRequest("承認します");
+
+        // When & Then
+        mockMvc.perform(post("/api/stamp-requests/{id}/approve", requestId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isNoContent());
+
+        verify(approvalService).approveRequest(eq(requestId), anyInt(),
+            eq("承認します"));
+    }
+
+    @Test
+    @WithMockUser(username = "user", roles = "USER")
+    void shouldReturn403_whenNonAdminTriesToApprove() throws Exception {
+        // Given
+        Integer requestId = 1;
+        StampRequestApprovalRequest request =
+            new StampRequestApprovalRequest("承認します");
+
+        // When & Then
+        mockMvc.perform(post("/api/stamp-requests/{id}/approve", requestId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+            .andExpect(status().isForbidden());
+    }
+}
+```
+
+### 6.3 Frontend Tests (Vitest + Testing Library)
+
+```tsx
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RequestCorrectionModal } from "../RequestCorrectionModal";
+import { mockStampHistory } from "@/__mocks__/stampHistory";
+
+describe("RequestCorrectionModal", () => {
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  });
+
+  const renderModal = (props) => {
+    return render(
+      <QueryClientProvider client={queryClient}>
+        <RequestCorrectionModal {...props} />
+      </QueryClientProvider>
+    );
+  };
+
+  it("should display pre-filled values from stamp history", () => {
+    renderModal({
+      open: true,
+      onClose: vi.fn(),
+      stampHistory: mockStampHistory,
+    });
+
+    expect(screen.getByLabelText("出勤時刻")).toHaveValue(
+      mockStampHistory.inTime
+    );
+  });
+
+  it("should show validation error when reason is too short", async () => {
+    renderModal({
+      open: true,
+      onClose: vi.fn(),
+      stampHistory: mockStampHistory,
+    });
+
+    const reasonInput = screen.getByLabelText("修正理由");
+    fireEvent.change(reasonInput, { target: { value: "短い" } });
+    fireEvent.click(screen.getByText("リクエスト送信"));
+
+    await waitFor(() => {
+      expect(
+        screen.getByText(/理由は10文字以上500文字以下で入力してください/)
+      ).toBeInTheDocument();
+    });
+  });
+
+  it("should submit request successfully", async () => {
+    const onClose = vi.fn();
+    renderModal({
+      open: true,
+      onClose,
+      stampHistory: mockStampHistory,
+    });
+
+    const reasonInput = screen.getByLabelText("修正理由");
+    fireEvent.change(reasonInput, {
+      target: { value: "システムエラーにより出勤時刻が遅れて記録されました" },
+    });
+    fireEvent.click(screen.getByText("リクエスト送信"));
+
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalled();
+    });
+  });
+});
+```
+
+### 6.4 E2E Tests (Playwright)
+
+```typescript
+import { test, expect } from "@playwright/test";
+
+test.describe("Stamp Request Workflow", () => {
+  test.beforeEach(async ({ page }) => {
+    // Login as employee
+    await page.goto("/signin");
+    await page.fill('input[name="email"]', "employee@example.com");
+    await page.fill('input[name="password"]', "password");
+    await page.click('button[type="submit"]');
+    await expect(page).toHaveURL("/");
+  });
+
+  test("should create stamp correction request", async ({ page }) => {
+    // Navigate to stamp history
+    await page.goto("/stamp-history");
+
+    // Click "Request Correction" on first record
+    await page.click('[data-testid="request-correction-btn"]');
+
+    // Fill reason
+    await page.fill(
+      'textarea[name="reason"]',
+      "システムエラーにより出勤時刻が遅れて記録されました"
+    );
+
+    // Submit
+    await page.click('button[type="submit"]');
+
+    // Verify success toast
+    await expect(page.locator(".toast")).toContainText(
+      "リクエストを送信しました"
+    );
+
+    // Verify status badge updated
+    await expect(
+      page.locator('[data-testid="stamp-status-badge"]')
+    ).toContainText("PENDING");
+  });
+
+  test("admin should approve request", async ({ page }) => {
+    // Login as admin
+    await page.goto("/signin");
+    await page.fill('input[name="email"]', "admin@example.com");
+    await page.fill('input[name="password"]', "password");
+    await page.click('button[type="submit"]');
+
+    // Navigate to pending requests
+    await page.goto("/stamp-requests/pending");
+
+    // Click approve on first request
+    await page.click('[data-testid="approve-btn"]');
+
+    // Add optional note
+    await page.fill('textarea[name="approvalNote"]', "承認します");
+
+    // Confirm
+    await page.click('button[text="承認"]');
+
+    // Verify success toast
+    await expect(page.locator(".toast")).toContainText("承認が完了しました");
+
+    // Verify request removed from list
+    await expect(page.locator("table tbody tr")).toHaveCount(0);
+  });
+});
+```
+
+---
+
+## 7. OpenAPI Specification
+
+**openapi/stamp-request.yaml**
+
+```yaml
+openapi: 3.0.3
+info:
+  title: Stamp Request Workflow API
+  version: 1.0.0
+
+paths:
+  /api/stamp-requests:
+    post:
+      summary: Create stamp correction request
+      tags:
+        - Stamp Request Workflow
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampRequestCreateRequest'
+      responses:
+        '201':
+          description: Request created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampRequestResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/stamp-requests/my-requests:
+    get:
+      summary: Get own requests
+      tags:
+        - Stamp Request Workflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Requests retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampRequestListResponse'
+
+  /api/stamp-requests/pending:
+    get:
+      summary: Get pending requests (admin only)
+      tags:
+        - Stamp Request Workflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Pending requests retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampRequestListResponse'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /api/stamp-requests/{id}/approve:
+    post:
+      summary: Approve request (admin only)
+      tags:
+        - Stamp Request Workflow
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampRequestApprovalRequest'
+      responses:
+        '204':
+          description: Request approved successfully
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+
+  /api/stamp-requests/bulk/approve:
+    post:
+      summary: Bulk approve requests (admin only)
+      tags:
+        - Stamp Request Workflow
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampRequestBulkApprovalRequest'
+      responses:
+        '200':
+          description: Bulk operation completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StampRequestBulkOperationResponse'
+
+components:
+  schemas:
+    StampRequestCreateRequest:
+      type: object
+      required:
+        - stampHistoryId
+        - requestedInTime
+        - requestedIsNightShift
+        - reason
+      properties:
+        stampHistoryId:
+          type: integer
+        requestedInTime:
+          type: string
+          format: date-time
+        requestedOutTime:
+          type: string
+          format: date-time
+        requestedBreakStartTime:
+          type: string
+          format: date-time
+        requestedBreakEndTime:
+          type: string
+          format: date-time
+        requestedIsNightShift:
+          type: boolean
+        reason:
+          type: string
+          minLength: 10
+          maxLength: 500
+
+    StampRequestResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+        employeeId:
+          type: integer
+        employeeName:
+          type: string
+        stampHistoryId:
+          type: integer
+        stampDate:
+          type: string
+          format: date
+        originalInTime:
+          type: string
+          format: date-time
+        # ... (all other fields)
+        status:
+          type: string
+          enum: [PENDING, APPROVED, REJECTED, CANCELLED]
+        reason:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    StampRequestListResponse:
+      type: object
+      properties:
+        requests:
+          type: array
+          items:
+            $ref: '#/components/schemas/StampRequestResponse'
+        totalCount:
+          type: integer
+        pageNumber:
+          type: integer
+        pageSize:
+          type: integer
+
+    StampRequestBulkOperationResponse:
+      type: object
+      properties:
+        successCount:
+          type: integer
+        failureCount:
+          type: integer
+        results:
+          type: array
+          items:
+            type: object
+            properties:
+              requestId:
+                type: integer
+              success:
+                type: boolean
+              errorMessage:
+                type: string
+
+  responses:
+    BadRequest:
+      description: Invalid request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: array
+                items:
+                  type: string
+
+    Unauthorized:
+      description: Authentication required
+
+    Forbidden:
+      description: Insufficient permissions
+
+    NotFound:
+      description: Resource not found
+
+    Conflict:
+      description: Resource conflict (e.g., duplicate request, concurrent modification)
+```
+
+---
+
+## 8. Performance Considerations
+
+### 8.1 Index Strategy
+
+- **idx_stamp_request_employee_status**: Fast filtering by employee + status
+- **idx_stamp_request_pending**: Partial index for hot path (admin pending list)
+- **idx_stamp_request_status_created**: Efficient ordering by creation date
+
+### 8.2 N+1 Query Prevention
+
+- Use batch fetching for employee names in `toResponse()` method
+- Consider adding JOIN queries in MyBatis mapper to fetch employee data
+
+### 8.3 React Query Cache Optimization
+
+- `staleTime: 5 minutes` reduces unnecessary refetches
+- `gcTime: 10 minutes` keeps data in cache
+- Optimistic updates for instant UI feedback
+
+### 8.4 Bulk Operation Limits
+
+- Maximum 50 requests per bulk operation
+- Partial failure handling prevents all-or-nothing blocking
+
+### 8.5 Email Queue Processing
+
+- Async processing (@Async) prevents blocking main thread
+- ThreadPoolTaskExecutor: 2-5 threads for email sending
+- Queue capacity: 100 pending emails
+
+---
+
+## 9. Security Considerations
+
+### 9.1 SQL Injection Prevention
+
+- MyBatis parameterized queries (#{param})
+- No dynamic SQL string concatenation
+
+### 9.2 XSS Prevention
+
+- React escapes all output by default
+- Backend validation on all text inputs
+
+### 9.3 CSRF Protection
+
+- Spring Security CSRF token (Cookie + X-XSRF-TOKEN header)
+
+### 9.4 Role-Based Access Control
+
+- @PreAuthorize("hasRole('ADMIN')") on admin endpoints
+- Controller-level access checks for employee-owned resources
+
+### 9.5 Input Validation
+
+- Bean Validation (@NotBlank, @Size, @Pattern)
+- Frontend Zod schema validation
+- Custom validators for business rules
+
+---
+
+## 10. Error Handling
+
+### 10.1 Backend Exception Hierarchy
+
+```
+Exception
+├── BusinessException (400)
+│   ├── DuplicateStampRequestException
+│   └── ValidationException
+├── StampConflictException (409)
+└── NotFoundException (404)
+```
+
+### 10.2 Frontend Error Boundaries
+
+- Global error boundary catches React errors
+- Toast notifications for API errors
+- Form validation errors displayed inline
+
+### 10.3 Validation Error Messages
+
+**Backend (Bean Validation)**
+- "理由は10文字以上500文字以下で入力してください"
+- "出勤時刻は必須です"
+
+**Frontend (Zod)**
+- Match backend messages for consistency
+
+### 10.4 Conflict Detection
+
+- Compare `original_*` values with current `stamp_history` values
+- Return HTTP 409 Conflict with current state if mismatch
+
+---
+
+## 11. Migration & Deployment Strategy
+
+### 11.1 Database Migration Order
+
+1. Run V7__create_stamp_request_workflow.sql
+2. Verify table creation: `SELECT * FROM stamp_request LIMIT 1;`
+3. Verify indexes: `\d stamp_request` (PostgreSQL)
+4. Run seed data (dev/test only): R__seed_stamp_request_data.sql
+
+### 11.2 Feature Flag Strategy
+
+- Add `app.feature.stampRequest.enabled=true` in application.yml
+- Use `@ConditionalOnProperty` to enable/disable feature
+- Frontend feature flag in FeatureFlagProvider
+
+### 11.3 Rollback Plan
+
+- Rollback migration: Drop stamp_request table
+- No data loss (read-only for existing stamp_history)
+- Frontend: disable routes via feature flag
+
+### 11.4 Data Migration
+
+- No existing data migration needed (new feature)
+- Audit logs use existing log_history table
+
+---
+
+## 12. Open Questions & Decisions
+
+### 12.1 Email Provider Selection
+
+**Question**: Which SMTP server should be used?
+
+**Options**:
+1. Self-hosted SMTP server (high control, maintenance overhead)
+2. AWS SES (scalable, pay-per-use)
+3. SendGrid (rich features, third-party dependency)
+
+**Recommendation**: Start with self-hosted SMTP for development, migrate to AWS SES for production.
+
+### 12.2 Request Retention Policy
+
+**Question**: How long should old requests be retained?
+
+**Recommendation**:
+- Active requests (PENDING): No expiration
+- Terminal states (APPROVED/REJECTED/CANCELLED): Retain for 7 years (labor law compliance)
+- Implement soft delete or archival after 7 years
+
+### 12.3 Bulk Operation Transaction Boundaries
+
+**Question**: Should bulk operations be all-or-nothing or partial success?
+
+**Decision**: Partial success (implemented)
+- Each request processed independently
+- Failure in one request does not block others
+- Return detailed success/failure status for each item
+
+---
+
+## Summary
+
+This comprehensive design document provides a complete blueprint for implementing the Stamp Request Workflow feature. Key architectural decisions include:
+
+1. **CQRS Pattern**: Separating query and command services for clarity and scalability
+2. **MyBatis + Service Layer**: Following existing patterns from News management for consistency
+3. **React Query Optimistic Updates**: Providing instant UI feedback while ensuring data integrity
+4. **Async Email Notifications**: Non-blocking email delivery with failure resilience
+5. **Partial Success Bulk Operations**: Graceful handling of failures in batch processing
+
+The design leverages existing infrastructure (log_history for audit trails, Spring Security for authorization, React Query for state management) while introducing new capabilities such as the formal approval workflow and conflict detection. Email notifications are intentionally deferred.
+
+**Integration Points**: Seamless integration with stamp_history (source data + approval updates), employee table (authorization), and log_history (comprehensive audit trail).
+
+**Next Steps**: Review design with stakeholders, obtain approval, and proceed to task breakdown in `/kiro:spec-tasks`.
