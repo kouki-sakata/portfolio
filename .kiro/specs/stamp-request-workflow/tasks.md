@@ -33,12 +33,12 @@
   - Wire DTOs to services, normalize validation/conflict errors, guarantee pagination counts + filters, and sanitize payloads before persistence so the verified boundary behavior holds.
   - _Requirements: 1,2,3,4,6,7,8,9_
 
-- [ ] 4. Validate employee workflow backend behavior via TDD
-- [ ] 4.1 Craft failing unit/integration tests for submission, cancellation, and status projection
+- [x] 4. Validate employee workflow backend behavior via TDD
+- [x] 4.1 Craft failing unit/integration tests for submission, cancellation, and status projection
   - Cover registration service logic (reason length, chronological rules, future/working-hour checks, duplicate prevention, next-day checkout adjustments) plus controller flows to ensure 400/409/401 responses and log_history writes occur.
   - Add tests for cancellation safeguards, ensuring only pending requests cancel, reasons meet thresholds, and stamp_history remains unchanged while badges re-enable in projections.
   - _Requirements: 1,2,6,7,8,9_
-- [ ] 4.2 Implement registration, cancellation, and status-surface services to pass tests
+- [x] 4.2 Implement registration, cancellation, and status-surface services to pass tests
   - Persist snapshots, emit log_history entries, expose enriched employee list/detail responses with timestamps/reasons/approver metadata, and integrate duplicate-status helpers so stamp history badges and My Requests filters work as asserted.
   - _Requirements: 1,2,6,7,8,9_
 
