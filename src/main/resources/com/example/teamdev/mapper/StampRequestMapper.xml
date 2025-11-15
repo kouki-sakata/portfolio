@@ -180,7 +180,7 @@
             #{employeeId},
             #{stampHistoryId},
             #{stampDate},
-            #{status},
+            #{status}::stamp_request_status,
             #{originalInTime},
             #{originalOutTime},
             #{originalBreakStartTime},
@@ -227,7 +227,7 @@
     <update id="update" parameterType="com.example.teamdev.entity.StampRequest">
         UPDATE stamp_request
         SET
-            status = #{status},
+            status = #{status}::stamp_request_status,
             approval_note = #{approvalNote},
             rejection_reason = #{rejectionReason},
             cancellation_reason = #{cancellationReason},
