@@ -1,12 +1,12 @@
 # Implementation Plan
 
-- [ ] 1. Deliver employee-facing UI via TDD
-- [ ] 1.1 Write Vitest + Testing Library specs before building components
+- [x] 1. Deliver employee-facing UI via TDD
+- [x] 1.1 Write Vitest + Testing Library specs before building components
   - Cover RequestCorrectionModal (prefill, RHF+Zod validation, toasts), status badges on stamp history rows, My Requests table filters/pagination, cancellation dialog, and React Query cache invalidation expectations so UX behavior is locked prior to coding.
   - Assert responsive layout breakpoints, optimistic updates, accessibility contrast, and duplicate-prevention UX so any regression fails fast.
   - Capture the new dual-pane workspace shell: header contents (title, role switch, ⌘K trigger, new request CTA, user summary), 384px sidebar with search/tabs/sort, request-card chrome (status badges, unread dot, shortcut hints, hover quick actions), and detail panel sections (info grid, reasons, rejection banner, role-aware actions) so tests guard the specified interactions.
   - _Requirements: 1,2,6,8,10_
-- [ ] 1.2 Implement employee UI flows until the tests pass
+- [x] 1.2 Implement employee UI flows until the tests pass
   - Build the modal, stamp history integration, My Requests page, and cancellation dialog that satisfy the penned specs, including toast messaging, skeletons, badge color mapping, and hook-driven cache invalidation.
   - Ensure pending/approved statuses disable actions and UI state re-enables after cancellation per the verified expectations.
   - Wire keyboard navigation (↑/↓/j/k + Enter), `WorkflowCommandPalette` actions (new request + status filters + settings shortcut), unread indicators, and Sonner toasts so the list/detail workspace behaves exactly as defined.

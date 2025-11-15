@@ -52,6 +52,18 @@ const mapEntry = (
       }
     ).isNightShift ?? null,
   updateDate: entry.updateDate ?? null,
+  requestStatus:
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        requestStatus?: StampHistoryEntry["requestStatus"];
+      }
+    ).requestStatus ?? "NONE",
+  requestId:
+    (
+      entry as StampHistoryApiResponse["entries"][number] & {
+        requestId?: number | null;
+      }
+    ).requestId ?? null,
 });
 
 const mapResponse = (

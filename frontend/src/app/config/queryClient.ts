@@ -37,6 +37,11 @@ export const QUERY_CONFIG = {
     staleTime: 2 * 60 * 1000, // 2分
     gcTime: 10 * 60 * 1000, // 10分
   },
+  // 打刻修正ワークフロー: UXレスポンス確保のため短期キャッシュ
+  stampRequests: {
+    staleTime: 60 * 1000, // 1分
+    gcTime: 5 * 60 * 1000, // 5分
+  },
   // デフォルト: 動的データの一般的な設定
   dynamic: {
     staleTime: 30 * 1000, // 30秒

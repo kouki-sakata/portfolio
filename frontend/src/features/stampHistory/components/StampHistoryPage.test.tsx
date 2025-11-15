@@ -28,11 +28,29 @@ vi.mock("@/features/stampHistory/api", async (importOriginal) => {
   return {
     ...actual,
     fetchStampHistory: vi.fn(async () => ({
-      entries: [],
+      entries: [
+        {
+          id: 1,
+          employeeId: 1,
+          year: "2025",
+          month: "11",
+          day: "07",
+          dayOfWeek: "FRI",
+          inTime: "09:00",
+          outTime: "18:00",
+          breakStartTime: "12:00",
+          breakEndTime: "13:00",
+          overtimeMinutes: 30,
+          isNightShift: false,
+          updateDate: "2025/11/07",
+          requestStatus: "PENDING",
+          requestId: 10,
+        },
+      ],
       years: ["2025"],
-      months: ["10"],
+      months: ["11"],
       selectedYear: "2025",
-      selectedMonth: "10",
+      selectedMonth: "11",
       summary: {
         totalWorkingDays: 0,
         presentDays: 0,
@@ -107,5 +125,20 @@ describe("StampHistoryPage", () => {
     expect(
       await screen.findByRole("heading", { name: "打刻履歴" })
     ).toBeInTheDocument();
+  });
+
+  it("renders request status badges and disables duplicate submissions", async () => {
+    render(
+      <QueryClientProvider client={queryClient}>
+        <StampHistoryPage />
+      </QueryClientProvider>
+    );
+
+    expect(
+      await screen.findByRole("status", { name: "審査中" })
+    ).toBeInTheDocument();
+
+    const requestButton = screen.getByRole("button", { name: "修正申請" });
+    expect(requestButton).toBeDisabled();
   });
 });

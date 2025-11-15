@@ -68,6 +68,14 @@ const ProfileRoute = lazy(() =>
   }))
 );
 
+const StampRequestWorkflowRoute = lazy(() =>
+  import("@/features/stampRequestWorkflow/routes/MyRequestsRoute").then(
+    (module) => ({
+      default: module.MyRequestsRoute,
+    })
+  )
+);
+
 import { useToast } from "@/hooks/use-toast";
 import {
   type AuthEventPayload,
@@ -158,6 +166,10 @@ const router = createBrowserRouter([
             path: "news-management",
             element: <NewsManagementRoute />,
             loader: () => newsManagementLoader(queryClient),
+          },
+          {
+            path: "stamp-requests/my",
+            element: <StampRequestWorkflowRoute />,
           },
           {
             path: "news",

@@ -89,6 +89,23 @@ const newsKeys = {
 } as const;
 
 /**
+ * 打刻修正ワークフローのクエリキー
+ */
+const stampRequestKeys = {
+  all: ["stampRequests"] as const,
+  my: (
+    params: {
+      status?: string;
+      page?: number;
+      pageSize?: number;
+      search?: string;
+      sort?: string;
+    } = {}
+  ) => ["stampRequests", "my", params] as const,
+  detail: (id: number) => ["stampRequests", "detail", id] as const,
+} as const;
+
+/**
  * 型安全なクエリキーファクトリーパターン
  * 各機能のクエリキーを一元管理し、型安全性を保証
  *
@@ -102,6 +119,7 @@ export const queryKeys = {
   stampHistory: stampHistoryKeys,
   home: homeKeys,
   news: newsKeys,
+  stampRequests: stampRequestKeys,
 } as const;
 
 /**

@@ -37,6 +37,8 @@ import {
   type StampHistoryEntry,
   type StampHistoryResponse,
 } from "@/features/stampHistory/types";
+import { RequestCorrectionModal } from "@/features/stampRequestWorkflow/components/RequestCorrectionModal";
+import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { SuspenseWrapper } from "@/shared/components/loading/SuspenseWrapper";
 import {
@@ -85,6 +87,10 @@ export const StampHistoryPage = () => {
   );
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [requestDialogOpen, setRequestDialogOpen] = useState(false);
+  const [requestTarget, setRequestTarget] = useState<StampHistoryEntry | null>(
+    null
+  );
 
   const activeFilters = useMemo(() => {
     const normalized: { year?: string; month?: string } = {};
@@ -119,6 +125,17 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
+  const handleRequestCorrection = useCallback(
+    (entry: StampHistoryEntry) => {
+      if (!entry.id) {
+        return;
+      }
+      setRequestTarget(entry);
+      setRequestDialogOpen(true);
+    },
+    []
+  );
+
   const createDummyEntry = useCallback(
     (
       year: string,
@@ -148,6 +165,8 @@ export const StampHistoryPage = () => {
         overtimeMinutes: null,
         isNightShift: null,
         updateDate: null,
+        requestStatus: "NONE",
+        requestId: null,
       };
     },
     []
@@ -350,6 +369,7 @@ export const StampHistoryPage = () => {
               <TableHead>残業</TableHead>
               <TableHead>夜勤</TableHead>
               <TableHead>更新日時</TableHead>
+              <TableHead>申請</TableHead>
               <TableHead>操作</TableHead>
             </TableRow>
           </TableHeader>
@@ -382,6 +402,9 @@ export const StampHistoryPage = () => {
                   {entry.updateDate ?? "-"}
                 </TableCell>
                 <TableCell>
+                  <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
+                </TableCell>
+                <TableCell>
                   <div className="flex gap-2">
                     <Button
                       onClick={() => handleEdit(entry)}
@@ -404,6 +427,22 @@ export const StampHistoryPage = () => {
                       />
                       <span className="sr-only">削除</span>
                     </Button>
+                    {entry.id ? (
+                      <Button
+                        aria-label="修正申請"
+                        disabled={entry.requestStatus === "PENDING"}
+                        onClick={() => handleRequestCorrection(entry)}
+                        size="sm"
+                        variant="ghost"
+                      >
+                        <SpriteIcon
+                          className="h-4 w-4"
+                          decorative
+                          name="edit"
+                        />
+                        <span className="sr-only">修正申請</span>
+                      </Button>
+                    ) : null}
                   </div>
                 </TableCell>
               </TableRow>
@@ -426,6 +465,16 @@ export const StampHistoryPage = () => {
         entry={selectedEntry}
         onOpenChange={setDeleteDialogOpen}
         open={deleteDialogOpen}
+      />
+      <RequestCorrectionModal
+        entry={requestTarget}
+        onOpenChange={(open) => {
+          setRequestDialogOpen(open);
+          if (!open) {
+            setRequestTarget(null);
+          }
+        }}
+        open={requestDialogOpen && Boolean(requestTarget)}
       />
     </div>
   );
