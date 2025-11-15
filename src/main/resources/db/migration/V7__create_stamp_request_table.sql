@@ -81,7 +81,3 @@ CREATE TRIGGER trg_stamp_request_updated_at
     BEFORE UPDATE ON stamp_request
     FOR EACH ROW
     EXECUTE FUNCTION update_stamp_request_updated_at();
-
--- Grant permissions
-GRANT SELECT, INSERT, UPDATE ON stamp_request TO app_user;
-GRANT USAGE, SELECT ON SEQUENCE stamp_request_id_seq TO app_user;
