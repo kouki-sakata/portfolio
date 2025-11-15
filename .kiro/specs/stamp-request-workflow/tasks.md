@@ -42,12 +42,12 @@
   - Persist snapshots, emit log_history entries, expose enriched employee list/detail responses with timestamps/reasons/approver metadata, and integrate duplicate-status helpers so stamp history badges and My Requests filters work as asserted.
   - _Requirements: 1,2,6,7,8,9_
 
-- [ ] 5. Validate administrator workflow backend via TDD
-- [ ] 5.1 Write failing approval/rejection/bulk tests covering conflicts and audit
+- [x] 5. Validate administrator workflow backend via TDD
+- [x] 5.1 Write failing approval/rejection/bulk tests covering conflicts and audit
   - Exercise service and controller layers for single approvals/rejections (optional approval note, mandatory rejection reason), conflict detection against mutated stamp_history, and audit log capture for every transition.
   - Design bulk operation tests that enforce batch limit (≤50), partial success reporting, and shared rejection reasons to guarantee ergonomics before coding.
   - _Requirements: 3,4,7,8,9_
-- [ ] 5.2 Implement approval, rejection, conflict handling, and bulk orchestration to satisfy tests
+- [x] 5.2 Implement approval, rejection, conflict handling, and bulk orchestration to satisfy tests
   - Update stamp_history when approving, preserve originals on reject, set timestamps/actors, generate audit/log entries, and propagate structured HTTP 409 payloads consumed by the tests.
   - Reuse single-item logic inside bulk services, aggregating per-item errors and emitting observability logs demanded by the suite.
   - _Requirements: 3,4,7,8,9_
