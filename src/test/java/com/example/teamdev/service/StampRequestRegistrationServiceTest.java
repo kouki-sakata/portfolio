@@ -38,7 +38,7 @@ class StampRequestRegistrationServiceTest {
             Instant.parse("2025-11-15T10:00:00Z"),
             ZoneId.of("UTC")
         );
-        store = new StampRequestStore(fixedClock);
+        store = new StampRequestStore(null, fixedClock);
         service = new StampRequestRegistrationService(store);
     }
 
