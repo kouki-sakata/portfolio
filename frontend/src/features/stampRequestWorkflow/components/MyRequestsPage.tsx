@@ -189,9 +189,9 @@ const WorkflowSidebar = ({
           type="button"
         >
           <div className="flex items-center justify-between">
-            <RequestStatusBadge ariaHidden status={request.status} />
+            <RequestStatusBadge status={request.status} />
             {request.unread ? (
-              <span className="inline-flex items-center">
+              <span aria-label="未読リクエスト" className="inline-flex items-center">
                 <span className="sr-only">未読リクエスト</span>
                 <span
                   aria-hidden="true"
@@ -324,7 +324,7 @@ const WorkflowDetailPanel = ({
             </p>
             <div className="flex items-center gap-2">
               <h2 className="font-semibold text-2xl">{request.dateLabel}</h2>
-              <RequestStatusBadge status={request.status} />
+              <RequestStatusBadge ariaHidden status={request.status} />
             </div>
           </div>
           {request.employeeName ? (
