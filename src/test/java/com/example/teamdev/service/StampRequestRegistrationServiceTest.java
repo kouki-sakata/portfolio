@@ -258,8 +258,8 @@ class StampRequestRegistrationServiceTest {
         // Given
         StampRequestCreateRequest request = new StampRequestCreateRequest(
             1,
-            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
-            OffsetDateTime.parse("2025-11-15T09:00:00Z"),  // 出勤より前
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),  // 出勤が09:00
+            OffsetDateTime.parse("2025-11-15T08:00:00Z"),  // 退勤が08:00（出勤より前）
             null,
             null,
             false,
@@ -473,8 +473,9 @@ class StampRequestRegistrationServiceTest {
     @Test
     void createRequest_成功_翌日退勤の調整() {
         // Given - 退勤時刻が翌日（日付を跨ぐ深夜勤務）
-        OffsetDateTime inTime = OffsetDateTime.parse("2025-11-15T22:00:00Z");
-        OffsetDateTime outTime = OffsetDateTime.parse("2025-11-16T02:00:00Z");  // 翌日
+        // 現在時刻（10:00）より前の時刻を使用
+        OffsetDateTime inTime = OffsetDateTime.parse("2025-11-14T22:00:00Z");  // 前日22:00
+        OffsetDateTime outTime = OffsetDateTime.parse("2025-11-15T02:00:00Z");  // 翌日02:00
 
         StampRequestCreateRequest request = new StampRequestCreateRequest(
             1,
