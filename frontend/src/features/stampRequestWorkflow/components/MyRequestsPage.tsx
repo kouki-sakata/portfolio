@@ -191,7 +191,11 @@ const WorkflowSidebar = ({
           <div className="flex items-center justify-between">
             <RequestStatusBadge status={request.status} />
             {request.unread ? (
-              <span aria-label="未読リクエスト" className="inline-flex items-center">
+              <span
+                aria-label="未読リクエスト"
+                className="inline-flex items-center"
+                role="img"
+              >
                 <span className="sr-only">未読リクエスト</span>
                 <span
                   aria-hidden="true"
