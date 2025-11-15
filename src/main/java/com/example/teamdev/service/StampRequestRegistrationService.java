@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.util.Objects;
 
 /**
  * 打刻修正リクエストの登録を扱うサービス。
@@ -94,7 +95,12 @@ public class StampRequestRegistrationService {
         }
 
         // 休憩時間の検証（Requirement 9-3, 9-4）
-        if (breakStart != null && breakEnd != null) {
+        if (breakStart != null || breakEnd != null) {
+            // 両方指定されているか確認
+            if (breakStart == null || breakEnd == null) {
+                throw new IllegalArgumentException("休憩時間は開始と終了の両方を指定する必要があります");
+            }
+
             // 休憩開始 < 休憩終了
             if (!breakEnd.isAfter(breakStart)) {
                 throw new IllegalArgumentException("休憩終了時刻は休憩開始時刻より後である必要があります");
@@ -108,10 +114,14 @@ public class StampRequestRegistrationService {
     }
 
     private void validateNoDuplicatePendingRequest(Integer stampHistoryId, Integer employeeId) {
+        if (stampHistoryId == null) {
+            throw new IllegalArgumentException("勤怠履歴IDは必須です");
+        }
+
         boolean hasPendingRequest = store.findAll().stream()
             .anyMatch(r ->
-                r.getStampHistoryId().equals(stampHistoryId) &&
-                r.getEmployeeId().equals(employeeId) &&
+                Objects.equals(r.getStampHistoryId(), stampHistoryId) &&
+                Objects.equals(r.getEmployeeId(), employeeId) &&
                 StampRequestStatus.PENDING.name().equals(r.getStatus())
             );
 

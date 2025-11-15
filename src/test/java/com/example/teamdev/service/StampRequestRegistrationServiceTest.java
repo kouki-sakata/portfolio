@@ -94,6 +94,63 @@ class StampRequestRegistrationServiceTest {
     }
 
     @Test
+    void createRequest_失敗_理由がnull() {
+        // Given
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            null  // null
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 100))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("理由は必須です");
+    }
+
+    @Test
+    void createRequest_失敗_理由が空文字() {
+        // Given
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            ""  // 空文字
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 100))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("理由は必須です");
+    }
+
+    @Test
+    void createRequest_失敗_理由が空白のみ() {
+        // Given
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            "          "  // 10文字の空白
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 100))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("理由は必須です");
+    }
+
+    @Test
     void createRequest_失敗_理由が短すぎる() {
         // Given
         StampRequestCreateRequest request = new StampRequestCreateRequest(
@@ -103,13 +160,57 @@ class StampRequestRegistrationServiceTest {
             null,
             null,
             false,
-            "短い"  // 10文字未満
+            "短い"  // 2文字（10文字未満）
         );
 
         // When & Then
         assertThatThrownBy(() -> service.createRequest(request, 100))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("理由は10文字以上");
+    }
+
+    @Test
+    void createRequest_成功_理由が境界値10文字() {
+        // Given - ちょうど10文字
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            "1234567890"  // ちょうど10文字
+        );
+
+        // When
+        StampRequest result = service.createRequest(request, 100);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getReason()).isEqualTo("1234567890");
+    }
+
+    @Test
+    void createRequest_成功_理由が境界値500文字() {
+        // Given - ちょうど500文字
+        String reason500 = "あ".repeat(500);
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            reason500
+        );
+
+        // When
+        StampRequest result = service.createRequest(request, 100);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getReason()).isEqualTo(reason500);
+        assertThat(result.getReason().length()).isEqualTo(500);
     }
 
     @Test
@@ -229,6 +330,44 @@ class StampRequestRegistrationServiceTest {
     }
 
     @Test
+    void createRequest_失敗_休憩開始のみ指定() {
+        // Given - 休憩開始だけ指定、終了がnull
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T12:00:00Z"),
+            null,  // 終了時刻がnull
+            false,
+            "休憩開始のみ指定したリクエストです。"
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 100))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("休憩時間は開始と終了の両方を指定する必要があります");
+    }
+
+    @Test
+    void createRequest_失敗_休憩終了のみ指定() {
+        // Given - 休憩終了だけ指定、開始がnull
+        StampRequestCreateRequest request = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,  // 開始時刻がnull
+            OffsetDateTime.parse("2025-11-15T13:00:00Z"),
+            false,
+            "休憩終了のみ指定したリクエストです。"
+        );
+
+        // When & Then
+        assertThatThrownBy(() -> service.createRequest(request, 100))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("休憩時間は開始と終了の両方を指定する必要があります");
+    }
+
+    @Test
     void createRequest_失敗_同じstampHistoryに対して既にPENDINGリクエストが存在() {
         // Given - 最初のリクエストを作成
         StampRequestCreateRequest firstRequest = new StampRequestCreateRequest(
@@ -257,6 +396,78 @@ class StampRequestRegistrationServiceTest {
         assertThatThrownBy(() -> service.createRequest(duplicateRequest, 100))
             .isInstanceOf(IllegalArgumentException.class)
             .hasMessageContaining("この勤怠記録に対して既に申請中のリクエストが存在します");
+    }
+
+    @Test
+    void createRequest_成功_異なる社員の同じstampHistory() {
+        // Given - 社員100がstampHistory=1にリクエスト
+        StampRequestCreateRequest request100 = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            "社員100のリクエストです。十分な長さがあります。"
+        );
+        service.createRequest(request100, 100);
+
+        // 社員200も同じstampHistory=1にリクエスト（別の社員なので許可されるべき）
+        StampRequestCreateRequest request200 = new StampRequestCreateRequest(
+            1,  // 同じstampHistoryId
+            OffsetDateTime.parse("2025-11-15T09:30:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:30:00Z"),
+            null,
+            null,
+            false,
+            "社員200のリクエストです。十分な長さがあります。"
+        );
+
+        // When
+        StampRequest result = service.createRequest(request200, 200);
+
+        // Then - 異なる社員なので成功すべき
+        assertThat(result).isNotNull();
+        assertThat(result.getEmployeeId()).isEqualTo(200);
+        assertThat(result.getStampHistoryId()).isEqualTo(1);
+    }
+
+    @Test
+    void createRequest_成功_同じstampHistoryにCANCELLEDリクエストが存在() {
+        // Given - PENDING状態でリクエストを作成
+        StampRequestCreateRequest firstRequest = new StampRequestCreateRequest(
+            1,
+            OffsetDateTime.parse("2025-11-15T09:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:00:00Z"),
+            null,
+            null,
+            false,
+            "最初のリクエストです。十分な長さがあります。"
+        );
+        StampRequest cancelledRequest = service.createRequest(firstRequest, 100);
+
+        // 手動でCANCELLED状態に変更
+        cancelledRequest.setStatus(StampRequestStatus.CANCELLED.name());
+        store.save(cancelledRequest);
+
+        // 同じstampHistoryIdで新規リクエスト
+        StampRequestCreateRequest newRequest = new StampRequestCreateRequest(
+            1,  // 同じstampHistoryId
+            OffsetDateTime.parse("2025-11-15T09:30:00Z"),
+            OffsetDateTime.parse("2025-11-15T18:30:00Z"),
+            null,
+            null,
+            false,
+            "新しいリクエストです。十分な長さがあります。"
+        );
+
+        // When - CANCELLED状態のリクエストがあっても新規作成は可能
+        StampRequest result = service.createRequest(newRequest, 100);
+
+        // Then
+        assertThat(result).isNotNull();
+        assertThat(result.getStampHistoryId()).isEqualTo(1);
+        assertThat(result.getStatus()).isEqualTo(StampRequestStatus.PENDING.name());
     }
 
     @Test
