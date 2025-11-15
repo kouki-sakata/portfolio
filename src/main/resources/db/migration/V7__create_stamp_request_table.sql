@@ -46,11 +46,7 @@ CREATE TABLE stamp_request (
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     approved_at TIMESTAMP WITH TIME ZONE,
     rejected_at TIMESTAMP WITH TIME ZONE,
-    cancelled_at TIMESTAMP WITH TIME ZONE,
-
-    -- Ensure only one PENDING request per employee+stamp_history
-    CONSTRAINT unique_pending_request UNIQUE (employee_id, stamp_history_id, status)
-        DEFERRABLE INITIALLY DEFERRED
+    cancelled_at TIMESTAMP WITH TIME ZONE
 );
 
 -- Add comment
