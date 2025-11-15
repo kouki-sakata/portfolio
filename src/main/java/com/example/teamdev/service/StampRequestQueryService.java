@@ -32,10 +32,12 @@ public class StampRequestQueryService {
         int safePage = Math.max(page != null ? page : 0, 0);
         int safeSize = size != null && size > 0 ? size : 20;
 
-        return store.findAll().stream()
-            .filter(request -> Objects.equals(request.getEmployeeId(), employeeId))
-            .filter(request -> shouldIncludeStatus(request, normalizedStatus))
-            .sorted(Comparator.comparing(StampRequest::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+        // Use efficient query methods instead of findAll()
+        List<StampRequest> requests = normalizedStatus != null
+            ? store.findByEmployeeIdAndStatus(employeeId, normalizedStatus)
+            : store.findByEmployeeId(employeeId);
+
+        return requests.stream()
             .skip((long) safePage * safeSize)
             .limit(safeSize)
             .toList();
@@ -43,10 +45,13 @@ public class StampRequestQueryService {
 
     public Integer countEmployeeRequests(Integer employeeId, String status) {
         String normalizedStatus = normalizeStatus(status);
-        return (int) store.findAll().stream()
-            .filter(request -> Objects.equals(request.getEmployeeId(), employeeId))
-            .filter(request -> shouldIncludeStatus(request, normalizedStatus))
-            .count();
+
+        // Use efficient query methods instead of findAll()
+        List<StampRequest> requests = normalizedStatus != null
+            ? store.findByEmployeeIdAndStatus(employeeId, normalizedStatus)
+            : store.findByEmployeeId(employeeId);
+
+        return requests.size();
     }
 
     public List<StampRequest> getPendingRequests(
@@ -63,8 +68,11 @@ public class StampRequestQueryService {
         Comparator<StampRequest> comparator = comparatorForSort(sort);
         Map<Integer, String> nameCache = new HashMap<>();
 
-        return store.findAll().stream()
-            .filter(request -> shouldIncludeStatus(request, normalizedStatus))
+        // Use efficient query method: default to PENDING if no status specified
+        String queryStatus = normalizedStatus != null ? normalizedStatus : "PENDING";
+        List<StampRequest> requests = store.findByStatus(queryStatus);
+
+        return requests.stream()
             .filter(request -> matchesSearch(request, normalizedSearch, nameCache))
             .sorted(comparator)
             .skip((long) safePage * safeSize)
@@ -77,8 +85,11 @@ public class StampRequestQueryService {
         String normalizedSearch = normalizeSearch(search);
         Map<Integer, String> nameCache = new HashMap<>();
 
-        return (int) store.findAll().stream()
-            .filter(request -> shouldIncludeStatus(request, normalizedStatus))
+        // Use efficient query method: default to PENDING if no status specified
+        String queryStatus = normalizedStatus != null ? normalizedStatus : "PENDING";
+        List<StampRequest> requests = store.findByStatus(queryStatus);
+
+        return (int) requests.stream()
             .filter(request -> matchesSearch(request, normalizedSearch, nameCache))
             .count();
     }

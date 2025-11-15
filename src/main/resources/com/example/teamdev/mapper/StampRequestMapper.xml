@@ -3,6 +3,150 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.example.teamdev.mapper.StampRequestMapper">
 
+    <!-- ResultMap: StampRequestエンティティへのマッピング定義 -->
+    <resultMap id="StampRequestResultMap" type="com.example.teamdev.entity.StampRequest">
+        <id property="id" column="id"/>
+        <result property="employeeId" column="employee_id"/>
+        <result property="stampHistoryId" column="stamp_history_id"/>
+        <result property="stampDate" column="stamp_date"/>
+        <result property="status" column="status"/>
+
+        <!-- Original values (immutable snapshot) -->
+        <result property="originalInTime" column="original_in_time"/>
+        <result property="originalOutTime" column="original_out_time"/>
+        <result property="originalBreakStartTime" column="original_break_start_time"/>
+        <result property="originalBreakEndTime" column="original_break_end_time"/>
+        <result property="originalIsNightShift" column="original_is_night_shift"/>
+
+        <!-- Requested values -->
+        <result property="requestedInTime" column="requested_in_time"/>
+        <result property="requestedOutTime" column="requested_out_time"/>
+        <result property="requestedBreakStartTime" column="requested_break_start_time"/>
+        <result property="requestedBreakEndTime" column="requested_break_end_time"/>
+        <result property="requestedIsNightShift" column="requested_is_night_shift"/>
+
+        <!-- Request details -->
+        <result property="reason" column="reason"/>
+        <result property="approvalNote" column="approval_note"/>
+        <result property="rejectionReason" column="rejection_reason"/>
+        <result property="cancellationReason" column="cancellation_reason"/>
+
+        <!-- Actor tracking -->
+        <result property="approvalEmployeeId" column="approval_employee_id"/>
+        <result property="rejectionEmployeeId" column="rejection_employee_id"/>
+
+        <!-- Timestamps -->
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <result property="approvedAt" column="approved_at"/>
+        <result property="rejectedAt" column="rejected_at"/>
+        <result property="cancelledAt" column="cancelled_at"/>
+    </resultMap>
+
+    <!-- SQL fragment: 全カラムのSELECT -->
+    <sql id="selectAllColumns">
+        id,
+        employee_id,
+        stamp_history_id,
+        stamp_date,
+        status,
+        original_in_time,
+        original_out_time,
+        original_break_start_time,
+        original_break_end_time,
+        original_is_night_shift,
+        requested_in_time,
+        requested_out_time,
+        requested_break_start_time,
+        requested_break_end_time,
+        requested_is_night_shift,
+        reason,
+        approval_note,
+        rejection_reason,
+        cancellation_reason,
+        approval_employee_id,
+        rejection_employee_id,
+        created_at,
+        updated_at,
+        approved_at,
+        rejected_at,
+        cancelled_at
+    </sql>
+
+    <!-- IDで1件取得 -->
+    <select id="findById" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE id = #{id}
+    </select>
+
+    <!-- 全件取得（作成日降順） -->
+    <select id="findAll" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 従業員IDで取得（作成日降順） -->
+    <select id="findByEmployeeId" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- 従業員ID + ステータスで取得 -->
+    <select id="findByEmployeeIdAndStatus" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- PENDING状態のリクエストを従業員ID + 勤怠履歴IDで検索（重複チェック用） -->
+    <select id="findPendingByEmployeeIdAndStampHistoryId" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND stamp_history_id = #{stampHistoryId}
+          AND status = 'PENDING'
+        LIMIT 1
+    </select>
+
+    <!-- ステータスで取得（作成日降順） -->
+    <select id="findByStatus" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+    </select>
+
+    <!-- ステータスで取得（ページネーション付き） -->
+    <select id="findByStatusWithPagination" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE status = #{status}
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- ステータス別の件数をカウント -->
+    <select id="countByStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM stamp_request
+        WHERE status = #{status}
+    </select>
+
+    <!-- 勤怠履歴IDに紐づく最新のリクエストを取得（バッジ表示用） -->
+    <select id="findLatestByStampHistoryId" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE stamp_history_id = #{stampHistoryId}
+        ORDER BY created_at DESC
+        LIMIT 1
+    </select>
+
     <!-- リクエストを挿入 (自動生成されたIDを返す) -->
     <insert id="save" parameterType="com.example.teamdev.entity.StampRequest"
             useGeneratedKeys="true" keyProperty="id" keyColumn="id">
@@ -61,7 +205,25 @@
         )
     </insert>
 
-    <!-- リクエストを更新 -->
+    <!--
+        リクエストを更新
+
+        注意: 以下のフィールドは不変のため更新対象外:
+        - employee_id (申請者は変更不可)
+        - stamp_history_id (対象勤怠履歴は変更不可)
+        - stamp_date (対象日は変更不可)
+        - original_* (オリジナル値は不変スナップショット)
+        - requested_* (申請内容は変更不可)
+        - reason (申請理由は変更不可)
+        - created_at (作成日時は不変)
+
+        更新可能:
+        - status (ステータス遷移)
+        - approval_note, approval_employee_id, approved_at (承認時)
+        - rejection_reason, rejection_employee_id, rejected_at (却下時)
+        - cancellation_reason, cancelled_at (取消時)
+        - updated_at (更新日時 - トリガーで自動設定されるが明示的に設定)
+    -->
     <update id="update" parameterType="com.example.teamdev.entity.StampRequest">
         UPDATE stamp_request
         SET
@@ -77,5 +239,11 @@
             cancelled_at = #{cancelledAt}
         WHERE id = #{id}
     </update>
+
+    <!-- リクエストを削除 -->
+    <delete id="deleteById">
+        DELETE FROM stamp_request
+        WHERE id = #{id}
+    </delete>
 
 </mapper>

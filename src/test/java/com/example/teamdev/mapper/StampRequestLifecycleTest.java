@@ -4,31 +4,19 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.example.teamdev.entity.StampRequest;
-import com.example.teamdev.testconfig.PostgresContainerSupport;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class StampRequestLifecycleTest extends PostgresContainerSupport {
-
-    @Autowired
-    private StampRequestMapper stampRequestMapper;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    private static final ZoneOffset JST = ZoneOffset.ofHours(9);
+class StampRequestLifecycleTest extends StampRequestMapperTestBase {
 
     @Test
     @DisplayName("updated_atトリガー - UPDATEで自動的にupdated_atが更新される")
@@ -260,38 +248,4 @@ class StampRequestLifecycleTest extends PostgresContainerSupport {
         assertThat(approved.getApprovedAt()).isNotNull();
     }
 
-    // === Helper methods ===
-
-    private int insertEmployee(int id, String firstName, String lastName) {
-        jdbcTemplate.update(
-                """
-                INSERT INTO employee (id, first_name, last_name, email, password, admin_flag, update_date, profile_metadata)
-                VALUES (?, ?, ?, ?, 'password', 0, NOW(), '{}'::jsonb)
-                ON CONFLICT (id) DO NOTHING
-                """,
-                id,
-                firstName,
-                lastName,
-                firstName.toLowerCase() + "." + lastName.toLowerCase() + "@lifecycle.test"
-        );
-        return id;
-    }
-
-    private int insertStampHistory(int employeeId, LocalDate date) {
-        Integer id = jdbcTemplate.queryForObject(
-                """
-                INSERT INTO stamp_history (stamp_date, year, month, day, employee_id, update_employee_id, update_date)
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
-                RETURNING id
-                """,
-                Integer.class,
-                date,
-                String.format("%04d", date.getYear()),
-                String.format("%02d", date.getMonthValue()),
-                String.format("%02d", date.getDayOfMonth()),
-                employeeId,
-                employeeId
-        );
-        return id != null ? id : 0;
-    }
 }

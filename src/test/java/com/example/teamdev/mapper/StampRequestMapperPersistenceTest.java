@@ -3,32 +3,20 @@ package com.example.teamdev.mapper;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.example.teamdev.entity.StampRequest;
-import com.example.teamdev.testconfig.PostgresContainerSupport;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Transactional;
 
 @SpringBootTest
 @ActiveProfiles("test")
 @Transactional
-class StampRequestMapperPersistenceTest extends PostgresContainerSupport {
-
-    @Autowired
-    private StampRequestMapper stampRequestMapper;
-
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
-
-    private static final ZoneOffset JST = ZoneOffset.ofHours(9);
+class StampRequestMapperPersistenceTest extends StampRequestMapperTestBase {
 
     @Test
     @DisplayName("save - リクエストを保存してIDが自動生成される")
@@ -300,60 +288,4 @@ class StampRequestMapperPersistenceTest extends PostgresContainerSupport {
         assertThat(stampRequestMapper.findById(requestId)).isEmpty();
     }
 
-    // === Helper methods ===
-
-    private int insertEmployee(int id, String firstName, String lastName) {
-        jdbcTemplate.update(
-                """
-                INSERT INTO employee (id, first_name, last_name, email, password, admin_flag, update_date, profile_metadata)
-                VALUES (?, ?, ?, ?, 'password', 0, NOW(), '{}'::jsonb)
-                ON CONFLICT (id) DO NOTHING
-                """,
-                id,
-                firstName,
-                lastName,
-                firstName.toLowerCase() + "." + lastName.toLowerCase() + "@test.com"
-        );
-        return id;
-    }
-
-    private int insertStampHistory(int employeeId, LocalDate date) {
-        Integer id = jdbcTemplate.queryForObject(
-                """
-                INSERT INTO stamp_history (stamp_date, year, month, day, employee_id, update_employee_id, update_date)
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
-                RETURNING id
-                """,
-                Integer.class,
-                date,
-                String.format("%04d", date.getYear()),
-                String.format("%02d", date.getMonthValue()),
-                String.format("%02d", date.getDayOfMonth()),
-                employeeId,
-                employeeId
-        );
-        return id != null ? id : 0;
-    }
-
-    private int insertStampRequest(int employeeId, int stampHistoryId, LocalDate stampDate, String status, String reason) {
-        Integer id = jdbcTemplate.queryForObject(
-                """
-                INSERT INTO stamp_request (
-                    employee_id, stamp_history_id, stamp_date, status,
-                    requested_in_time, requested_is_night_shift, reason,
-                    created_at, updated_at
-                ) VALUES (?, ?, ?, ?::stamp_request_status, ?, ?, ?, NOW(), NOW())
-                RETURNING id
-                """,
-                Integer.class,
-                employeeId,
-                stampHistoryId,
-                stampDate,
-                status,
-                OffsetDateTime.of(stampDate.getYear(), stampDate.getMonthValue(), stampDate.getDayOfMonth(), 9, 0, 0, 0, JST),
-                false,
-                reason
-        );
-        return id != null ? id : 0;
-    }
 }

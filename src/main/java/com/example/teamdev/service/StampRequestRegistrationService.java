@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
-import java.util.Objects;
 
 /**
  * 打刻修正リクエストの登録を扱うサービス。
@@ -118,15 +117,10 @@ public class StampRequestRegistrationService {
             throw new IllegalArgumentException("勤怠履歴IDは必須です");
         }
 
-        boolean hasPendingRequest = store.findAll().stream()
-            .anyMatch(r ->
-                Objects.equals(r.getStampHistoryId(), stampHistoryId) &&
-                Objects.equals(r.getEmployeeId(), employeeId) &&
-                StampRequestStatus.PENDING.name().equals(r.getStatus())
-            );
-
-        if (hasPendingRequest) {
-            throw new IllegalArgumentException("この勤怠記録に対して既に申請中のリクエストが存在します");
-        }
+        // Use efficient query method instead of findAll()
+        store.findPendingByEmployeeIdAndStampHistoryId(employeeId, stampHistoryId)
+            .ifPresent(existing -> {
+                throw new IllegalArgumentException("この勤怠記録に対して既に申請中のリクエストが存在します");
+            });
     }
 }
