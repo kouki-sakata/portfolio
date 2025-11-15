@@ -11,9 +11,16 @@ import org.springframework.stereotype.Service;
 
 /**
  * 打刻修正リクエストの一括操作を扱うサービス。
+ *
+ * Requirement 4 の受入基準を実装:
+ * - バルク承認/却下（≤50件）
+ * - 部分的成功の報告
+ * - 共通却下理由（10-500文字）
  */
 @Service
 public class StampRequestBulkOperationService {
+
+    private static final int MAX_BULK_SIZE = 50;
 
     private final StampRequestStore store;
 
@@ -29,6 +36,12 @@ public class StampRequestBulkOperationService {
         if (approverId == null) {
             throw new IllegalArgumentException("承認者が指定されていません");
         }
+
+        // 承認ノートの検証（オプショナルだが指定された場合は長さチェック）
+        if (approvalNote != null && approvalNote.length() > 500) {
+            throw new IllegalArgumentException("承認ノートは500文字以内で入力してください");
+        }
+
         return processBulk(requestIds, (request, now) -> {
             request.setStatus(StampRequestStatus.APPROVED.name());
             request.setApprovalNote(approvalNote);
@@ -45,9 +58,10 @@ public class StampRequestBulkOperationService {
         if (rejecterId == null) {
             throw new IllegalArgumentException("却下者が指定されていません");
         }
-        if (rejectionReason == null || rejectionReason.isBlank()) {
-            throw new IllegalArgumentException("却下理由を入力してください");
-        }
+
+        // 却下理由の検証（Requirement 4-4）
+        validateRejectionReason(rejectionReason);
+
         return processBulk(requestIds, (request, now) -> {
             request.setStatus(StampRequestStatus.REJECTED.name());
             request.setRejectionReason(rejectionReason);
@@ -56,12 +70,29 @@ public class StampRequestBulkOperationService {
         });
     }
 
+    private void validateRejectionReason(String reason) {
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("却下理由は必須です");
+        }
+        if (reason.length() < 10) {
+            throw new IllegalArgumentException("却下理由は10文字以上で入力してください");
+        }
+        if (reason.length() > 500) {
+            throw new IllegalArgumentException("却下理由は500文字以内で入力してください");
+        }
+    }
+
     private StampRequestBulkOperationResponse processBulk(
         List<Integer> requestIds,
         BiConsumer<StampRequest, OffsetDateTime> updater
     ) {
         if (requestIds == null || requestIds.isEmpty()) {
             throw new IllegalArgumentException("処理対象の申請が選択されていません");
+        }
+
+        // バッチサイズ制限（Requirement 4-3）
+        if (requestIds.size() > MAX_BULK_SIZE) {
+            throw new IllegalArgumentException("一度に処理できる申請は50件までです");
         }
 
         List<Integer> failedIds = new ArrayList<>();
