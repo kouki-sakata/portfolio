@@ -37,7 +37,17 @@ const SIDEBAR_SKELETON_IDS = [
   "sidebar-skeleton-3",
 ] as const;
 
-export const MyRequestsPage = () => {
+type MyRequestsPageProps = {
+  onViewChange?: (view: "employee" | "admin") => void;
+  currentView?: "employee" | "admin";
+  showViewSwitcher?: boolean;
+};
+
+export const MyRequestsPage = ({
+  onViewChange,
+  currentView = "employee",
+  showViewSwitcher = false,
+}: MyRequestsPageProps) => {
   const { user } = useAuth();
   const filterState = useWorkflowFilters();
   const { filters } = filterState;
@@ -72,15 +82,27 @@ export const MyRequestsPage = () => {
           <h1 className="font-bold text-3xl">勤怠ワークフロー</h1>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <fieldset className="inline-flex rounded-full border p-1">
-            <legend className="sr-only">ビュー切替</legend>
-            <Button aria-pressed={true} size="sm" variant="secondary">
-              従業員ビュー
-            </Button>
-            <Button aria-pressed={false} size="sm" variant="ghost">
-              管理者ビュー
-            </Button>
-          </fieldset>
+          {showViewSwitcher && onViewChange ? (
+            <fieldset className="inline-flex rounded-full border p-1">
+              <legend className="sr-only">ビュー切替</legend>
+              <Button
+                aria-pressed={currentView === "employee"}
+                onClick={() => onViewChange("employee")}
+                size="sm"
+                variant={currentView === "employee" ? "secondary" : "ghost"}
+              >
+                従業員ビュー
+              </Button>
+              <Button
+                aria-pressed={currentView === "admin"}
+                onClick={() => onViewChange("admin")}
+                size="sm"
+                variant={currentView === "admin" ? "secondary" : "ghost"}
+              >
+                管理者ビュー
+              </Button>
+            </fieldset>
+          ) : null}
           <Button
             aria-label="⌘K コマンド"
             onClick={() => setCommandOpen(true)}

@@ -70,17 +70,9 @@ const ProfileRoute = lazy(() =>
 );
 
 const StampRequestWorkflowRoute = lazy(() =>
-  import("@/features/stampRequestWorkflow/routes/MyRequestsRoute").then(
+  import("@/features/stampRequestWorkflow/routes/StampRequestWorkflowRoute").then(
     (module) => ({
-      default: module.MyRequestsRoute,
-    })
-  )
-);
-
-const PendingRequestsRoute = lazy(() =>
-  import("@/features/stampRequestWorkflow/routes/PendingRequestsRoute").then(
-    (module) => ({
-      default: module.PendingRequestsRoute,
+      default: module.StampRequestWorkflowRoute,
     })
   )
 );
@@ -177,13 +169,8 @@ const router = createBrowserRouter([
             loader: () => newsManagementLoader(queryClient),
           },
           {
-            path: "stamp-requests/my",
+            path: "stamp-requests",
             element: <StampRequestWorkflowRoute />,
-          },
-          {
-            path: "stamp-requests/pending",
-            element: <PendingRequestsRoute />,
-            loader: () => pendingRequestsRouteLoader(queryClient),
           },
           {
             path: "news",

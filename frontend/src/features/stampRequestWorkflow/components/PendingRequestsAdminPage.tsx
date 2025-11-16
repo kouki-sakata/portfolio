@@ -53,7 +53,15 @@ const STATUS_TABS = [
   { value: "REJECTED", label: "却下" },
 ];
 
-export const PendingRequestsAdminPage = () => {
+type PendingRequestsAdminPageProps = {
+  onViewChange?: (view: "employee" | "admin") => void;
+  currentView?: "employee" | "admin";
+};
+
+export const PendingRequestsAdminPage = ({
+  onViewChange,
+  currentView = "admin",
+}: PendingRequestsAdminPageProps) => {
   const [filters, setFilters] = useState<AdminFilters>({
     status: "PENDING",
     page: 0,
@@ -152,6 +160,27 @@ export const PendingRequestsAdminPage = () => {
           <h1 className="font-bold text-3xl">管理者ワークスペース</h1>
         </div>
         <div className="inline-flex items-center gap-2">
+          {onViewChange ? (
+            <fieldset className="inline-flex rounded-full border p-1">
+              <legend className="sr-only">ビュー切替</legend>
+              <Button
+                aria-pressed={currentView === "employee"}
+                onClick={() => onViewChange("employee")}
+                size="sm"
+                variant={currentView === "employee" ? "secondary" : "ghost"}
+              >
+                従業員ビュー
+              </Button>
+              <Button
+                aria-pressed={currentView === "admin"}
+                onClick={() => onViewChange("admin")}
+                size="sm"
+                variant={currentView === "admin" ? "secondary" : "ghost"}
+              >
+                管理者ビュー
+              </Button>
+            </fieldset>
+          ) : null}
           <Badge variant="outline">管理者</Badge>
           <Button size="sm" variant="ghost">
             ステータス設定
