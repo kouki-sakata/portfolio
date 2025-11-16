@@ -144,8 +144,8 @@ public class StampRequestStore {
             return mapper.findByEmployeeIdAndStatus(employeeId, status);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .toList();
         }
@@ -164,7 +164,7 @@ public class StampRequestStore {
             return mapper.findByEmployeeIdWithPagination(employeeId, offset, limit);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .skip(offset)
                 .limit(limit)
@@ -191,8 +191,8 @@ public class StampRequestStore {
             return mapper.findByEmployeeIdAndStatusWithPagination(employeeId, status, offset, limit);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .skip(offset)
                 .limit(limit)
@@ -211,7 +211,7 @@ public class StampRequestStore {
             return mapper.countByEmployeeId(employeeId);
         } else {
             return (int) storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
                 .count();
         }
     }
@@ -228,8 +228,8 @@ public class StampRequestStore {
             return mapper.countByEmployeeIdAndStatus(employeeId, status);
         } else {
             return (int) storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .count();
         }
     }
@@ -249,9 +249,9 @@ public class StampRequestStore {
             return mapper.findPendingByEmployeeIdAndStampHistoryId(employeeId, stampHistoryId);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
-                .filter(r -> r.getStampHistoryId().equals(stampHistoryId))
-                .filter(r -> "PENDING".equals(r.getStatus()))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
+                .filter(r -> Objects.equals(r.getStampHistoryId(), stampHistoryId))
+                .filter(r -> Objects.equals(r.getStatus(), "PENDING"))
                 .findFirst();
         }
     }
@@ -267,7 +267,7 @@ public class StampRequestStore {
             return mapper.findByStatus(status);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .toList();
         }
@@ -286,7 +286,7 @@ public class StampRequestStore {
             return mapper.findByStatusWithPagination(status, offset, limit);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .skip(offset)
                 .limit(limit)
@@ -305,7 +305,7 @@ public class StampRequestStore {
             return mapper.countByStatus(status);
         } else {
             return (int) storage.values().stream()
-                .filter(r -> r.getStatus().equals(status))
+                .filter(r -> Objects.equals(r.getStatus(), status))
                 .count();
         }
     }
