@@ -36,14 +36,24 @@ export const CancellationDialog = ({
     defaultValues: { reason: "" },
   });
 
-  const handleSubmitForm = async (values: CancellationForm) => {
+import { toast } from "@/hooks/use-toast";
+
+const handleSubmitForm = async (values: CancellationForm) => {
+  try {
     await mutation.mutateAsync({
       requestId,
       reason: values.reason,
     });
     onOpenChange(false);
     form.reset({ reason: "" });
-  };
+  } catch (error) {
+    toast({
+      title: "取消に失敗しました",
+      description: "申請の取消処理に失敗しました。",
+      variant: "destructive",
+    });
+  }
+};
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
