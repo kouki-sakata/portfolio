@@ -255,11 +255,7 @@ describe("Stamp Request Workflow Integration", () => {
       });
 
       await waitFor(() => {
-
-
         expect(approveResult.current.isSuccess).toBe(true);
-
-
       });
 
       // Verify pending list was updated (request removed)
@@ -312,11 +308,7 @@ describe("Stamp Request Workflow Integration", () => {
       });
 
       await waitFor(() => {
-
-
         expect(result.current.isSuccess).toBe(true);
-
-
       });
     });
   });
@@ -412,11 +404,7 @@ describe("Stamp Request Workflow Integration", () => {
       });
 
       await waitFor(() => {
-
-
         expect(cancelResult.current.isSuccess).toBe(true);
-
-
       });
 
       // Verify PENDING list is now empty
@@ -524,11 +512,7 @@ describe("Stamp Request Workflow Integration", () => {
       });
 
       await waitFor(() => {
-
-
         expect(bulkApproveResult.current.isSuccess).toBe(true);
-
-
       });
       expect(bulkApproveResult.current.data?.successCount).toBe(3);
 
