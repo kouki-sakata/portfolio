@@ -84,15 +84,12 @@ npm run generate:api # OpenAPI型生成
 - **バルクAPIエラー戦略**: `extractRootCause`メソッドでネストされた例外の根本原因を抽出、バリデーションエラー（IllegalArgumentException）とシステムエラーを分離処理、部分成功時のログ出力、`ResponseStatusException`で適切なHTTPステータス返却（400/500）
 - **Map型レスポンス変換パターン**（打刻履歴）: Service層が `List<Map<String, Object>>` でカレンダー形式データ返却、Controller層が record DTO（`StampHistoryEntryResponse`）に型安全変換
 
-### 打刻申請ワークフローAPI（2025-11-15）
+### 打刻申請ワークフローAPI（2025-11-16 実装完了）
 - `StampRequestRestController` が `/api/stamp-requests` 以下の create/my/pending/detail/approve/reject/cancel/bulk を単一クラスで提供し、`SecurityConfig` で `requestMatchers(HttpMethod.POST, "/api/stamp-requests")` や `hasRole('ADMIN')` を細かく制御。DTOは `StampRequestListResponse`/`StampRequestResponse` が ISO8601 + epoch timestamp を同時に返し、UIの履歴・バッジ描画を簡素化。
 - `StampRequestRegistrationService`（理由10〜500文字/時刻順序/未来日禁止/重複防止）、`ApprovalService`・`Rejection`・`Cancellation`・`BulkOperationService`（MAX 50件 + 部分成功 + 共通理由検証）、`QueryService`（status/search/sort/page + EmployeeMapperキャッシュ）が `StampRequestStore` を共有。`StampRequestStore` は `@Autowired(required=false)` な `StampRequestMapper`/`Clock` を受け取り、Mapper未注入（@WebMvcTest等）時はインメモリ実装へフォールバックしてサービスコードを変更せずにテストできる。
 - MyBatisは `src/main/resources/com/example/teamdev/mapper/StampRequestMapper.xml` で ResultMap + pagination + partial index活用クエリを定義し、`stamp_request_status` ENUMへのキャストや snapshot 列の明示更新を徹底。`StampRequestMapper` インターフェースは `findPendingByEmployeeIdAndStampHistoryId` など重複チェック専用クエリを提供。
 - `StampRequestRestControllerTest`（@WebMvcTest + SecurityConfig）が happy path/認可/バリデーション/バルク操作をMockMvcでカバーし、`@Tag("api")` で `./gradlew apiTest` 対象に含めることでリグレッションを防止。
-
-### ギャップ: Stamp Request OpenAPI/契約
-- `/api/stamp-requests/**` の実装は完了したが `openapi/openapi.yaml` にパス/スキーマが未登録のため、`npm run generate:api-types` `npm run generate:zod-schemas` が stamp request DTO を生成できず、`features/stampRequestWorkflow/types.ts` に独自型が残る。
-- Contract test (`-PenableOpenApiContract`) や `@hey-api/openapi-ts` がこの機能を認識しない状態なので、OpenAPIへ追記→型再生成→MSW/Playwrightモック更新を spec / task として追跡する。
+- **OpenAPI定義完了**: `openapi/openapi.yaml` に全9エンドポイント + 10種類のスキーマ定義済み。`npm run generate:api` によりTypeScript型とZodスキーマが自動生成され、`features/stampRequestWorkflow/types.ts` の手書き型は削除済み。Contract test (`-PenableOpenApiContract`) で実行可能。
 
 ### スキーマ正規化とJSONB戦略
 
@@ -190,4 +187,4 @@ npm run generate:api # OpenAPI型生成
 - **プロファイル**: dev（Swagger有効）、test（Testcontainers）、prod（最適化）
 
 ---
-*Last Updated: 2025-11-15 (打刻申請API/V7マイグレーション反映 + OpenAPIギャップ警告)*
+*Last Updated: 2025-11-16 (打刻申請ワークフロー完全実装 + OpenAPI定義完了を反映)*

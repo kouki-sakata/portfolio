@@ -117,15 +117,22 @@ React + Spring Boot SPAベースのモバイルフレンドリーな勤怠管理
   - `StampRequestRegistrationService`/`ApprovalService`/`CancellationService`/`BulkOperationService`/`QueryService` が `StampRequestStore` 経由で MyBatis ↔ インメモリ永続化を切り替え、理由/時刻/重複検証や MAX 50 件のバルク制限をビジネスルールとして保持。
   - Flyway `V7__create_stamp_request_table.sql` が ENUM・スナップショット列・部分一意インデックス + updated_at トリガーを導入し、`StampRequestMapper.xml` + DTO（`StampRequestResponse/ListResponse`）が UI に必要な氏名/epoch timestamp を整形。MockMvc（`StampRequestRestControllerTest`）がAPIハッピーパス/権限制御を網羅。
 
+- ✅ 勤怠申請ワークフロー完全実装（2025-11-16 PR #123）
+  - REST API: `/api/stamp-requests/**` 全9エンドポイント公開（create/my/pending/detail/approve/reject/cancel/bulk）
+  - OpenAPI完全定義: 全エンドポイント + 10種類のスキーマ（StampRequest、StampRequestCreateRequest、StampRequestResponse等）
+  - 型生成完了: TypeScript型とZodスキーマが `npm run generate:api` で自動生成済み
+  - DB: Flyway V7/V8（stamp_request テーブル + ENUMステータス + 更新トリガー + 重複防止インデックス）
+  - フロントエンド: MyRequestsPage/PendingRequestsAdminPage + 20+コンポーネント + 統合テスト556行
+  - 統合テスト: Backend(MockMvc) + Frontend(MSW/Vitest) カバレッジ完備
+  - 残タスク: Playwright E2Eテスト（Task 8）のみ
+
 ### 開発中/計画中
 - 🔄 E2Eテスト拡充（継続中）
   - お知らせ管理 Playwright テスト（news-management.spec.ts、現在スキップ状態）
-- ⚠️ 勤怠申請ワークフロー OpenAPI/型同期
-  - Spring Boot 側は `/api/stamp-requests/**` を公開済みだが、`openapi/openapi.yaml` に当該パス・スキーマが未登録のため `npm run generate:api` で型が生成されず、`features/stampRequestWorkflow/types.ts` が手書きで乖離。
-  - Stamp request DTO を OpenAPI に追加し、contract test (`-PenableOpenApiContract`) と `@hey-api/openapi-ts`/`openapi-zod-client` の再生成を完了するまで本番公開前のギャップ扱い（specチケット化が必要）。
-- 📋 管理者分析ダッシュボード、勤怠承認ワークフロー
+  - 勤怠申請ワークフロー Playwright テスト（Task 8）
+- 📋 管理者分析ダッシュボード、勤怠承認ワークフロー拡張
 - 📋 外部システム連携API、プッシュ通知、生体認証
 - 📋 お知らせ管理のリッチテキストエディタ統合（現在はTextarea）
 
 ---
-*Last Updated: 2025-11-15 (勤怠申請API実装とOpenAPIギャップ警告を反映)*
+*Last Updated: 2025-11-16 (勤怠申請ワークフロー完全実装を反映)*

@@ -1,5 +1,29 @@
 # Steering Documents Changelog
 
+## 2025-11-16 (Update 38)
+
+### Updated Documents
+- `product.md` - 勤怠申請ワークフローを「完了済み」に移行、OpenAPIギャップ警告を削除
+- `tech.md` - Stamp Request OpenAPI/契約ギャップセクションを削除、実装完了を反映
+
+### Code Drift Resolution
+- ✅ **勤怠申請ワークフロー実装完了（PR #123, 2025-11-16）**
+  - OpenAPI定義: `/api/stamp-requests/**` 全9エンドポイント + 10種類のスキーマ定義完了
+  - 型生成: TypeScript型とZodスキーマが `npm run generate:api` で正常生成済み
+  - バックエンド: StampRequestRestController + V7/V8マイグレーション + サービス層完備
+  - フロントエンド: 20+コンポーネント + 統合テスト556行完備
+  - Update 37で警告されていた「OpenAPI未追加」問題は完全解消
+
+### Impact
+- ステアリングファイルが最新のコードベース（PR #123マージ後）と完全同期
+- 新規メンバーが勤怠申請ワークフローの完全実装状況を正確に把握可能
+- 「実装中」として誤認されるリスクを排除、本番デプロイ準備完了の正確な認識を促進
+
+### Note
+Update 37（2025-11-15）時点では実装中だった勤怠申請ワークフローが、翌日のPR #123マージにより完全実装済みとなったため、ステアリングを即日更新。残タスクはPlaywright E2Eテスト（Task 8）のみ。
+
+---
+
 ## 2025-11-15 (Update 37)
 
 ### Updated Documents
