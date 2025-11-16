@@ -1,5 +1,4 @@
-import { Keyboard, Plus, User } from "lucide-react";
-
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 
@@ -8,16 +7,13 @@ type WorkflowHeaderProps = {
   userName?: string;
   showViewSwitcher?: boolean;
   onViewChange?: (view: "employee" | "admin") => void;
-  onCommandClick?: () => void;
   onNewRequestClick?: () => void;
 };
 
 export const WorkflowHeader = ({
   role,
-  userName,
   showViewSwitcher = false,
   onViewChange,
-  onCommandClick,
   onNewRequestClick,
 }: WorkflowHeaderProps) => {
   return (

@@ -169,7 +169,6 @@ export const StampRequestWorkflowPage = ({
   return (
     <section className="flex h-screen flex-col bg-gray-50">
       <WorkflowHeader
-        onCommandClick={() => {}}
         onNewRequestClick={() => {}}
         onViewChange={onViewChange}
         role={role}
