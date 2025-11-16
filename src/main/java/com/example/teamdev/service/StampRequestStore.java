@@ -126,7 +126,7 @@ public class StampRequestStore {
             return mapper.findByEmployeeId(employeeId);
         } else {
             return storage.values().stream()
-                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
                 .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
                 .toList();
         }
