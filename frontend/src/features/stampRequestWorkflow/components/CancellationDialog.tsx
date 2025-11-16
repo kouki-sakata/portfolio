@@ -38,21 +38,21 @@ export const CancellationDialog = ({
   });
 
   const handleSubmitForm = async (values: CancellationForm) => {
-  try {
-    await mutation.mutateAsync({
-      requestId,
-      reason: values.reason,
-    });
-    onOpenChange(false);
-    form.reset({ reason: "" });
-  } catch (error) {
-    toast({
-      title: "取消に失敗しました",
-      description: "申請の取消処理に失敗しました。",
-      variant: "destructive",
-    });
-  }
-};
+    try {
+      await mutation.mutateAsync({
+        requestId,
+        reason: values.reason,
+      });
+      onOpenChange(false);
+      form.reset({ reason: "" });
+    } catch (_error) {
+      toast({
+        title: "取消に失敗しました",
+        description: "申請の取消処理に失敗しました。",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>

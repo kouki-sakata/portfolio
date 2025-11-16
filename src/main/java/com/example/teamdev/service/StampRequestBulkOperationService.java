@@ -3,7 +3,6 @@ package com.example.teamdev.service;
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.dto.api.stamprequest.StampRequestBulkOperationResponse;
 import com.example.teamdev.entity.StampRequest;
-import com.example.teamdev.exception.StampRequestException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +87,7 @@ public class StampRequestBulkOperationService {
                 // 個別承認と同じロジックを実行（StampHistory の更新を含む）
                 approvalService.approveRequest(requestId, approverId, approvalNote);
                 successCount++;
-            } catch (StampRequestException | IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 // 部分的成功を許容：個々のエラーは失敗としてカウント
                 log.warn("一括承認でリクエスト {} の承認に失敗: {}", requestId, e.getMessage());
                 failedIds.add(requestId);

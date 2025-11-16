@@ -191,6 +191,43 @@ public class StampRequestStore {
     }
 
     /**
+     * ステータスでリクエストをページネーション付きで取得します。
+     *
+     * @param status ステータス
+     * @param offset 開始オフセット
+     * @param limit 取得件数
+     * @return ステータスに一致するリクエスト
+     */
+    public List<StampRequest> findByStatusWithPagination(String status, int offset, int limit) {
+        if (mapper != null) {
+            return mapper.findByStatusWithPagination(status, offset, limit);
+        } else {
+            return storage.values().stream()
+                .filter(r -> r.getStatus().equals(status))
+                .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
+                .skip(offset)
+                .limit(limit)
+                .toList();
+        }
+    }
+
+    /**
+     * ステータスでリクエスト件数をカウントします。
+     *
+     * @param status ステータス
+     * @return 件数
+     */
+    public int countByStatus(String status) {
+        if (mapper != null) {
+            return mapper.countByStatus(status);
+        } else {
+            return (int) storage.values().stream()
+                .filter(r -> r.getStatus().equals(status))
+                .count();
+        }
+    }
+
+    /**
      * すべてのリクエストを取得します。
      *
      * <p><strong>警告:</strong> 本番環境では使用しないでください。

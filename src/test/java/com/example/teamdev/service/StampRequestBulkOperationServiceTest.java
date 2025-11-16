@@ -3,9 +3,7 @@ package com.example.teamdev.service;
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.dto.api.stamprequest.StampRequestBulkOperationResponse;
 import com.example.teamdev.entity.StampRequest;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
+import com.example.teamdev.exception.StampRequestException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
@@ -13,9 +11,15 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * StampRequestBulkOperationService のユニットテスト。
@@ -28,6 +32,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 class StampRequestBulkOperationServiceTest {
 
     private StampRequestStore store;
+    private StampRequestApprovalService approvalService;
     private StampRequestBulkOperationService service;
     private Clock fixedClock;
 
@@ -38,7 +43,40 @@ class StampRequestBulkOperationServiceTest {
             ZoneId.of("UTC")
         );
         store = new StampRequestStore(null, fixedClock);
-        service = new StampRequestBulkOperationService(store);
+        approvalService = mock(StampRequestApprovalService.class);
+        when(approvalService.approveRequest(any(), any(), any())).then(invocation -> {
+            Integer requestId = invocation.getArgument(0);
+            Integer approverId = invocation.getArgument(1);
+            String approvalNote = invocation.getArgument(2);
+
+            if (approverId == null) {
+                throw new IllegalArgumentException("承認者が指定されていません");
+            }
+
+            StampRequest request = store.findById(requestId)
+                .orElseThrow(() -> new StampRequestException(
+                    HttpStatus.NOT_FOUND,
+                    "対象の申請は存在しないか既に処理済みです"
+                ));
+
+            if (StampRequestStatus.isFinalState(request.getStatus())) {
+                throw new StampRequestException(
+                    HttpStatus.CONFLICT,
+                    "対象の申請は存在しないか既に処理済みです"
+                );
+            }
+
+            OffsetDateTime now = store.now();
+            request.setStatus(StampRequestStatus.APPROVED.name());
+            request.setApprovalEmployeeId(approverId);
+            request.setApprovalNote(approvalNote);
+            request.setApprovedAt(now);
+            request.setUpdatedAt(now);
+            store.save(request);
+            return request;
+        });
+
+        service = new StampRequestBulkOperationService(store, approvalService);
     }
 
     @Test
