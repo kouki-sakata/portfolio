@@ -212,6 +212,28 @@ const WorkflowSidebar = ({
   onPrevPage,
   isLoading,
 }: WorkflowSidebarProps) => {
+  // ステータスカウントを計算
+  const statusCounts = {
+    all: requests.length,
+    new: requests.filter((r) => r.status === "NEW").length,
+    pending: requests.filter((r) => r.status === "PENDING").length,
+    approved: requests.filter((r) => r.status === "APPROVED").length,
+    rejected: requests.filter((r) => r.status === "REJECTED").length,
+  };
+
+  const getSortLabel = (sort: string) => {
+    switch (sort) {
+      case "recent":
+        return "新しい順";
+      case "oldest":
+        return "古い順";
+      case "status":
+        return "ステータス順";
+      default:
+        return "新しい順";
+    }
+  };
+
   const renderRequestList = () => {
     if (isLoading) {
       return SIDEBAR_SKELETON_IDS.map((id) => (
@@ -229,38 +251,62 @@ const WorkflowSidebar = ({
 
     return requests.map((request) => {
       const isActive = selectedId === request.id;
+      const getStatusIcon = (status: string) => {
+        switch (status) {
+          case "NEW":
+            return <AlertCircle className="h-4 w-4 text-blue-600" />;
+          case "PENDING":
+            return <Clock className="h-4 w-4 text-yellow-600" />;
+          case "APPROVED":
+            return <CheckCircle className="h-4 w-4 text-green-600" />;
+          case "REJECTED":
+            return <XCircle className="h-4 w-4 text-red-600" />;
+          default:
+            return null;
+        }
+      };
+
       return (
-        <button
-          aria-pressed={selectedId === request.id}
-          className="w-full rounded-lg border p-3 text-left transition hover:bg-muted"
+        <div
+          className={`group relative mb-2 rounded-lg border transition-all ${
+            isActive
+              ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+              : "bg-white hover:border-gray-300 hover:bg-gray-50"
+          }`}
           key={request.id}
-          onClick={() => onSelectRequest(request.id)}
-          type="button"
         >
-          <div className="flex items-center justify-between">
-            <RequestStatusBadge status={request.status} />
-            {request.unread ? (
-              <span
-                aria-label="未読リクエスト"
-                className="inline-flex items-center"
-                role="img"
-              >
-                <span className="sr-only">未読リクエスト</span>
-                <span
-                  aria-hidden="true"
-                  className="h-2 w-2 rounded-full bg-red-500"
-                />
-              </span>
-            ) : null}
+          <div className="flex items-start gap-3 p-4">
+            <button
+              className="flex-1 text-left"
+              onClick={() => onSelectRequest(request.id)}
+              type="button"
+            >
+              <div className="mb-2 flex items-start justify-between">
+                <div className="flex items-center gap-2">
+                  {getStatusIcon(request.status)}
+                  <span className="text-gray-500 text-xs">R{request.id}</span>
+                  {request.unread && (
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                  )}
+                </div>
+                <RequestStatusBadge status={request.status} />
+              </div>
+              <div className="mb-2">
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-3 w-3 text-gray-400" />
+                  <span className="text-sm">{request.dateLabel}</span>
+                  <span className="text-gray-500 text-xs">打刻修正</span>
+                </div>
+              </div>
+              <p className="mb-2 line-clamp-2 text-gray-600 text-sm">
+                {request.reason}
+              </p>
+              <div className="text-gray-400 text-xs">
+                提出: {request.submittedAt || "N/A"}
+              </div>
+            </button>
           </div>
-          <p className="mt-2 text-muted-foreground text-sm">
-            {obfuscateReason(request.reason, isActive)}
-          </p>
-          <div className="mt-3 flex items-center justify-between text-muted-foreground text-xs">
-            <span>{request.dateLabel}</span>
-            <span>↑↓で移動・Enterで開く</span>
-          </div>
-        </button>
+        </div>
       );
     });
   };
@@ -271,52 +317,89 @@ const WorkflowSidebar = ({
       data-testid="workflow-sidebar"
     >
       <div className="space-y-3 border-b p-4">
-        <div className="flex items-center rounded-full border px-3">
-          <Search className="mr-2 h-4 w-4 text-muted-foreground" />
-          <Label className="sr-only" htmlFor="workflow-search">
-            検索
-          </Label>
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <Input
-            aria-label="検索"
-            className="border-0 p-0 shadow-none focus-visible:ring-0"
-            id="workflow-search"
+            className="pl-9"
             onChange={(event) => onSearch(event.target.value)}
-            placeholder="検索"
+            placeholder="申請を検索..."
             value={filters.search}
           />
         </div>
-        <div
-          aria-label="ステータスタブ"
-          className="mt-4 flex space-x-1 overflow-x-auto"
-          role="tablist"
-        >
-          {STATUS_TABS.map((tab) => (
-            <Button
-              aria-controls={`tab-${tab.value}`}
-              aria-selected={filters.status === tab.value}
-              key={tab.value}
-              onClick={() => onStatusChange(tab.value)}
-              role="tab"
-              size="sm"
-              variant={filters.status === tab.value ? "secondary" : "ghost"}
-            >
-              {tab.label}
-            </Button>
-          ))}
+
+        {/* ステータスタブ */}
+        <Tabs onValueChange={onStatusChange} value={filters.status}>
+          <TabsList className="grid w-full grid-cols-5">
+            <TabsTrigger className="px-2 text-xs" value="ALL">
+              全て
+              <Badge className="ml-1 text-xs" variant="secondary">
+                {statusCounts.all}
+              </Badge>
+            </TabsTrigger>
+            <TabsTrigger className="px-2 text-xs" value="NEW">
+              新規
+              {statusCounts.new > 0 && (
+                <Badge className="ml-1 bg-blue-100 text-xs" variant="secondary">
+                  {statusCounts.new}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger className="px-2 text-xs" value="PENDING">
+              保留
+              {statusCounts.pending > 0 && (
+                <Badge className="ml-1 bg-yellow-500 text-xs">
+                  {statusCounts.pending}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger className="px-2 text-xs" value="APPROVED">
+              承認
+              {statusCounts.approved > 0 && (
+                <Badge className="ml-1 text-xs" variant="secondary">
+                  {statusCounts.approved}
+                </Badge>
+              )}
+            </TabsTrigger>
+            <TabsTrigger className="px-2 text-xs" value="REJECTED">
+              却下
+              {statusCounts.rejected > 0 && (
+                <Badge className="ml-1 text-xs" variant="secondary">
+                  {statusCounts.rejected}
+                </Badge>
+              )}
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {/* ソート & バルクアクション */}
+        <div className="flex items-center justify-between">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button className="gap-2" size="sm" variant="outline">
+                <ArrowUpDown className="h-3 w-3" />
+                {getSortLabel(filters.sort)}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>並び替え</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup
+                onValueChange={onSortChange}
+                value={filters.sort}
+              >
+                <DropdownMenuRadioItem value="recent">
+                  新しい順
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="oldest">
+                  古い順
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem value="status">
+                  ステータス順
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
-        <Select
-          onValueChange={(value) => onSortChange(value)}
-          value={filters.sort}
-        >
-          <SelectTrigger className="mt-4">
-            <SelectValue placeholder="並び順" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="recent">新しい順</SelectItem>
-            <SelectItem value="oldest">古い順</SelectItem>
-            <SelectItem value="status">ステータス順</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       <ScrollArea className="flex-1">
