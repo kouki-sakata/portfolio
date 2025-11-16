@@ -212,6 +212,97 @@ const ProfileStatisticsResponse = z
   })
   .strict()
   .passthrough();
+const StampRequestCreateRequest = z
+  .object({
+    stampHistoryId: z.number().int(),
+    requestedInTime: z.string().datetime({ offset: true }).optional(),
+    requestedOutTime: z.string().datetime({ offset: true }).optional(),
+    requestedBreakStartTime: z.string().datetime({ offset: true }).optional(),
+    requestedBreakEndTime: z.string().datetime({ offset: true }).optional(),
+    requestedIsNightShift: z.boolean().optional(),
+    reason: z.string().min(10).max(500),
+  })
+  .strict()
+  .passthrough();
+const StampRequestCancellationRequest = z
+  .object({ cancellationReason: z.string().min(10).max(500) })
+  .strict()
+  .passthrough();
+const StampRequestApprovalRequest = z
+  .object({ approvalNote: z.string().max(500) })
+  .partial()
+  .strict()
+  .passthrough();
+const StampRequestRejectionRequest = z
+  .object({ rejectionReason: z.string().min(10).max(500) })
+  .strict()
+  .passthrough();
+const StampRequestBulkApprovalRequest = z
+  .object({
+    requestIds: z.array(z.number().int()).min(1).max(50),
+    approvalNote: z.string().max(500).optional(),
+  })
+  .strict()
+  .passthrough();
+const StampRequestBulkRejectionRequest = z
+  .object({
+    requestIds: z.array(z.number().int()).min(1).max(50),
+    rejectionReason: z.string().min(10).max(500),
+  })
+  .strict()
+  .passthrough();
+const StampRequestBulkOperationResponse = z
+  .object({
+    successCount: z.number().int(),
+    failureCount: z.number().int(),
+    failedRequestIds: z.array(z.number().int()),
+  })
+  .strict()
+  .passthrough();
+const StampRequestResponse = z
+  .object({
+    id: z.number().int(),
+    employeeId: z.number().int(),
+    employeeName: z.string(),
+    stampHistoryId: z.number().int(),
+    stampDate: z.string(),
+    originalInTime: z.string(),
+    originalOutTime: z.string(),
+    originalBreakStartTime: z.string(),
+    originalBreakEndTime: z.string(),
+    originalIsNightShift: z.boolean(),
+    requestedInTime: z.string(),
+    requestedOutTime: z.string(),
+    requestedBreakStartTime: z.string(),
+    requestedBreakEndTime: z.string(),
+    requestedIsNightShift: z.boolean(),
+    reason: z.string(),
+    status: z.enum(["NEW", "PENDING", "APPROVED", "REJECTED", "CANCELLED"]),
+    approvalNote: z.string(),
+    rejectionReason: z.string(),
+    cancellationReason: z.string(),
+    approvalEmployeeId: z.number().int(),
+    approvalEmployeeName: z.string(),
+    createdAt: z.string().datetime({ offset: true }),
+    updatedAt: z.string().datetime({ offset: true }),
+    approvedAt: z.string().datetime({ offset: true }),
+    rejectedAt: z.string().datetime({ offset: true }),
+    cancelledAt: z.string().datetime({ offset: true }),
+    submittedTimestamp: z.number().int(),
+    updatedTimestamp: z.number().int(),
+  })
+  .partial()
+  .strict()
+  .passthrough();
+const StampRequestListResponse = z
+  .object({
+    requests: z.array(StampRequestResponse),
+    totalCount: z.number().int(),
+    pageNumber: z.number().int(),
+    pageSize: z.number().int(),
+  })
+  .strict()
+  .passthrough();
 
 export const schemas = {
   LoginRequest,
@@ -242,6 +333,15 @@ export const schemas = {
   AttendanceSummaryResponse,
   MonthlyAttendanceResponse,
   ProfileStatisticsResponse,
+  StampRequestCreateRequest,
+  StampRequestCancellationRequest,
+  StampRequestApprovalRequest,
+  StampRequestRejectionRequest,
+  StampRequestBulkApprovalRequest,
+  StampRequestBulkRejectionRequest,
+  StampRequestBulkOperationResponse,
+  StampRequestResponse,
+  StampRequestListResponse,
 };
 
 const endpoints = makeApi([

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -202,6 +203,14 @@ public class SecurityConfig {
                     "/v3/api-docs/**"
                 ).permitAll()
                 .requestMatchers("/api/news/published").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/stamp-requests").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/stamp-requests/my-requests").authenticated()
+                .requestMatchers(HttpMethod.GET, "/api/stamp-requests/{id}").authenticated()
+                .requestMatchers(HttpMethod.POST, "/api/stamp-requests/{id}/cancel").authenticated()
+                .requestMatchers("/api/stamp-requests/pending/**").hasRole("ADMIN")
+                .requestMatchers("/api/stamp-requests/*/approve").hasRole("ADMIN")
+                .requestMatchers("/api/stamp-requests/*/reject").hasRole("ADMIN")
+                .requestMatchers("/api/stamp-requests/bulk/**").hasRole("ADMIN")
                 .requestMatchers("/employeemanage/**", "/newsmanage/**").hasRole("ADMIN")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
