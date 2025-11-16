@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ApprovalDialog } from "@/features/stampRequestWorkflow/components/ApprovalDialog";
@@ -28,6 +29,7 @@ export const StampRequestWorkflowPage = ({
   showViewSwitcher = false,
 }: StampRequestWorkflowPageProps) => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const isAdmin = role === "admin";
 
   // フィルター状態
@@ -166,10 +168,14 @@ export const StampRequestWorkflowPage = ({
         sort: employeeFilters.filters.sort,
       };
 
+  const handleNewRequestClick = () => {
+    navigate("/stamp-history");
+  };
+
   return (
     <section className="flex h-screen flex-col bg-gray-50">
       <WorkflowHeader
-        onNewRequestClick={() => {}}
+        onNewRequestClick={handleNewRequestClick}
         onViewChange={onViewChange}
         role={role}
         showViewSwitcher={showViewSwitcher}
