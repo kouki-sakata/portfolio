@@ -176,7 +176,9 @@ describe("Stamp Request Workflow Integration", () => {
         }
       });
 
-      expect(result.current.isError).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
     });
   });
 
@@ -453,7 +455,9 @@ describe("Stamp Request Workflow Integration", () => {
         }
       });
 
-      expect(result.current.isError).toBe(true);
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
     });
   });
 
@@ -558,9 +562,11 @@ describe("Stamp Request Workflow Integration", () => {
         });
       });
 
-      expect(result.current.data?.successCount).toBe(2);
-      expect(result.current.data?.failureCount).toBe(1);
-      expect(result.current.data?.failedRequestIds).toContain(2);
+      await waitFor(() => {
+        expect(result.current.data?.successCount).toBe(2);
+        expect(result.current.data?.failureCount).toBe(1);
+        expect(result.current.data?.failedRequestIds).toContain(2);
+      });
     });
   });
 });
