@@ -429,6 +429,230 @@ export type StampHistoryEntryResponse = {
     updateDate?: string | null;
 };
 
+export type StampRequestCreateRequest = {
+    /**
+     * 紐づく打刻履歴ID
+     */
+    stampHistoryId: number;
+    /**
+     * 希望する出勤時刻
+     */
+    requestedInTime?: string;
+    /**
+     * 希望する退勤時刻
+     */
+    requestedOutTime?: string;
+    /**
+     * 希望する休憩開始時刻
+     */
+    requestedBreakStartTime?: string;
+    /**
+     * 希望する休憩終了時刻
+     */
+    requestedBreakEndTime?: string;
+    /**
+     * 夜勤フラグ
+     */
+    requestedIsNightShift?: boolean;
+    /**
+     * 修正理由
+     */
+    reason: string;
+};
+
+export type StampRequestCancellationRequest = {
+    /**
+     * 取消理由
+     */
+    cancellationReason: string;
+};
+
+export type StampRequestApprovalRequest = {
+    /**
+     * 承認メモ
+     */
+    approvalNote?: string;
+};
+
+export type StampRequestRejectionRequest = {
+    /**
+     * 却下理由
+     */
+    rejectionReason: string;
+};
+
+export type StampRequestBulkApprovalRequest = {
+    /**
+     * 処理対象の申請ID一覧
+     */
+    requestIds: Array<number>;
+    /**
+     * 共通承認メモ
+     */
+    approvalNote?: string;
+};
+
+export type StampRequestBulkRejectionRequest = {
+    /**
+     * 処理対象の申請ID一覧
+     */
+    requestIds: Array<number>;
+    /**
+     * 共通却下理由
+     */
+    rejectionReason: string;
+};
+
+export type StampRequestBulkOperationResponse = {
+    /**
+     * 成功件数
+     */
+    successCount: number;
+    /**
+     * 失敗件数
+     */
+    failureCount: number;
+    /**
+     * 失敗した申請ID
+     */
+    failedRequestIds: Array<number>;
+};
+
+export type StampRequestResponse = {
+    /**
+     * リクエストID
+     */
+    id?: number;
+    /**
+     * 従業員ID
+     */
+    employeeId?: number;
+    /**
+     * 従業員氏名
+     */
+    employeeName?: string;
+    /**
+     * 紐づく打刻履歴ID
+     */
+    stampHistoryId?: number;
+    /**
+     * 対象日
+     */
+    stampDate?: string;
+    /**
+     * オリジナル出勤時刻 (ISO8601)
+     */
+    originalInTime?: string;
+    /**
+     * オリジナル退勤時刻 (ISO8601)
+     */
+    originalOutTime?: string;
+    /**
+     * オリジナル休憩開始
+     */
+    originalBreakStartTime?: string;
+    /**
+     * オリジナル休憩終了
+     */
+    originalBreakEndTime?: string;
+    /**
+     * オリジナル夜勤フラグ
+     */
+    originalIsNightShift?: boolean;
+    /**
+     * 修正後の出勤時刻
+     */
+    requestedInTime?: string;
+    /**
+     * 修正後の退勤時刻
+     */
+    requestedOutTime?: string;
+    /**
+     * 修正後の休憩開始
+     */
+    requestedBreakStartTime?: string;
+    /**
+     * 修正後の休憩終了
+     */
+    requestedBreakEndTime?: string;
+    /**
+     * 修正後の夜勤フラグ
+     */
+    requestedIsNightShift?: boolean;
+    /**
+     * 申請理由
+     */
+    reason?: string;
+    /**
+     * 申請ステータス
+     */
+    status?: 'NEW' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED';
+    /**
+     * 承認メモ
+     */
+    approvalNote?: string;
+    /**
+     * 却下理由
+     */
+    rejectionReason?: string;
+    /**
+     * 取消理由
+     */
+    cancellationReason?: string;
+    /**
+     * 承認者ID
+     */
+    approvalEmployeeId?: number;
+    /**
+     * 承認者氏名
+     */
+    approvalEmployeeName?: string;
+    /**
+     * 作成日時
+     */
+    createdAt?: string;
+    /**
+     * 更新日時
+     */
+    updatedAt?: string;
+    /**
+     * 承認日時
+     */
+    approvedAt?: string;
+    /**
+     * 却下日時
+     */
+    rejectedAt?: string;
+    /**
+     * 取消日時
+     */
+    cancelledAt?: string;
+    /**
+     * 提出タイムスタンプ (epoch milliseconds)
+     */
+    submittedTimestamp?: number;
+    /**
+     * 最終更新タイムスタンプ (epoch milliseconds)
+     */
+    updatedTimestamp?: number;
+};
+
+export type StampRequestListResponse = {
+    requests: Array<StampRequestResponse>;
+    /**
+     * 総件数
+     */
+    totalCount: number;
+    /**
+     * 現在のページ番号
+     */
+    pageNumber: number;
+    /**
+     * ページサイズ
+     */
+    pageSize: number;
+};
+
 export type ErrorResponse = {
     /**
      * エラーメッセージ

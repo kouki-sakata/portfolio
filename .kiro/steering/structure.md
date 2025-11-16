@@ -28,10 +28,11 @@ TeamDevelopBravo-main/
 │   ├── 打刻: StampService、StampEditService、StampHistoryService、StampDeleteService
 │   ├── 打刻サブコンポーネント（service/stamp/）: StampHistoryPersistence、OutTimeAdjuster、TimestampConverter
 │   ├── お知らせ: NewsManageService（ファサード、読み取り専用）、NewsManageRegistrationService、NewsManageReleaseService、NewsManageDeletionService、NewsManageBulkDeletionService、NewsManageBulkReleaseService
-│   └── プロフィール（service/profile/）: ProfileAppService、ProfileActivityQueryService、ProfileAttendanceStatisticsService（勤怠統計集計）、ProfileAuditService、ProfileMetadataRepository
+│   ├── 勤怠申請: StampRequestRegistrationService（理由/時刻バリデーション）、StampRequestApprovalService、StampRequestCancellationService、StampRequestBulkOperationService（MAX 50件 + 部分成功レポート）、StampRequestQueryService（status/search/sort/page + EmployeeMapperキャッシュ）、StampRequestStore（MyBatis/インメモリ切替 + Clock注入）
+│   └── プロフィール（service/profile/）: ProfileAppService（メタデータ/統計のファサード）、ProfileActivityQueryService、ProfileAuditService、ProfileMetadataRepository
 │       └── model/: ProfileAggregate、ProfileMetadataDocument、ProfileWorkScheduleDocument、ProfileChangeSet、ProfileActivityPage、ProfileStatisticsData等（DDDドメインモデル）
-├── mapper/           # MyBatisマッパー
-├── dto/api/          # API用DTO（auth、employee、home、news、stamp）：ドメイン毎にサブパッケージ分割
+├── mapper/           # MyBatisマッパー（`src/main/resources/com/example/teamdev/mapper/*.xml`。StampRequestMapper.xml などパッケージ名パスで管理）
+├── dto/api/          # API用DTO（auth、employee、home、news、stamp、stamprequest）：ドメイン毎にサブパッケージ分割
 ├── entity/           # エンティティ（Employee、News、StampHistory、StampHistoryDisplay等）
 ├── exception/        # カスタム例外（DuplicateStampException等）
 └── util/             # ユーティリティ
@@ -41,12 +42,19 @@ TeamDevelopBravo-main/
 - `/api/public/**` は `FeatureFlagRestController` が担当し、モダンUIフラグを匿名アクセスで提供（`FeatureFlagService` が Spring プロファイルに応じて値を決定）。
 - `DebugController` は dev/test プロファイル限定で `/api/debug` を公開し、CSRF ヘッダー／Cookie の整合性やリクエストヘッダーを可視化するデバッグ専用エンドポイント。
 
-### プロフィール統計レイヤー（2025-11-13 更新）
-- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が**通常カラム**（`e.schedule_start`, `e.schedule_end`, `e.schedule_break_minutes`）を参照して総労働時間・残業・遅刻回数を算出（有給は現状0でプレースホルダー）。**V6マイグレーション完了によりJSONB依存を解消**、型安全性とパフォーマンスを向上。
-- **アプリケーションサービス**: `ProfileAppService#getProfileStatistics` が集計結果を `ProfileStatisticsData` に折り込み、UI側の KPI（summary + monthly）に合わせた BigDecimal ベースのレスポンスを提供。
-- **レガシーサービスとの重複**: `ProfileAttendanceStatisticsService` も同種の統計計算を保持しているため、ロジックの一本化とデータソースの整合性確認が必要。
-- **フロント接続**: `useProfileStatisticsQuery` → `ProfileSummaryCard`（ラインチャート）/`ProfileMonthlyDetailCard`（BarChart + テーブル）が Recharts 3.3.0 で可視化。`constants/chartStyles.ts` でテーマに沿った配色を統一。
-- **コードドリフト**: 2025-11-06 時点で `UserProfileRestController` に `/api/profile/me/statistics` が未配線。ルーティング追加とレガシーサービス整理を完了させてからデプロイすること。
+### プロフィール統計レイヤー（2025-11-15 更新）
+- **集計クエリ**: `StampHistoryMapper.findMonthlyStatistics` が通常カラム（`employee.schedule_start/end/break_minutes`）を参照して総労働時間・残業・遅刻回数を算出し、JSONB依存を排除（V6マイグレーション）。
+- **アプリケーションサービス**: `ProfileAppService#getProfileStatistics` が唯一の集計ファサードとなり、`ProfileStatisticsData` に summary/trend/monthly を組み立てて `ProfileStatisticsResponse` へ変換。`ProfileAttendanceStatisticsService` は削除済み。
+- **API公開**: `UserProfileRestController#getSelfStatistics` が `/api/profile/me/statistics` を公開し、`SecurityUtil` で現在の従業員IDを取得して自己/管理者アクセスを制御。
+- **フロント接続**: `profileApi.fetchProfileStatistics`（Vitestカバレッジ済み）が Recharts 3.3.0 コンポーネント（`ProfileSummaryCard`/`ProfileMonthlyDetailCard`）へ供給し、`constants/chartStyles.ts` でテーマ統一。
+
+### 打刻申請ワークフロー構造（2025-11-15 更新）
+- **バックエンドフロー**: `controller/api/StampRequestRestController` が create/my/pending/detail/approve/reject/cancel/bulk を1ファサードに集約し、`StampRequestRegistration/Approval/Cancellation/BulkOperation/QueryService` → `StampRequestStore` → `mapper/StampRequestMapper.xml` → `V7__create_stamp_request_table.sql` の順で処理。`StampRequestStore` は MyBatis/インメモリを切り替えて @WebMvcTest でも同じコードパスを走らせる。
+- **権限制御**: `SecurityConfig` で `/api/stamp-requests/my-requests` までを `authenticated()`、`/pending` とバルク/承認系を `hasRole('ADMIN')` で制限。`SecurityUtil#getCurrentEmployeeId` が非管理者アクセス時に本人チェックを行い、先生ステータス遷移は `StampRequestStatus` ENUM経由で一元化。
+- **DTOとデータモデリング**: `dto/api/stamprequest/` が `StampRequestCreateRequest`（Bean Validation + Schema）と `StampRequestResponse/ListResponse`（ISO8601 + epoch timestamp + 氏名）を提供し、`src/main/resources/com/example/teamdev/mapper/StampRequestMapper.xml` が ResultMap と status/created DESC インデックスを利用したクエリを定義。Flyway V7 が snapshot列・partial unique インデックス・更新トリガーを提供。
+- **フロント統合**: `frontend/src/app/providers/AppProviders.tsx` が `/stamp-requests/my`（従業員）と `/stamp-requests/pending`（管理者）を lazy route で公開。`features/stampRequestWorkflow/` 配下に API (`stampRequestApi.ts`)、hooks、Zod schema、`MyRequestsPage`/`PendingRequestsRoute`/`RequestCorrectionModal`/`CancellationDialog`/`RequestStatusBadge` を収容し、React Query + TanStack Table + shadcn/ui を共有。
+- **StampHistoryとの連携**: `features/stampHistory/components/StampHistoryPage.tsx` が `RequestCorrectionModal` と `RequestStatusBadge` を直接埋め込み、打刻レコード上で申請ステータスを同期。`invalidateWorkflowCaches`（`queryKeys.stampRequests` + `queryKeys.stampHistory`）で履歴テーブルと申請一覧を一括リフレッシュ。
+- **UX & 状態管理**: `useWorkflowFilters` が status/search/sort/page/pageSize を単一source of truthとして保持し、`useMyStampRequestsQuery` / `pendingRequestsRouteLoader` が staleTime 60s/gc 5min を共有。⌘Kコマンドパレット + フィルタサイドバー + 詳細パネル構成で検索→詳細→取消/バルク操作を1画面で完結。
 
 ## フロントエンド構造 (`frontend/src/`)
 
@@ -77,6 +85,14 @@ TeamDevelopBravo-main/
 │   │   ├── lib/      # batch-processor、csv-generator、blob-downloader、summary
 │   │   ├── routes/   # StampHistoryRoute
 │   │   └── types/    # index.ts（MonthlyStats、ExportConfig、CSV型定義）
+│   ├── stampRequestWorkflow/ # 打刻修正申請（API実装済み・OpenAPI未同期）
+│   │   ├── api/      # stampRequestApi.ts（/stamp-requests POST/GET/cancelを想定）
+│   │   ├── components/ # MyRequestsPage（3ペインUI）、RequestCorrectionModal、CancellationDialog、RequestStatusBadge
+│   │   ├── hooks/    # useStampRequests（React Query + invalidateWorkflowCaches）、useWorkflowFilters（ローカルstate）
+│   │   ├── schemas/  # stampRequestCreateSchema/stampRequestCancellationSchema（Zod）
+│   │   ├── routes/   # MyRequestsRoute.tsx（AppProviders経由で lazy load）
+│   │   ├── __fixtures__/ # requests.ts（UI用モックデータ）
+│   │   └── __tests__/  # MyRequestsPage/CancellationDialog/RequestCorrectionModal/RequestStatusBadge のテスト
 │   └── profile/      # プロフィール管理（DDD対応フロント）
 │       ├── api/      # profileApi.ts（REST呼び出し）
 │       ├── components/ # ProfilePage、ProfileEditForm、ProfileOverviewCard、ProfileSummaryCard、ProfileMonthlyDetailCard、ProfileActivityTable、MiniStat（8コンポーネント、全てテスト完備）
@@ -164,4 +180,4 @@ TeamDevelopBravo-main/
 ```
 
 ---
-*Last Updated: 2025-11-13 (プロフィール統計レイヤーのJSONB依存削減を反映)*
+*Last Updated: 2025-11-15 (勤怠申請API構造とOpenAPIギャップを反映)*

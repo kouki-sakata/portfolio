@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import type { StampRequestStatus } from "@/features/stampRequestWorkflow/types";
+
 export type MonthlyStats = {
   totalWorkingDays: number;
   totalWorkingHours: number;
@@ -32,6 +34,8 @@ export type StampHistoryEntry = {
   overtimeMinutes: number | null;
   isNightShift: boolean | null;
   updateDate: string | null;
+  requestStatus?: StampRequestStatus | null;
+  requestId?: number | null;
 };
 
 export type StampHistoryResponse = {

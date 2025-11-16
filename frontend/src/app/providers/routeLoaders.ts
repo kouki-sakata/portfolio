@@ -94,3 +94,26 @@ export const newsManagementLoader = async (queryClient: QueryClient) => {
     handleAuthRedirect(error);
   }
 };
+
+export const pendingRequestsRouteLoader = async (queryClient: QueryClient) => {
+  try {
+    const session = await queryClient.fetchQuery({
+      queryKey: queryKeys.auth.session(),
+      queryFn: fetchSession,
+      staleTime: QUERY_CONFIG.auth.staleTime,
+      gcTime: QUERY_CONFIG.auth.gcTime,
+    });
+
+    if (!(session.authenticated && session.employee?.admin)) {
+      authEvents.emitForbidden("管理者権限が必要です。");
+      throw redirect("/");
+    }
+
+    return session;
+  } catch (error) {
+    if (error instanceof Response) {
+      throw error;
+    }
+    handleAuthRedirect(error);
+  }
+};
