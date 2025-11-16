@@ -1,4 +1,4 @@
-import { Search } from "lucide-react";
+import { Keyboard, Plus, Search, User } from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CancellationDialog } from "@/features/stampRequestWorkflow/components/CancellationDialog";
@@ -75,52 +76,63 @@ export const MyRequestsPage = ({
   };
 
   return (
-    <section className="space-y-6 py-8">
-      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="space-y-1">
-          <p className="text-muted-foreground text-sm">STAMP REQUESTS</p>
-          <h1 className="font-bold text-3xl">勤怠ワークフロー</h1>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {showViewSwitcher && onViewChange ? (
-            <fieldset className="inline-flex rounded-full border p-1">
-              <legend className="sr-only">ビュー切替</legend>
+    <section className="flex h-screen flex-col bg-gray-50">
+      {/* ヘッダー */}
+      <header className="flex-shrink-0 border-b bg-white">
+        <div className="px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <h1 className="text-2xl">勤怠ワークフロー</h1>
+              {showViewSwitcher && onViewChange ? (
+                <>
+                  <Separator className="h-8" orientation="vertical" />
+                  <Button
+                    onClick={() => onViewChange("employee")}
+                    size="sm"
+                    variant={currentView === "employee" ? "default" : "ghost"}
+                  >
+                    従業員
+                  </Button>
+                  <Button
+                    onClick={() => onViewChange("admin")}
+                    size="sm"
+                    variant={currentView === "admin" ? "default" : "ghost"}
+                  >
+                    管理者
+                  </Button>
+                </>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-3">
               <Button
-                aria-pressed={currentView === "employee"}
-                onClick={() => onViewChange("employee")}
+                className="gap-2"
+                onClick={() => setCommandOpen(true)}
                 size="sm"
-                variant={currentView === "employee" ? "secondary" : "ghost"}
+                variant="outline"
               >
-                従業員ビュー
+                <Keyboard className="h-4 w-4" />
+                <span className="hidden sm:inline">コマンド</span>
+                <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] opacity-100 sm:flex">
+                  <span className="text-xs">⌘</span>K
+                </kbd>
               </Button>
-              <Button
-                aria-pressed={currentView === "admin"}
-                onClick={() => onViewChange("admin")}
-                size="sm"
-                variant={currentView === "admin" ? "secondary" : "ghost"}
-              >
-                管理者ビュー
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                新規申請
               </Button>
-            </fieldset>
-          ) : null}
-          <Button
-            aria-label="⌘K コマンド"
-            onClick={() => setCommandOpen(true)}
-            size="sm"
-            variant="outline"
-          >
-            ⌘K コマンド
-          </Button>
-          <Button aria-label="新しい申請" size="sm">
-            新しい申請
-          </Button>
-          <Badge variant="outline">
-            {user ? `${user.lastName} ${user.firstName}` : "ゲスト"}
-          </Badge>
+              <div className="flex items-center gap-2">
+                <User className="h-5 w-5 text-gray-600" />
+                <span className="text-sm">
+                  {user ? `${user.lastName} ${user.firstName}` : "ゲスト"}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
       </header>
 
-      <div className="flex flex-col gap-6 lg:flex-row">
+      {/* メインコンテンツ */}
+      <div className="flex flex-1 overflow-hidden">
         <WorkflowSidebar
           filters={filters}
           isLoading={isLoading}
