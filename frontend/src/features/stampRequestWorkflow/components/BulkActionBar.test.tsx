@@ -7,44 +7,35 @@ import { BulkActionBar } from "./BulkActionBar";
 describe("BulkActionBar", () => {
   it("shows selected count and triggers handlers", async () => {
     const user = userEvent.setup();
-    const onApproveSelected = vi.fn();
-    const onRejectSelected = vi.fn();
-    const onClear = vi.fn();
+    const onApprove = vi.fn();
+    const onReject = vi.fn();
 
     render(
       <BulkActionBar
-        isProcessing={false}
-        onApproveSelected={onApproveSelected}
-        onClearSelection={onClear}
-        onRejectSelected={onRejectSelected}
-        selectedIds={[10, 11, 12]}
+        onApprove={onApprove}
+        onReject={onReject}
+        selectedCount={3}
       />
     );
 
-    expect(screen.getByText("3件選択中")).toBeInTheDocument();
+    expect(screen.getByText("3件を選択中")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "承認" }));
-    expect(onApproveSelected).toHaveBeenCalledTimes(1);
+    expect(onApprove).toHaveBeenCalledTimes(1);
 
     await user.click(screen.getByRole("button", { name: "却下" }));
-    expect(onRejectSelected).toHaveBeenCalledTimes(1);
-
-    await user.click(screen.getByRole("button", { name: "選択をクリア" }));
-    expect(onClear).toHaveBeenCalledTimes(1);
+    expect(onReject).toHaveBeenCalledTimes(1);
   });
 
-  it("disables buttons while processing", () => {
-    render(
+  it("renders nothing when selectedCount is 0", () => {
+    const { container } = render(
       <BulkActionBar
-        isProcessing
-        onApproveSelected={vi.fn()}
-        onClearSelection={vi.fn()}
-        onRejectSelected={vi.fn()}
-        selectedIds={[1]}
+        onApprove={vi.fn()}
+        onReject={vi.fn()}
+        selectedCount={0}
       />
     );
 
-    expect(screen.getByRole("button", { name: "承認" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "却下" })).toBeDisabled();
+    expect(container.firstChild).toBeNull();
   });
 });

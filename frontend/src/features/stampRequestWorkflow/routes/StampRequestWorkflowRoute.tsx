@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
-import { MyRequestsPage } from "@/features/stampRequestWorkflow/components/MyRequestsPage";
-import { PendingRequestsAdminPage } from "@/features/stampRequestWorkflow/components/PendingRequestsAdminPage";
+import { StampRequestWorkflowPage } from "@/features/stampRequestWorkflow/components/StampRequestWorkflowPage";
 
 /**
  * Unified Stamp Request Workflow Route (Dual-role Workspace)
@@ -45,20 +44,11 @@ export const StampRequestWorkflowRoute = () => {
     setSearchParams({ view });
   };
 
-  // Render appropriate page based on current view
-  if (currentView === "admin" && isAdmin) {
-    return (
-      <PendingRequestsAdminPage
-        onViewChange={handleViewChange}
-        currentView="admin"
-      />
-    );
-  }
-
+  // Render unified page with role-based behavior
   return (
-    <MyRequestsPage
-      onViewChange={isAdmin ? handleViewChange : undefined}
-      currentView="employee"
+    <StampRequestWorkflowPage
+      onViewChange={handleViewChange}
+      role={currentView}
       showViewSwitcher={isAdmin}
     />
   );

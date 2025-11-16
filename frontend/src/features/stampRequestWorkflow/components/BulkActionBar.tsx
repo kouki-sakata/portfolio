@@ -1,54 +1,44 @@
+import { CheckCircle, XCircle } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 
 type BulkActionBarProps = {
-  selectedIds: number[];
-  onApproveSelected: () => void;
-  onRejectSelected: () => void;
-  onClearSelection: () => void;
-  isProcessing?: boolean;
+  selectedCount: number;
+  onApprove: () => void;
+  onReject: () => void;
 };
 
 export const BulkActionBar = ({
-  selectedIds,
-  onApproveSelected,
-  onRejectSelected,
-  onClearSelection,
-  isProcessing = false,
+  selectedCount,
+  onApprove,
+  onReject,
 }: BulkActionBarProps) => {
-  if (selectedIds.length === 0) {
+  if (selectedCount === 0) {
     return null;
   }
 
   return (
-    <div
-      className="-translate-x-1/2 fixed bottom-6 left-1/2 z-20 w-full max-w-4xl rounded-full border bg-card/95 px-6 py-3 shadow-xl backdrop-blur"
-      data-testid="bulk-bar"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <span className="font-medium text-sm">
-          {selectedIds.length}
-          件選択中
-        </span>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={onClearSelection} type="button" variant="ghost">
-            選択をクリア
-          </Button>
-          <Button
-            disabled={isProcessing}
-            onClick={onRejectSelected}
-            type="button"
-            variant="destructive"
-          >
-            却下
-          </Button>
-          <Button
-            disabled={isProcessing}
-            onClick={onApproveSelected}
-            type="button"
-          >
-            承認
-          </Button>
-        </div>
+    <div className="flex items-center justify-between border-b bg-primary/10 px-4 py-3">
+      <span className="text-sm">{selectedCount}件を選択中</span>
+      <div className="flex gap-2">
+        <Button
+          className="bg-green-50 text-green-700 hover:bg-green-100"
+          onClick={onApprove}
+          size="sm"
+          variant="outline"
+        >
+          <CheckCircle className="mr-1 h-3 w-3" />
+          承認
+        </Button>
+        <Button
+          className="bg-red-50 text-red-700 hover:bg-red-100"
+          onClick={onReject}
+          size="sm"
+          variant="outline"
+        >
+          <XCircle className="mr-1 h-3 w-3" />
+          却下
+        </Button>
       </div>
     </div>
   );
