@@ -1,19 +1,34 @@
-import { Keyboard, Plus, Search, User } from "lucide-react";
+import {
+  AlertCircle,
+  ArrowUpDown,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Keyboard,
+  Plus,
+  Search,
+  User,
+  XCircle,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { CancellationDialog } from "@/features/stampRequestWorkflow/components/CancellationDialog";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
@@ -252,10 +267,10 @@ const WorkflowSidebar = ({
 
   return (
     <aside
-      className="w-full rounded-xl border bg-card shadow-sm lg:w-[384px]"
+      className="flex w-96 flex-col border-r bg-white"
       data-testid="workflow-sidebar"
     >
-      <div className="border-b p-4">
+      <div className="space-y-3 border-b p-4">
         <div className="flex items-center rounded-full border px-3">
           <Search className="mr-2 h-4 w-4 text-muted-foreground" />
           <Label className="sr-only" htmlFor="workflow-search">
@@ -304,28 +319,26 @@ const WorkflowSidebar = ({
         </Select>
       </div>
 
-      <div className="max-h-[520px] overflow-y-auto">
-        <div className="space-y-2 p-4">{renderRequestList()}</div>
-      </div>
+      <ScrollArea className="flex-1">
+        <div className="space-y-2 p-2">{renderRequestList()}</div>
+      </ScrollArea>
 
-      <div className="flex items-center justify-between border-t p-4">
-        <Button
-          aria-label="前のページ"
-          disabled={filters.page === 0}
-          onClick={onPrevPage}
-          size="sm"
-          variant="ghost"
-        >
-          前のページ
-        </Button>
-        <Button
-          aria-label="次のページ"
-          onClick={onNextPage}
-          size="sm"
-          variant="ghost"
-        >
-          次のページ
-        </Button>
+      {/* フッター: ショートカットヒント */}
+      <div className="border-t bg-gray-50 p-3">
+        <div className="flex items-center justify-center gap-4 text-muted-foreground text-xs">
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border bg-white px-1.5 py-0.5">↑↓</kbd>
+            移動
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border bg-white px-1.5 py-0.5">Enter</kbd>
+            選択
+          </span>
+          <span className="flex items-center gap-1">
+            <kbd className="rounded border bg-white px-1.5 py-0.5">⌘K</kbd>
+            コマンド
+          </span>
+        </div>
       </div>
     </aside>
   );
