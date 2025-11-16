@@ -1,10 +1,13 @@
 import {
   AlertCircle,
   ArrowUpDown,
+  Ban,
   Calendar,
   CheckCircle,
   Clock,
+  Edit,
   Keyboard,
+  MessageSquare,
   Plus,
   Search,
   User,
@@ -157,10 +160,12 @@ export const MyRequestsPage = ({
           requests={requests}
           selectedId={selectedRequest?.id ?? null}
         />
-        <WorkflowDetailPanel
-          onCancel={(id) => setCancelRequestId(id)}
-          request={selectedRequest}
-        />
+        <div className="flex-1 bg-gray-50">
+          <WorkflowDetailPanel
+            onCancel={(id) => setCancelRequestId(id)}
+            request={selectedRequest}
+          />
+        </div>
       </div>
 
       <WorkflowCommandPalette
@@ -451,85 +456,131 @@ const WorkflowDetailPanel = ({
 }: WorkflowDetailPanelProps) => {
   if (!request) {
     return (
-      <div className="flex flex-1 items-center justify-center rounded-xl border bg-card shadow-sm">
-        <p className="text-muted-foreground">
-          申請を選択すると詳細が表示されます。
-        </p>
+      <div className="flex h-full items-center justify-center text-gray-400">
+        <div className="text-center">
+          <p className="mb-2 text-lg">申請を選択してください</p>
+          <p className="text-gray-500 text-sm">
+            ↑↓キーで移動、Enterキーで選択できます
+          </p>
+        </div>
       </div>
     );
   }
 
-  const canCancel = request.status === "PENDING";
-
   return (
-    <div className="flex flex-1 flex-col rounded-xl border bg-card shadow-sm">
-      <div className="border-b p-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-muted-foreground text-xs">
-              REQUEST #{request.id}
-            </p>
-            <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-2xl">{request.dateLabel}</h2>
-              <RequestStatusBadge ariaHidden status={request.status} />
+    <ScrollArea className="h-full">
+      <div className="mx-auto max-w-3xl p-8 animate-in fade-in slide-in-from-right-5 duration-300">
+        {/* ヘッダー */}
+        <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-start justify-between">
+            <div>
+              <div className="mb-2 flex items-center gap-3">
+                <h2 className="text-2xl">申請詳細</h2>
+                <RequestStatusBadge status={request.status} />
+              </div>
+              <p className="text-gray-600">申請ID: R{request.id}</p>
+            </div>
+            {request.unread && (
+              <Badge className="animate-pulse" variant="destructive">
+                未読
+              </Badge>
+            )}
+          </div>
+
+          {/* 基本情報 */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <div className="mb-1 text-gray-600 text-sm">対象日</div>
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-gray-400" />
+                <span>{request.dateLabel}</span>
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-gray-600 text-sm">修正種別</div>
+              <div>打刻修正</div>
+            </div>
+            <div>
+              <div className="mb-1 text-gray-600 text-sm">勤務時間</div>
+              <div>
+                {request.requestedInTime || "--"} 〜{" "}
+                {request.requestedOutTime || "--"}
+              </div>
+            </div>
+            <div>
+              <div className="mb-1 text-gray-600 text-sm">提出日時</div>
+              <div className="text-sm">{request.submittedAt}</div>
             </div>
           </div>
-          {request.employeeName ? (
-            <Badge variant="secondary">{request.employeeName}</Badge>
-          ) : null}
         </div>
-      </div>
 
-      <div className="space-y-6 p-6">
-        <section className="grid gap-4 md:grid-cols-2">
-          <InfoCell label="提出日時" value={request.submittedAt} />
-          <InfoCell
-            label="希望勤務時間"
-            value={`${request.requestedInTime ?? "--"} 〜 ${request.requestedOutTime ?? "--"}`}
-          />
-          <InfoCell
-            label="休憩"
-            value={`${request.requestedBreakStartTime ?? "--"} 〜 ${request.requestedBreakEndTime ?? "--"}`}
-          />
-          <InfoCell label="ステータス" value={request.status} />
-        </section>
+        {/* 申請理由 */}
+        <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-gray-600" />
+            <h3>申請理由</h3>
+          </div>
+          <p className="leading-relaxed text-gray-700">{request.reason}</p>
+        </div>
 
-        <section>
-          <h3 className="font-semibold text-muted-foreground text-sm">
-            申請理由
-          </h3>
-          <p className="mt-2 whitespace-pre-wrap text-sm">{request.reason}</p>
-        </section>
-
-        {request.rejectionReason ? (
-          <section className="rounded-lg bg-rose-50 p-4 text-rose-900 text-sm">
-            <h3 className="font-semibold text-xs uppercase tracking-wide">
-              却下理由
-            </h3>
-            <p className="mt-2 whitespace-pre-wrap">
+        {/* 却下理由（却下の場合のみ） */}
+        {request.status === "REJECTED" && request.rejectionReason && (
+          <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-6 shadow-sm">
+            <div className="mb-3 flex items-center gap-2">
+              <XCircle className="h-5 w-5 text-red-600" />
+              <h3 className="text-red-900">却下理由</h3>
+            </div>
+            <p className="leading-relaxed text-red-800">
               {request.rejectionReason}
             </p>
-          </section>
-        ) : null}
-
-        {canCancel ? (
-          <div className="flex justify-end">
-            <Button onClick={() => onCancel(request.id)} variant="destructive">
-              申請を取り消す
-            </Button>
           </div>
-        ) : null}
+        )}
+
+        {/* アクションボタン */}
+        <div className="rounded-lg border bg-white p-6 shadow-sm">
+          <h3 className="mb-4">アクション</h3>
+          <div className="space-y-3">
+            {request.status === "PENDING" && (
+              <>
+                <Button
+                  className="w-full justify-start"
+                  onClick={() => {}}
+                  variant="outline"
+                >
+                  <Edit className="mr-2 h-4 w-4" />
+                  申請を編集する
+                </Button>
+                <Button
+                  className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
+                  onClick={() => onCancel(request.id)}
+                  variant="outline"
+                >
+                  <Ban className="mr-2 h-4 w-4" />
+                  申請をキャンセルする
+                </Button>
+              </>
+            )}
+            {request.status === "REJECTED" && (
+              <Button
+                className="w-full justify-start"
+                onClick={() => {}}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                修正して再申請する
+              </Button>
+            )}
+            {request.status === "APPROVED" && (
+              <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
+                ✓ この申請は承認済みです
+              </p>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
+    </ScrollArea>
   );
 };
 
-const InfoCell = ({ label, value }: { label: string; value: string }) => (
-  <div className="rounded-lg border p-4">
-    <p className="text-muted-foreground text-xs">{label}</p>
-    <p className="mt-1 font-semibold text-lg">{value || "-"}</p>
-  </div>
-);
 
 type WorkflowCommandPaletteProps = {
   open: boolean;
