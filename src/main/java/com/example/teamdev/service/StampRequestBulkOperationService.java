@@ -1,13 +1,9 @@
 package com.example.teamdev.service;
 
-import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.dto.api.stamprequest.StampRequestBulkOperationResponse;
-import com.example.teamdev.entity.StampRequest;
 import com.example.teamdev.exception.StampRequestException;
-import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.BiConsumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -89,15 +85,26 @@ public class StampRequestBulkOperationService {
                 approvalService.approveRequest(requestId, approverId, approvalNote);
                 successCount++;
             } catch (StampRequestException e) {
-                handleBulkApproveFailure(requestId, failedIds, e);
+                handleBulkOperationFailure(requestId, failedIds, e, "承認");
             } catch (IllegalArgumentException e) {
-                handleBulkApproveFailure(requestId, failedIds, e);
+                handleBulkOperationFailure(requestId, failedIds, e, "承認");
             }
         }
 
         return new StampRequestBulkOperationResponse(successCount, failedIds.size(), failedIds);
     }
 
+    /**
+     * 複数の申請を一括却下する。
+     *
+     * <p>個別却下（{@link StampRequestApprovalService#rejectRequest}）と同等の処理を実行。
+     * 部分的成功を許容し、個々のエラーは失敗件数としてカウント。
+     *
+     * @param requestIds 却下対象のリクエストID一覧（最大50件）
+     * @param rejecterId 却下者の従業員ID
+     * @param rejectionReason 却下理由（必須、10-500文字）
+     * @return 成功件数・失敗件数・失敗IDを含む結果
+     */
     public StampRequestBulkOperationResponse bulkReject(
         List<Integer> requestIds,
         Integer rejecterId,
@@ -110,30 +117,6 @@ public class StampRequestBulkOperationService {
         // 却下理由の検証（Requirement 4-4）
         validateRejectionReason(rejectionReason);
 
-        return processBulk(requestIds, (request, now) -> {
-            request.setStatus(StampRequestStatus.REJECTED.name());
-            request.setRejectionReason(rejectionReason);
-            request.setRejectionEmployeeId(rejecterId);
-            request.setRejectedAt(now);
-        });
-    }
-
-    private void validateRejectionReason(String reason) {
-        if (reason == null || reason.trim().isEmpty()) {
-            throw new IllegalArgumentException("却下理由は必須です");
-        }
-        if (reason.length() < 10) {
-            throw new IllegalArgumentException("却下理由は10文字以上で入力してください");
-        }
-        if (reason.length() > 500) {
-            throw new IllegalArgumentException("却下理由は500文字以内で入力してください");
-        }
-    }
-
-    private StampRequestBulkOperationResponse processBulk(
-        List<Integer> requestIds,
-        BiConsumer<StampRequest, OffsetDateTime> updater
-    ) {
         if (requestIds == null || requestIds.isEmpty()) {
             throw new IllegalArgumentException("処理対象の申請が選択されていません");
         }
@@ -150,24 +133,43 @@ public class StampRequestBulkOperationService {
             if (requestId == null) {
                 continue;
             }
-            StampRequest request = store.findById(requestId).orElse(null);
-            if (request == null || StampRequestStatus.isFinalState(request.getStatus())) {
-                failedIds.add(requestId);
-                continue;
+            try {
+                // 個別却下と同じロジックを実行
+                approvalService.rejectRequest(requestId, rejecterId, rejectionReason);
+                successCount++;
+            } catch (StampRequestException e) {
+                handleBulkOperationFailure(requestId, failedIds, e, "却下");
+            } catch (IllegalArgumentException e) {
+                handleBulkOperationFailure(requestId, failedIds, e, "却下");
             }
-            OffsetDateTime now = store.now();
-            updater.accept(request, now);
-            request.setUpdatedAt(now);
-            store.save(request);
-            successCount++;
         }
 
         return new StampRequestBulkOperationResponse(successCount, failedIds.size(), failedIds);
     }
 
-    private void handleBulkApproveFailure(Integer requestId, List<Integer> failedIds, Exception e) {
+    private void validateRejectionReason(String reason) {
+        if (reason == null || reason.trim().isEmpty()) {
+            throw new IllegalArgumentException("却下理由は必須です");
+        }
+        if (reason.length() < 10) {
+            throw new IllegalArgumentException("却下理由は10文字以上で入力してください");
+        }
+        if (reason.length() > 500) {
+            throw new IllegalArgumentException("却下理由は500文字以内で入力してください");
+        }
+    }
+
+    /**
+     * 一括操作での失敗をハンドリングします。
+     *
+     * @param requestId 失敗したリクエストID
+     * @param failedIds 失敗IDリスト
+     * @param e 発生した例外
+     * @param operationType 操作タイプ（"承認" または "却下"）
+     */
+    private void handleBulkOperationFailure(Integer requestId, List<Integer> failedIds, Exception e, String operationType) {
         // 部分的成功を許容：個々のエラーは失敗としてカウント
-        log.warn("一括承認でリクエスト {} の承認に失敗: {}", requestId, e.getMessage());
+        log.warn("一括{}でリクエスト {} の{}に失敗: {}", operationType, requestId, operationType, e.getMessage());
         failedIds.add(requestId);
     }
 }
