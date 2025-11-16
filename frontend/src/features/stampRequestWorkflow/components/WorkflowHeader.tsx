@@ -46,27 +46,11 @@ export const WorkflowHeader = ({
               </>
             ) : null}
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              className="gap-2"
-              onClick={onCommandClick}
-              size="sm"
-              variant="outline"
-            >
-              <Keyboard className="h-4 w-4" />
-              <span className="hidden sm:inline">コマンド</span>
-              <kbd className="pointer-events-none hidden h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] opacity-100 sm:flex">
-                <span className="text-xs">⌘</span>K
-              </kbd>
-            </Button>
+          <div className="flex items-center">
             <Button onClick={onNewRequestClick}>
               <Plus className="mr-2 h-4 w-4" />
               新規申請
             </Button>
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-gray-600" />
-              <span className="text-sm">{userName || "ゲスト"}</span>
-            </div>
           </div>
         </div>
       </div>
