@@ -104,6 +104,40 @@
         ORDER BY created_at DESC, id DESC
     </select>
 
+    <!-- 従業員IDで取得（ページネーション付き） -->
+    <select id="findByEmployeeIdWithPagination" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 従業員ID + ステータスで取得（ページネーション付き） -->
+    <select id="findByEmployeeIdAndStatusWithPagination" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND status = #{status}::stamp_request_status
+        ORDER BY created_at DESC, id DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 従業員IDでの件数をカウント -->
+    <select id="countByEmployeeId" resultType="int">
+        SELECT COUNT(*)
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+    </select>
+
+    <!-- 従業員ID + ステータスでの件数をカウント -->
+    <select id="countByEmployeeIdAndStatus" resultType="int">
+        SELECT COUNT(*)
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND status = #{status}::stamp_request_status
+    </select>
+
     <!-- PENDING状態のリクエストを従業員ID + 勤怠履歴IDで検索（重複チェック用） -->
     <select id="findPendingByEmployeeIdAndStampHistoryId" resultMap="StampRequestResultMap">
         SELECT <include refid="selectAllColumns"/>

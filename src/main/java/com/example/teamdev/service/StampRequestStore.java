@@ -152,6 +152,89 @@ public class StampRequestStore {
     }
 
     /**
+     * 従業員IDでリクエストをページネーション付きで取得します。
+     *
+     * @param employeeId 従業員ID
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト（作成日時降順）
+     */
+    public List<StampRequest> findByEmployeeIdWithPagination(Integer employeeId, int offset, int limit) {
+        if (mapper != null) {
+            return mapper.findByEmployeeIdWithPagination(employeeId, offset, limit);
+        } else {
+            return storage.values().stream()
+                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
+                .skip(offset)
+                .limit(limit)
+                .toList();
+        }
+    }
+
+    /**
+     * 従業員ID + ステータスでリクエストをページネーション付きで取得します。
+     *
+     * @param employeeId 従業員ID
+     * @param status ステータス
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト（作成日時降順）
+     */
+    public List<StampRequest> findByEmployeeIdAndStatusWithPagination(
+        Integer employeeId,
+        String status,
+        int offset,
+        int limit
+    ) {
+        if (mapper != null) {
+            return mapper.findByEmployeeIdAndStatusWithPagination(employeeId, status, offset, limit);
+        } else {
+            return storage.values().stream()
+                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .filter(r -> r.getStatus().equals(status))
+                .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed())
+                .skip(offset)
+                .limit(limit)
+                .toList();
+        }
+    }
+
+    /**
+     * 従業員IDでリクエスト件数をカウントします。
+     *
+     * @param employeeId 従業員ID
+     * @return 該当するリクエストの件数
+     */
+    public int countByEmployeeId(Integer employeeId) {
+        if (mapper != null) {
+            return mapper.countByEmployeeId(employeeId);
+        } else {
+            return (int) storage.values().stream()
+                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .count();
+        }
+    }
+
+    /**
+     * 従業員ID + ステータスでリクエスト件数をカウントします。
+     *
+     * @param employeeId 従業員ID
+     * @param status ステータス
+     * @return 該当するリクエストの件数
+     */
+    public int countByEmployeeIdAndStatus(Integer employeeId, String status) {
+        if (mapper != null) {
+            return mapper.countByEmployeeIdAndStatus(employeeId, status);
+        } else {
+            return (int) storage.values().stream()
+                .filter(r -> r.getEmployeeId().equals(employeeId))
+                .filter(r -> r.getStatus().equals(status))
+                .count();
+        }
+    }
+
+    /**
      * PENDING状態のリクエストを検索します（重複チェック用）。
      *
      * @param employeeId 従業員ID
@@ -194,9 +277,9 @@ public class StampRequestStore {
      * ステータスでリクエストをページネーション付きで取得します。
      *
      * @param status ステータス
-     * @param offset 開始オフセット
-     * @param limit 取得件数
-     * @return ステータスに一致するリクエスト
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト（作成日時降順）
      */
     public List<StampRequest> findByStatusWithPagination(String status, int offset, int limit) {
         if (mapper != null) {
@@ -215,7 +298,7 @@ public class StampRequestStore {
      * ステータスでリクエスト件数をカウントします。
      *
      * @param status ステータス
-     * @return 件数
+     * @return 該当するリクエストの件数
      */
     public int countByStatus(String status) {
         if (mapper != null) {

@@ -31,27 +31,21 @@ public class StampRequestQueryService {
         String normalizedStatus = normalizeStatus(status);
         int safePage = Math.max(page != null ? page : 0, 0);
         int safeSize = size != null && size > 0 ? size : 20;
+        int offset = safePage * safeSize;
 
-        // Use efficient query methods instead of findAll()
-        List<StampRequest> requests = normalizedStatus != null
-            ? store.findByEmployeeIdAndStatus(employeeId, normalizedStatus)
-            : store.findByEmployeeId(employeeId);
-
-        return requests.stream()
-            .skip((long) safePage * safeSize)
-            .limit(safeSize)
-            .toList();
+        // DB側でページング（パフォーマンス最適化）
+        return normalizedStatus != null
+            ? store.findByEmployeeIdAndStatusWithPagination(employeeId, normalizedStatus, offset, safeSize)
+            : store.findByEmployeeIdWithPagination(employeeId, offset, safeSize);
     }
 
     public Integer countEmployeeRequests(Integer employeeId, String status) {
         String normalizedStatus = normalizeStatus(status);
 
-        // Use efficient query methods instead of findAll()
-        List<StampRequest> requests = normalizedStatus != null
-            ? store.findByEmployeeIdAndStatus(employeeId, normalizedStatus)
-            : store.findByEmployeeId(employeeId);
-
-        return requests.size();
+        // DB側でカウント（パフォーマンス最適化）
+        return normalizedStatus != null
+            ? store.countByEmployeeIdAndStatus(employeeId, normalizedStatus)
+            : store.countByEmployeeId(employeeId);
     }
 
     /**

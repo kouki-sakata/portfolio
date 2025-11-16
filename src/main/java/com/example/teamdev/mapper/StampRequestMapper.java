@@ -72,6 +72,60 @@ public interface StampRequestMapper {
     );
 
     /**
+     * 指定された従業員のリクエストをページネーション付きで取得します。
+     *
+     * <p>インデックス {@code idx_stamp_request_employee_status} を活用します。</p>
+     *
+     * @param employeeId 従業員ID
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト（作成日時降順）
+     */
+    List<StampRequest> findByEmployeeIdWithPagination(
+            @Param("employeeId") Integer employeeId,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    /**
+     * 指定された従業員の指定されたステータスのリクエストをページネーション付きで取得します。
+     *
+     * <p>インデックス {@code idx_stamp_request_employee_status} を活用します。</p>
+     *
+     * @param employeeId 従業員ID
+     * @param status ステータス（例: "PENDING", "APPROVED"）
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト（作成日時降順）
+     */
+    List<StampRequest> findByEmployeeIdAndStatusWithPagination(
+            @Param("employeeId") Integer employeeId,
+            @Param("status") String status,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    /**
+     * 指定された従業員のリクエスト件数をカウントします。
+     *
+     * @param employeeId 従業員ID
+     * @return 該当するリクエストの件数
+     */
+    int countByEmployeeId(@Param("employeeId") Integer employeeId);
+
+    /**
+     * 指定された従業員の指定されたステータスのリクエスト件数をカウントします。
+     *
+     * @param employeeId 従業員ID
+     * @param status ステータス（例: "PENDING", "APPROVED"）
+     * @return 該当するリクエストの件数
+     */
+    int countByEmployeeIdAndStatus(
+            @Param("employeeId") Integer employeeId,
+            @Param("status") String status
+    );
+
+    /**
      * 指定された従業員と勤怠履歴IDに対するPENDING状態のリクエストを検索します。
      *
      * <p>重複申請チェックに使用されます。
