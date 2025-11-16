@@ -1,58 +1,59 @@
-import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
-import { Keyboard, Plus, User } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
-
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  AlertCircle,
+  ArrowUpDown,
+  Calendar,
+  CheckCircle,
+  CheckSquare,
+  Clock,
+  Keyboard,
+  MessageSquare,
+  Plus,
+  Search,
+  User,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/features/auth/hooks/useAuth";
 import { ApprovalDialog } from "@/features/stampRequestWorkflow/components/ApprovalDialog";
-import { BulkActionBar } from "@/features/stampRequestWorkflow/components/BulkActionBar";
-import { BulkRejectionDialog } from "@/features/stampRequestWorkflow/components/BulkRejectionDialog";
 import { RejectionDialog } from "@/features/stampRequestWorkflow/components/RejectionDialog";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import {
   useBulkApproveRequestsMutation,
-  useBulkRejectRequestsMutation,
   usePendingStampRequestsQuery,
 } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
-import type {
-  PendingRequestFilters,
-  StampRequestListItem,
-} from "@/features/stampRequestWorkflow/types";
-import { toast } from "@/hooks/use-toast";
-import {
-  DataTable,
-  DataTableColumnHeader,
-  DataTableSelectionCheckbox,
-} from "@/shared/components/data-table";
+import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 
-const MAX_BULK_SELECTION = 50;
+const STATUS_TABS = [
+  { value: "ALL", label: "全て" },
+  { value: "NEW", label: "新規" },
+  { value: "PENDING", label: "保留" },
+  { value: "APPROVED", label: "承認" },
+  { value: "REJECTED", label: "却下" },
+] as const;
+
 const PENDING_SKELETON_IDS = [
   "pending-skeleton-1",
   "pending-skeleton-2",
   "pending-skeleton-3",
 ] as const;
-type AdminFilters = PendingRequestFilters & {
-  search: string;
-  sort: string;
-  status: string;
-};
-const STATUS_TABS = [
-  { value: "ALL", label: "全て" },
-  { value: "NEW", label: "新規" },
-  { value: "PENDING", label: "保留" },
-  { value: "APPROVED", label: "承認済み" },
-  { value: "REJECTED", label: "却下" },
-];
 
 type PendingRequestsAdminPageProps = {
   onViewChange?: (view: "employee" | "admin") => void;
@@ -63,95 +64,199 @@ export const PendingRequestsAdminPage = ({
   onViewChange,
   currentView = "admin",
 }: PendingRequestsAdminPageProps) => {
-  const [filters, setFilters] = useState<AdminFilters>({
-    status: "PENDING",
-    page: 0,
-    pageSize: 20,
+  const { user } = useAuth();
+  const [filters, setFilters] = useState({
+    status: "ALL",
     search: "",
     sort: "recent",
   });
-  const { data, isLoading } = usePendingStampRequestsQuery(filters);
+  const { data, isLoading } = usePendingStampRequestsQuery({
+    status: filters.status,
+    page: 0,
+    pageSize: 50,
+  });
   const requests = data?.requests ?? [];
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
-  const [selectedIds, setSelectedIds] = useState<number[]>([]);
-  const [activeRequestId, setActiveRequestId] = useState<number | null>(null);
-  const activeRequest =
-    requests.find((req) => req.id === activeRequestId) ?? requests[0] ?? null;
+
+  // フィルタリング
+  const filteredRequests = requests.filter((req) => {
+    const matchesSearch =
+      filters.search === "" ||
+      req.employeeName?.toLowerCase().includes(filters.search.toLowerCase()) ||
+      req.id.toString().includes(filters.search) ||
+      req.reason.toLowerCase().includes(filters.search.toLowerCase());
+    return matchesSearch;
+  });
+
+  // ソート
+  const sortedRequests = [...filteredRequests].sort((a, b) => {
+    switch (filters.sort) {
+      case "recent":
+        return (
+          new Date(b.submittedAt || 0).getTime() -
+          new Date(a.submittedAt || 0).getTime()
+        );
+      case "oldest":
+        return (
+          new Date(a.submittedAt || 0).getTime() -
+          new Date(b.submittedAt || 0).getTime()
+        );
+      case "status":
+        const statusOrder = {
+          NEW: 0,
+          PENDING: 1,
+          REJECTED: 2,
+          APPROVED: 3,
+          CANCELLED: 4,
+        };
+        return (
+          (statusOrder[a.status as keyof typeof statusOrder] ?? 999) -
+          (statusOrder[b.status as keyof typeof statusOrder] ?? 999)
+        );
+      default:
+        return 0;
+    }
+  });
+
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [selectedRequest, setSelectedRequest] =
+    useState<StampRequestListItem | null>(null);
   const [approvalDialogOpen, setApprovalDialogOpen] = useState(false);
   const [rejectionDialogOpen, setRejectionDialogOpen] = useState(false);
-  const [bulkRejectionDialogOpen, setBulkRejectionDialogOpen] = useState(false);
-
-  useEffect(() => {
-    if (activeRequestId) {
-      return;
-    }
-    const firstRequest = requests[0];
-    if (firstRequest) {
-      setActiveRequestId(firstRequest.id);
-    }
-  }, [activeRequestId, requests]);
 
   const bulkApproveMutation = useBulkApproveRequestsMutation();
-  const bulkRejectMutation = useBulkRejectRequestsMutation();
 
-  const columns = useRequestColumns();
+  useEffect(() => {
+    if (selectedRequest) {
+      return;
+    }
+    const firstRequest = sortedRequests[0];
+    if (firstRequest) {
+      setSelectedRequest(firstRequest);
+    }
+  }, [selectedRequest, sortedRequests]);
 
-  const handleRowSelectionChange = useCallback(
-    (selection: RowSelectionState) => {
-      const selectionCount = Object.values(selection).filter(Boolean).length;
-      if (selectionCount > MAX_BULK_SELECTION) {
-        toast({
-          title: "選択上限を超えています",
-          description: "一度に処理できるのは50件までです。",
-          variant: "destructive",
-        });
-        return;
+  const toggleSelection = (id: number) => {
+    setSelectedIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
       }
+      return newSet;
+    });
+  };
 
-      const selected = Object.keys(selection)
-        .filter((key) => selection[key])
-        .map((key) => requests[Number.parseInt(key, 10)]?.id)
-        .filter((id): id is number => typeof id === "number");
-
-      setRowSelection(selection);
-      setSelectedIds(selected);
-    },
-    [requests]
-  );
-
-  const handleClearSelection = () => {
-    setRowSelection({});
-    setSelectedIds([]);
+  const toggleSelectAll = () => {
+    if (selectedIds.size === sortedRequests.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(sortedRequests.map((r) => r.id)));
+    }
   };
 
   const handleBulkApprove = async () => {
-    if (!selectedIds.length) {
+    if (selectedIds.size === 0) {
       return;
     }
-    await bulkApproveMutation.mutateAsync({ requestIds: selectedIds });
-    handleClearSelection();
+    await bulkApproveMutation.mutateAsync({
+      requestIds: Array.from(selectedIds),
+    });
+    setSelectedIds(new Set());
   };
 
-  const handleBulkReject = () => {
-    if (!selectedIds.length) {
+  const handleBulkReject = async () => {
+    if (selectedIds.size === 0) {
       return;
     }
-    setBulkRejectionDialogOpen(true);
+    // TODO: バルク却下ダイアログを実装
+    setSelectedIds(new Set());
   };
 
-  const detail = activeRequest ? (
-    <WorkflowDetailPanel
-      onApprove={() => setApprovalDialogOpen(true)}
-      onReject={() => setRejectionDialogOpen(true)}
-      request={activeRequest}
-    />
-  ) : (
-    <div className="flex flex-1 items-center justify-center rounded-xl border bg-card shadow-sm">
-      <p className="text-muted-foreground">
-        申請を選択すると詳細が表示されます。
-      </p>
-    </div>
-  );
+  const statusCounts = {
+    all: requests.length,
+    new: requests.filter((r) => r.status === "NEW").length,
+    pending: requests.filter((r) => r.status === "PENDING").length,
+    approved: requests.filter((r) => r.status === "APPROVED").length,
+    rejected: requests.filter((r) => r.status === "REJECTED").length,
+  };
+
+  const getSortLabel = (sort: string) => {
+    switch (sort) {
+      case "recent":
+        return "新しい順";
+      case "oldest":
+        return "古い順";
+      case "status":
+        return "ステータス順";
+      default:
+        return "新しい順";
+    }
+  };
+
+  const getStatusCount = (status: string) => {
+    switch (status) {
+      case "ALL":
+        return statusCounts.all;
+      case "NEW":
+        return statusCounts.new;
+      case "PENDING":
+        return statusCounts.pending;
+      case "APPROVED":
+        return statusCounts.approved;
+      case "REJECTED":
+        return statusCounts.rejected;
+      default:
+        return 0;
+    }
+  };
+
+  const renderTabBadge = (status: string, count: number) => {
+    if (status === "ALL") {
+      return (
+        <Badge className="ml-1 text-xs" variant="secondary">
+          {count}
+        </Badge>
+      );
+    }
+
+    if (count === 0) {
+      return null;
+    }
+
+    if (status === "NEW") {
+      return (
+        <Badge className="ml-1 bg-blue-100 text-xs" variant="secondary">
+          {count}
+        </Badge>
+      );
+    }
+
+    if (status === "PENDING") {
+      return <Badge className="ml-1 bg-yellow-500 text-xs">{count}</Badge>;
+    }
+
+    return (
+      <Badge className="ml-1 text-xs" variant="secondary">
+        {count}
+      </Badge>
+    );
+  };
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "NEW":
+        return <AlertCircle className="h-4 w-4 text-blue-600" />;
+      case "PENDING":
+        return <Clock className="h-4 w-4 text-yellow-600" />;
+      case "APPROVED":
+        return <CheckCircle className="h-4 w-4 text-green-600" />;
+      case "REJECTED":
+        return <XCircle className="h-4 w-4 text-red-600" />;
+      default:
+        return null;
+    }
+  };
 
   return (
     <section className="flex h-screen flex-col bg-gray-50">
@@ -195,7 +300,9 @@ export const PendingRequestsAdminPage = ({
               </Button>
               <div className="flex items-center gap-2">
                 <User className="h-5 w-5 text-gray-600" />
-                <span className="text-sm">管理者</span>
+                <span className="text-sm">
+                  {user ? `${user.lastName} ${user.firstName}` : "管理者"}
+                </span>
               </div>
             </div>
           </div>
@@ -204,248 +311,373 @@ export const PendingRequestsAdminPage = ({
 
       {/* メインコンテンツ */}
       <div className="flex flex-1 overflow-hidden">
-        <aside className="w-full rounded-xl border bg-card shadow-sm lg:w-[420px]">
-          <div className="space-y-4 border-b p-4">
-            <div className="flex items-center rounded-full border px-3">
-              <Label className="sr-only" htmlFor="pending-search">
-                検索
-              </Label>
+        {/* 左サイドバー: リスト */}
+        <div className="flex w-96 flex-col border-r bg-white">
+          {/* 検索 & フィルター */}
+          <div className="space-y-3 border-b p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
               <Input
-                className="border-0 p-0 shadow-none focus-visible:ring-0"
-                id="pending-search"
-                onChange={(event) =>
-                  setFilters((prev) => ({
-                    ...prev,
-                    search: event.target.value,
-                  }))
+                className="pl-9"
+                onChange={(e) =>
+                  setFilters((prev) => ({ ...prev, search: e.target.value }))
                 }
-                placeholder="従業員名や理由で検索"
+                placeholder="申請を検索..."
                 value={filters.search}
               />
             </div>
-            <div className="flex space-x-2 overflow-x-auto" role="tablist">
-              {STATUS_TABS.map((tab) => (
-                <Button
-                  aria-selected={filters.status === tab.value}
-                  key={tab.value}
-                  onClick={() =>
-                    setFilters((prev) => ({ ...prev, status: tab.value }))
-                  }
-                  role="tab"
-                  size="sm"
-                  variant={filters.status === tab.value ? "secondary" : "ghost"}
-                >
-                  {tab.label}
-                </Button>
-              ))}
-            </div>
-            <Select
+
+            {/* ステータスタブ */}
+            <Tabs
               onValueChange={(value) =>
-                setFilters((prev) => ({ ...prev, sort: value }))
+                setFilters((prev) => ({ ...prev, status: value }))
               }
-              value={filters.sort}
+              value={filters.status}
             >
-              <SelectTrigger>
-                <SelectValue placeholder="並び順" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recent">新しい順</SelectItem>
-                <SelectItem value="oldest">古い順</SelectItem>
-                <SelectItem value="status">ステータス順</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <TabsList className="grid w-full grid-cols-5">
+                {STATUS_TABS.map((tab) => {
+                  const count = getStatusCount(tab.value);
+                  return (
+                    <TabsTrigger
+                      className="px-2 text-xs"
+                      key={tab.value}
+                      value={tab.value}
+                    >
+                      {tab.label}
+                      {renderTabBadge(tab.value, count)}
+                    </TabsTrigger>
+                  );
+                })}
+              </TabsList>
+            </Tabs>
 
-          <div className="min-h-[420px] p-4">
-            {isLoading ? (
-              <div className="space-y-3">
-                {PENDING_SKELETON_IDS.map((id) => (
-                  <Skeleton
-                    className="h-20 w-full"
-                    data-testid="pending-row-skeleton"
-                    key={id}
-                  />
-                ))}
+            {/* ソート & バルクアクション */}
+            <div className="flex items-center justify-between">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button className="gap-2" size="sm" variant="outline">
+                    <ArrowUpDown className="h-3 w-3" />
+                    {getSortLabel(filters.sort)}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start">
+                  <DropdownMenuLabel>並び替え</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuRadioGroup
+                    onValueChange={(v) =>
+                      setFilters((prev) => ({ ...prev, sort: v }))
+                    }
+                    value={filters.sort}
+                  >
+                    <DropdownMenuRadioItem value="recent">
+                      新しい順
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="oldest">
+                      古い順
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="status">
+                      ステータス順
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  className="h-8 px-2"
+                  onClick={toggleSelectAll}
+                  size="sm"
+                  variant="ghost"
+                >
+                  <CheckSquare className="h-4 w-4" />
+                </Button>
+                {selectedIds.size > 0 && (
+                  <Badge variant="secondary">{selectedIds.size}件選択</Badge>
+                )}
               </div>
-            ) : (
-              <DataTable
-                columns={columns}
-                data={requests}
-                emptyMessage="保留中の申請はありません"
-                enableRowSelection
-                loading={isLoading}
-                onRowClick={(row) => setActiveRequestId(row.id)}
-                onRowSelectionChange={handleRowSelectionChange}
-                rowSelection={rowSelection}
-              />
-            )}
+            </div>
           </div>
-        </aside>
 
-        {detail}
+          {/* バルクアクションバー */}
+          {selectedIds.size > 0 && (
+            <div className="flex items-center justify-between border-b bg-primary/10 px-4 py-3">
+              <span className="text-sm">{selectedIds.size}件を選択中</span>
+              <div className="flex gap-2">
+                <Button
+                  className="bg-green-50 text-green-700 hover:bg-green-100"
+                  onClick={handleBulkApprove}
+                  size="sm"
+                  variant="outline"
+                >
+                  <CheckCircle className="mr-1 h-3 w-3" />
+                  承認
+                </Button>
+                <Button
+                  className="bg-red-50 text-red-700 hover:bg-red-100"
+                  onClick={handleBulkReject}
+                  size="sm"
+                  variant="outline"
+                >
+                  <XCircle className="mr-1 h-3 w-3" />
+                  却下
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* リスト */}
+          <ScrollArea className="flex-1">
+            <div className="p-2">
+              {isLoading ? (
+                PENDING_SKELETON_IDS.map((id) => (
+                  <Skeleton className="mb-2 h-24 w-full" key={id} />
+                ))
+              ) : sortedRequests.length === 0 ? (
+                <div className="py-12 text-center text-gray-500">
+                  <AlertCircle className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+                  <p>申請が見つかりません</p>
+                </div>
+              ) : (
+                sortedRequests.map((request) => (
+                  <div
+                    className={`group relative mb-2 rounded-lg border transition-all ${
+                      selectedRequest?.id === request.id
+                        ? "border-primary bg-primary/5 ring-2 ring-primary/20"
+                        : "bg-white hover:border-gray-300 hover:bg-gray-50"
+                    }`}
+                    key={request.id}
+                  >
+                    <div className="flex items-start gap-3 p-4">
+                      {/* チェックボックス */}
+                      <Checkbox
+                        checked={selectedIds.has(request.id)}
+                        className="mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                        onCheckedChange={() => toggleSelection(request.id)}
+                      />
+
+                      {/* メインコンテンツ */}
+                      <button
+                        className="flex-1 text-left"
+                        onClick={() => setSelectedRequest(request)}
+                        type="button"
+                      >
+                        <div className="mb-2 flex items-start justify-between">
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(request.status)}
+                            <span className="text-gray-500 text-xs">
+                              R{request.id}
+                            </span>
+                            {request.unread && (
+                              <div className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                            )}
+                          </div>
+                          <RequestStatusBadge status={request.status} />
+                        </div>
+                        <div className="mb-2">
+                          <div className="mb-1 flex items-center gap-2">
+                            <User className="h-3 w-3 text-gray-400" />
+                            <span className="text-sm">
+                              {request.employeeName}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3 text-gray-400" />
+                            <span className="text-sm">{request.dateLabel}</span>
+                            <span className="text-gray-500 text-xs">
+                              打刻修正
+                            </span>
+                          </div>
+                        </div>
+                        <p className="mb-2 line-clamp-2 text-gray-600 text-sm">
+                          {request.reason}
+                        </p>
+                        <div className="text-gray-400 text-xs">
+                          提出: {request.submittedAt || "N/A"}
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+
+          {/* フッター: ショートカットヒント */}
+          <div className="border-t bg-gray-50 p-3">
+            <div className="flex items-center justify-center gap-4 text-muted-foreground text-xs">
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-white px-1.5 py-0.5">
+                  ↑↓
+                </kbd>
+                移動
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-white px-1.5 py-0.5">
+                  Enter
+                </kbd>
+                選択
+              </span>
+              <span className="flex items-center gap-1">
+                <kbd className="rounded border bg-white px-1.5 py-0.5">
+                  ⌘K
+                </kbd>
+                コマンド
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 右メインエリア: 詳細パネル */}
+        <div className="flex-1 bg-gray-50">
+          {selectedRequest ? (
+            <ScrollArea className="h-full">
+              <div className="mx-auto max-w-3xl p-8 animate-in fade-in slide-in-from-right-5 duration-300">
+                {/* ヘッダー */}
+                <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+                  <div className="mb-4 flex items-start justify-between">
+                    <div>
+                      <div className="mb-2 flex items-center gap-3">
+                        <h2 className="text-2xl">申請詳細</h2>
+                        <RequestStatusBadge status={selectedRequest.status} />
+                      </div>
+                      <p className="text-gray-600">
+                        申請ID: R{selectedRequest.id}
+                      </p>
+                    </div>
+                    {selectedRequest.unread && (
+                      <Badge className="animate-pulse" variant="destructive">
+                        未読
+                      </Badge>
+                    )}
+                  </div>
+
+                  <div className="mb-4 flex items-center gap-2 rounded-lg bg-gray-50 p-3">
+                    <User className="h-4 w-4 text-gray-600" />
+                    <span>申請者: {selectedRequest.employeeName}</span>
+                  </div>
+
+                  {/* 基本情報 */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="mb-1 text-gray-600 text-sm">対象日</div>
+                      <div className="flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-gray-400" />
+                        <span>{selectedRequest.dateLabel}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-1 text-gray-600 text-sm">
+                        修正種別
+                      </div>
+                      <div>打刻修正</div>
+                    </div>
+                    <div>
+                      <div className="mb-1 text-gray-600 text-sm">
+                        勤務時間
+                      </div>
+                      <div>
+                        {selectedRequest.requestedInTime || "--"} 〜{" "}
+                        {selectedRequest.requestedOutTime || "--"}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="mb-1 text-gray-600 text-sm">
+                        提出日時
+                      </div>
+                      <div className="text-sm">
+                        {selectedRequest.submittedAt}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 申請理由 */}
+                <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+                  <div className="mb-3 flex items-center gap-2">
+                    <MessageSquare className="h-5 w-5 text-gray-600" />
+                    <h3>申請理由</h3>
+                  </div>
+                  <p className="leading-relaxed text-gray-700">
+                    {selectedRequest.reason}
+                  </p>
+                </div>
+
+                {/* 却下理由（却下の場合のみ） */}
+                {selectedRequest.status === "REJECTED" &&
+                  selectedRequest.rejectionReason && (
+                    <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-6 shadow-sm">
+                      <div className="mb-3 flex items-center gap-2">
+                        <XCircle className="h-5 w-5 text-red-600" />
+                        <h3 className="text-red-900">却下理由</h3>
+                      </div>
+                      <p className="leading-relaxed text-red-800">
+                        {selectedRequest.rejectionReason}
+                      </p>
+                    </div>
+                  )}
+
+                {/* アクションボタン */}
+                <div className="rounded-lg border bg-white p-6 shadow-sm">
+                  <h3 className="mb-4">アクション</h3>
+                  <div className="space-y-3">
+                    {(selectedRequest.status === "PENDING" ||
+                      selectedRequest.status === "NEW") && (
+                      <>
+                        <Button
+                          className="w-full justify-start bg-green-600 hover:bg-green-700"
+                          onClick={() => setApprovalDialogOpen(true)}
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          承認する
+                        </Button>
+                        <Button
+                          className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
+                          onClick={() => setRejectionDialogOpen(true)}
+                          variant="outline"
+                        >
+                          <XCircle className="mr-2 h-4 w-4" />
+                          却下する
+                        </Button>
+                      </>
+                    )}
+                    {selectedRequest.status === "APPROVED" && (
+                      <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
+                        ✓ この申請は承認済みです
+                      </p>
+                    )}
+                    {selectedRequest.status === "REJECTED" && (
+                      <p className="rounded-lg bg-red-50 p-4 text-gray-600 text-sm">
+                        ✗ この申請は却下済みです
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </ScrollArea>
+          ) : (
+            <div className="flex h-full items-center justify-center text-gray-400">
+              <div className="text-center">
+                <p className="mb-2 text-lg">申請を選択してください</p>
+                <p className="text-gray-500 text-sm">
+                  ↑↓キーで移動、Enterキーで選択できます
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-
-      <BulkActionBar
-        isProcessing={
-          bulkApproveMutation.isPending || bulkRejectMutation.isPending
-        }
-        onApproveSelected={handleBulkApprove}
-        onClearSelection={handleClearSelection}
-        onRejectSelected={handleBulkReject}
-        selectedIds={selectedIds}
-      />
 
       <ApprovalDialog
         onOpenChange={setApprovalDialogOpen}
         open={approvalDialogOpen}
-        request={activeRequest}
+        request={selectedRequest}
       />
       <RejectionDialog
         onOpenChange={setRejectionDialogOpen}
         open={rejectionDialogOpen}
-        request={activeRequest}
-      />
-      <BulkRejectionDialog
-        mutation={bulkRejectMutation}
-        onCompleted={handleClearSelection}
-        onOpenChange={setBulkRejectionDialogOpen}
-        open={bulkRejectionDialogOpen}
-        requestCount={selectedIds.length}
-        requestIds={selectedIds}
+        request={selectedRequest}
       />
     </section>
   );
-};
-
-const useRequestColumns = () =>
-  useMemo<ColumnDef<StampRequestListItem>[]>(
-    () => [
-      {
-        id: "select",
-        size: 50,
-        header: ({ table }) => (
-          <DataTableSelectionCheckbox
-            aria-label="全て選択"
-            checked={
-              table.getIsAllPageRowsSelected() ||
-              (table.getIsSomePageRowsSelected() && "indeterminate")
-            }
-            onCheckedChange={(value) =>
-              table.toggleAllPageRowsSelected(!!value)
-            }
-          />
-        ),
-        cell: ({ row }) => (
-          <DataTableSelectionCheckbox
-            aria-label="行を選択"
-            checked={row.getIsSelected()}
-            onCheckedChange={(value) => row.toggleSelected(!!value)}
-          />
-        ),
-        enableSorting: false,
-        enableHiding: false,
-      },
-      {
-        accessorKey: "employeeName",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="従業員" />
-        ),
-        cell: ({ row }) => (
-          <div className="flex flex-col">
-            <span className="font-medium">
-              {row.original.employeeName ?? "-"}
-            </span>
-            <span className="text-muted-foreground text-xs">
-              {row.original.dateLabel}
-            </span>
-          </div>
-        ),
-      },
-      {
-        accessorKey: "reason",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="理由" />
-        ),
-        cell: ({ row }) => (
-          <p className="line-clamp-2 text-muted-foreground text-sm">
-            {row.original.reason}
-          </p>
-        ),
-      },
-      {
-        id: "status",
-        header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="ステータス" />
-        ),
-        cell: ({ row }) => <RequestStatusBadge status={row.original.status} />,
-      },
-    ],
-    []
-  );
-
-const WorkflowDetailPanel = ({
-  request,
-  onApprove,
-  onReject,
-}: {
-  request: StampRequestListItem;
-  onApprove: () => void;
-  onReject: () => void;
-}) => (
-  <div className="flex flex-1 flex-col gap-4 rounded-xl border bg-card p-6 shadow-sm">
-    <div className="flex items-center justify-between border-b pb-4">
-      <div>
-        <p className="text-muted-foreground text-xs">REQUEST #{request.id}</p>
-        <div className="flex items-center gap-2">
-          <h2 className="font-semibold text-2xl">
-            {request.employeeName ?? "-"}
-          </h2>
-          <RequestStatusBadge status={request.status} />
-        </div>
-      </div>
-      <div className="flex gap-2">
-        <Button onClick={onReject} variant="destructive">
-          却下
-        </Button>
-        <Button onClick={onApprove}>承認</Button>
-      </div>
-    </div>
-
-    <div className="grid gap-4 md:grid-cols-2">
-      <InfoCell label="提出日時" value={request.submittedAt} />
-      <InfoCell
-        label="原本"
-        value={formatRange(request.originalInTime, request.originalOutTime)}
-      />
-      <InfoCell
-        label="修正案"
-        value={formatRange(request.requestedInTime, request.requestedOutTime)}
-      />
-    </div>
-
-    <section>
-      <h3 className="font-semibold text-muted-foreground text-sm">申請理由</h3>
-      <p className="mt-2 whitespace-pre-wrap text-sm">{request.reason}</p>
-    </section>
-  </div>
-);
-
-const InfoCell = ({
-  label,
-  value,
-}: {
-  label: string;
-  value?: string | null;
-}) => (
-  <div className="rounded-lg border p-4">
-    <p className="text-muted-foreground text-xs">{label}</p>
-    <p className="mt-1 font-semibold text-lg">{value ?? "-"}</p>
-  </div>
-);
-
-const formatRange = (start?: string | null, end?: string | null) => {
-  if (!(start && end)) {
-    return "--";
-  }
-  return `${start} - ${end}`;
 };
