@@ -15,10 +15,15 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import type { ReactNode } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { z } from "zod";
 import type { schemas } from "@/schemas/api";
 import { mswServer } from "@/test/msw/server";
+
+// Mock toast
+vi.mock("@/hooks/use-toast", () => ({
+  toast: vi.fn(),
+}));
 
 // Mock hooks (to be implemented in actual feature)
 import {
@@ -122,7 +127,9 @@ describe("Stamp Request Workflow Integration", () => {
         await createResult.current.mutateAsync(newRequest);
       });
 
-      expect(createResult.current.isSuccess).toBe(true);
+      await waitFor(() => {
+        expect(createResult.current.isSuccess).toBe(true);
+      });
 
       // Step 3: Verify cache was invalidated and refetched
       await waitFor(() => {
@@ -245,7 +252,13 @@ describe("Stamp Request Workflow Integration", () => {
         });
       });
 
-      expect(approveResult.current.isSuccess).toBe(true);
+      await waitFor(() => {
+
+
+        expect(approveResult.current.isSuccess).toBe(true);
+
+
+      });
 
       // Verify pending list was updated (request removed)
       await waitFor(() => {
@@ -296,7 +309,13 @@ describe("Stamp Request Workflow Integration", () => {
         });
       });
 
-      expect(result.current.isSuccess).toBe(true);
+      await waitFor(() => {
+
+
+        expect(result.current.isSuccess).toBe(true);
+
+
+      });
     });
   });
 
@@ -390,7 +409,13 @@ describe("Stamp Request Workflow Integration", () => {
         });
       });
 
-      expect(cancelResult.current.isSuccess).toBe(true);
+      await waitFor(() => {
+
+
+        expect(cancelResult.current.isSuccess).toBe(true);
+
+
+      });
 
       // Verify PENDING list is now empty
       await waitFor(() => {
@@ -494,7 +519,13 @@ describe("Stamp Request Workflow Integration", () => {
         });
       });
 
-      expect(bulkApproveResult.current.isSuccess).toBe(true);
+      await waitFor(() => {
+
+
+        expect(bulkApproveResult.current.isSuccess).toBe(true);
+
+
+      });
       expect(bulkApproveResult.current.data?.successCount).toBe(3);
 
       // Verify pending list is now empty
