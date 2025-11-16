@@ -70,6 +70,12 @@ public record StampRequestResponse(
     @Schema(description = "承認者氏名", example = "管理者 一郎")
     String approvalEmployeeName,
 
+    @Schema(description = "却下者ID", example = "8")
+    Integer rejectionEmployeeId,
+
+    @Schema(description = "却下者氏名", example = "管理者 二郎")
+    String rejectionEmployeeName,
+
     @Schema(description = "作成日時 (ISO 8601)", example = "2025-11-14T10:00:00Z")
     String createdAt,
 

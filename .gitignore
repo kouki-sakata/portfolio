@@ -4,7 +4,7 @@ CLAUDE.md
 .claude
 *__snapshots__/
 .gradle-cache/
-
+.gradle-home/
 # Compiled class files
 *.class
 

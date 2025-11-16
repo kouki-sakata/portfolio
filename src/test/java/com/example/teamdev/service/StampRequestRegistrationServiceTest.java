@@ -2,7 +2,9 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.dto.api.stamprequest.StampRequestCreateRequest;
+import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.mapper.StampHistoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -10,9 +12,15 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * StampRequestRegistrationService のユニットテスト。
@@ -30,6 +38,8 @@ class StampRequestRegistrationServiceTest {
     private StampRequestStore store;
     private StampRequestRegistrationService service;
     private Clock fixedClock;
+    private StampHistoryMapper stampHistoryMapper;
+    private Map<Integer, StampHistory> historyStub;
 
     @BeforeEach
     void setUp() {
@@ -39,7 +49,14 @@ class StampRequestRegistrationServiceTest {
             ZoneId.of("UTC")
         );
         store = new StampRequestStore(null, fixedClock);
-        service = new StampRequestRegistrationService(store);
+        stampHistoryMapper = mock(StampHistoryMapper.class);
+        historyStub = new HashMap<>();
+        when(stampHistoryMapper.getById(anyInt())).thenAnswer(invocation -> {
+            Integer id = invocation.getArgument(0);
+            return Optional.ofNullable(historyStub.get(id));
+        });
+        service = new StampRequestRegistrationService(store, stampHistoryMapper);
+        stubStampHistory(1, 100);
     }
 
     @Test
@@ -424,6 +441,7 @@ class StampRequestRegistrationServiceTest {
         );
 
         // When
+        stubStampHistory(1, 200);
         StampRequest result = service.createRequest(request200, 200);
 
         // Then - 異なる社員なので成功すべき
@@ -444,6 +462,7 @@ class StampRequestRegistrationServiceTest {
             false,
             "最初のリクエストです。十分な長さがあります。"
         );
+        stubStampHistory(1, 100);
         StampRequest cancelledRequest = service.createRequest(firstRequest, 100);
 
         // 手動でCANCELLED状態に変更
@@ -462,6 +481,7 @@ class StampRequestRegistrationServiceTest {
         );
 
         // When - CANCELLED状態のリクエストがあっても新規作成は可能
+        stubStampHistory(1, 100);
         StampRequest result = service.createRequest(newRequest, 100);
 
         // Then
@@ -496,5 +516,26 @@ class StampRequestRegistrationServiceTest {
         assertThat(result.getRequestedOutTime()).isEqualTo(outTime);
         assertThat(result.getRequestedIsNightShift()).isTrue();
         assertThat(result.getStampDate()).isEqualTo(inTime.toLocalDate());
+    }
+
+    private void stubStampHistory(int stampHistoryId, int employeeId) {
+        OffsetDateTime defaultIn = OffsetDateTime.parse("2025-11-15T08:00:00Z");
+        OffsetDateTime defaultOut = OffsetDateTime.parse("2025-11-15T17:00:00Z");
+        StampHistory history = new StampHistory(
+            stampHistoryId,
+            "2025",
+            "11",
+            "15",
+            defaultIn.toLocalDate(),
+            employeeId,
+            defaultIn,
+            defaultOut,
+            null,
+            null,
+            false,
+            employeeId,
+            defaultOut
+        );
+        historyStub.put(stampHistoryId, history);
     }
 }

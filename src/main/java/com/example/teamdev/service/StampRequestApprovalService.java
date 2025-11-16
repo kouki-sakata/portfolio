@@ -1,9 +1,15 @@
 package com.example.teamdev.service;
 
 import com.example.teamdev.constant.StampRequestStatus;
+import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampRequestException;
+import com.example.teamdev.mapper.StampHistoryMapper;
 import java.time.OffsetDateTime;
+import java.util.Objects;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 打刻修正リクエストの承認・却下を扱うサービス。
@@ -17,12 +23,15 @@ import org.springframework.stereotype.Service;
 public class StampRequestApprovalService {
 
     private final StampRequestStore store;
+    private final StampHistoryMapper stampHistoryMapper;
 
-    public StampRequestApprovalService(StampRequestStore store) {
+    public StampRequestApprovalService(StampRequestStore store, StampHistoryMapper stampHistoryMapper) {
         this.store = store;
+        this.stampHistoryMapper = stampHistoryMapper;
     }
 
-    public void approveRequest(Integer requestId, Integer approverId, String approvalNote) {
+    @Transactional
+    public StampRequest approveRequest(Integer requestId, Integer approverId, String approvalNote) {
         if (approverId == null) {
             throw new IllegalArgumentException("承認者が指定されていません");
         }
@@ -33,16 +42,21 @@ public class StampRequestApprovalService {
         }
 
         StampRequest request = findEditableRequest(requestId);
+        StampHistory history = loadStampHistory(request);
+        assertStampHistorySnapshot(history, request);
         OffsetDateTime now = store.now();
+        applyRequestedValuesToHistory(history, request, approverId, now);
+        stampHistoryMapper.update(history);
         request.setStatus(StampRequestStatus.APPROVED.name());
         request.setApprovalNote(approvalNote);
         request.setApprovalEmployeeId(approverId);
         request.setApprovedAt(now);
         request.setUpdatedAt(now);
-        store.save(request);
+        return store.save(request);
     }
 
-    public void rejectRequest(Integer requestId, Integer rejecterId, String rejectionReason) {
+    @Transactional
+    public StampRequest rejectRequest(Integer requestId, Integer rejecterId, String rejectionReason) {
         if (rejecterId == null) {
             throw new IllegalArgumentException("却下者が指定されていません");
         }
@@ -57,7 +71,7 @@ public class StampRequestApprovalService {
         request.setRejectionEmployeeId(rejecterId);
         request.setRejectedAt(now);
         request.setUpdatedAt(now);
-        store.save(request);
+        return store.save(request);
     }
 
     private void validateRejectionReason(String reason) {
@@ -73,8 +87,60 @@ public class StampRequestApprovalService {
     }
 
     private StampRequest findEditableRequest(Integer requestId) {
-        return store.findById(requestId)
-            .filter(request -> !StampRequestStatus.isFinalState(request.getStatus()))
-            .orElseThrow(() -> new IllegalArgumentException("対象の申請は存在しないか既に処理済みです"));
+        StampRequest request = store.findById(requestId)
+            .orElseThrow(() -> new StampRequestException(
+                HttpStatus.NOT_FOUND,
+                "対象の申請は存在しないか既に処理済みです"
+            ));
+
+        if (StampRequestStatus.isFinalState(request.getStatus())) {
+            throw new StampRequestException(HttpStatus.CONFLICT, "対象の申請は存在しないか既に処理済みです");
+        }
+        return request;
+    }
+
+    private StampHistory loadStampHistory(StampRequest request) {
+        return stampHistoryMapper.getById(request.getStampHistoryId())
+            .orElseThrow(() -> new StampRequestException(HttpStatus.NOT_FOUND, "対象の勤怠記録が見つかりません"));
+    }
+
+    private void assertStampHistorySnapshot(StampHistory history, StampRequest request) {
+        if (!Objects.equals(history.getInTime(), request.getOriginalInTime())
+            || !Objects.equals(history.getOutTime(), request.getOriginalOutTime())
+            || !Objects.equals(history.getBreakStartTime(), request.getOriginalBreakStartTime())
+            || !Objects.equals(history.getBreakEndTime(), request.getOriginalBreakEndTime())
+            || !Objects.equals(history.getIsNightShift(), request.getOriginalIsNightShift())) {
+            throw new StampRequestException(HttpStatus.CONFLICT, "対象の勤怠記録は既に変更されています");
+        }
+    }
+
+    private void applyRequestedValuesToHistory(
+        StampHistory history,
+        StampRequest request,
+        Integer approverId,
+        OffsetDateTime now
+    ) {
+        if (request.getRequestedInTime() != null) {
+            history.setInTime(request.getRequestedInTime());
+        }
+        if (request.getRequestedOutTime() != null) {
+            history.setOutTime(request.getRequestedOutTime());
+        }
+        history.setBreakStartTime(request.getRequestedBreakStartTime());
+        history.setBreakEndTime(request.getRequestedBreakEndTime());
+        if (request.getRequestedIsNightShift() != null) {
+            history.setIsNightShift(request.getRequestedIsNightShift());
+        }
+        history.setUpdateEmployeeId(approverId);
+        history.setUpdateDate(now);
+        syncDateColumns(history);
+    }
+
+    private void syncDateColumns(StampHistory history) {
+        if (history.getStampDate() != null) {
+            history.setYear(String.format("%04d", history.getStampDate().getYear()));
+            history.setMonth(String.format("%02d", history.getStampDate().getMonthValue()));
+            history.setDay(String.format("%02d", history.getStampDate().getDayOfMonth()));
+        }
     }
 }

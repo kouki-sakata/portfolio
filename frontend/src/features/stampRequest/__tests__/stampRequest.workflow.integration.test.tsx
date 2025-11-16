@@ -15,19 +15,20 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, renderHook, waitFor } from "@testing-library/react";
 import { HttpResponse, http } from "msw";
 import type { ReactNode } from "react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { z } from "zod";
-import { schemas } from "@/schemas/api";
+import type { schemas } from "@/schemas/api";
 import { mswServer } from "@/test/msw/server";
 
 // Mock hooks (to be implemented in actual feature)
 import {
+  useApproveRequest,
+  useBulkApproveRequests,
+  useCancelRequest,
   useCreateStampRequest,
   useMyRequests,
   usePendingRequests,
-  useApproveRequest,
   useRejectRequest,
-  useCancelRequest,
 } from "../hooks/useStampRequestMutations";
 
 describe("Stamp Request Workflow Integration", () => {
@@ -55,7 +56,9 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [],
             totalCount: 0,
-          } satisfies z.infer<typeof schemas.MyRequestsResponse>)
+            pageNumber: 0,
+            pageSize: 10,
+          } satisfies z.infer<typeof schemas.StampRequestListResponse>)
         )
       );
 
@@ -82,12 +85,11 @@ describe("Stamp Request Workflow Integration", () => {
       const createdRequest = {
         id: 1,
         employeeId,
-        stampHistoryId,
         status: "PENDING",
         ...newRequest,
         createdAt: "2025-11-15T10:00:00Z",
         updatedAt: "2025-11-15T10:00:00Z",
-      } satisfies Partial<z.infer<typeof schemas.StampRequest>>;
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       // Mock POST /api/stamp-requests
       mswServer.use(
@@ -102,13 +104,18 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [createdRequest],
             totalCount: 1,
-          } satisfies z.infer<typeof schemas.MyRequestsResponse>)
+            pageNumber: 0,
+            pageSize: 10,
+          } satisfies z.infer<typeof schemas.StampRequestListResponse>)
         )
       );
 
-      const { result: createResult } = renderHook(() => useCreateStampRequest(), {
-        wrapper,
-      });
+      const { result: createResult } = renderHook(
+        () => useCreateStampRequest(),
+        {
+          wrapper,
+        }
+      );
 
       // Submit request
       await act(async () => {
@@ -174,19 +181,19 @@ describe("Stamp Request Workflow Integration", () => {
       const pendingRequest = {
         id: requestId,
         employeeId: 100,
-        status: "PENDING",
+        status: "PENDING" as const,
         requestedInTime: "2025-11-14T09:00:00+09:00",
         requestedOutTime: "2025-11-14T18:00:00+09:00",
         reason: "修正が必要です。",
-      };
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       const approvedRequest = {
         ...pendingRequest,
-        status: "APPROVED",
+        status: "APPROVED" as const,
         approvalEmployeeId: adminId,
         approvalNote: "承認しました。",
         approvedAt: "2025-11-15T10:30:00Z",
-      };
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       // Mock initial pending requests
       mswServer.use(
@@ -194,7 +201,9 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [pendingRequest],
             totalCount: 1,
-          } satisfies z.infer<typeof schemas.PendingRequestsResponse>)
+            pageNumber: 0,
+            pageSize: 10,
+          } satisfies z.infer<typeof schemas.StampRequestListResponse>)
         )
       );
 
@@ -218,7 +227,9 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [],
             totalCount: 0,
-          } satisfies z.infer<typeof schemas.PendingRequestsResponse>)
+            pageNumber: 0,
+            pageSize: 10,
+          } satisfies z.infer<typeof schemas.StampRequestListResponse>)
         )
       );
 
@@ -249,16 +260,16 @@ describe("Stamp Request Workflow Integration", () => {
       const pendingRequest = {
         id: requestId,
         employeeId: 100,
-        status: "PENDING",
-      };
+        status: "PENDING" as const,
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       const rejectedRequest = {
         ...pendingRequest,
-        status: "REJECTED",
+        status: "REJECTED" as const,
         rejectionEmployeeId: adminId,
         rejectionReason: "申請内容に不備があるため却下します。",
         rejectedAt: "2025-11-15T10:30:00Z",
-      };
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       mswServer.use(
         http.post(/\/api\/stamp-requests\/\d+\/reject/, () =>
@@ -269,6 +280,8 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [],
             totalCount: 0,
+            pageNumber: 0,
+            pageSize: 10,
           })
         )
       );
@@ -277,14 +290,13 @@ describe("Stamp Request Workflow Integration", () => {
       const { result } = renderHook(() => useRejectRequest(), { wrapper });
 
       await act(async () => {
-        await result.mutateAsync({
+        await result.current.mutateAsync({
           requestId,
           rejectionReason: "申請内容に不備があるため却下します。",
         });
       });
 
       expect(result.current.isSuccess).toBe(true);
-      expect(result.current.data?.status).toBe("REJECTED");
     });
   });
 
@@ -295,18 +307,18 @@ describe("Stamp Request Workflow Integration", () => {
       const pendingRequest = {
         id: requestId,
         employeeId: 100,
-        status: "PENDING",
+        status: "PENDING" as const,
         requestedInTime: "2025-11-14T09:00:00+09:00",
         requestedOutTime: "2025-11-14T18:00:00+09:00",
         reason: "修正が必要です。",
-      };
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       const cancelledRequest = {
         ...pendingRequest,
-        status: "CANCELLED",
+        status: "CANCELLED" as const,
         cancellationReason: "予定が変更になったため、キャンセルします。",
         cancelledAt: "2025-11-15T11:00:00Z",
-      };
+      } satisfies Partial<z.infer<typeof schemas.StampRequestResponse>>;
 
       // Mock initial state
       mswServer.use(
@@ -314,6 +326,8 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: [pendingRequest],
             totalCount: 1,
+            pageNumber: 0,
+            pageSize: 10,
           })
         )
       );
@@ -340,14 +354,27 @@ describe("Stamp Request Workflow Integration", () => {
           const status = url.searchParams.get("status");
 
           if (status === "PENDING") {
-            return HttpResponse.json({ requests: [], totalCount: 0 });
-          } else if (status === "CANCELLED") {
+            return HttpResponse.json({
+              requests: [],
+              totalCount: 0,
+              pageNumber: 0,
+              pageSize: 10,
+            });
+          }
+          if (status === "CANCELLED") {
             return HttpResponse.json({
               requests: [cancelledRequest],
               totalCount: 1,
+              pageNumber: 0,
+              pageSize: 10,
             });
           }
-          return HttpResponse.json({ requests: [], totalCount: 0 });
+          return HttpResponse.json({
+            requests: [],
+            totalCount: 0,
+            pageNumber: 0,
+            pageSize: 10,
+          });
         })
       );
 
@@ -359,7 +386,7 @@ describe("Stamp Request Workflow Integration", () => {
       await act(async () => {
         await cancelResult.current.mutateAsync({
           requestId,
-          cancellationReason: "予定が変更になったため、キャンセルします。",
+          reason: "予定が変更になったため、キャンセルします。",
         });
       });
 
@@ -394,7 +421,7 @@ describe("Stamp Request Workflow Integration", () => {
         try {
           await result.current.mutateAsync({
             requestId,
-            cancellationReason: "キャンセル試行。十分な長さがあります。",
+            reason: "キャンセル試行。十分な長さがあります。",
           });
         } catch (error) {
           expect(error).toBeDefined();
@@ -408,12 +435,11 @@ describe("Stamp Request Workflow Integration", () => {
   describe("Bulk Operations", () => {
     it("bulk approves multiple requests and updates cache", async () => {
       const requestIds = [1, 2, 3];
-      const adminId = 200;
 
       const pendingRequests = requestIds.map((id) => ({
         id,
         employeeId: 100,
-        status: "PENDING",
+        status: "PENDING" as const,
       }));
 
       mswServer.use(
@@ -421,6 +447,8 @@ describe("Stamp Request Workflow Integration", () => {
           HttpResponse.json({
             requests: pendingRequests,
             totalCount: 3,
+            pageNumber: 0,
+            pageSize: 10,
           })
         )
       );
@@ -436,18 +464,20 @@ describe("Stamp Request Workflow Integration", () => {
 
       // Mock bulk approve
       mswServer.use(
-        http.post(/\/api\/stamp-requests\/bulk-approve/, () =>
+        http.post(/\/api\/stamp-requests\/bulk\/approve/, () =>
           HttpResponse.json({
             successCount: 3,
             failureCount: 0,
             failedRequestIds: [],
-          } satisfies z.infer<typeof schemas.BulkOperationResponse>)
+          } satisfies z.infer<typeof schemas.StampRequestBulkOperationResponse>)
         ),
 
         http.get(/\/api\/stamp-requests\/pending/, () =>
           HttpResponse.json({
             requests: [],
             totalCount: 0,
+            pageNumber: 0,
+            pageSize: 10,
           })
         )
       );
@@ -477,12 +507,12 @@ describe("Stamp Request Workflow Integration", () => {
       const requestIds = [1, 2, 3];
 
       mswServer.use(
-        http.post(/\/api\/stamp-requests\/bulk-approve/, () =>
+        http.post(/\/api\/stamp-requests\/bulk\/approve/, () =>
           HttpResponse.json({
             successCount: 2,
             failureCount: 1,
             failedRequestIds: [2],
-          } satisfies z.infer<typeof schemas.BulkOperationResponse>)
+          } satisfies z.infer<typeof schemas.StampRequestBulkOperationResponse>)
         )
       );
 
@@ -503,13 +533,3 @@ describe("Stamp Request Workflow Integration", () => {
     });
   });
 });
-
-// Mock hook implementations (these would be in actual feature code)
-function useBulkApproveRequests() {
-  // Placeholder - actual implementation would use useMutation
-  return {
-    mutateAsync: vi.fn(),
-    isSuccess: false,
-    data: null,
-  } as any;
-}

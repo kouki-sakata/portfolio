@@ -43,6 +43,14 @@ export type PendingRequestFilters = {
   sort?: string;
 };
 
+export type MyRequestFilters = {
+  status: string;
+  page: number;
+  pageSize: number;
+  search: string;
+  sort: string;
+};
+
 export type StampRequestCreatePayload = {
   stampHistoryId: number;
   requestedInTime?: string | null;

@@ -2,9 +2,12 @@ package com.example.teamdev.service;
 
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampRequestException;
 import java.time.OffsetDateTime;
 import java.util.Objects;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 打刻修正リクエストの取消操作を扱うサービス。
@@ -23,19 +26,20 @@ public class StampRequestCancellationService {
         this.store = store;
     }
 
-    public void cancelRequest(Integer requestId, Integer employeeId, String cancellationReason) {
+    @Transactional
+    public StampRequest cancelRequest(Integer requestId, Integer employeeId, String cancellationReason) {
         // リクエストの存在確認
         StampRequest request = store.findById(requestId)
-            .orElseThrow(() -> new IllegalArgumentException("対象の申請が見つかりません"));
+            .orElseThrow(() -> new StampRequestException(HttpStatus.NOT_FOUND, "対象の申請が見つかりません"));
 
         // 権限確認（Requirement 6-1, 8-3）
         if (!Objects.equals(request.getEmployeeId(), employeeId)) {
-            throw new IllegalArgumentException("この申請の取り消し権限がありません");
+            throw new StampRequestException(HttpStatus.FORBIDDEN, "この申請の取り消し権限がありません");
         }
 
         // ステータス確認（Requirement 6-5）
         if (StampRequestStatus.isFinalState(request.getStatus())) {
-            throw new IllegalArgumentException("既に処理済みの申請は取り消せません");
+            throw new StampRequestException(HttpStatus.CONFLICT, "既に処理済みの申請は取り消せません");
         }
 
         // キャンセル理由の検証（Requirement 6-2）
@@ -47,7 +51,7 @@ public class StampRequestCancellationService {
         request.setCancellationReason(cancellationReason);
         request.setCancelledAt(now);
         request.setUpdatedAt(now);
-        store.save(request);
+        return store.save(request);
     }
 
     private void validateCancellationReason(String reason) {

@@ -337,11 +337,16 @@ class StampRequestWorkflowIntegrationTest extends PostgresContainerSupport {
     private Integer createStampHistory(Integer empId, LocalDate date) {
         OffsetDateTime inTime = date.atTime(8, 0).atOffset(ZoneOffset.ofHours(9));
         OffsetDateTime outTime = date.atTime(17, 0).atOffset(ZoneOffset.ofHours(9));
+        OffsetDateTime updateDate = OffsetDateTime.now(ZoneOffset.ofHours(9));
+
+        String year = String.format("%04d", date.getYear());
+        String month = String.format("%02d", date.getMonthValue());
+        String day = String.format("%02d", date.getDayOfMonth());
 
         jdbcTemplate.update(
-            "INSERT INTO stamp_history (employee_id, stamp_date, in_time, out_time, is_night_shift) " +
-            "VALUES (?, ?, ?, ?, FALSE)",
-            empId, date, inTime, outTime
+            "INSERT INTO stamp_history (employee_id, stamp_date, year, month, day, in_time, out_time, is_night_shift, update_employee_id, update_date) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, FALSE, ?, ?)",
+            empId, date, year, month, day, inTime, outTime, empId, updateDate
         );
 
         return jdbcTemplate.queryForObject(

@@ -200,16 +200,20 @@ class StampRequestRestControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/stamp-requests/{id}/approve returns 204 for admins")
+    @DisplayName("POST /api/stamp-requests/{id}/approve returns payload for admins")
     @WithMockUser(username = ADMIN_EMAIL, roles = "ADMIN")
     void approveRequestAsAdmin() throws Exception {
+        StampRequest approved = buildRequest(940, employee.getId());
+        approved.setStatus("APPROVED");
+        when(approvalService.approveRequest(940, admin.getId(), "確認済み")).thenReturn(approved);
+
         mockMvc.perform(post("/api/stamp-requests/{id}/approve", 940)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"approvalNote\":\"確認済み\"}"))
-            .andExpect(status().isNoContent());
-
-        verify(approvalService).approveRequest(940, admin.getId(), "確認済み");
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(940))
+            .andExpect(jsonPath("$.status").value("APPROVED"));
     }
 
     @Test
@@ -224,17 +228,22 @@ class StampRequestRestControllerTest {
     }
 
     @Test
-    @DisplayName("POST /api/stamp-requests/{id}/cancel invokes cancellation service")
+    @DisplayName("POST /api/stamp-requests/{id}/cancel returns cancelled payload")
     @WithMockUser(username = EMPLOYEE_EMAIL, roles = "USER")
     void cancelRequest() throws Exception {
         String reason = "再申請のため取り下げます";
+        StampRequest cancelled = buildRequest(950, employee.getId());
+        cancelled.setStatus("CANCELLED");
+        cancelled.setCancellationReason(reason);
+        when(cancellationService.cancelRequest(950, employee.getId(), reason)).thenReturn(cancelled);
+
         mockMvc.perform(post("/api/stamp-requests/{id}/cancel", 950)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("cancellationReason", reason))))
-            .andExpect(status().isNoContent());
-
-        verify(cancellationService).cancelRequest(950, employee.getId(), reason);
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.status").value("CANCELLED"))
+            .andExpect(jsonPath("$.cancellationReason").value(reason));
     }
 
     @Test

@@ -11,6 +11,7 @@ import com.example.teamdev.dto.api.stamprequest.StampRequestRejectionRequest;
 import com.example.teamdev.dto.api.stamprequest.StampRequestResponse;
 import com.example.teamdev.entity.Employee;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampRequestException;
 import com.example.teamdev.mapper.EmployeeMapper;
 import com.example.teamdev.service.StampRequestApprovalService;
 import com.example.teamdev.service.StampRequestBulkOperationService;
@@ -72,12 +73,18 @@ public class StampRequestRestController {
 
     @PostMapping
     @Operation(summary = "打刻修正リクエストを作成する")
-    public ResponseEntity<StampRequestResponse> createRequest(
+    public ResponseEntity<?> createRequest(
         @Valid @RequestBody StampRequestCreateRequest request
     ) {
         Integer employeeId = requireCurrentEmployeeId();
-        StampRequest created = registrationService.createRequest(request, employeeId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
+        try {
+            StampRequest created = registrationService.createRequest(request, employeeId);
+            return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created));
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @GetMapping("/my-requests")
@@ -125,39 +132,57 @@ public class StampRequestRestController {
     @PostMapping("/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "打刻修正リクエストを承認する")
-    public ResponseEntity<Void> approveRequest(
+    public ResponseEntity<?> approveRequest(
         @PathVariable Integer id,
         @Valid @RequestBody StampRequestApprovalRequest request
     ) {
         Integer approverId = requireCurrentEmployeeId();
-        approvalService.approveRequest(id, approverId, request.approvalNote());
-        return ResponseEntity.noContent().build();
+        try {
+            StampRequest updated = approvalService.approveRequest(id, approverId, request.approvalNote());
+            return ResponseEntity.ok(toResponse(updated));
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/reject")
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "打刻修正リクエストを却下する")
-    public ResponseEntity<Void> rejectRequest(
+    public ResponseEntity<?> rejectRequest(
         @PathVariable Integer id,
         @Valid @RequestBody StampRequestRejectionRequest request
     ) {
         Integer rejecterId = requireCurrentEmployeeId();
-        approvalService.rejectRequest(id, rejecterId, request.rejectionReason());
-        return ResponseEntity.noContent().build();
+        try {
+            StampRequest updated = approvalService.rejectRequest(id, rejecterId, request.rejectionReason());
+            return ResponseEntity.ok(toResponse(updated));
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
     @PostMapping("/{id}/cancel")
     @Operation(summary = "打刻修正リクエストを取消する")
-    public ResponseEntity<Void> cancelRequest(
+    public ResponseEntity<?> cancelRequest(
         @PathVariable Integer id,
         @Valid @RequestBody StampRequestCancellationRequest request
     ) {
         Integer employeeId = requireCurrentEmployeeId();
-        cancellationService.cancelRequest(id, employeeId, request.cancellationReason());
-        return ResponseEntity.noContent().build();
+        try {
+            StampRequest updated = cancellationService.cancelRequest(id, employeeId, request.cancellationReason());
+            return ResponseEntity.ok(toResponse(updated));
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
+        } catch (IllegalArgumentException e) {
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
+        }
     }
 
-    @PostMapping("/bulk/approve")
+    @PostMapping({"/bulk/approve", "/bulk-approve"})
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "打刻修正リクエストを一括承認する")
     public ResponseEntity<?> bulkApprove(
@@ -168,15 +193,17 @@ public class StampRequestRestController {
             StampRequestBulkOperationResponse result =
                 bulkOperationService.bulkApprove(request.requestIds(), approverId, request.approvalNote());
             return ResponseEntity.ok(result);
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(errorBody(e.getMessage()));
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (RuntimeException e) {
             log.error("Bulk approve failed", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "一括承認に失敗しました");
         }
     }
 
-    @PostMapping("/bulk/reject")
+    @PostMapping({"/bulk/reject", "/bulk-reject"})
     @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "打刻修正リクエストを一括却下する")
     public ResponseEntity<?> bulkReject(
@@ -187,8 +214,10 @@ public class StampRequestRestController {
             StampRequestBulkOperationResponse result =
                 bulkOperationService.bulkReject(request.requestIds(), rejecterId, request.rejectionReason());
             return ResponseEntity.ok(result);
+        } catch (StampRequestException e) {
+            return buildError(e.getStatus(), e.getMessage());
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(errorBody(e.getMessage()));
+            return buildError(HttpStatus.BAD_REQUEST, e.getMessage());
         } catch (RuntimeException e) {
             log.error("Bulk reject failed", e);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "一括却下に失敗しました");
@@ -210,6 +239,7 @@ public class StampRequestRestController {
     private StampRequestResponse toResponse(StampRequest request) {
         String employeeName = resolveEmployeeName(request.getEmployeeId());
         String approvalEmployeeName = resolveEmployeeName(request.getApprovalEmployeeId());
+        String rejectionEmployeeName = resolveEmployeeName(request.getRejectionEmployeeId());
         OffsetDateTime createdAt = request.getCreatedAt();
         OffsetDateTime updatedAt = request.getUpdatedAt();
 
@@ -239,6 +269,8 @@ public class StampRequestRestController {
             request.getCancellationReason(),
             request.getApprovalEmployeeId(),
             approvalEmployeeName,
+            request.getRejectionEmployeeId(),
+            rejectionEmployeeName,
             toIso(createdAt),
             toIso(updatedAt),
             toIso(request.getApprovedAt()),
@@ -271,5 +303,9 @@ public class StampRequestRestController {
 
     private Map<String, String> errorBody(String message) {
         return Map.of("message", message != null ? message : "不明なエラーが発生しました");
+    }
+
+    private ResponseEntity<Map<String, String>> buildError(HttpStatus status, String message) {
+        return ResponseEntity.status(status).body(errorBody(message));
     }
 }
