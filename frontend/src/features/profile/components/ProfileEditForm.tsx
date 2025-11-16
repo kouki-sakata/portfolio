@@ -19,6 +19,8 @@ import type { ProfileMetadataFormValues } from "@/features/profile/types";
 // biome-ignore lint/suspicious/noControlCharactersInRegex: XSS対策のため制御文字を意図的に検出
 const FORBIDDEN_CHAR_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F<>]/;
 
+const MIN_SUBMIT_SPINNER_DURATION_MS = 200;
+
 const createFieldSchema = (
   max: number,
   fieldLabel: string,
@@ -90,6 +92,10 @@ export const ProfileEditForm = ({
 
   const isMountedRef = useRef(true);
   const [isPendingSubmit, setIsPendingSubmit] = useState(false);
+  const pendingSubmitStartedAtRef = useRef<number | null>(null);
+  const pendingDelayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
   const isProcessing = isSubmitting || isPendingSubmit;
 
   useEffect(() => {
@@ -99,16 +105,45 @@ export const ProfileEditForm = ({
   useEffect(
     () => () => {
       isMountedRef.current = false;
+      pendingSubmitStartedAtRef.current = null;
+      if (pendingDelayTimerRef.current) {
+        clearTimeout(pendingDelayTimerRef.current);
+        pendingDelayTimerRef.current = null;
+      }
     },
     []
   );
 
+  const waitForMinimumProcessingTime = () => {
+    const startedAt = pendingSubmitStartedAtRef.current;
+
+    if (startedAt === null) {
+      return Promise.resolve();
+    }
+
+    const elapsed = Date.now() - startedAt;
+    if (elapsed >= MIN_SUBMIT_SPINNER_DURATION_MS) {
+      return Promise.resolve();
+    }
+
+    return new Promise<void>((resolve) => {
+      pendingDelayTimerRef.current = setTimeout(() => {
+        pendingDelayTimerRef.current = null;
+        resolve();
+      }, MIN_SUBMIT_SPINNER_DURATION_MS - elapsed);
+    });
+  };
+
   const handleFormSubmit = handleSubmit(async (values) => {
     setIsPendingSubmit(true);
+    pendingSubmitStartedAtRef.current = Date.now();
 
     try {
       await onSubmit(values);
     } finally {
+      await waitForMinimumProcessingTime();
+      pendingSubmitStartedAtRef.current = null;
+
       if (isMountedRef.current) {
         setIsPendingSubmit(false);
       }

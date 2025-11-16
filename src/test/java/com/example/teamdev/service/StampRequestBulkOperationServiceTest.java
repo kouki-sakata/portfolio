@@ -75,6 +75,47 @@ class StampRequestBulkOperationServiceTest {
             store.save(request);
             return request;
         });
+        when(approvalService.rejectRequest(any(), any(), any())).then(invocation -> {
+            Integer requestId = invocation.getArgument(0);
+            Integer rejecterId = invocation.getArgument(1);
+            String rejectionReason = invocation.getArgument(2);
+
+            if (rejecterId == null) {
+                throw new IllegalArgumentException("却下者が指定されていません");
+            }
+
+            if (rejectionReason == null || rejectionReason.trim().isEmpty()) {
+                throw new IllegalArgumentException("却下理由は必須です");
+            }
+            if (rejectionReason.length() < 10) {
+                throw new IllegalArgumentException("却下理由は10文字以上で入力してください");
+            }
+            if (rejectionReason.length() > 500) {
+                throw new IllegalArgumentException("却下理由は500文字以内で入力してください");
+            }
+
+            StampRequest request = store.findById(requestId)
+                .orElseThrow(() -> new StampRequestException(
+                    HttpStatus.NOT_FOUND,
+                    "対象の申請は存在しないか既に処理済みです"
+                ));
+
+            if (StampRequestStatus.isFinalState(request.getStatus())) {
+                throw new StampRequestException(
+                    HttpStatus.CONFLICT,
+                    "対象の申請は存在しないか既に処理済みです"
+                );
+            }
+
+            OffsetDateTime now = store.now();
+            request.setStatus(StampRequestStatus.REJECTED.name());
+            request.setRejectionReason(rejectionReason);
+            request.setRejectionEmployeeId(rejecterId);
+            request.setRejectedAt(now);
+            request.setUpdatedAt(now);
+            store.save(request);
+            return request;
+        });
 
         service = new StampRequestBulkOperationService(store, approvalService);
     }
