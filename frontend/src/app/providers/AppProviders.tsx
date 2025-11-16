@@ -23,7 +23,6 @@ import {
   employeeAdminRouteLoader,
   homeRouteLoader,
   newsManagementLoader,
-  pendingRequestsRouteLoader,
   stampHistoryRouteLoader,
 } from "@/app/providers/routeLoaders";
 import { Toaster } from "@/components/ui/toaster";

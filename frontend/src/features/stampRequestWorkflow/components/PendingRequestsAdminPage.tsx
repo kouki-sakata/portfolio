@@ -2,7 +2,6 @@ import type { ColumnDef, RowSelectionState } from "@tanstack/react-table";
 import { Keyboard, Plus, User } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

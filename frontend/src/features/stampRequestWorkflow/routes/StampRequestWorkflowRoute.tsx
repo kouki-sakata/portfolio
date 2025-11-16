@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { MyRequestsPage } from "@/features/stampRequestWorkflow/components/MyRequestsPage";
 import { PendingRequestsAdminPage } from "@/features/stampRequestWorkflow/components/PendingRequestsAdminPage";
@@ -17,7 +17,6 @@ import { PendingRequestsAdminPage } from "@/features/stampRequestWorkflow/compon
  */
 export const StampRequestWorkflowRoute = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isAdmin = user?.admin ?? false;
 

@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -41,11 +40,11 @@ import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types
 
 const STATUS_TABS = [
   { value: "ALL", label: "全て" },
+  { value: "NEW", label: "新規" },
   { value: "PENDING", label: "保留" },
-  { value: "APPROVED", label: "承認済み" },
+  { value: "APPROVED", label: "承認" },
   { value: "REJECTED", label: "却下" },
-  { value: "CANCELLED", label: "取消" },
-];
+] as const;
 
 const SIDEBAR_SKELETON_IDS = [
   "sidebar-skeleton-1",
@@ -151,8 +150,6 @@ export const MyRequestsPage = ({
         <WorkflowSidebar
           filters={filters}
           isLoading={isLoading}
-          onNextPage={() => filterState.setPage(filters.page + 1)}
-          onPrevPage={() => filterState.setPage(Math.max(0, filters.page - 1))}
           onSearch={filterState.setSearch}
           onSelectRequest={handleSelectRequest}
           onSortChange={filterState.setSort}
@@ -195,8 +192,6 @@ type WorkflowSidebarProps = {
   onStatusChange: (status: string) => void;
   onSearch: (term: string) => void;
   onSortChange: (value: string) => void;
-  onNextPage: () => void;
-  onPrevPage: () => void;
   isLoading: boolean;
 };
 
@@ -208,8 +203,6 @@ const WorkflowSidebar = ({
   onStatusChange,
   onSearch,
   onSortChange,
-  onNextPage,
-  onPrevPage,
   isLoading,
 }: WorkflowSidebarProps) => {
   // ステータスカウントを計算
@@ -219,6 +212,55 @@ const WorkflowSidebar = ({
     pending: requests.filter((r) => r.status === "PENDING").length,
     approved: requests.filter((r) => r.status === "APPROVED").length,
     rejected: requests.filter((r) => r.status === "REJECTED").length,
+  };
+
+  const getStatusCount = (status: string) => {
+    switch (status) {
+      case "ALL":
+        return statusCounts.all;
+      case "NEW":
+        return statusCounts.new;
+      case "PENDING":
+        return statusCounts.pending;
+      case "APPROVED":
+        return statusCounts.approved;
+      case "REJECTED":
+        return statusCounts.rejected;
+      default:
+        return 0;
+    }
+  };
+
+  const renderTabBadge = (status: string, count: number) => {
+    if (status === "ALL") {
+      return (
+        <Badge className="ml-1 text-xs" variant="secondary">
+          {count}
+        </Badge>
+      );
+    }
+
+    if (count === 0) {
+      return null;
+    }
+
+    if (status === "NEW") {
+      return (
+        <Badge className="ml-1 bg-blue-100 text-xs" variant="secondary">
+          {count}
+        </Badge>
+      );
+    }
+
+    if (status === "PENDING") {
+      return <Badge className="ml-1 bg-yellow-500 text-xs">{count}</Badge>;
+    }
+
+    return (
+      <Badge className="ml-1 text-xs" variant="secondary">
+        {count}
+      </Badge>
+    );
   };
 
   const getSortLabel = (sort: string) => {
@@ -330,44 +372,15 @@ const WorkflowSidebar = ({
         {/* ステータスタブ */}
         <Tabs onValueChange={onStatusChange} value={filters.status}>
           <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger className="px-2 text-xs" value="ALL">
-              全て
-              <Badge className="ml-1 text-xs" variant="secondary">
-                {statusCounts.all}
-              </Badge>
-            </TabsTrigger>
-            <TabsTrigger className="px-2 text-xs" value="NEW">
-              新規
-              {statusCounts.new > 0 && (
-                <Badge className="ml-1 bg-blue-100 text-xs" variant="secondary">
-                  {statusCounts.new}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger className="px-2 text-xs" value="PENDING">
-              保留
-              {statusCounts.pending > 0 && (
-                <Badge className="ml-1 bg-yellow-500 text-xs">
-                  {statusCounts.pending}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger className="px-2 text-xs" value="APPROVED">
-              承認
-              {statusCounts.approved > 0 && (
-                <Badge className="ml-1 text-xs" variant="secondary">
-                  {statusCounts.approved}
-                </Badge>
-              )}
-            </TabsTrigger>
-            <TabsTrigger className="px-2 text-xs" value="REJECTED">
-              却下
-              {statusCounts.rejected > 0 && (
-                <Badge className="ml-1 text-xs" variant="secondary">
-                  {statusCounts.rejected}
-                </Badge>
-              )}
-            </TabsTrigger>
+            {STATUS_TABS.map((tab) => {
+              const count = getStatusCount(tab.value);
+              return (
+                <TabsTrigger className="px-2 text-xs" key={tab.value} value={tab.value}>
+                  {tab.label}
+                  {renderTabBadge(tab.value, count)}
+                </TabsTrigger>
+              );
+            })}
           </TabsList>
         </Tabs>
 
@@ -590,13 +603,3 @@ const CommandItem = ({ label, onSelect }: CommandItemProps) => (
     {label}
   </button>
 );
-
-const obfuscateReason = (text: string, isActive: boolean): string => {
-  if (!isActive) {
-    return text;
-  }
-  return text
-    .split("")
-    .map((char, index) => (index === 0 ? char : `\u200b${char}`))
-    .join("");
-};
