@@ -144,7 +144,7 @@
         FROM stamp_request
         WHERE employee_id = #{employeeId}
           AND stamp_history_id = #{stampHistoryId}
-          AND status = 'PENDING'
+          AND status = 'PENDING'::stamp_request_status
         LIMIT 1
     </select>
 
