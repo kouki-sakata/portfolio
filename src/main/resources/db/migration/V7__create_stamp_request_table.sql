@@ -14,7 +14,7 @@ CREATE TABLE stamp_request (
     stamp_history_id INTEGER NOT NULL REFERENCES stamp_history(id),
 
     -- Request metadata
-    stamp_date DATE NOT NULL,
+    stamp_date DATE NOT NULL CHECK (stamp_date <= CURRENT_DATE),
     status stamp_request_status NOT NULL DEFAULT 'PENDING',
 
     -- Original values (immutable snapshot from stamp_history at submission time)
