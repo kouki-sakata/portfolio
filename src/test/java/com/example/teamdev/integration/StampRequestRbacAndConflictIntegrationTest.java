@@ -1,6 +1,9 @@
 package com.example.teamdev.integration;
 
 import com.example.teamdev.testconfig.PostgresContainerSupport;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -58,6 +61,9 @@ class StampRequestRbacAndConflictIntegrationTest extends PostgresContainerSuppor
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private Integer employeeId;
     private Integer adminId;
@@ -426,7 +432,7 @@ class StampRequestRbacAndConflictIntegrationTest extends PostgresContainerSuppor
             .andReturn();
 
         String responseBody = result.getResponse().getContentAsString();
-        String idPart = responseBody.split("\"id\":")[1].split(",")[0].trim();
-        return Integer.parseInt(idPart);
+        JsonNode root = objectMapper.readTree(responseBody);
+        return root.get("id").asInt();
     }
 }

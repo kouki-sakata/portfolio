@@ -2,6 +2,9 @@ package com.example.teamdev.integration;
 
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.testconfig.PostgresContainerSupport;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -60,6 +63,9 @@ class StampRequestWorkflowIntegrationTest extends PostgresContainerSupport {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     private Integer employeeId;
     private Integer adminId;
@@ -346,11 +352,10 @@ class StampRequestWorkflowIntegrationTest extends PostgresContainerSupport {
     }
 
     /**
-     * Extract request ID from JSON response
+     * Extract request ID from JSON response using ObjectMapper for robust parsing
      */
-    private Integer extractRequestId(String jsonResponse) {
-        // Simple extraction - in real code you'd use Jackson or similar
-        String idPart = jsonResponse.split("\"id\":")[1].split(",")[0].trim();
-        return Integer.parseInt(idPart);
+    private Integer extractRequestId(String jsonResponse) throws JsonProcessingException {
+        JsonNode root = objectMapper.readTree(jsonResponse);
+        return root.get("id").asInt();
     }
 }
