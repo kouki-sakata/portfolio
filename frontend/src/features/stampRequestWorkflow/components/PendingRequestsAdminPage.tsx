@@ -502,30 +502,6 @@ export const PendingRequestsAdminPage = ({
               )}
             </div>
           </ScrollArea>
-
-          {/* フッター: ショートカットヒント */}
-          <div className="border-t bg-gray-50 p-3">
-            <div className="flex items-center justify-center gap-4 text-muted-foreground text-xs">
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-white px-1.5 py-0.5">
-                  ↑↓
-                </kbd>
-                移動
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-white px-1.5 py-0.5">
-                  Enter
-                </kbd>
-                選択
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="rounded border bg-white px-1.5 py-0.5">
-                  ⌘K
-                </kbd>
-                コマンド
-              </span>
-            </div>
-          </div>
         </div>
 
         {/* 右メインエリア: 詳細パネル */}

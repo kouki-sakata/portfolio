@@ -423,24 +423,6 @@ const WorkflowSidebar = ({
       <ScrollArea className="flex-1">
         <div className="space-y-2 p-2">{renderRequestList()}</div>
       </ScrollArea>
-
-      {/* フッター: ショートカットヒント */}
-      <div className="border-t bg-gray-50 p-3">
-        <div className="flex items-center justify-center gap-4 text-muted-foreground text-xs">
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border bg-white px-1.5 py-0.5">↑↓</kbd>
-            移動
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border bg-white px-1.5 py-0.5">Enter</kbd>
-            選択
-          </span>
-          <span className="flex items-center gap-1">
-            <kbd className="rounded border bg-white px-1.5 py-0.5">⌘K</kbd>
-            コマンド
-          </span>
-        </div>
-      </div>
     </aside>
   );
 };
