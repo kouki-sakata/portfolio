@@ -132,9 +132,26 @@ public class StampRequestQueryService {
         return store.findById(requestId);
     }
 
+    /**
+     * ステータス文字列を正規化します。
+     *
+     * <p>以下の変換を行います:
+     * <ul>
+     *   <li>"ALL" → null（すべてのステータスを表示）</li>
+     *   <li>"NEW" → "PENDING"（UIの「新規」タブ対応）</li>
+     *   <li>その他 → 大文字に変換</li>
+     * </ul>
+     *
+     * @param status ステータス文字列
+     * @return 正規化されたステータス、またはnull（フィルタなし）
+     */
     private String normalizeStatus(String status) {
         if (status == null || status.isBlank() || "ALL".equalsIgnoreCase(status)) {
             return null;
+        }
+        // UI の「新規」タブで "NEW" が渡されるが、DB には PENDING しかないため変換
+        if ("NEW".equalsIgnoreCase(status)) {
+            return "PENDING";
         }
         return status.toUpperCase(Locale.ROOT);
     }

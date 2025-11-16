@@ -35,7 +35,7 @@ CREATE TABLE stamp_request (
     reason TEXT NOT NULL CHECK (char_length(reason) >= 10 AND char_length(reason) <= 500),
     approval_note TEXT CHECK (approval_note IS NULL OR char_length(approval_note) <= 500),
     rejection_reason TEXT CHECK (rejection_reason IS NULL OR char_length(rejection_reason) BETWEEN 10 AND 500),
-    cancellation_reason TEXT CHECK (cancellation_reason IS NULL OR char_length(cancellation_reason) >= 10),
+    cancellation_reason TEXT CHECK (cancellation_reason IS NULL OR char_length(cancellation_reason) BETWEEN 10 AND 500),
 
     -- Actor tracking
     approval_employee_id INTEGER REFERENCES employee(id),
