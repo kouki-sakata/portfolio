@@ -5,7 +5,6 @@ package com.example.teamdev.constant;
  */
 public enum StampRequestStatus {
 
-    NEW(false),
     PENDING(false),
     APPROVED(true),
     REJECTED(true),

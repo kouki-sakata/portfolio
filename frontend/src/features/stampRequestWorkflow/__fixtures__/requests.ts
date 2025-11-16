@@ -29,7 +29,7 @@ export const mockStampRequestItem: StampRequestListItem = {
   status: "PENDING",
   reason: "家族の急用で退勤が遅れたため修正が必要です。",
   submittedAt: "2025/11/07 19:05",
-  submittedTimestamp: 1_699_363_905_000,
+  submittedTimestamp: 1_762_522_305_000, // 2025-11-07 19:05:05 JST
   employeeName: "田中 太郎",
   requestedInTime: "09:00",
   requestedOutTime: "18:30",

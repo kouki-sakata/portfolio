@@ -54,6 +54,19 @@ public class StampRequestQueryService {
         return requests.size();
     }
 
+    /**
+     * 保留中のリクエスト一覧を取得します。
+     *
+     * <p>検索条件がない場合はDB側でページングを行い、パフォーマンスを最適化します。
+     * 検索条件がある場合のみ全件取得してJava側でフィルタリングします。</p>
+     *
+     * @param page ページ番号（0始まり）
+     * @param size ページサイズ
+     * @param status ステータスフィルタ（nullの場合はPENDINGをデフォルト使用）
+     * @param search 検索キーワード（従業員名、理由、IDで検索）
+     * @param sort ソート順（"recent", "oldest", "status"）
+     * @return フィルタリング・ソート済みのリクエスト一覧
+     */
     public List<StampRequest> getPendingRequests(
         Integer page,
         Integer size,
@@ -65,11 +78,17 @@ public class StampRequestQueryService {
         String normalizedSearch = normalizeSearch(search);
         int safePage = Math.max(page != null ? page : 0, 0);
         int safeSize = size != null && size > 0 ? size : 20;
+        String queryStatus = normalizedStatus != null ? normalizedStatus : "PENDING";
+
+        // 検索条件がない場合はDB側でページングを実行（パフォーマンス最適化）
+        if (normalizedSearch == null && isDefaultSort(sort)) {
+            int offset = safePage * safeSize;
+            return store.findByStatusWithPagination(queryStatus, offset, safeSize);
+        }
+
+        // 検索条件またはカスタムソートがある場合は全件取得してJava側で処理
         Comparator<StampRequest> comparator = comparatorForSort(sort);
         Map<Integer, String> nameCache = new HashMap<>();
-
-        // Use efficient query method: default to PENDING if no status specified
-        String queryStatus = normalizedStatus != null ? normalizedStatus : "PENDING";
         List<StampRequest> requests = store.findByStatus(queryStatus);
 
         return requests.stream()
@@ -80,13 +99,28 @@ public class StampRequestQueryService {
             .toList();
     }
 
+    /**
+     * 保留中のリクエスト件数をカウントします。
+     *
+     * <p>検索条件がない場合はDB側でカウントを行い、パフォーマンスを最適化します。
+     * 検索条件がある場合のみ全件取得してJava側でフィルタリング後にカウントします。</p>
+     *
+     * @param status ステータスフィルタ（nullの場合はPENDINGをデフォルト使用）
+     * @param search 検索キーワード（従業員名、理由、IDで検索）
+     * @return マッチするリクエストの件数
+     */
     public Integer countPendingRequests(String status, String search) {
         String normalizedStatus = normalizeStatus(status);
         String normalizedSearch = normalizeSearch(search);
-        Map<Integer, String> nameCache = new HashMap<>();
-
-        // Use efficient query method: default to PENDING if no status specified
         String queryStatus = normalizedStatus != null ? normalizedStatus : "PENDING";
+
+        // 検索条件がない場合はDB側でカウント（パフォーマンス最適化）
+        if (normalizedSearch == null) {
+            return store.countByStatus(queryStatus);
+        }
+
+        // 検索条件がある場合は全件取得してJava側でフィルタリング後にカウント
+        Map<Integer, String> nameCache = new HashMap<>();
         List<StampRequest> requests = store.findByStatus(queryStatus);
 
         return (int) requests.stream()
@@ -113,6 +147,20 @@ public class StampRequestQueryService {
         return trimmed.isEmpty() ? null : trimmed.toLowerCase(Locale.ROOT);
     }
 
+    /**
+     * ソート順がデフォルト（作成日時降順）かどうかを判定します。
+     *
+     * @param sort ソート指定文字列
+     * @return デフォルトソートの場合true
+     */
+    private boolean isDefaultSort(String sort) {
+        if (sort == null) {
+            return true;
+        }
+        String normalized = sort.toLowerCase(Locale.ROOT);
+        return "recent".equals(normalized) || normalized.isEmpty();
+    }
+
     private Comparator<StampRequest> comparatorForSort(String sort) {
         String normalized = sort == null ? "recent" : sort.toLowerCase(Locale.ROOT);
         return switch (normalized) {
@@ -131,6 +179,16 @@ public class StampRequestQueryService {
         return normalizedStatus.equals(requestStatus);
     }
 
+    /**
+     * リクエストが検索条件にマッチするかを判定します。
+     *
+     * <p>検索対象: 申請理由、リクエストID、従業員名（すべて大文字小文字を区別しない）</p>
+     *
+     * @param request 判定対象のリクエスト
+     * @param normalizedSearch 小文字化された検索キーワード（nullの場合は常にtrue）
+     * @param nameCache 従業員名のキャッシュ（NPE防止のため、nullは格納しない）
+     * @return マッチする場合true
+     */
     private boolean matchesSearch(
         StampRequest request,
         String normalizedSearch,
@@ -146,15 +204,40 @@ public class StampRequestQueryService {
             return true;
         }
         String name = resolveEmployeeName(request.getEmployeeId(), nameCache);
-        return name != null && name.contains(normalizedSearch);
+        // 従業員名を小文字化してから比較（大文字小文字を区別しない検索）
+        return name != null && name.toLowerCase(Locale.ROOT).contains(normalizedSearch);
     }
 
+    /**
+     * 従業員IDから従業員名を解決します。
+     *
+     * <p>キャッシュを使用してDB呼び出しを最小化します。
+     * nullは格納せず、存在しない従業員はnullを返します。</p>
+     *
+     * @param employeeId 従業員ID
+     * @param nameCache 名前のキャッシュ（nullは格納しない）
+     * @return 従業員名、存在しない場合はnull
+     */
     private String resolveEmployeeName(Integer employeeId, Map<Integer, String> nameCache) {
         if (employeeId == null) {
             return null;
         }
-        return nameCache.computeIfAbsent(employeeId, id -> employeeMapper.getById(id)
+
+        // キャッシュを先にチェック
+        if (nameCache.containsKey(employeeId)) {
+            return nameCache.get(employeeId);
+        }
+
+        // DBから取得（nullを返す可能性あり）
+        String name = employeeMapper.getById(employeeId)
             .map(employee -> "%s %s".formatted(employee.getFirstName(), employee.getLastName()))
-            .orElse(null));
+            .orElse(null);
+
+        // nullでない場合のみキャッシュに格納（NPE防止）
+        if (name != null) {
+            nameCache.put(employeeId, name);
+        }
+
+        return name;
     }
 }

@@ -3,10 +3,13 @@ package com.example.teamdev.service;
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.dto.api.stamprequest.StampRequestBulkOperationResponse;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampRequestException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 /**
@@ -20,14 +23,37 @@ import org.springframework.stereotype.Service;
 @Service
 public class StampRequestBulkOperationService {
 
+    private static final Logger log = LoggerFactory.getLogger(StampRequestBulkOperationService.class);
     private static final int MAX_BULK_SIZE = 50;
 
     private final StampRequestStore store;
+    private final StampRequestApprovalService approvalService;
 
-    public StampRequestBulkOperationService(StampRequestStore store) {
+    public StampRequestBulkOperationService(
+        StampRequestStore store,
+        StampRequestApprovalService approvalService
+    ) {
         this.store = store;
+        this.approvalService = approvalService;
     }
 
+    /**
+     * 複数の申請を一括承認する。
+     *
+     * <p>個別承認（{@link StampRequestApprovalService#approveRequest}）と同等の処理を実行:
+     * <ul>
+     *   <li>StampHistory のスナップショット整合性チェック</li>
+     *   <li>StampHistory への修正内容の反映</li>
+     *   <li>StampRequest のステータス更新</li>
+     * </ul>
+     *
+     * <p>部分的成功を許容し、個々のエラーは失敗件数としてカウント。
+     *
+     * @param requestIds 承認対象のリクエストID一覧（最大50件）
+     * @param approverId 承認者の従業員ID
+     * @param approvalNote 承認ノート（オプショナル、最大500文字）
+     * @return 成功件数・失敗件数・失敗IDを含む結果
+     */
     public StampRequestBulkOperationResponse bulkApprove(
         List<Integer> requestIds,
         Integer approverId,
@@ -42,12 +68,34 @@ public class StampRequestBulkOperationService {
             throw new IllegalArgumentException("承認ノートは500文字以内で入力してください");
         }
 
-        return processBulk(requestIds, (request, now) -> {
-            request.setStatus(StampRequestStatus.APPROVED.name());
-            request.setApprovalNote(approvalNote);
-            request.setApprovalEmployeeId(approverId);
-            request.setApprovedAt(now);
-        });
+        if (requestIds == null || requestIds.isEmpty()) {
+            throw new IllegalArgumentException("処理対象の申請が選択されていません");
+        }
+
+        // バッチサイズ制限（Requirement 4-3）
+        if (requestIds.size() > MAX_BULK_SIZE) {
+            throw new IllegalArgumentException("一度に処理できる申請は50件までです");
+        }
+
+        List<Integer> failedIds = new ArrayList<>();
+        int successCount = 0;
+
+        for (Integer requestId : requestIds) {
+            if (requestId == null) {
+                continue;
+            }
+            try {
+                // 個別承認と同じロジックを実行（StampHistory の更新を含む）
+                approvalService.approveRequest(requestId, approverId, approvalNote);
+                successCount++;
+            } catch (StampRequestException | IllegalArgumentException e) {
+                // 部分的成功を許容：個々のエラーは失敗としてカウント
+                log.warn("一括承認でリクエスト {} の承認に失敗: {}", requestId, e.getMessage());
+                failedIds.add(requestId);
+            }
+        }
+
+        return new StampRequestBulkOperationResponse(successCount, failedIds.size(), failedIds);
     }
 
     public StampRequestBulkOperationResponse bulkReject(

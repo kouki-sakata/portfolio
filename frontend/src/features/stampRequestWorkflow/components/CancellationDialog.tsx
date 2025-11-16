@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useCancelStampRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
 import { stampRequestCancellationSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
+import { toast } from "@/hooks/use-toast";
 
 type CancellationDialogProps = {
   requestId: number;
@@ -36,9 +37,7 @@ export const CancellationDialog = ({
     defaultValues: { reason: "" },
   });
 
-import { toast } from "@/hooks/use-toast";
-
-const handleSubmitForm = async (values: CancellationForm) => {
+  const handleSubmitForm = async (values: CancellationForm) => {
   try {
     await mutation.mutateAsync({
       requestId,

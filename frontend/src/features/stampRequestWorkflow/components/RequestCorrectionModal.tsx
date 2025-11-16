@@ -18,6 +18,7 @@ import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { useCreateStampRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
 import { stampRequestCreateSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
 import type { StampRequestCreatePayload } from "@/features/stampRequestWorkflow/types";
+import { toast } from "@/hooks/use-toast";
 
 type RequestCorrectionModalProps = {
   entry: StampHistoryEntry | null;
@@ -88,8 +89,20 @@ export const RequestCorrectionModal = ({
   }
 
   const handleSubmitForm = async (values: RequestCorrectionForm) => {
-    await mutation.mutateAsync(normalizePayload(values));
-    onOpenChange(false);
+    try {
+      await mutation.mutateAsync(normalizePayload(values));
+      onOpenChange(false);
+      form.reset();
+    } catch (error) {
+      const description = isConflictError(error)
+        ? "既に同じ申請が存在します。最新の状態を確認してください。"
+        : "申請に失敗しました。";
+      toast({
+        title: "申請に失敗しました",
+        description,
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -183,4 +196,14 @@ export const RequestCorrectionModal = ({
       </DialogContent>
     </Dialog>
   );
+};
+
+/**
+ * エラーが409 Conflict かどうかを判定します。
+ */
+const isConflictError = (error: unknown): boolean => {
+  if (typeof error === "object" && error !== null) {
+    return (error as { status?: number }).status === 409;
+  }
+  return false;
 };

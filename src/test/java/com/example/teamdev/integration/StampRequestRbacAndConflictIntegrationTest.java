@@ -171,7 +171,7 @@ class StampRequestRbacAndConflictIntegrationTest extends PostgresContainerSuppor
             }
             """.formatted(requestId);
 
-        mockMvc.perform(post("/api/stamp-requests/bulk-approve")
+        mockMvc.perform(post("/api/stamp-requests/bulk/approve")
                 .session(employeeSession)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

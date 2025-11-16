@@ -114,20 +114,40 @@ public class StampRequestApprovalService {
         }
     }
 
+    /**
+     * リクエストされた値を勤怠履歴に適用します。
+     *
+     * <p>各フィールドは null でない場合のみ更新されます。
+     * これにより、リクエストで指定されていない値は既存の勤怠履歴の値が保持されます。</p>
+     *
+     * @param history 更新対象の勤怠履歴
+     * @param request 承認するリクエスト
+     * @param approverId 承認者ID
+     * @param now 更新日時
+     */
     private void applyRequestedValuesToHistory(
         StampHistory history,
         StampRequest request,
         Integer approverId,
         OffsetDateTime now
     ) {
+        // 出勤時刻：リクエストで指定されている場合のみ更新
         if (request.getRequestedInTime() != null) {
             history.setInTime(request.getRequestedInTime());
         }
+        // 退勤時刻：リクエストで指定されている場合のみ更新
         if (request.getRequestedOutTime() != null) {
             history.setOutTime(request.getRequestedOutTime());
         }
-        history.setBreakStartTime(request.getRequestedBreakStartTime());
-        history.setBreakEndTime(request.getRequestedBreakEndTime());
+        // 休憩開始時刻：リクエストで指定されている場合のみ更新（既存値を保持）
+        if (request.getRequestedBreakStartTime() != null) {
+            history.setBreakStartTime(request.getRequestedBreakStartTime());
+        }
+        // 休憩終了時刻：リクエストで指定されている場合のみ更新（既存値を保持）
+        if (request.getRequestedBreakEndTime() != null) {
+            history.setBreakEndTime(request.getRequestedBreakEndTime());
+        }
+        // 夜勤フラグ：リクエストで指定されている場合のみ更新
         if (request.getRequestedIsNightShift() != null) {
             history.setIsNightShift(request.getRequestedIsNightShift());
         }

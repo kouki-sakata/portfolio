@@ -2,7 +2,7 @@
 -- Requirements: 1, 2, 3, 4, 6, 7, 8, 9
 
 -- Create enum type for request status
-CREATE TYPE stamp_request_status AS ENUM ('NEW', 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
+CREATE TYPE stamp_request_status AS ENUM ('PENDING', 'APPROVED', 'REJECTED', 'CANCELLED');
 
 -- Create stamp_request table
 CREATE TABLE stamp_request (

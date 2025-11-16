@@ -52,7 +52,7 @@ public record StampRequestResponse(
     @Schema(description = "申請理由", example = "残業のため退勤が遅れました")
     String reason,
 
-    @Schema(description = "ステータス", example = "PENDING", allowableValues = {"NEW", "PENDING", "APPROVED", "REJECTED", "CANCELLED"})
+    @Schema(description = "ステータス", example = "PENDING", allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"})
     String status,
 
     @Schema(description = "承認メモ", example = "内容確認済み")
