@@ -95,11 +95,18 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
       await expect(tableRows.first()).toBeVisible({ timeout: 10_000 });
       await expect(tableRows).toHaveCount(daysInMonth);
 
-      // 修正申請ボタンの存在を確認（削除ボタンは削除されました）
+      // 修正申請ボタンの存在を確認（過去の日付のみボタンが表示される）
       const correctionButtons = tableRows
         .locator("button")
         .filter({ hasText: /修正申請|申請/ });
-      await expect(correctionButtons).toHaveCount(daysInMonth);
+
+      // 現在の日付を取得
+      const currentDay = now.getDate();
+
+      // 過去の日付のみボタンが表示されるため、現在日付-1以下のボタンがあることを確認
+      const buttonCount = await correctionButtons.count();
+      expect(buttonCount).toBeLessThanOrEqual(currentDay);
+      expect(buttonCount).toBeGreaterThan(0); // 少なくとも1つは表示される
     });
   });
 

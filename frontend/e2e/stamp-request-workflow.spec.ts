@@ -52,9 +52,9 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       await expect(requestButton).toBeEnabled({ timeout: 10_000 });
       await requestButton.click();
 
-      // モーダルが開くことを確認（「打刻修正」または「打刻忘れ」を含む）
+      // モーダルが開くことを確認
       await expect(
-        page.getByRole("dialog").getByText(/打刻修正|打刻忘れ/)
+        page.getByRole("dialog").getByRole("heading", { name: "打刻修正申請" })
       ).toBeVisible({ timeout: 5000 });
     });
 
@@ -86,9 +86,9 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       // サイドバーまたはナビゲーションから My Requests に遷移
       await page.goto("/stamp-requests?view=employee");
 
-      // ページが表示されることを確認（実際のページタイトルに合わせる）
+      // ページが表示されることを確認
       await expect(
-        page.getByRole("heading", { name: /打刻申請|申請/ })
+        page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
 
       // 送信した申請が一覧に表示されることを確認
@@ -114,9 +114,9 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     await test.step("Pending Requests ページに遷移", async () => {
       await page.goto("/stamp-requests?view=admin");
 
-      // ページが表示されることを確認（実際のページタイトルに合わせる）
+      // ページが表示されることを確認
       await expect(
-        page.getByRole("heading", { name: /打刻申請|申請/ })
+        page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
     });
 
@@ -196,7 +196,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       await page.goto("/stamp-requests?view=employee");
 
       await expect(
-        page.getByRole("heading", { name: /打刻申請|申請/ })
+        page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
     });
 
@@ -278,7 +278,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
       // ページが表示されることを確認（employeeビューとして）
       await expect(
-        page.getByRole("heading", { name: /打刻申請|申請/ })
+        page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
 
       // view=adminからview=employeeに切り替わることを確認（またはviewパラメータがないことを確認）
@@ -298,7 +298,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
       // ページが正常に表示されることを確認
       await expect(
-        page.getByRole("heading", { name: /打刻申請|申請/ })
+        page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
     });
   });
