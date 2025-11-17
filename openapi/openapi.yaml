@@ -1176,13 +1176,13 @@ components:
     StampRequestCreateRequest:
       type: object
       required:
-        - stampHistoryId
         - reason
       properties:
         stampHistoryId:
           type: integer
           format: int32
-          description: 紐づく打刻履歴ID
+          nullable: true
+          description: 紐づく打刻履歴ID（打刻レコードがない日の場合はnull）
           example: 101
         requestedInTime:
           type: string

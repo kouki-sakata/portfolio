@@ -7,8 +7,7 @@ import java.time.OffsetDateTime;
 
 @Schema(description = "打刻修正リクエストの作成リクエスト")
 public record StampRequestCreateRequest(
-    @Schema(description = "紐づく打刻履歴ID", example = "101")
-    @NotNull
+    @Schema(description = "紐づく打刻履歴ID（打刻レコードがない日の場合はnull）", example = "101")
     Integer stampHistoryId,
 
     @Schema(description = "希望する出勤時刻", example = "2025-11-15T08:30:00+09:00")

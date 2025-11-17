@@ -26,6 +26,7 @@ import { fetchStampHistory } from "@/features/stampHistory/api";
 import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
 import { StampHistoryCard } from "@/features/stampHistory/components/StampHistoryCard";
+import { isPastOrToday } from "@/features/stampHistory/lib/dateUtils";
 import {
   renderBreakTimeCell,
   renderOptionalTime,
@@ -118,10 +119,7 @@ export const StampHistoryPage = () => {
     setDeleteDialogOpen(true);
   }, []);
 
-  const handleRequest = useCallback((entry: StampHistoryEntry) => {
-    if (!entry.id) {
-      return;
-    }
+  const handleRequestCorrection = useCallback((entry: StampHistoryEntry) => {
     setRequestTarget(entry);
     setRequestDialogOpen(true);
   }, []);
@@ -340,7 +338,8 @@ export const StampHistoryPage = () => {
             entry={entry}
             key={`card-${entry.year}-${entry.month}-${entry.day}`}
             onDelete={handleDelete}
-            onEdit={handleRequest}
+            onEdit={handleEdit}
+            onRequestCorrection={handleRequestCorrection}
           />
         ))}
       </ul>
@@ -396,12 +395,12 @@ export const StampHistoryPage = () => {
                 </TableCell>
                 <TableCell>
                   <div className="flex items-center gap-1 md:gap-2">
-                    {entry.id ? (
+                    {isPastOrToday(entry.year, entry.month, entry.day) ? (
                       <Button
                         aria-label="修正申請"
                         className="px-2 md:px-3"
                         disabled={entry.requestStatus === "PENDING"}
-                        onClick={() => handleRequest(entry)}
+                        onClick={() => handleRequestCorrection(entry)}
                         size="sm"
                         type="button"
                         variant="default"

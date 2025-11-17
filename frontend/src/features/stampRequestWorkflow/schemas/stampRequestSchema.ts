@@ -51,7 +51,7 @@ const timeField = z
 
 export const stampRequestCreateSchema = z
   .object({
-    stampHistoryId: z.number(),
+    stampHistoryId: z.number().nullable().optional(),
     requestedInTime: timeField,
     requestedOutTime: timeField,
     requestedBreakStartTime: timeField,

@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { isPastOrToday } from "@/features/stampHistory/lib/dateUtils";
 import {
   getDayOfWeekColor,
   getOvertimeBadgeVariant,
@@ -26,10 +27,11 @@ export type StampHistoryCardProps = {
   entry: StampHistoryEntry;
   onEdit: (entry: StampHistoryEntry) => void;
   onDelete: (entry: StampHistoryEntry) => void;
+  onRequestCorrection?: (entry: StampHistoryEntry) => void;
 };
 
 export const StampHistoryCard = memo<StampHistoryCardProps>(
-  ({ entry, onEdit, onDelete }) => {
+  ({ entry, onEdit, onDelete, onRequestCorrection }) => {
     const dayOfWeekColor = getDayOfWeekColor(entry.dayOfWeek);
     const overtimeBadgeVariant = getOvertimeBadgeVariant(entry.overtimeMinutes);
 
@@ -129,7 +131,7 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
 
           <Separator />
 
-          <CardFooter className="grid grid-cols-2 gap-2 pt-4">
+          <CardFooter className="grid grid-cols-3 gap-2 pt-4">
             <Button
               aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻修正を申請`}
               className="w-full"
@@ -148,9 +150,24 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
               size="sm"
               variant="outline"
             >
-              <SpriteIcon className="mr-2 h-4 w-4" decorative name="trash-2" />
+              <SpriteIcon className="mr-1 h-4 w-4" decorative name="trash-2" />
               削除
             </Button>
+            {isPastOrToday(entry.year, entry.month, entry.day) && onRequestCorrection ? (
+              <Button
+                aria-label="修正申請"
+                className="w-full"
+                disabled={entry.requestStatus === "PENDING"}
+                onClick={() => onRequestCorrection(entry)}
+                size="sm"
+                variant="outline"
+              >
+                <SpriteIcon className="mr-1 h-4 w-4" decorative name="file-text" />
+                申請
+              </Button>
+            ) : (
+              <div /> {/* Grid layout balance */}
+            )}
           </CardFooter>
         </Card>
       </li>

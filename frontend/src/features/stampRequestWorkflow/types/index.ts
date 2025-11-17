@@ -52,7 +52,7 @@ export type MyRequestFilters = {
 };
 
 export type StampRequestCreatePayload = {
-  stampHistoryId: number;
+  stampHistoryId: number | null;
   requestedInTime?: string | null;
   requestedOutTime?: string | null;
   requestedBreakStartTime?: string | null;
