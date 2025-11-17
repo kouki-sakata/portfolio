@@ -41,9 +41,7 @@ describe("StampHistoryCard", () => {
       outTime: null,
     };
 
-    render(
-      <StampHistoryCard entry={entryWithNullTimes} />
-    );
+    render(<StampHistoryCard entry={entryWithNullTimes} />);
 
     // 出勤と退勤の両方に"-"が表示される
     const dashElements = screen.getAllByText("-");
@@ -57,9 +55,7 @@ describe("StampHistoryCard", () => {
       breakEndTime: null,
     };
 
-    render(
-      <StampHistoryCard entry={entryWithNullBreaks} />
-    );
+    render(<StampHistoryCard entry={entryWithNullBreaks} />);
 
     const dashElements = screen.getAllByText("-");
     expect(dashElements.length).toBeGreaterThan(0);
@@ -71,9 +67,7 @@ describe("StampHistoryCard", () => {
       overtimeMinutes: null,
     };
 
-    render(
-      <StampHistoryCard entry={entryWithNullOvertime} />
-    );
+    render(<StampHistoryCard entry={entryWithNullOvertime} />);
 
     expect(screen.getByText("-")).toBeInTheDocument();
   });
@@ -84,9 +78,7 @@ describe("StampHistoryCard", () => {
       overtimeMinutes: 0,
     };
 
-    render(
-      <StampHistoryCard entry={entryWithZeroOvertime} />
-    );
+    render(<StampHistoryCard entry={entryWithZeroOvertime} />);
 
     expect(screen.getByText("0分")).toBeInTheDocument();
   });
@@ -97,9 +89,7 @@ describe("StampHistoryCard", () => {
       dayOfWeek: "土",
     };
 
-    const { container } = render(
-      <StampHistoryCard entry={saturdayEntry} />
-    );
+    const { container } = render(<StampHistoryCard entry={saturdayEntry} />);
 
     const dateElement = container.querySelector(".text-blue-600");
     expect(dateElement).toBeInTheDocument();
@@ -111,9 +101,7 @@ describe("StampHistoryCard", () => {
       dayOfWeek: "日",
     };
 
-    const { container } = render(
-      <StampHistoryCard entry={sundayEntry} />
-    );
+    const { container } = render(<StampHistoryCard entry={sundayEntry} />);
 
     const dateElement = container.querySelector(".text-red-600");
     expect(dateElement).toBeInTheDocument();
@@ -125,20 +113,13 @@ describe("StampHistoryCard", () => {
       updateDate: null,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithoutUpdateDate}
-       
-      />
-    );
+    render(<StampHistoryCard entry={entryWithoutUpdateDate} />);
 
     expect(screen.getByText("更新: -")).toBeInTheDocument();
   });
 
   it("renders as a list item", () => {
-    const { container } = render(
-      <StampHistoryCard entry={mockEntry} />
-    );
+    const { container } = render(<StampHistoryCard entry={mockEntry} />);
 
     const listItem = container.querySelector("li");
     expect(listItem).toBeInTheDocument();
