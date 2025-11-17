@@ -49,18 +49,18 @@ describe("RequestCorrectionModal", () => {
     expect(screen.getByLabelText("休憩終了時刻")).toHaveValue("13:00");
   });
 
-  it("shows validation error when reason is empty", async () => {
+  it("shows validation error when reason is too short", async () => {
     renderModal();
 
     fireEvent.change(screen.getByLabelText("修正理由"), {
-      target: { value: "" },
+      target: { value: "短い" },
     });
     await userEvent.click(
       screen.getByRole("button", { name: "申請を送信" })
     );
 
     expect(
-      await screen.findByText("理由は必須です")
+      await screen.findByText("理由は10文字以上で入力してください")
     ).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
   });

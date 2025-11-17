@@ -92,6 +92,12 @@ public class StampRequestRegistrationService {
         if (reason == null || reason.trim().isEmpty()) {
             throw new IllegalArgumentException("理由は必須です");
         }
+        if (reason.length() < 10) {
+            throw new IllegalArgumentException("理由は10文字以上で入力してください");
+        }
+        if (reason.length() > 500) {
+            throw new IllegalArgumentException("理由は500文字以内で入力してください");
+        }
     }
 
     private void validateTimes(StampRequestCreateRequest request) {
