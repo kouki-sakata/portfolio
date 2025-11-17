@@ -395,44 +395,41 @@ export const StampHistoryPage = () => {
                   <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
-                    <Button
-                      onClick={() => handleRequest(entry)}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <SpriteIcon className="h-4 w-4" decorative name="edit" />
-                      <span className="sr-only">修正申請</span>
-                    </Button>
-                    <Button
-                      disabled={!entry.id}
-                      onClick={() => handleDelete(entry)}
-                      size="sm"
-                      variant="ghost"
-                    >
-                      <SpriteIcon
-                        className="h-4 w-4"
-                        decorative
-                        name="trash-2"
-                      />
-                      <span className="sr-only">削除</span>
-                    </Button>
+                  <div className="flex items-center gap-1 md:gap-2">
                     {entry.id ? (
                       <Button
                         aria-label="修正申請"
+                        className="px-2 md:px-3"
                         disabled={entry.requestStatus === "PENDING"}
                         onClick={() => handleRequest(entry)}
                         size="sm"
-                        variant="ghost"
+                        type="button"
+                        variant="default"
                       >
                         <SpriteIcon
-                          className="h-4 w-4"
+                          className="h-4 w-4 md:hidden"
                           decorative
                           name="edit"
                         />
-                        <span className="sr-only">修正申請</span>
+                        <span className="hidden md:inline">修正申請</span>
                       </Button>
                     ) : null}
+                    <Button
+                      aria-label="削除"
+                      className="px-2 md:px-3"
+                      disabled={!entry.id}
+                      onClick={() => handleDelete(entry)}
+                      size="sm"
+                      type="button"
+                      variant="destructive"
+                    >
+                      <SpriteIcon
+                        className="h-4 w-4 md:hidden"
+                        decorative
+                        name="trash-2"
+                      />
+                      <span className="hidden md:inline">削除</span>
+                    </Button>
                   </div>
                 </TableCell>
               </TableRow>
