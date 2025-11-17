@@ -1443,7 +1443,27 @@ components:
       tags:
         - Stamp Request Workflow
       summary: 打刻修正リクエストを作成
-      description: 勤怠履歴に紐づく修正申請を登録します
+      description: |
+        勤怠履歴に紐づく修正申請を登録します。
+
+        **申請パターン**:
+        1. **既存打刻の修正**: `stampHistoryId` に対象の勤怠記録IDを指定
+        2. **打刻忘れの申請**: `stampHistoryId` に `null` を指定
+
+        **打刻忘れ申請の例**:
+        ```json
+        {
+          "stampHistoryId": null,
+          "requestedInTime": "2025-11-15T09:00:00+09:00",
+          "requestedOutTime": "2025-11-15T18:00:00+09:00",
+          "requestedBreakStartTime": "2025-11-15T12:00:00+09:00",
+          "requestedBreakEndTime": "2025-11-15T13:00:00+09:00",
+          "requestedIsNightShift": false,
+          "reason": "打刻を完全に忘れていました。"
+        }
+        ```
+
+        管理者が承認すると、新規に勤怠記録が作成されます。
       operationId: createStampRequest
       security:
         - sessionAuth: []
@@ -1453,6 +1473,24 @@ components:
           application/json:
             schema:
               $ref: '#/components/schemas/StampRequestCreateRequest'
+            examples:
+              existingStampCorrection:
+                summary: 既存打刻の修正申請
+                value:
+                  stampHistoryId: 101
+                  requestedInTime: "2025-11-15T08:30:00+09:00"
+                  requestedOutTime: "2025-11-15T17:30:00+09:00"
+                  reason: "実際の退勤時刻と異なっていたため修正をお願いします。"
+              forgottenStamp:
+                summary: 打刻忘れの申請
+                value:
+                  stampHistoryId: null
+                  requestedInTime: "2025-11-15T09:00:00+09:00"
+                  requestedOutTime: "2025-11-15T18:00:00+09:00"
+                  requestedBreakStartTime: "2025-11-15T12:00:00+09:00"
+                  requestedBreakEndTime: "2025-11-15T13:00:00+09:00"
+                  requestedIsNightShift: false
+                  reason: "打刻を完全に忘れていました。"
       responses:
         '201':
           description: 作成した打刻修正リクエスト
@@ -1468,6 +1506,12 @@ components:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: 認証が必要です
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 同じ内容の申請が既に存在します
           content:
             application/json:
               schema:
@@ -1635,6 +1679,17 @@ components:
       tags:
         - Stamp Request Workflow
       summary: 打刻修正リクエストを承認
+      description: |
+        打刻修正リクエストを承認し、勤怠記録に反映します。
+
+        **動作パターン**:
+        - `stampHistoryId` が存在する場合: 既存の勤怠記録を更新
+        - `stampHistoryId` が null の場合（打刻忘れ）: 新規に勤怠記録を作成
+
+        **打刻忘れ申請の処理**:
+        従業員が打刻を完全に忘れた日（`stampHistoryId=null`）の申請を承認すると、
+        システムは自動的に新しい勤怠記録を作成し、申請された時刻情報を反映します。
+        この際、重複登録を防ぐため、既に同じ日付の勤怠記録が存在する場合は409エラーを返します。
       operationId: approveStampRequest
       security:
         - sessionAuth: []
@@ -1678,6 +1733,14 @@ components:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: 打刻忘れ申請の承認時に、既に同じ日付の勤怠記録が存在します
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              example:
+                message: この日付の勤怠記録は既に登録されています。申請を却下してください。
   /api/stamp-requests/{id}/reject:
     post:
       tags:
