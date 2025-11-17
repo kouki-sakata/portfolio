@@ -18,7 +18,7 @@ import java.util.Objects;
  * 打刻修正リクエストの登録を扱うサービス。
  *
  * Requirements 1, 9 の受入基準を実装:
- * - 理由の長さ検証（10-500文字）
+ * - 理由の必須検証
  * - 未来日付の拒否
  * - 時刻の妥当性・順序検証
  * - 休憩時間の検証
@@ -41,7 +41,7 @@ public class StampRequestRegistrationService {
             throw new IllegalArgumentException("社員IDが指定されていません");
         }
 
-        // 理由の長さ検証（Requirement 1-4, 9-8）
+        // 理由の必須検証（Requirement 1-4, 9-8）
         validateReason(request.reason());
 
         // 時刻の検証（Requirement 9-1, 9-2, 9-3, 9-4）
@@ -86,12 +86,6 @@ public class StampRequestRegistrationService {
     private void validateReason(String reason) {
         if (reason == null || reason.trim().isEmpty()) {
             throw new IllegalArgumentException("理由は必須です");
-        }
-        if (reason.length() < 10) {
-            throw new IllegalArgumentException("理由は10文字以上で入力してください");
-        }
-        if (reason.length() > 500) {
-            throw new IllegalArgumentException("理由は500文字以内で入力してください");
         }
     }
 

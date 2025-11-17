@@ -3,7 +3,6 @@ package com.example.teamdev.dto.api.stamprequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
 import java.time.OffsetDateTime;
 
 @Schema(description = "打刻修正リクエストの作成リクエスト")
@@ -27,9 +26,8 @@ public record StampRequestCreateRequest(
     @Schema(description = "夜勤フラグ", example = "false")
     Boolean requestedIsNightShift,
 
-    @Schema(description = "修正理由", example = "システム障害により退勤時刻が記録されませんでした", minLength = 10, maxLength = 500)
+    @Schema(description = "修正理由", example = "システム障害により退勤時刻が記録されませんでした")
     @NotBlank
-    @Size(min = 10, max = 500)
     String reason
 ) {
 }

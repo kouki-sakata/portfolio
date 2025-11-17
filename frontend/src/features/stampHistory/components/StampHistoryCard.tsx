@@ -131,14 +131,14 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
 
           <CardFooter className="grid grid-cols-2 gap-2 pt-4">
             <Button
-              aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を編集`}
+              aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻修正を申請`}
               className="w-full"
               onClick={() => onEdit(entry)}
               size="sm"
               variant="outline"
             >
               <SpriteIcon className="mr-2 h-4 w-4" decorative name="edit" />
-              編集
+              修正申請
             </Button>
             <Button
               aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を削除`}
