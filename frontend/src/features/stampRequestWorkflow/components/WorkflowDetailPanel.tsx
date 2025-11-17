@@ -51,7 +51,7 @@ export const WorkflowDetailPanel = ({
 
   return (
     <ScrollArea className="h-full">
-      <div className="mx-auto max-w-3xl p-8 animate-in fade-in slide-in-from-right-5 duration-300">
+      <div className="fade-in slide-in-from-right-5 mx-auto max-w-3xl animate-in p-8 duration-300">
         {/* ヘッダー */}
         <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
           <div className="mb-4 flex items-start justify-between">
@@ -110,7 +110,7 @@ export const WorkflowDetailPanel = ({
             <MessageSquare className="h-5 w-5 text-gray-600" />
             <h3>申請理由</h3>
           </div>
-          <p className="leading-relaxed text-gray-700">{request.reason}</p>
+          <p className="text-gray-700 leading-relaxed">{request.reason}</p>
         </div>
 
         {/* 却下理由（却下の場合のみ） */}
@@ -120,7 +120,7 @@ export const WorkflowDetailPanel = ({
               <XCircle className="h-5 w-5 text-red-600" />
               <h3 className="text-red-900">却下理由</h3>
             </div>
-            <p className="leading-relaxed text-red-800">
+            <p className="text-red-800 leading-relaxed">
               {request.rejectionReason}
             </p>
           </div>

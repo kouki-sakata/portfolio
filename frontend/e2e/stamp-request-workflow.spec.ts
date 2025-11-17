@@ -55,7 +55,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       // モーダルが開くことを確認
       await expect(
         page.getByRole("dialog").getByText(/打刻修正リクエスト/)
-      ).toBeVisible({ timeout: 5_000 });
+      ).toBeVisible({ timeout: 5000 });
     });
 
     await test.step("修正内容と理由を入力して送信", async () => {
@@ -78,7 +78,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
       // モーダルが閉じることを確認
       await expect(page.getByRole("dialog")).not.toBeVisible({
-        timeout: 5_000,
+        timeout: 5000,
       });
     });
 
@@ -94,7 +94,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       // 送信した申請が一覧に表示されることを確認
       await expect(
         page.getByText(/システムエラーにより出勤時刻が正しく記録/)
-      ).toBeVisible({ timeout: 5_000 });
+      ).toBeVisible({ timeout: 5000 });
 
       // ステータスバッジを確認
       await expect(page.getByText(/PENDING|保留中|申請中/)).toBeVisible();
@@ -122,11 +122,15 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
     await test.step("申請リストから1件を選択", async () => {
       // リストが表示されるまで待機
-      const requestList = page.locator("[data-testid='request-list']").or(
-        page.locator("table tbody tr").or(
-          page.locator("[role='listbox']").or(page.locator(".request-card"))
-        )
-      );
+      const requestList = page
+        .locator("[data-testid='request-list']")
+        .or(
+          page
+            .locator("table tbody tr")
+            .or(
+              page.locator("[role='listbox']").or(page.locator(".request-card"))
+            )
+        );
 
       await expect(requestList.first()).toBeVisible({ timeout: 10_000 });
 
@@ -137,7 +141,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     await test.step("承認アクションを実行", async () => {
       // 承認ボタンをクリック
       const approveButton = page.getByRole("button", { name: /承認|Approve/ });
-      await expect(approveButton).toBeVisible({ timeout: 5_000 });
+      await expect(approveButton).toBeVisible({ timeout: 5000 });
       await approveButton.click();
 
       // 承認確認ダイアログまたはモーダルが表示される場合
@@ -205,11 +209,17 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       );
 
       // リストまたはカードをクリック
-      const requestItem = page.locator("[data-testid='request-item']").or(
-        page.locator("table tbody tr").or(
-          page.locator(".request-card").or(page.locator("[role='listbox'] li"))
-        )
-      );
+      const requestItem = page
+        .locator("[data-testid='request-item']")
+        .or(
+          page
+            .locator("table tbody tr")
+            .or(
+              page
+                .locator(".request-card")
+                .or(page.locator("[role='listbox'] li"))
+            )
+        );
 
       await requestItem.first().click();
     });
@@ -219,12 +229,12 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       const cancelButton = page.getByRole("button", {
         name: /キャンセル|取消|Cancel/,
       });
-      await expect(cancelButton).toBeVisible({ timeout: 5_000 });
+      await expect(cancelButton).toBeVisible({ timeout: 5000 });
       await cancelButton.click();
 
       // キャンセル理由入力ダイアログが表示される
       const dialog = page.getByRole("dialog");
-      await expect(dialog).toBeVisible({ timeout: 5_000 });
+      await expect(dialog).toBeVisible({ timeout: 5000 });
 
       // キャンセル理由を入力（10文字以上必須）
       const reasonField = dialog.getByLabel(/理由|キャンセル理由|取消理由/);
@@ -249,7 +259,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
       // CANCELLED ステータスバッジが表示されることを確認
       await expect(
         page.getByText(/CANCELLED|キャンセル済み|取消済み/).first()
-      ).toBeVisible({ timeout: 5_000 });
+      ).toBeVisible({ timeout: 5000 });
     });
   });
 
@@ -277,13 +287,11 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
             exact: false,
           })
           .first()
-      ).toBeVisible({ timeout: 5_000 });
+      ).toBeVisible({ timeout: 5000 });
     });
   });
 
-  test("管理者は Pending Requests ページにアクセスできる", async ({
-    page,
-  }) => {
+  test("管理者は Pending Requests ページにアクセスできる", async ({ page }) => {
     const adminUser = createAdminUser();
     await createAppMockServer(page, {
       user: adminUser,

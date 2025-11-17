@@ -25,13 +25,7 @@ describe("StampHistoryCard", () => {
   const mockOnDelete = vi.fn();
 
   it("renders entry data correctly", () => {
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        
-      />
-    );
+    render(<StampHistoryCard entry={mockEntry} onDelete={mockOnDelete} />);
 
     expect(screen.getByText("2024/11/10")).toBeInTheDocument();
     expect(screen.getByText("日")).toBeInTheDocument();
@@ -51,11 +45,7 @@ describe("StampHistoryCard", () => {
     };
 
     render(
-      <StampHistoryCard
-        entry={entryWithNullTimes}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={entryWithNullTimes} onDelete={mockOnDelete} />
     );
 
     // 出勤と退勤の両方に"-"が表示される
@@ -71,11 +61,7 @@ describe("StampHistoryCard", () => {
     };
 
     render(
-      <StampHistoryCard
-        entry={entryWithNullBreaks}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={entryWithNullBreaks} onDelete={mockOnDelete} />
     );
 
     const dashElements = screen.getAllByText("-");
@@ -89,11 +75,7 @@ describe("StampHistoryCard", () => {
     };
 
     render(
-      <StampHistoryCard
-        entry={entryWithNullOvertime}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={entryWithNullOvertime} onDelete={mockOnDelete} />
     );
 
     expect(screen.getByText("-")).toBeInTheDocument();
@@ -106,11 +88,7 @@ describe("StampHistoryCard", () => {
     };
 
     render(
-      <StampHistoryCard
-        entry={entryWithZeroOvertime}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={entryWithZeroOvertime} onDelete={mockOnDelete} />
     );
 
     expect(screen.getByText("0分")).toBeInTheDocument();
@@ -123,11 +101,7 @@ describe("StampHistoryCard", () => {
     };
 
     const { container } = render(
-      <StampHistoryCard
-        entry={saturdayEntry}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={saturdayEntry} onDelete={mockOnDelete} />
     );
 
     const dateElement = container.querySelector(".text-blue-600");
@@ -141,11 +115,7 @@ describe("StampHistoryCard", () => {
     };
 
     const { container } = render(
-      <StampHistoryCard
-        entry={sundayEntry}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={sundayEntry} onDelete={mockOnDelete} />
     );
 
     const dateElement = container.querySelector(".text-red-600");
@@ -155,13 +125,7 @@ describe("StampHistoryCard", () => {
   it("calls onDelete when delete button is clicked", async () => {
     const user = userEvent.setup();
 
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        
-      />
-    );
+    render(<StampHistoryCard entry={mockEntry} onDelete={mockOnDelete} />);
 
     const deleteButton = screen.getByRole("button", {
       name: /削除/i,
@@ -179,13 +143,7 @@ describe("StampHistoryCard", () => {
       employeeId: 1,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithoutId}
-        onDelete={mockOnDelete}
-
-      />
-    );
+    render(<StampHistoryCard entry={entryWithoutId} onDelete={mockOnDelete} />);
 
     const deleteButton = screen.getByRole("button", {
       name: /削除/i,
@@ -205,7 +163,6 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithoutUpdateDate}
         onDelete={mockOnDelete}
-        
       />
     );
 
@@ -213,13 +170,7 @@ describe("StampHistoryCard", () => {
   });
 
   it("has proper ARIA labels for accessibility", () => {
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-
-      />
-    );
+    render(<StampHistoryCard entry={mockEntry} onDelete={mockOnDelete} />);
 
     expect(
       screen.getByRole("button", {
@@ -230,11 +181,7 @@ describe("StampHistoryCard", () => {
 
   it("renders as a list item", () => {
     const { container } = render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        
-      />
+      <StampHistoryCard entry={mockEntry} onDelete={mockOnDelete} />
     );
 
     const listItem = container.querySelector("li");

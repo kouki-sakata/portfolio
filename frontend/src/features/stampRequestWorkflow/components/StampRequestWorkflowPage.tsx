@@ -59,8 +59,8 @@ export const StampRequestWorkflowPage = ({
 
   // データとローディング状態を切り替え
   const requests = isAdmin
-    ? adminData?.requests ?? []
-    : employeeData?.requests ?? [];
+    ? (adminData?.requests ?? [])
+    : (employeeData?.requests ?? []);
   const isLoading = isAdmin ? adminLoading : employeeLoading;
 
   // フィルタリングとソート（管理者ビューのみクライアント側）
@@ -180,13 +180,17 @@ export const StampRequestWorkflowPage = ({
         role={role}
         showViewSwitcher={showViewSwitcher}
         userName={
-          user ? `${user.lastName} ${user.firstName}` : isAdmin ? "管理者" : undefined
+          user
+            ? `${user.lastName} ${user.firstName}`
+            : isAdmin
+              ? "管理者"
+              : undefined
         }
       />
 
       <div className="flex flex-1 overflow-hidden">
         {isAdmin && selectedIds.size > 0 && (
-          <div className="absolute left-96 right-0 top-[73px] z-10">
+          <div className="absolute top-[73px] right-0 left-96 z-10">
             <BulkActionBar
               onApprove={handleBulkApprove}
               onReject={handleBulkReject}
@@ -261,12 +265,10 @@ function filterAndSortRequests(
   filters: { status: string; search: string; sort: string }
 ): StampRequestListItem[] {
   // フィルタリング
-  let filtered = requests.filter((req) => {
+  const filtered = requests.filter((req) => {
     const matchesSearch =
       filters.search === "" ||
-      req.employeeName
-        ?.toLowerCase()
-        .includes(filters.search.toLowerCase()) ||
+      req.employeeName?.toLowerCase().includes(filters.search.toLowerCase()) ||
       req.id.toString().includes(filters.search) ||
       req.reason.toLowerCase().includes(filters.search.toLowerCase());
     return matchesSearch;
@@ -285,7 +287,7 @@ function filterAndSortRequests(
           new Date(a.submittedAt || 0).getTime() -
           new Date(b.submittedAt || 0).getTime()
         );
-      case "status":
+      case "status": {
         const statusOrder = {
           NEW: 0,
           PENDING: 1,
@@ -297,6 +299,7 @@ function filterAndSortRequests(
           (statusOrder[a.status as keyof typeof statusOrder] ?? 999) -
           (statusOrder[b.status as keyof typeof statusOrder] ?? 999)
         );
+      }
       default:
         return 0;
     }

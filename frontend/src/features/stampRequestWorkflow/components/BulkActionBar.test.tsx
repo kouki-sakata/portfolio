@@ -29,11 +29,7 @@ describe("BulkActionBar", () => {
 
   it("renders nothing when selectedCount is 0", () => {
     const { container } = render(
-      <BulkActionBar
-        onApprove={vi.fn()}
-        onReject={vi.fn()}
-        selectedCount={0}
-      />
+      <BulkActionBar onApprove={vi.fn()} onReject={vi.fn()} selectedCount={0} />
     );
 
     expect(container.firstChild).toBeNull();

@@ -55,9 +55,7 @@ describe("RequestCorrectionModal", () => {
     fireEvent.change(screen.getByLabelText("修正理由"), {
       target: { value: "短い" },
     });
-    await userEvent.click(
-      screen.getByRole("button", { name: "申請を送信" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "申請を送信" }));
 
     expect(
       await screen.findByText("理由は10文字以上で入力してください")
@@ -75,9 +73,7 @@ describe("RequestCorrectionModal", () => {
       },
     });
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "申請を送信" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "申請を送信" }));
 
     await waitFor(() => {
       expect(mutateAsync).toHaveBeenCalledWith({

@@ -69,11 +69,11 @@ const ProfileRoute = lazy(() =>
 );
 
 const StampRequestWorkflowRoute = lazy(() =>
-  import("@/features/stampRequestWorkflow/routes/StampRequestWorkflowRoute").then(
-    (module) => ({
-      default: module.StampRequestWorkflowRoute,
-    })
-  )
+  import(
+    "@/features/stampRequestWorkflow/routes/StampRequestWorkflowRoute"
+  ).then((module) => ({
+    default: module.StampRequestWorkflowRoute,
+  }))
 );
 
 import { useToast } from "@/hooks/use-toast";

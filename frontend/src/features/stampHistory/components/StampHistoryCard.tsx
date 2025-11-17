@@ -142,7 +142,8 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
               <SpriteIcon className="mr-1 h-4 w-4" decorative name="trash-2" />
               削除
             </Button>
-            {isPastOrToday(entry.year, entry.month, entry.day) && onRequestCorrection ? (
+            {isPastOrToday(entry.year, entry.month, entry.day) &&
+            onRequestCorrection ? (
               <Button
                 aria-label="修正申請"
                 className="w-full"
@@ -151,7 +152,11 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
                 size="sm"
                 variant="outline"
               >
-                <SpriteIcon className="mr-1 h-4 w-4" decorative name="file-text" />
+                <SpriteIcon
+                  className="mr-1 h-4 w-4"
+                  decorative
+                  name="file-text"
+                />
                 申請
               </Button>
             ) : (

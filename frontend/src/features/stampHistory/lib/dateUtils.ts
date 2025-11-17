@@ -1,8 +1,12 @@
 /**
  * エントリの日付が現在日付以下（過去または今日）かどうかを判定
  */
-export const isPastOrToday = (year: string | null, month: string | null, day: string | null): boolean => {
-  if (!year || !month || !day) {
+export const isPastOrToday = (
+  year: string | null,
+  month: string | null,
+  day: string | null
+): boolean => {
+  if (!(year && month && day)) {
     return false;
   }
 

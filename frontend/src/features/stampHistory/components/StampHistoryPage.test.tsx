@@ -142,7 +142,9 @@ describe("StampHistoryPage", () => {
     ).toBeInTheDocument();
 
     const requestButtons = screen.getAllByRole("button", { name: "修正申請" });
-    const disabledButton = requestButtons.find((btn) => btn.hasAttribute("disabled"));
+    const disabledButton = requestButtons.find((btn) =>
+      btn.hasAttribute("disabled")
+    );
     expect(disabledButton).toBeDefined();
   });
 });

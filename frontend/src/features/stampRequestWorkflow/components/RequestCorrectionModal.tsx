@@ -58,7 +58,8 @@ const toFormValues = (entry: StampHistoryEntry): RequestCorrectionForm => ({
 const normalizePayload = (
   values: RequestCorrectionForm
 ): StampRequestCreatePayload => ({
-  stampHistoryId: values.stampHistoryId === 0 ? null : (values.stampHistoryId ?? null),
+  stampHistoryId:
+    values.stampHistoryId === 0 ? null : (values.stampHistoryId ?? null),
   requestedInTime: values.requestedInTime || null,
   requestedOutTime: values.requestedOutTime || null,
   requestedBreakStartTime: values.requestedBreakStartTime || null,

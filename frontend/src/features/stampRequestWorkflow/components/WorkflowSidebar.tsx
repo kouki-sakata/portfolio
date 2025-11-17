@@ -193,10 +193,10 @@ export const WorkflowSidebar = ({
           {/* チェックボックス（管理者のみ） */}
           {isAdmin && onToggleSelection && (
             <Checkbox
-              checked={selectedIds?.has(request.id) || false}
+              checked={selectedIds?.has(request.id)}
               className="mt-1"
-              onClick={(e) => e.stopPropagation()}
               onCheckedChange={() => onToggleSelection(request.id)}
+              onClick={(e) => e.stopPropagation()}
             />
           )}
 
@@ -247,7 +247,7 @@ export const WorkflowSidebar = ({
       {/* 検索 & フィルター */}
       <div className="space-y-3 border-b p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search className="-translate-y-1/2 absolute top-1/2 left-3 h-4 w-4 text-gray-400" />
           <Input
             className="pl-9"
             onChange={(e) => onSearchChange(e.target.value)}

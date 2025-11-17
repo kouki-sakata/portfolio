@@ -52,7 +52,10 @@ const invalidateWorkflowCaches = async (queryClient: QueryClient) => {
   ]);
 };
 
-export const useMyStampRequestsQuery = (params: MyRequestFilters, enabled = true) =>
+export const useMyStampRequestsQuery = (
+  params: MyRequestFilters,
+  enabled = true
+) =>
   useQuery<StampRequestListResponse>({
     queryKey: stampRequestQueryKeys.my(params),
     queryFn: () => fetchMyRequests(params),
@@ -61,7 +64,10 @@ export const useMyStampRequestsQuery = (params: MyRequestFilters, enabled = true
     enabled,
   });
 
-export const usePendingStampRequestsQuery = (params: PendingRequestFilters, enabled = true) =>
+export const usePendingStampRequestsQuery = (
+  params: PendingRequestFilters,
+  enabled = true
+) =>
   useQuery<StampRequestListResponse>({
     queryKey: stampRequestQueryKeys.pending(params),
     queryFn: () => fetchPendingRequests(params),
