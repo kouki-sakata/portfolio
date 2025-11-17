@@ -32,6 +32,17 @@ export const StampRequestWorkflowPage = ({
   const navigate = useNavigate();
   const isAdmin = role === "admin";
 
+  // ユーザー表示名を取得
+  const getUserDisplayName = () => {
+    if (user) {
+      return `${user.lastName} ${user.firstName}`;
+    }
+    if (isAdmin) {
+      return "管理者";
+    }
+    return;
+  };
+
   // フィルター状態
   const employeeFilters = useWorkflowFilters();
   const [adminFilters, setAdminFilters] = useState({
@@ -179,13 +190,7 @@ export const StampRequestWorkflowPage = ({
         onViewChange={onViewChange}
         role={role}
         showViewSwitcher={showViewSwitcher}
-        userName={
-          user
-            ? `${user.lastName} ${user.firstName}`
-            : isAdmin
-              ? "管理者"
-              : undefined
-        }
+        userName={getUserDisplayName()}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -220,7 +225,7 @@ export const StampRequestWorkflowPage = ({
           <WorkflowDetailPanel
             onApprove={() => setApprovalDialogOpen(true)}
             onCancel={(id) => setCancelRequestId(id)}
-            onEdit={() => {}}
+            onEdit={undefined}
             onReject={() => setRejectionDialogOpen(true)}
             request={selectedRequest}
             role={role}
