@@ -23,7 +23,6 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchStampHistory } from "@/features/stampHistory/api";
-import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
 import { StampHistoryCard } from "@/features/stampHistory/components/StampHistoryCard";
 import { isPastOrToday } from "@/features/stampHistory/lib/dateUtils";
@@ -82,10 +81,6 @@ export const StampHistoryPage = () => {
     };
   });
 
-  const [selectedEntry, setSelectedEntry] = useState<StampHistoryEntry | null>(
-    null
-  );
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [requestTarget, setRequestTarget] = useState<StampHistoryEntry | null>(
     null
@@ -113,11 +108,6 @@ export const StampHistoryPage = () => {
     event.preventDefault();
     setConfirmedFilters(filters);
   };
-
-  const handleDelete = useCallback((entry: StampHistoryEntry) => {
-    setSelectedEntry(entry);
-    setDeleteDialogOpen(true);
-  }, []);
 
   const handleRequestCorrection = useCallback((entry: StampHistoryEntry) => {
     setRequestTarget(entry);
@@ -337,7 +327,6 @@ export const StampHistoryPage = () => {
           <StampHistoryCard
             entry={entry}
             key={`card-${entry.year}-${entry.month}-${entry.day}`}
-            onDelete={handleDelete}
             onRequestCorrection={handleRequestCorrection}
           />
         ))}
@@ -393,42 +382,24 @@ export const StampHistoryPage = () => {
                   <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
                 </TableCell>
                 <TableCell>
-                  <div className="flex items-center gap-1 md:gap-2">
-                    {isPastOrToday(entry.year, entry.month, entry.day) ? (
-                      <Button
-                        aria-label="修正申請"
-                        className="px-2 md:px-3"
-                        disabled={entry.requestStatus === "PENDING"}
-                        onClick={() => handleRequestCorrection(entry)}
-                        size="sm"
-                        type="button"
-                        variant="default"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4 md:hidden"
-                          decorative
-                          name="edit"
-                        />
-                        <span className="hidden md:inline">修正申請</span>
-                      </Button>
-                    ) : null}
+                  {isPastOrToday(entry.year, entry.month, entry.day) ? (
                     <Button
-                      aria-label="削除"
+                      aria-label="修正申請"
                       className="px-2 md:px-3"
-                      disabled={!entry.id}
-                      onClick={() => handleDelete(entry)}
+                      disabled={entry.requestStatus === "PENDING"}
+                      onClick={() => handleRequestCorrection(entry)}
                       size="sm"
                       type="button"
-                      variant="destructive"
+                      variant="default"
                     >
                       <SpriteIcon
                         className="h-4 w-4 md:hidden"
                         decorative
-                        name="trash-2"
+                        name="edit"
                       />
-                      <span className="hidden md:inline">削除</span>
+                      <span className="hidden md:inline">修正申請</span>
                     </Button>
-                  </div>
+                  ) : null}
                 </TableCell>
               </TableRow>
             ))}
@@ -436,11 +407,6 @@ export const StampHistoryPage = () => {
         </Table>
       </div>
 
-      <DeleteStampDialog
-        entry={selectedEntry}
-        onOpenChange={setDeleteDialogOpen}
-        open={deleteDialogOpen}
-      />
       <RequestCorrectionModal
         entry={requestTarget}
         onOpenChange={(open) => {

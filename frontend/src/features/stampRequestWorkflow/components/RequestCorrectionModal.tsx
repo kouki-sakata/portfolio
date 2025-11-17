@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RotateCcw } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
@@ -128,8 +129,9 @@ export const RequestCorrectionModal = ({
         <DialogHeader>
           <DialogTitle>打刻修正申請</DialogTitle>
           <DialogDescription>
-            {entry.year}/{entry.month}/{entry.day}
-            の打刻修正を申請します。承認されると反映されます。
+            {entry.year}/{entry.month}/{entry.day} の
+            {entry.id ? "打刻修正" : "打刻忘れ"}
+            を申請します。承認されると反映されます。
           </DialogDescription>
         </DialogHeader>
 
@@ -264,18 +266,35 @@ export const RequestCorrectionModal = ({
               )}
             />
 
-            <DialogFooter>
+            <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
               <Button
                 disabled={mutation.isPending}
-                onClick={() => onOpenChange(false)}
+                onClick={() => {
+                  if (entry) {
+                    form.reset(toFormValues(entry));
+                  }
+                }}
+                size="sm"
                 type="button"
-                variant="outline"
+                variant="ghost"
               >
-                キャンセル
+                <RotateCcw className="mr-2 h-4 w-4" />
+                元の値に戻す
               </Button>
-              <Button disabled={mutation.isPending} type="submit">
-                {getSubmitButtonText()}
-              </Button>
+
+              <div className="flex gap-2">
+                <Button
+                  disabled={mutation.isPending}
+                  onClick={() => onOpenChange(false)}
+                  type="button"
+                  variant="outline"
+                >
+                  キャンセル
+                </Button>
+                <Button disabled={mutation.isPending} type="submit">
+                  {getSubmitButtonText()}
+                </Button>
+              </div>
             </DialogFooter>
           </form>
         </Form>

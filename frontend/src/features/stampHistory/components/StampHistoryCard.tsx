@@ -25,12 +25,11 @@ import { cn } from "@/shared/utils/cn";
 
 export type StampHistoryCardProps = {
   entry: StampHistoryEntry;
-  onDelete: (entry: StampHistoryEntry) => void;
   onRequestCorrection?: (entry: StampHistoryEntry) => void;
 };
 
 export const StampHistoryCard = memo<StampHistoryCardProps>(
-  ({ entry, onDelete, onRequestCorrection }) => {
+  ({ entry, onRequestCorrection }) => {
     const dayOfWeekColor = getDayOfWeekColor(entry.dayOfWeek);
     const overtimeBadgeVariant = getOvertimeBadgeVariant(entry.overtimeMinutes);
 
@@ -130,39 +129,26 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
 
           <Separator />
 
-          <CardFooter className="grid grid-cols-2 gap-2 pt-4">
-            <Button
-              aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を削除`}
-              className="w-full"
-              disabled={!entry.id}
-              onClick={() => onDelete(entry)}
-              size="sm"
-              variant="outline"
-            >
-              <SpriteIcon className="mr-1 h-4 w-4" decorative name="trash-2" />
-              削除
-            </Button>
-            {isPastOrToday(entry.year, entry.month, entry.day) &&
-            onRequestCorrection ? (
-              <Button
-                aria-label="修正申請"
-                className="w-full"
-                disabled={entry.requestStatus === "PENDING"}
-                onClick={() => onRequestCorrection(entry)}
-                size="sm"
-                variant="outline"
-              >
-                <SpriteIcon
-                  className="mr-1 h-4 w-4"
-                  decorative
-                  name="file-text"
-                />
-                申請
-              </Button>
-            ) : (
-              <div />
+          {isPastOrToday(entry.year, entry.month, entry.day) &&
+            onRequestCorrection && (
+              <CardFooter className="pt-4">
+                <Button
+                  aria-label="修正申請"
+                  className="w-full"
+                  disabled={entry.requestStatus === "PENDING"}
+                  onClick={() => onRequestCorrection(entry)}
+                  size="sm"
+                  variant="outline"
+                >
+                  <SpriteIcon
+                    className="mr-1 h-4 w-4"
+                    decorative
+                    name="file-text"
+                  />
+                  申請
+                </Button>
+              </CardFooter>
             )}
-          </CardFooter>
         </Card>
       </li>
     );
