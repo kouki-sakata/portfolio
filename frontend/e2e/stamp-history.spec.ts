@@ -95,15 +95,11 @@ test.describe("勤怠履歴機能の包括的テスト", () => {
       await expect(tableRows.first()).toBeVisible({ timeout: 10_000 });
       await expect(tableRows).toHaveCount(daysInMonth);
 
-      const enabledDeleteButtons = tableRows
-        .locator("button:not(:disabled)")
-        .filter({ hasText: "削除" });
-      await expect(enabledDeleteButtons).toHaveCount(0);
-
-      const disabledDeleteButtons = tableRows
-        .locator("button:disabled")
-        .filter({ hasText: "削除" });
-      await expect(disabledDeleteButtons).toHaveCount(daysInMonth);
+      // 修正申請ボタンの存在を確認（削除ボタンは削除されました）
+      const correctionButtons = tableRows
+        .locator("button")
+        .filter({ hasText: /修正申請|申請/ });
+      await expect(correctionButtons).toHaveCount(daysInMonth);
     });
   });
 
