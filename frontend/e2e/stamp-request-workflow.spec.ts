@@ -79,7 +79,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
     await test.step("My Requests ページで申請を確認", async () => {
       // サイドバーまたはナビゲーションから My Requests に遷移
-      await page.goto("/stamp-requests?view=employee");
+      await page.goto("/stamp-requests?view=employee", { waitUntil: "networkidle" });
 
       // ページが表示されることを確認
       await expect(
@@ -107,7 +107,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     );
 
     await test.step("Pending Requests ページに遷移", async () => {
-      await page.goto("/stamp-requests?view=admin");
+      await page.goto("/stamp-requests?view=admin", { waitUntil: "networkidle" });
 
       // ページが表示されることを確認
       await expect(
@@ -116,21 +116,16 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     });
 
     await test.step("申請リストから1件を選択", async () => {
-      // リストが表示されるまで待機
-      const requestList = page
-        .locator("[data-testid='request-list']")
-        .or(
-          page
-            .locator("table tbody tr")
-            .or(
-              page.locator("[role='listbox']").or(page.locator(".request-card"))
-            )
-        );
+      // サイドバー内のリクエストリストが表示されるまで待機
+      // リクエストアイテムはボタンとして実装されている
+      const requestButtons = page
+        .locator('div.w-96 button[type="button"]')
+        .filter({ hasText: /R\d+/ }); // "R{id}" パターンを含むボタンをフィルタ
 
-      await expect(requestList.first()).toBeVisible({ timeout: 10_000 });
+      await expect(requestButtons.first()).toBeVisible({ timeout: 10_000 });
 
       // 最初の申請をクリック
-      await requestList.first().click();
+      await requestButtons.first().click();
     });
 
     await test.step("承認アクションを実行", async () => {
@@ -188,7 +183,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     );
 
     await test.step("My Requests ページに遷移", async () => {
-      await page.goto("/stamp-requests?view=employee");
+      await page.goto("/stamp-requests?view=employee", { waitUntil: "networkidle" });
 
       await expect(
         page.getByRole("heading", { name: "勤怠ワークフロー" })
@@ -203,20 +198,13 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
         }
       );
 
-      // リストまたはカードをクリック
-      const requestItem = page
-        .locator("[data-testid='request-item']")
-        .or(
-          page
-            .locator("table tbody tr")
-            .or(
-              page
-                .locator(".request-card")
-                .or(page.locator("[role='listbox'] li"))
-            )
-        );
+      // サイドバー内のリクエストボタンをクリック
+      const requestButtons = page
+        .locator('div.w-96 button[type="button"]')
+        .filter({ hasText: /R\d+/ });
 
-      await requestItem.first().click();
+      await expect(requestButtons.first()).toBeVisible({ timeout: 10_000 });
+      await requestButtons.first().click();
     });
 
     await test.step("キャンセルボタンをクリックして理由を入力", async () => {
@@ -269,15 +257,15 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
 
     await test.step("一般ユーザーで Admin view アクセス試行", async () => {
       // 一般ユーザーはadminビューにアクセスできるが、権限チェックでemployeeビューにフォールバックする
-      await page.goto("/stamp-requests?view=admin");
+      await page.goto("/stamp-requests?view=admin", { waitUntil: "networkidle" });
 
       // ページが表示されることを確認（employeeビューとして）
       await expect(
         page.getByRole("heading", { name: "勤怠ワークフロー" })
       ).toBeVisible({ timeout: 10_000 });
 
-      // view=adminからview=employeeに切り替わることを確認（またはviewパラメータがないことを確認）
-      await expect(page).toHaveURL(/stamp-requests/, { timeout: 5000 });
+      // URLにstamp-requestsが含まれることを確認
+      await expect(page).toHaveURL(/\/stamp-requests/, { timeout: 5000 });
     });
   });
 
@@ -289,7 +277,7 @@ test.describe("打刻申請ワークフロー - E2Eテスト", () => {
     });
 
     await test.step("管理者で Admin view にアクセス", async () => {
-      await page.goto("/stamp-requests?view=admin");
+      await page.goto("/stamp-requests?view=admin", { waitUntil: "networkidle" });
 
       // ページが正常に表示されることを確認
       await expect(
