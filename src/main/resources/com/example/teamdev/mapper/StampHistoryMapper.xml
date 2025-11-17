@@ -116,12 +116,13 @@
     <!-- データを挿入または更新する -->
     <!--①saveStampHistory→saveに修正②ON DUPLICATE KEY UPDATEの重複のキー削除-->
     <!--③IFNULL関数追記-->
-    <insert id="save" parameterType="com.example.teamdev.entity.StampHistory">
+    <insert id="save" parameterType="com.example.teamdev.entity.StampHistory"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
         INSERT INTO stamp_history (
-            id, stamp_date, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
+            stamp_date, year, month, day, employee_id, in_time, out_time, break_start_time, break_end_time,
             is_night_shift, update_employee_id, update_date
         ) VALUES (
-            DEFAULT, #{stampDate}, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
+            #{stampDate}, #{year}, #{month}, #{day}, #{employeeId}, #{inTime}, #{outTime}, #{breakStartTime}, #{breakEndTime},
             #{isNightShift}, #{updateEmployeeId}, #{updateDate}
         )
     </insert>

@@ -42,11 +42,24 @@ public class StampRequestApprovalService {
         }
 
         StampRequest request = findEditableRequest(requestId);
-        StampHistory history = loadStampHistory(request);
-        assertStampHistorySnapshot(history, request);
         OffsetDateTime now = store.now();
-        applyRequestedValuesToHistory(history, request, approverId, now);
-        stampHistoryMapper.update(history);
+
+        if (request.getStampHistoryId() != null) {
+            // ケースA: 既存の打刻レコードを更新
+            StampHistory history = loadStampHistory(request);
+            assertStampHistorySnapshot(history, request);
+            applyRequestedValuesToHistory(history, request, approverId, now);
+            stampHistoryMapper.update(history);
+        } else {
+            // ケースB: 打刻忘れのため新規レコードを作成
+            // 承認までの間に既に同じ日付の打刻が登録されていないかチェック
+            assertNoExistingStampHistory(request);
+            StampHistory newHistory = createNewStampHistory(request, approverId, now);
+            stampHistoryMapper.save(newHistory);
+            // 作成されたレコードのIDをstamp_requestに反映
+            request.setStampHistoryId(newHistory.getId());
+        }
+
         request.setStatus(StampRequestStatus.APPROVED.name());
         request.setApprovalNote(approvalNote);
         request.setApprovalEmployeeId(approverId);
@@ -162,5 +175,64 @@ public class StampRequestApprovalService {
             history.setMonth(String.format("%02d", history.getStampDate().getMonthValue()));
             history.setDay(String.format("%02d", history.getStampDate().getDayOfMonth()));
         }
+    }
+
+    /**
+     * 打刻忘れ申請の承認時に、既に同じ日付の勤怠記録が存在しないことを確認します。
+     * 申請から承認までの間に別の打刻が登録された場合、承認できません。
+     *
+     * @param request 承認対象のリクエスト
+     * @throws StampRequestException 既に勤怠記録が存在する場合
+     */
+    private void assertNoExistingStampHistory(StampRequest request) {
+        StampHistory existing = stampHistoryMapper.getStampHistoryByStampDateEmployeeId(
+            request.getStampDate(),
+            request.getEmployeeId()
+        );
+        if (existing != null) {
+            throw new StampRequestException(
+                HttpStatus.CONFLICT,
+                "この日付の勤怠記録は既に登録されています。申請を却下してください。"
+            );
+        }
+    }
+
+    /**
+     * 打刻忘れの申請を承認する際に、新規の勤怠記録を作成します。
+     *
+     * @param request 承認対象のリクエスト（stampHistoryIdはnull）
+     * @param approverId 承認者ID
+     * @param now 現在時刻
+     * @return 作成された勤怠記録（IDが自動設定される）
+     */
+    private StampHistory createNewStampHistory(
+        StampRequest request,
+        Integer approverId,
+        OffsetDateTime now
+    ) {
+        StampHistory history = new StampHistory();
+        java.time.LocalDate stampDate = request.getStampDate();
+
+        // 日付フィールド：stamp_date と year/month/day の両方を設定
+        history.setStampDate(stampDate);
+        history.setYear(String.format("%04d", stampDate.getYear()));
+        history.setMonth(String.format("%02d", stampDate.getMonthValue()));
+        history.setDay(String.format("%02d", stampDate.getDayOfMonth()));
+
+        // 従業員情報
+        history.setEmployeeId(request.getEmployeeId());
+
+        // 申請された時刻情報を新規レコードに設定
+        history.setInTime(request.getRequestedInTime());
+        history.setOutTime(request.getRequestedOutTime());
+        history.setBreakStartTime(request.getRequestedBreakStartTime());
+        history.setBreakEndTime(request.getRequestedBreakEndTime());
+        history.setIsNightShift(request.getRequestedIsNightShift());
+
+        // メタ情報
+        history.setUpdateEmployeeId(approverId);
+        history.setUpdateDate(now);
+
+        return history;
     }
 }
