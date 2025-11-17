@@ -45,22 +45,22 @@ describe("RequestCorrectionModal", () => {
 
     expect(screen.getByLabelText("出勤時刻")).toHaveValue("09:00");
     expect(screen.getByLabelText("退勤時刻")).toHaveValue("18:10");
-    expect(screen.getByLabelText("休憩開始")).toHaveValue("12:00");
-    expect(screen.getByLabelText("休憩終了")).toHaveValue("13:00");
+    expect(screen.getByLabelText("休憩開始時刻")).toHaveValue("12:00");
+    expect(screen.getByLabelText("休憩終了時刻")).toHaveValue("13:00");
   });
 
-  it("shows validation error when reason is too short", async () => {
+  it("shows validation error when reason is empty", async () => {
     renderModal();
 
     fireEvent.change(screen.getByLabelText("修正理由"), {
-      target: { value: "短い" },
+      target: { value: "" },
     });
     await userEvent.click(
-      screen.getByRole("button", { name: "リクエスト送信" })
+      screen.getByRole("button", { name: "申請を送信" })
     );
 
     expect(
-      await screen.findByText("理由は10文字以上500文字以下で入力してください")
+      await screen.findByText("理由は必須です")
     ).toBeInTheDocument();
     expect(mutateAsync).not.toHaveBeenCalled();
   });
@@ -76,7 +76,7 @@ describe("RequestCorrectionModal", () => {
     });
 
     await userEvent.click(
-      screen.getByRole("button", { name: "リクエスト送信" })
+      screen.getByRole("button", { name: "申請を送信" })
     );
 
     await waitFor(() => {

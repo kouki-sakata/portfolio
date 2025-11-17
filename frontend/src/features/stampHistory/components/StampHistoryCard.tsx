@@ -25,13 +25,12 @@ import { cn } from "@/shared/utils/cn";
 
 export type StampHistoryCardProps = {
   entry: StampHistoryEntry;
-  onEdit: (entry: StampHistoryEntry) => void;
   onDelete: (entry: StampHistoryEntry) => void;
   onRequestCorrection?: (entry: StampHistoryEntry) => void;
 };
 
 export const StampHistoryCard = memo<StampHistoryCardProps>(
-  ({ entry, onEdit, onDelete, onRequestCorrection }) => {
+  ({ entry, onDelete, onRequestCorrection }) => {
     const dayOfWeekColor = getDayOfWeekColor(entry.dayOfWeek);
     const overtimeBadgeVariant = getOvertimeBadgeVariant(entry.overtimeMinutes);
 
@@ -131,17 +130,7 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
 
           <Separator />
 
-          <CardFooter className="grid grid-cols-3 gap-2 pt-4">
-            <Button
-              aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻修正を申請`}
-              className="w-full"
-              onClick={() => onEdit(entry)}
-              size="sm"
-              variant="outline"
-            >
-              <SpriteIcon className="mr-2 h-4 w-4" decorative name="edit" />
-              修正申請
-            </Button>
+          <CardFooter className="grid grid-cols-2 gap-2 pt-4">
             <Button
               aria-label={`${entry.year}年${entry.month}月${entry.day}日の打刻を削除`}
               className="w-full"
@@ -166,7 +155,7 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
                 申請
               </Button>
             ) : (
-              <div /> {/* Grid layout balance */}
+              <div />
             )}
           </CardFooter>
         </Card>

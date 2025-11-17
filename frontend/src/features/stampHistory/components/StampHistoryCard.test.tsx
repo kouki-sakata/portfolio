@@ -22,7 +22,6 @@ describe("StampHistoryCard", () => {
     updateDate: "2024/11/10 18:05",
   };
 
-  const mockOnEdit = vi.fn();
   const mockOnDelete = vi.fn();
 
   it("renders entry data correctly", () => {
@@ -30,7 +29,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={mockEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -55,7 +54,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithNullTimes}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -75,7 +74,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithNullBreaks}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -93,7 +92,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithNullOvertime}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -110,7 +109,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithZeroOvertime}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -127,7 +126,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={saturdayEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -145,32 +144,12 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={sundayEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
     const dateElement = container.querySelector(".text-red-600");
     expect(dateElement).toBeInTheDocument();
-  });
-
-  it("calls onEdit when edit button is clicked", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-
-    const editButton = screen.getByRole("button", {
-      name: /編集/i,
-    });
-    await user.click(editButton);
-
-    expect(mockOnEdit).toHaveBeenCalledWith(mockEntry);
-    expect(mockOnEdit).toHaveBeenCalledTimes(1);
   });
 
   it("calls onDelete when delete button is clicked", async () => {
@@ -180,7 +159,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={mockEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -193,7 +172,7 @@ describe("StampHistoryCard", () => {
     expect(mockOnDelete).toHaveBeenCalledTimes(1);
   });
 
-  it("disables delete button but enables edit button when entry has no id", () => {
+  it("disables delete button when entry has no id", () => {
     const entryWithoutId: StampHistoryEntry = {
       ...mockEntry,
       id: null,
@@ -204,19 +183,14 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithoutId}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+
       />
     );
 
-    const editButton = screen.getByRole("button", {
-      name: /編集/i,
-    });
     const deleteButton = screen.getByRole("button", {
       name: /削除/i,
     });
 
-    // 編集ボタンは有効（新規作成を可能にするため）
-    expect(editButton).not.toBeDisabled();
     // 削除ボタンは無効（存在しないレコードは削除できない）
     expect(deleteButton).toBeDisabled();
   });
@@ -231,7 +205,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={entryWithoutUpdateDate}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 
@@ -243,15 +217,9 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={mockEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+
       />
     );
-
-    expect(
-      screen.getByRole("button", {
-        name: "2024年11月10日の打刻を編集",
-      })
-    ).toBeInTheDocument();
 
     expect(
       screen.getByRole("button", {
@@ -265,7 +233,7 @@ describe("StampHistoryCard", () => {
       <StampHistoryCard
         entry={mockEntry}
         onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
+        
       />
     );
 

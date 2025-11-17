@@ -36,7 +36,7 @@ type RequestCorrectionModalProps = {
 };
 
 type RequestCorrectionForm = {
-  stampHistoryId: number;
+  stampHistoryId?: number | null;
   requestedInTime?: string | null;
   requestedOutTime?: string | null;
   requestedBreakStartTime?: string | null;
@@ -58,7 +58,7 @@ const toFormValues = (entry: StampHistoryEntry): RequestCorrectionForm => ({
 const normalizePayload = (
   values: RequestCorrectionForm
 ): StampRequestCreatePayload => ({
-  stampHistoryId: values.stampHistoryId === 0 ? null : values.stampHistoryId,
+  stampHistoryId: values.stampHistoryId === 0 ? null : (values.stampHistoryId ?? null),
   requestedInTime: values.requestedInTime || null,
   requestedOutTime: values.requestedOutTime || null,
   requestedBreakStartTime: values.requestedBreakStartTime || null,

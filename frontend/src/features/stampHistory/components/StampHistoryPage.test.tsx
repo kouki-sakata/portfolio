@@ -141,7 +141,8 @@ describe("StampHistoryPage", () => {
       await screen.findByRole("status", { name: "審査中" })
     ).toBeInTheDocument();
 
-    const requestButton = screen.getByRole("button", { name: "修正申請" });
-    expect(requestButton).toBeDisabled();
+    const requestButtons = screen.getAllByRole("button", { name: "修正申請" });
+    const disabledButton = requestButtons.find((btn) => btn.hasAttribute("disabled"));
+    expect(disabledButton).toBeDefined();
   });
 });

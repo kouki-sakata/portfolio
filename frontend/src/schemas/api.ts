@@ -214,7 +214,7 @@ const ProfileStatisticsResponse = z
   .passthrough();
 const StampRequestCreateRequest = z
   .object({
-    stampHistoryId: z.number().int(),
+    stampHistoryId: z.number().int().nullish(),
     requestedInTime: z.string().datetime({ offset: true }).optional(),
     requestedOutTime: z.string().datetime({ offset: true }).optional(),
     requestedBreakStartTime: z.string().datetime({ offset: true }).optional(),

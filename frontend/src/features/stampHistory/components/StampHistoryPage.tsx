@@ -338,7 +338,6 @@ export const StampHistoryPage = () => {
             entry={entry}
             key={`card-${entry.year}-${entry.month}-${entry.day}`}
             onDelete={handleDelete}
-            onEdit={handleEdit}
             onRequestCorrection={handleRequestCorrection}
           />
         ))}
