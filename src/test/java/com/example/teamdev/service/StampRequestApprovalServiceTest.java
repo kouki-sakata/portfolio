@@ -3,6 +3,7 @@ package com.example.teamdev.service;
 import com.example.teamdev.constant.StampRequestStatus;
 import com.example.teamdev.entity.StampHistory;
 import com.example.teamdev.entity.StampRequest;
+import com.example.teamdev.exception.StampRequestException;
 import com.example.teamdev.mapper.StampHistoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -15,7 +16,11 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -262,6 +267,145 @@ class StampRequestApprovalServiceTest {
             .hasMessageContaining("対象の申請は存在しないか既に処理済みです");
     }
 
+    // ========== stampHistoryId が null のケース（打刻忘れの申請）==========
+
+    @Test
+    void approveRequest_成功_stampHistoryIdがnullの場合新規作成() {
+        // Given: 打刻忘れの申請（stampHistoryId=null）
+        StampRequest request = createForgottenStampRequest();
+        mockNoExistingStampHistory(request);
+        mockStampHistoryInsert();
+
+        // When
+        service.approveRequest(request.getId(), 200, "打刻忘れのため承認します");
+
+        // Then
+        StampRequest approved = store.findById(request.getId()).orElseThrow();
+        assertThat(approved.getStatus()).isEqualTo(StampRequestStatus.APPROVED.name());
+        assertThat(approved.getApprovalEmployeeId()).isEqualTo(200);
+        assertThat(approved.getApprovalNote()).isEqualTo("打刻忘れのため承認します");
+        assertThat(approved.getStampHistoryId()).isNotNull();
+        assertThat(approved.getStampHistoryId()).isEqualTo(999); // モックで設定したID
+
+        // StampHistoryMapper.save() が呼ばれたことを確認
+        verify(stampHistoryMapper).save(any(StampHistory.class));
+    }
+
+    @Test
+    void approveRequest_成功_stampHistoryIdがnullで日付フィールドが正しく設定される() {
+        // Given: 打刻忘れの申請（stampHistoryId=null）
+        StampRequest request = createForgottenStampRequest();
+        mockNoExistingStampHistory(request);
+
+        // StampHistory の内容をキャプチャするモックを設定
+        final StampHistory[] capturedHistory = new StampHistory[1];
+        doAnswer(invocation -> {
+            StampHistory history = invocation.getArgument(0);
+            capturedHistory[0] = history;
+            history.setId(999); // IDを設定
+            return null;
+        }).when(stampHistoryMapper).save(any(StampHistory.class));
+
+        // When
+        service.approveRequest(request.getId(), 200, null);
+
+        // Then: 日付フィールドが正しく設定されていることを確認
+        StampHistory savedHistory = capturedHistory[0];
+        assertThat(savedHistory).isNotNull();
+        assertThat(savedHistory.getStampDate()).isEqualTo(request.getStampDate());
+        assertThat(savedHistory.getYear()).isEqualTo("2025");
+        assertThat(savedHistory.getMonth()).isEqualTo("11");
+        assertThat(savedHistory.getDay()).isEqualTo("15");
+        assertThat(savedHistory.getEmployeeId()).isEqualTo(request.getEmployeeId());
+        assertThat(savedHistory.getInTime()).isEqualTo(request.getRequestedInTime());
+        assertThat(savedHistory.getOutTime()).isEqualTo(request.getRequestedOutTime());
+        assertThat(savedHistory.getUpdateEmployeeId()).isEqualTo(200);
+    }
+
+    @Test
+    void approveRequest_失敗_stampHistoryIdがnullで既存レコードが存在する() {
+        // Given: 打刻忘れの申請（stampHistoryId=null）
+        StampRequest request = createForgottenStampRequest();
+
+        // 承認までの間に同じ日付の打刻が既に登録されたケース
+        StampHistory existingHistory = new StampHistory(
+            888,
+            "2025",
+            "11",
+            "15",
+            request.getStampDate(),
+            request.getEmployeeId(),
+            OffsetDateTime.parse("2025-11-15T08:00:00Z"),
+            OffsetDateTime.parse("2025-11-15T17:00:00Z"),
+            null,
+            null,
+            false,
+            100,
+            OffsetDateTime.now()
+        );
+        when(stampHistoryMapper.getStampHistoryByStampDateEmployeeId(
+            eq(request.getStampDate()),
+            eq(request.getEmployeeId())
+        )).thenReturn(existingHistory);
+
+        // When & Then
+        assertThatThrownBy(() -> service.approveRequest(request.getId(), 200, null))
+            .isInstanceOf(StampRequestException.class)
+            .hasMessageContaining("この日付の勤怠記録は既に登録されています");
+    }
+
+    @Test
+    void approveRequest_成功_stampHistoryIdがnullで申請時刻がすべて反映される() {
+        // Given: 打刻忘れの申請（休憩時間・夜勤フラグも含む）
+        OffsetDateTime requestedIn = OffsetDateTime.parse("2025-11-15T09:00:00Z");
+        OffsetDateTime requestedOut = OffsetDateTime.parse("2025-11-15T18:00:00Z");
+        OffsetDateTime breakStart = OffsetDateTime.parse("2025-11-15T12:00:00Z");
+        OffsetDateTime breakEnd = OffsetDateTime.parse("2025-11-15T13:00:00Z");
+
+        StampRequest request = StampRequest.builder()
+            .employeeId(100)
+            .stampHistoryId(null) // 打刻忘れ
+            .stampDate(OffsetDateTime.parse("2025-11-15T09:00:00Z").toLocalDate())
+            .originalInTime(null)
+            .originalOutTime(null)
+            .originalBreakStartTime(null)
+            .originalBreakEndTime(null)
+            .originalIsNightShift(null)
+            .requestedInTime(requestedIn)
+            .requestedOutTime(requestedOut)
+            .requestedBreakStartTime(breakStart)
+            .requestedBreakEndTime(breakEnd)
+            .requestedIsNightShift(true)
+            .reason("打刻を完全に忘れていました。")
+            .status(StampRequestStatus.PENDING.name())
+            .build();
+        request = store.create(request);
+
+        mockNoExistingStampHistory(request);
+
+        // StampHistory の内容をキャプチャ
+        final StampHistory[] capturedHistory = new StampHistory[1];
+        doAnswer(invocation -> {
+            StampHistory history = invocation.getArgument(0);
+            capturedHistory[0] = history;
+            history.setId(999);
+            return null;
+        }).when(stampHistoryMapper).save(any(StampHistory.class));
+
+        // When
+        service.approveRequest(request.getId(), 200, null);
+
+        // Then: 申請された全ての時刻情報が反映されていることを確認
+        StampHistory savedHistory = capturedHistory[0];
+        assertThat(savedHistory.getInTime()).isEqualTo(requestedIn);
+        assertThat(savedHistory.getOutTime()).isEqualTo(requestedOut);
+        assertThat(savedHistory.getBreakStartTime()).isEqualTo(breakStart);
+        assertThat(savedHistory.getBreakEndTime()).isEqualTo(breakEnd);
+        assertThat(savedHistory.getIsNightShift()).isTrue();
+    }
+
+    // ========== ヘルパーメソッド ==========
+
     private StampRequest createPendingRequest() {
         OffsetDateTime originalIn = OffsetDateTime.parse("2025-11-15T08:00:00Z");
         OffsetDateTime originalOut = OffsetDateTime.parse("2025-11-15T17:00:00Z");
@@ -296,5 +440,49 @@ class StampRequestApprovalServiceTest {
             request.getCreatedAt()
         );
         when(stampHistoryMapper.getById(request.getStampHistoryId())).thenReturn(Optional.of(history));
+    }
+
+    /**
+     * 打刻忘れの申請を作成（stampHistoryId=null）
+     */
+    private StampRequest createForgottenStampRequest() {
+        OffsetDateTime requestedIn = OffsetDateTime.parse("2025-11-15T09:00:00Z");
+        OffsetDateTime requestedOut = OffsetDateTime.parse("2025-11-15T18:00:00Z");
+        StampRequest request = StampRequest.builder()
+            .employeeId(100)
+            .stampHistoryId(null) // 打刻忘れ
+            .stampDate(OffsetDateTime.parse("2025-11-15T09:00:00Z").toLocalDate())
+            .originalInTime(null)
+            .originalOutTime(null)
+            .originalBreakStartTime(null)
+            .originalBreakEndTime(null)
+            .originalIsNightShift(null)
+            .requestedInTime(requestedIn)
+            .requestedOutTime(requestedOut)
+            .reason("打刻を忘れていました。")
+            .status(StampRequestStatus.PENDING.name())
+            .build();
+        return store.create(request);
+    }
+
+    /**
+     * 既存の勤怠記録が存在しないことをモック
+     */
+    private void mockNoExistingStampHistory(StampRequest request) {
+        when(stampHistoryMapper.getStampHistoryByStampDateEmployeeId(
+            eq(request.getStampDate()),
+            eq(request.getEmployeeId())
+        )).thenReturn(null);
+    }
+
+    /**
+     * StampHistory INSERT時にIDを設定するモック
+     */
+    private void mockStampHistoryInsert() {
+        doAnswer(invocation -> {
+            StampHistory history = invocation.getArgument(0);
+            history.setId(999); // IDを自動設定
+            return null;
+        }).when(stampHistoryMapper).save(any(StampHistory.class));
     }
 }
