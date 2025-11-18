@@ -1,4 +1,9 @@
 /**
+ * HH:mm形式のバリデーション用正規表現
+ */
+const TIME_FORMAT_REGEX = /^([0-1]\d|2[0-3]):[0-5]\d$/;
+
+/**
  * エントリの日付が現在日付以下（過去または今日）かどうかを判定
  */
 export const isPastOrToday = (
@@ -41,7 +46,7 @@ export const combineDateTimeToISO = (
   }
 
   // HH:mm形式のバリデーション
-  if (!/^([0-1]\d|2[0-3]):[0-5]\d$/.test(time)) {
+  if (!TIME_FORMAT_REGEX.test(time)) {
     return null;
   }
 
