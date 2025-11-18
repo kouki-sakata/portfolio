@@ -7,7 +7,7 @@ type WorkflowHeaderProps = {
   userName?: string;
   showViewSwitcher?: boolean;
   onViewChange?: (view: "employee" | "admin") => void;
-  onNewRequestClick?: () => void;
+  onNewRequestClick: () => void;
 };
 
 export const WorkflowHeader = ({

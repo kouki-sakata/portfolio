@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { toast } from "@/hooks/use-toast";
 import { ApprovalDialog } from "@/features/stampRequestWorkflow/components/ApprovalDialog";
 import { BulkActionBar } from "@/features/stampRequestWorkflow/components/BulkActionBar";
 import { CancellationDialog } from "@/features/stampRequestWorkflow/components/CancellationDialog";
@@ -132,18 +133,25 @@ export const StampRequestWorkflowPage = ({
   };
 
   const handleBulkApprove = async () => {
-    if (selectedIds.size === 0) {
+    if (selectedIds.size === 0 || bulkApproveMutation.isPending) {
       return;
     }
-    await bulkApproveMutation.mutateAsync({
-      requestIds: Array.from(selectedIds),
-    });
-    setSelectedIds(new Set());
+    try {
+      await bulkApproveMutation.mutateAsync({
+        requestIds: Array.from(selectedIds),
+      });
+      setSelectedIds(new Set());
+    } catch {
+      // mutation's onError handles user feedback
+    }
   };
 
   const handleBulkReject = () => {
-    // TODO: バルク却下ダイアログを実装
-    setSelectedIds(new Set());
+    toast({
+      title: "未実装の機能",
+      description: "一括却下は未対応です",
+      variant: "default",
+    });
   };
 
   const handleStatusChange = (status: string) => {
@@ -197,6 +205,7 @@ export const StampRequestWorkflowPage = ({
         {isAdmin && selectedIds.size > 0 && (
           <div className="absolute top-[73px] right-0 left-96 z-10">
             <BulkActionBar
+              isApproving={bulkApproveMutation.isPending}
               onApprove={handleBulkApprove}
               onReject={handleBulkReject}
               selectedCount={selectedIds.size}
