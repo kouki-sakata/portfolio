@@ -116,11 +116,15 @@ export const PendingRequestsAdminPage = () => {
   };
 
   const handleBulkApprove = async () => {
-    if (!selectedIds.length) {
+    if (!selectedIds.length || bulkApproveMutation.isPending) {
       return;
     }
-    await bulkApproveMutation.mutateAsync({ requestIds: selectedIds });
-    handleClearSelection();
+    try {
+      await bulkApproveMutation.mutateAsync({ requestIds: selectedIds });
+      handleClearSelection();
+    } catch {
+      // mutation's onError handles user feedback
+    }
   };
 
   const handleBulkReject = () => {
