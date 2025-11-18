@@ -34,7 +34,9 @@
             sh.break_start_time AS "breakStartTimeRaw",
             sh.break_end_time AS "breakEndTimeRaw",
             sh.is_night_shift AS "isNightShift",
-            to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate"
+            to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate",
+            sr.id AS "requestId",
+            sr.status AS "requestStatus"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
                 SELECT CAST(#{date} AS DATE) AS date
@@ -45,6 +47,17 @@
             sh.employee_id = #{employeeId}
         LEFT JOIN employee emp ON emp.id = #{employeeId}
         LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+        <!-- 申請ステータス情報を取得 -->
+        <!-- 複数の申請がある場合は、created_at が最新のものを取得 -->
+        <!-- LEFT JOIN を使用しているため、申請がない場合は NULL が返る -->
+        LEFT JOIN LATERAL (
+            SELECT id, status
+            FROM stamp_request
+            WHERE stamp_request.employee_id = #{employeeId}
+              AND stamp_request.stamp_date = gd.date
+            ORDER BY created_at DESC
+            LIMIT 1
+        ) sr ON TRUE
         ORDER BY gd.date ASC
     </select>
 
@@ -101,13 +114,26 @@
                     sh.in_time AS "inTimeRaw",
                     sh.out_time AS "outTimeRaw",
                     sh.break_start_time AS "breakStartTimeRaw",
-                    sh.break_end_time AS "breakEndTimeRaw"
+                    sh.break_end_time AS "breakEndTimeRaw",
+                    sr.id AS "requestId",
+                    sr.status AS "requestStatus"
                 FROM employee_calendar ec
                 LEFT JOIN stamp_history sh ON
                     sh.employee_id = ec.employee_id
                     AND sh.stamp_date = ec.work_date
                 LEFT JOIN employee emp ON emp.id = ec.employee_id
                 LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+                <!-- 申請ステータス情報を取得（複数従業員対応） -->
+                <!-- 各従業員・各日付に対して、最新の申請ステータスを取得 -->
+                <!-- パフォーマンス最適化のため、idx_stamp_request_employee_date_created インデックスを使用 -->
+                LEFT JOIN LATERAL (
+                    SELECT id, status
+                    FROM stamp_request
+                    WHERE stamp_request.employee_id = ec.employee_id
+                      AND stamp_request.stamp_date = ec.work_date
+                    ORDER BY created_at DESC
+                    LIMIT 1
+                ) sr ON TRUE
                 ORDER BY ec.sort_order, ec.work_date
             </otherwise>
         </choose>

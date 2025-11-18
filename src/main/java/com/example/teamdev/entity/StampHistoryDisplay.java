@@ -95,6 +95,14 @@ public class StampHistoryDisplay {
 	 * 休憩終了時刻(生値)
 	 */
 	private OffsetDateTime breakEndTimeRaw;
+	/**
+	 * 申請ID
+	 */
+	private Integer requestId;
+	/**
+	 * 申請ステータス
+	 */
+	private String requestStatus;
 
 	/**
 	 * CSV出力処理用
