@@ -27,43 +27,13 @@ const mapEntry = (
   dayOfWeek: entry.dayOfWeek ?? null,
   inTime: entry.inTime ?? null,
   outTime: entry.outTime ?? null,
-  breakStartTime:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        breakStartTime?: string | null;
-      }
-    ).breakStartTime ?? null,
-  breakEndTime:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        breakEndTime?: string | null;
-      }
-    ).breakEndTime ?? null,
-  overtimeMinutes:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        overtimeMinutes?: number | null;
-      }
-    ).overtimeMinutes ?? null,
-  isNightShift:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        isNightShift?: boolean | null;
-      }
-    ).isNightShift ?? null,
+  breakStartTime: entry.breakStartTime ?? null,
+  breakEndTime: entry.breakEndTime ?? null,
+  overtimeMinutes: entry.overtimeMinutes ?? null,
+  isNightShift: entry.isNightShift ?? null,
   updateDate: entry.updateDate ?? null,
-  requestStatus:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        requestStatus?: StampHistoryEntry["requestStatus"];
-      }
-    ).requestStatus ?? "NONE",
-  requestId:
-    (
-      entry as StampHistoryApiResponse["entries"][number] & {
-        requestId?: number | null;
-      }
-    ).requestId ?? null,
+  requestStatus: entry.requestStatus ?? "NONE",
+  requestId: entry.requestId ?? null,
 });
 
 const mapResponse = (

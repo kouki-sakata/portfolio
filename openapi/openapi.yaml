@@ -1169,10 +1169,29 @@ components:
           format: int32
           nullable: true
           description: 残業時間（分）
+        isNightShift:
+          type: boolean
+          nullable: true
+          description: 夜勤フラグ
         updateDate:
           type: string
           nullable: true
           description: 更新日時
+        requestStatus:
+          type: string
+          nullable: true
+          description: 申請ステータス（PENDING, APPROVED, REJECTED, CANCELLED, NONE）
+          enum:
+            - PENDING
+            - APPROVED
+            - REJECTED
+            - CANCELLED
+            - NONE
+        requestId:
+          type: integer
+          format: int32
+          nullable: true
+          description: 申請ID
     StampRequestCreateRequest:
       type: object
       required:

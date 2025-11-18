@@ -424,9 +424,21 @@ export type StampHistoryEntryResponse = {
      */
     overtimeMinutes?: number | null;
     /**
+     * 夜勤フラグ
+     */
+    isNightShift?: boolean | null;
+    /**
      * 更新日時
      */
     updateDate?: string | null;
+    /**
+     * 申請ステータス（PENDING, APPROVED, REJECTED, CANCELLED, NONE）
+     */
+    requestStatus?: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED' | 'NONE' | null;
+    /**
+     * 申請ID
+     */
+    requestId?: number | null;
 };
 
 export type StampRequestCreateRequest = {
