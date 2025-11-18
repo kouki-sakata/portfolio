@@ -258,6 +258,29 @@ public class StampRequestStore {
     }
 
     /**
+     * PENDING状態のリクエストを検索します（打刻レコードなし申請用の重複チェック）。
+     *
+     * @param employeeId 従業員ID
+     * @param stampDate 対象日付
+     * @return PENDING状態のリクエスト、存在しない場合は{@code Optional.empty()}
+     */
+    public Optional<StampRequest> findPendingByEmployeeIdAndStampDate(
+        Integer employeeId,
+        java.time.LocalDate stampDate
+    ) {
+        if (mapper != null) {
+            return mapper.findPendingByEmployeeIdAndStampDate(employeeId, stampDate);
+        } else {
+            return storage.values().stream()
+                .filter(r -> Objects.equals(r.getEmployeeId(), employeeId))
+                .filter(r -> Objects.equals(r.getStampDate(), stampDate))
+                .filter(r -> Objects.equals(r.getStatus(), "PENDING"))
+                .filter(r -> r.getStampHistoryId() == null)  // 打刻レコードなしのみ
+                .findFirst();
+        }
+    }
+
+    /**
      * ステータスでリクエストを取得します。
      *
      * @param status ステータス

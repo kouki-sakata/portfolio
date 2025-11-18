@@ -129,7 +129,7 @@ public interface StampRequestMapper {
      * 指定された従業員と勤怠履歴IDに対するPENDING状態のリクエストを検索します。
      *
      * <p>重複申請チェックに使用されます。
-     * Partial Index {@code idx_stamp_request_pending_unique} により、
+     * Partial Index {@code idx_stamp_request_pending_unique_with_history} により、
      * PENDING状態のリクエストは同じ(employee_id, stamp_history_id)の組み合わせで
      * 最大1件しか存在できません。</p>
      *
@@ -140,6 +140,23 @@ public interface StampRequestMapper {
     Optional<StampRequest> findPendingByEmployeeIdAndStampHistoryId(
             @Param("employeeId") Integer employeeId,
             @Param("stampHistoryId") Integer stampHistoryId
+    );
+
+    /**
+     * 指定された従業員と日付に対するPENDING状態のリクエストを検索します（打刻レコードなし）。
+     *
+     * <p>打刻レコードが存在しない日の申請の重複チェックに使用されます。
+     * Partial Index {@code idx_stamp_request_pending_unique_no_history} により、
+     * stamp_history_id IS NULL かつ PENDING状態のリクエストは
+     * 同じ(employee_id, stamp_date)の組み合わせで最大1件しか存在できません。</p>
+     *
+     * @param employeeId 従業員ID
+     * @param stampDate 対象日付
+     * @return PENDING状態のリクエスト、存在しない場合は{@code Optional.empty()}
+     */
+    Optional<StampRequest> findPendingByEmployeeIdAndStampDate(
+            @Param("employeeId") Integer employeeId,
+            @Param("stampDate") java.time.LocalDate stampDate
     );
 
     /**

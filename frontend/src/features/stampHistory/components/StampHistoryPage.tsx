@@ -23,10 +23,9 @@ import {
 } from "@/components/ui/table";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import { fetchStampHistory } from "@/features/stampHistory/api";
-import { DeleteStampDialog } from "@/features/stampHistory/components/DeleteStampDialog";
-import { EditStampDialog } from "@/features/stampHistory/components/EditStampDialog";
 import { ExportDialog } from "@/features/stampHistory/components/ExportDialog";
 import { StampHistoryCard } from "@/features/stampHistory/components/StampHistoryCard";
+import { isPastOrToday } from "@/features/stampHistory/lib/dateUtils";
 import {
   renderBreakTimeCell,
   renderOptionalTime,
@@ -82,11 +81,6 @@ export const StampHistoryPage = () => {
     };
   });
 
-  const [selectedEntry, setSelectedEntry] = useState<StampHistoryEntry | null>(
-    null
-  );
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [requestDialogOpen, setRequestDialogOpen] = useState(false);
   const [requestTarget, setRequestTarget] = useState<StampHistoryEntry | null>(
     null
@@ -115,20 +109,7 @@ export const StampHistoryPage = () => {
     setConfirmedFilters(filters);
   };
 
-  const handleEdit = useCallback((entry: StampHistoryEntry) => {
-    setSelectedEntry(entry);
-    setEditDialogOpen(true);
-  }, []);
-
-  const handleDelete = useCallback((entry: StampHistoryEntry) => {
-    setSelectedEntry(entry);
-    setDeleteDialogOpen(true);
-  }, []);
-
   const handleRequestCorrection = useCallback((entry: StampHistoryEntry) => {
-    if (!entry.id) {
-      return;
-    }
     setRequestTarget(entry);
     setRequestDialogOpen(true);
   }, []);
@@ -346,8 +327,7 @@ export const StampHistoryPage = () => {
           <StampHistoryCard
             entry={entry}
             key={`card-${entry.year}-${entry.month}-${entry.day}`}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
+            onRequestCorrection={handleRequestCorrection}
           />
         ))}
       </ul>
@@ -402,45 +382,24 @@ export const StampHistoryPage = () => {
                   <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
                 </TableCell>
                 <TableCell>
-                  <div className="flex gap-2">
+                  {isPastOrToday(entry.year, entry.month, entry.day) ? (
                     <Button
-                      onClick={() => handleEdit(entry)}
+                      aria-label="修正申請"
+                      className="px-2 md:px-3"
+                      disabled={entry.requestStatus === "PENDING"}
+                      onClick={() => handleRequestCorrection(entry)}
                       size="sm"
-                      variant="ghost"
-                    >
-                      <SpriteIcon className="h-4 w-4" decorative name="edit" />
-                      <span className="sr-only">編集</span>
-                    </Button>
-                    <Button
-                      disabled={!entry.id}
-                      onClick={() => handleDelete(entry)}
-                      size="sm"
-                      variant="ghost"
+                      type="button"
+                      variant="default"
                     >
                       <SpriteIcon
-                        className="h-4 w-4"
+                        className="h-4 w-4 md:hidden"
                         decorative
-                        name="trash-2"
+                        name="edit"
                       />
-                      <span className="sr-only">削除</span>
+                      <span className="hidden md:inline">修正申請</span>
                     </Button>
-                    {entry.id ? (
-                      <Button
-                        aria-label="修正申請"
-                        disabled={entry.requestStatus === "PENDING"}
-                        onClick={() => handleRequestCorrection(entry)}
-                        size="sm"
-                        variant="ghost"
-                      >
-                        <SpriteIcon
-                          className="h-4 w-4"
-                          decorative
-                          name="edit"
-                        />
-                        <span className="sr-only">修正申請</span>
-                      </Button>
-                    ) : null}
-                  </div>
+                  ) : null}
                 </TableCell>
               </TableRow>
             ))}
@@ -448,21 +407,6 @@ export const StampHistoryPage = () => {
         </Table>
       </div>
 
-      <EditStampDialog
-        day={selectedEntry?.day ?? undefined}
-        employeeId={selectedEntry?.employeeId ?? undefined}
-        entry={selectedEntry}
-        month={selectedEntry?.month ?? undefined}
-        onOpenChange={setEditDialogOpen}
-        open={editDialogOpen}
-        year={selectedEntry?.year ?? undefined}
-      />
-
-      <DeleteStampDialog
-        entry={selectedEntry}
-        onOpenChange={setDeleteDialogOpen}
-        open={deleteDialogOpen}
-      />
       <RequestCorrectionModal
         entry={requestTarget}
         onOpenChange={(open) => {

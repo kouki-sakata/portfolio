@@ -51,7 +51,7 @@ const timeField = z
 
 export const stampRequestCreateSchema = z
   .object({
-    stampHistoryId: z.number(),
+    stampHistoryId: z.number().nullable().optional(),
     requestedInTime: timeField,
     requestedOutTime: timeField,
     requestedBreakStartTime: timeField,
@@ -59,8 +59,8 @@ export const stampRequestCreateSchema = z
     requestedIsNightShift: z.boolean().optional(),
     reason: z
       .string()
-      .min(10, "理由は10文字以上500文字以下で入力してください")
-      .max(500, "理由は10文字以上500文字以下で入力してください"),
+      .min(10, "理由は10文字以上で入力してください")
+      .max(500, "理由は500文字以内で入力してください"),
   })
   .refine(isChronological, {
     message: "時刻の前後関係を確認してください",

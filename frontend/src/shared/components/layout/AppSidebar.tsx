@@ -36,6 +36,12 @@ const navigationGroups: NavigationGroup[] = [
         href: "/stamp-history",
         icon: "history",
       },
+      {
+        id: "stamp-requests",
+        label: "打刻申請",
+        href: "/stamp-requests",
+        icon: "file-text",
+      },
     ],
   },
   {

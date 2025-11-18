@@ -1,6 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { StampHistoryCard } from "./StampHistoryCard";
@@ -22,17 +21,8 @@ describe("StampHistoryCard", () => {
     updateDate: "2024/11/10 18:05",
   };
 
-  const mockOnEdit = vi.fn();
-  const mockOnDelete = vi.fn();
-
   it("renders entry data correctly", () => {
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={mockEntry} />);
 
     expect(screen.getByText("2024/11/10")).toBeInTheDocument();
     expect(screen.getByText("日")).toBeInTheDocument();
@@ -51,13 +41,7 @@ describe("StampHistoryCard", () => {
       outTime: null,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithNullTimes}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={entryWithNullTimes} />);
 
     // 出勤と退勤の両方に"-"が表示される
     const dashElements = screen.getAllByText("-");
@@ -71,13 +55,7 @@ describe("StampHistoryCard", () => {
       breakEndTime: null,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithNullBreaks}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={entryWithNullBreaks} />);
 
     const dashElements = screen.getAllByText("-");
     expect(dashElements.length).toBeGreaterThan(0);
@@ -89,13 +67,7 @@ describe("StampHistoryCard", () => {
       overtimeMinutes: null,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithNullOvertime}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={entryWithNullOvertime} />);
 
     expect(screen.getByText("-")).toBeInTheDocument();
   });
@@ -106,13 +78,7 @@ describe("StampHistoryCard", () => {
       overtimeMinutes: 0,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithZeroOvertime}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={entryWithZeroOvertime} />);
 
     expect(screen.getByText("0分")).toBeInTheDocument();
   });
@@ -123,13 +89,7 @@ describe("StampHistoryCard", () => {
       dayOfWeek: "土",
     };
 
-    const { container } = render(
-      <StampHistoryCard
-        entry={saturdayEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    const { container } = render(<StampHistoryCard entry={saturdayEntry} />);
 
     const dateElement = container.querySelector(".text-blue-600");
     expect(dateElement).toBeInTheDocument();
@@ -141,84 +101,10 @@ describe("StampHistoryCard", () => {
       dayOfWeek: "日",
     };
 
-    const { container } = render(
-      <StampHistoryCard
-        entry={sundayEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    const { container } = render(<StampHistoryCard entry={sundayEntry} />);
 
     const dateElement = container.querySelector(".text-red-600");
     expect(dateElement).toBeInTheDocument();
-  });
-
-  it("calls onEdit when edit button is clicked", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-
-    const editButton = screen.getByRole("button", {
-      name: /編集/i,
-    });
-    await user.click(editButton);
-
-    expect(mockOnEdit).toHaveBeenCalledWith(mockEntry);
-    expect(mockOnEdit).toHaveBeenCalledTimes(1);
-  });
-
-  it("calls onDelete when delete button is clicked", async () => {
-    const user = userEvent.setup();
-
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-
-    const deleteButton = screen.getByRole("button", {
-      name: /削除/i,
-    });
-    await user.click(deleteButton);
-
-    expect(mockOnDelete).toHaveBeenCalledWith(mockEntry);
-    expect(mockOnDelete).toHaveBeenCalledTimes(1);
-  });
-
-  it("disables delete button but enables edit button when entry has no id", () => {
-    const entryWithoutId: StampHistoryEntry = {
-      ...mockEntry,
-      id: null,
-      employeeId: 1,
-    };
-
-    render(
-      <StampHistoryCard
-        entry={entryWithoutId}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-
-    const editButton = screen.getByRole("button", {
-      name: /編集/i,
-    });
-    const deleteButton = screen.getByRole("button", {
-      name: /削除/i,
-    });
-
-    // 編集ボタンは有効（新規作成を可能にするため）
-    expect(editButton).not.toBeDisabled();
-    // 削除ボタンは無効（存在しないレコードは削除できない）
-    expect(deleteButton).toBeDisabled();
   });
 
   it("displays '-' for null update date", () => {
@@ -227,47 +113,13 @@ describe("StampHistoryCard", () => {
       updateDate: null,
     };
 
-    render(
-      <StampHistoryCard
-        entry={entryWithoutUpdateDate}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    render(<StampHistoryCard entry={entryWithoutUpdateDate} />);
 
     expect(screen.getByText("更新: -")).toBeInTheDocument();
   });
 
-  it("has proper ARIA labels for accessibility", () => {
-    render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
-
-    expect(
-      screen.getByRole("button", {
-        name: "2024年11月10日の打刻を編集",
-      })
-    ).toBeInTheDocument();
-
-    expect(
-      screen.getByRole("button", {
-        name: "2024年11月10日の打刻を削除",
-      })
-    ).toBeInTheDocument();
-  });
-
   it("renders as a list item", () => {
-    const { container } = render(
-      <StampHistoryCard
-        entry={mockEntry}
-        onDelete={mockOnDelete}
-        onEdit={mockOnEdit}
-      />
-    );
+    const { container } = render(<StampHistoryCard entry={mockEntry} />);
 
     const listItem = container.querySelector("li");
     expect(listItem).toBeInTheDocument();

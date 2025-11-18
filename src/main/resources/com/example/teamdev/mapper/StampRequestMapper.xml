@@ -148,6 +148,17 @@
         LIMIT 1
     </select>
 
+    <!-- PENDING状態のリクエストを従業員ID + 日付で検索（打刻レコードなし申請用の重複チェック） -->
+    <select id="findPendingByEmployeeIdAndStampDate" resultMap="StampRequestResultMap">
+        SELECT <include refid="selectAllColumns"/>
+        FROM stamp_request
+        WHERE employee_id = #{employeeId}
+          AND stamp_date = #{stampDate}
+          AND status = 'PENDING'::stamp_request_status
+          AND stamp_history_id IS NULL
+        LIMIT 1
+    </select>
+
     <!-- ステータスで取得（作成日降順） -->
     <select id="findByStatus" resultMap="StampRequestResultMap">
         SELECT <include refid="selectAllColumns"/>

@@ -18,7 +18,7 @@ import java.util.Objects;
  * 打刻修正リクエストの登録を扱うサービス。
  *
  * Requirements 1, 9 の受入基準を実装:
- * - 理由の長さ検証（10-500文字）
+ * - 理由の必須検証
  * - 未来日付の拒否
  * - 時刻の妥当性・順序検証
  * - 休憩時間の検証
@@ -41,40 +41,45 @@ public class StampRequestRegistrationService {
             throw new IllegalArgumentException("社員IDが指定されていません");
         }
 
-        // 理由の長さ検証（Requirement 1-4, 9-8）
+        // 理由の必須検証（Requirement 1-4, 9-8）
         validateReason(request.reason());
 
         // 時刻の検証（Requirement 9-1, 9-2, 9-3, 9-4）
         validateTimes(request);
 
-        // 勤怠記録の存在と所有者チェック
-        StampHistory stampHistory = requireOwnedStampHistory(request.stampHistoryId(), employeeId);
+        // 勤怠記録の存在と所有者チェック（stampHistoryIdがnullの場合はOptional.empty()）
+        java.util.Optional<StampHistory> stampHistoryOpt = findOwnedStampHistory(request.stampHistoryId(), employeeId);
+
+        // stamp_dateの決定（重複チェックで使用）
+        LocalDate stampDate = resolveStampDate(stampHistoryOpt, request);
 
         // 重複リクエストの検証（Requirement 1-7）
-        validateNoDuplicatePendingRequest(request.stampHistoryId(), employeeId);
+        validateNoDuplicateRequest(request.stampHistoryId(), employeeId, stampDate);
 
-        LocalDate stampDate = resolveStampDate(stampHistory, request);
-        OffsetDateTime requestedInTime = request.requestedInTime();
-        OffsetDateTime requestedOutTime = request.requestedOutTime();
-        OffsetDateTime requestedBreakStart = request.requestedBreakStartTime();
-        OffsetDateTime requestedBreakEnd = request.requestedBreakEndTime();
+        // original値のスナップショット（stampHistoryがない場合はすべてnull）
+        OffsetDateTime originalInTime = stampHistoryOpt.map(StampHistory::getInTime).orElse(null);
+        OffsetDateTime originalOutTime = stampHistoryOpt.map(StampHistory::getOutTime).orElse(null);
+        OffsetDateTime originalBreakStart = stampHistoryOpt.map(StampHistory::getBreakStartTime).orElse(null);
+        OffsetDateTime originalBreakEnd = stampHistoryOpt.map(StampHistory::getBreakEndTime).orElse(null);
+        Boolean originalIsNightShift = stampHistoryOpt.map(StampHistory::getIsNightShift).orElse(null);
+
         Boolean requestedIsNightShift = request.requestedIsNightShift() != null
             ? request.requestedIsNightShift()
-            : stampHistory.getIsNightShift();
+            : originalIsNightShift;
 
         StampRequest stampRequest = StampRequest.builder()
             .employeeId(employeeId)
             .stampHistoryId(request.stampHistoryId())
             .stampDate(stampDate)
-            .originalInTime(stampHistory.getInTime())
-            .originalOutTime(stampHistory.getOutTime())
-            .originalBreakStartTime(stampHistory.getBreakStartTime())
-            .originalBreakEndTime(stampHistory.getBreakEndTime())
-            .originalIsNightShift(stampHistory.getIsNightShift())
-            .requestedInTime(requestedInTime)
-            .requestedOutTime(requestedOutTime)
-            .requestedBreakStartTime(requestedBreakStart)
-            .requestedBreakEndTime(requestedBreakEnd)
+            .originalInTime(originalInTime)
+            .originalOutTime(originalOutTime)
+            .originalBreakStartTime(originalBreakStart)
+            .originalBreakEndTime(originalBreakEnd)
+            .originalIsNightShift(originalIsNightShift)
+            .requestedInTime(request.requestedInTime())
+            .requestedOutTime(request.requestedOutTime())
+            .requestedBreakStartTime(request.requestedBreakStartTime())
+            .requestedBreakEndTime(request.requestedBreakEndTime())
             .requestedIsNightShift(requestedIsNightShift)
             .reason(request.reason())
             .status(StampRequestStatus.PENDING.name())
@@ -134,20 +139,25 @@ public class StampRequestRegistrationService {
         }
     }
 
-    private void validateNoDuplicatePendingRequest(Integer stampHistoryId, Integer employeeId) {
-        if (stampHistoryId == null) {
-            throw new IllegalArgumentException("勤怠履歴IDは必須です");
+    private void validateNoDuplicateRequest(Integer stampHistoryId, Integer employeeId, LocalDate stampDate) {
+        if (stampHistoryId != null) {
+            // 打刻レコードありの場合: employee_id + stamp_history_id で重複チェック
+            store.findPendingByEmployeeIdAndStampHistoryId(employeeId, stampHistoryId)
+                .ifPresent(existing -> {
+                    throw new StampRequestException(HttpStatus.CONFLICT, "この勤怠記録に対して既に申請中のリクエストが存在します");
+                });
+        } else {
+            // 打刻レコードなしの場合: employee_id + stamp_date で重複チェック
+            store.findPendingByEmployeeIdAndStampDate(employeeId, stampDate)
+                .ifPresent(existing -> {
+                    throw new StampRequestException(HttpStatus.CONFLICT, "この日付に対して既に申請中のリクエストが存在します");
+                });
         }
-
-        store.findPendingByEmployeeIdAndStampHistoryId(employeeId, stampHistoryId)
-            .ifPresent(existing -> {
-                throw new StampRequestException(HttpStatus.CONFLICT, "この勤怠記録に対して既に申請中のリクエストが存在します");
-            });
     }
 
-    private StampHistory requireOwnedStampHistory(Integer stampHistoryId, Integer employeeId) {
+    private java.util.Optional<StampHistory> findOwnedStampHistory(Integer stampHistoryId, Integer employeeId) {
         if (stampHistoryId == null) {
-            throw new IllegalArgumentException("勤怠履歴IDは必須です");
+            return java.util.Optional.empty();
         }
 
         StampHistory history = stampHistoryMapper.getById(stampHistoryId)
@@ -156,23 +166,31 @@ public class StampRequestRegistrationService {
         if (!Objects.equals(history.getEmployeeId(), employeeId)) {
             throw new StampRequestException(HttpStatus.FORBIDDEN, "自分の勤怠記録のみ申請できます");
         }
-        return history;
+        return java.util.Optional.of(history);
     }
 
-    private LocalDate resolveStampDate(StampHistory history, StampRequestCreateRequest request) {
+    private LocalDate resolveStampDate(java.util.Optional<StampHistory> historyOpt, StampRequestCreateRequest request) {
+        // requestedInTime から優先的に導出
         if (request.requestedInTime() != null) {
             return request.requestedInTime().toLocalDate();
         }
-        if (history.getStampDate() != null) {
-            return history.getStampDate();
+
+        // stampHistory が存在する場合はそこから取得
+        if (historyOpt.isPresent()) {
+            StampHistory history = historyOpt.get();
+            if (history.getStampDate() != null) {
+                return history.getStampDate();
+            }
+            if (history.getYear() != null && history.getMonth() != null && history.getDay() != null) {
+                return LocalDate.of(
+                    Integer.parseInt(history.getYear()),
+                    Integer.parseInt(history.getMonth()),
+                    Integer.parseInt(history.getDay())
+                );
+            }
         }
-        if (history.getYear() != null && history.getMonth() != null && history.getDay() != null) {
-            return LocalDate.of(
-                Integer.parseInt(history.getYear()),
-                Integer.parseInt(history.getMonth()),
-                Integer.parseInt(history.getDay())
-            );
-        }
+
+        // フォールバック: 現在日付
         return store.now().toLocalDate();
     }
 }

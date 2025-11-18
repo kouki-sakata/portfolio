@@ -1,8 +1,10 @@
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RotateCcw } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -11,8 +13,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { useCreateStampRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
@@ -27,7 +37,7 @@ type RequestCorrectionModalProps = {
 };
 
 type RequestCorrectionForm = {
-  stampHistoryId: number;
+  stampHistoryId?: number | null;
   requestedInTime?: string | null;
   requestedOutTime?: string | null;
   requestedBreakStartTime?: string | null;
@@ -49,7 +59,8 @@ const toFormValues = (entry: StampHistoryEntry): RequestCorrectionForm => ({
 const normalizePayload = (
   values: RequestCorrectionForm
 ): StampRequestCreatePayload => ({
-  stampHistoryId: values.stampHistoryId,
+  stampHistoryId:
+    values.stampHistoryId === 0 ? null : (values.stampHistoryId ?? null),
   requestedInTime: values.requestedInTime || null,
   requestedOutTime: values.requestedOutTime || null,
   requestedBreakStartTime: values.requestedBreakStartTime || null,
@@ -105,94 +116,188 @@ export const RequestCorrectionModal = ({
     }
   };
 
+  const getSubmitButtonText = () => {
+    if (mutation.isPending) {
+      return "申請中...";
+    }
+    return "申請を送信";
+  };
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>打刻修正リクエスト</DialogTitle>
+          <DialogTitle>打刻修正申請</DialogTitle>
           <DialogDescription>
-            選択した打刻レコードの修正内容と理由を入力してください。
+            {entry.year}/{entry.month}/{entry.day} の
+            {entry.id ? "打刻修正" : "打刻忘れ"}
+            を申請します。承認されると反映されます。
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          className="space-y-5"
-          onSubmit={form.handleSubmit(handleSubmitForm)}
-        >
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="requestedInTime">出勤時刻</Label>
-              <Input
-                aria-label="出勤時刻"
-                id="requestedInTime"
-                type="time"
-                {...form.register("requestedInTime")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="requestedOutTime">退勤時刻</Label>
-              <Input
-                aria-label="退勤時刻"
-                id="requestedOutTime"
-                type="time"
-                {...form.register("requestedOutTime")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="requestedBreakStartTime">休憩開始</Label>
-              <Input
-                aria-label="休憩開始"
-                id="requestedBreakStartTime"
-                type="time"
-                {...form.register("requestedBreakStartTime")}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="requestedBreakEndTime">休憩終了</Label>
-              <Input
-                aria-label="休憩終了"
-                id="requestedBreakEndTime"
-                type="time"
-                {...form.register("requestedBreakEndTime")}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="reason">修正理由</Label>
-            <Textarea
-              aria-label="修正理由"
-              id="reason"
-              placeholder="修正が必要な理由を詳しく記入してください"
-              rows={4}
-              {...form.register("reason")}
+        <Form {...form}>
+          <form
+            className="space-y-4"
+            onSubmit={(event) => {
+              form
+                .handleSubmit(handleSubmitForm)(event)
+                .catch(() => {
+                  // エラーハンドリングはmutation内で処理済み
+                });
+            }}
+          >
+            <FormField
+              control={form.control}
+              name="requestedInTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>出勤時刻</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="09:00"
+                      type="time"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {form.formState.errors.reason ? (
-              <p className="text-destructive text-sm">
-                {form.formState.errors.reason.message}
-              </p>
-            ) : null}
-          </div>
 
-          {form.formState.errors.requestedOutTime ? (
-            <p className="text-destructive text-sm">
-              {form.formState.errors.requestedOutTime.message}
-            </p>
-          ) : null}
+            <FormField
+              control={form.control}
+              name="requestedOutTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>退勤時刻</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="18:00"
+                      type="time"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-          <DialogFooter className="flex flex-col gap-2 sm:flex-row sm:justify-end">
-            <Button
-              onClick={() => onOpenChange(false)}
-              type="button"
-              variant="outline"
-            >
-              キャンセル
-            </Button>
-            <Button disabled={mutation.isPending} type="submit">
-              リクエスト送信
-            </Button>
-          </DialogFooter>
-        </form>
+            <FormField
+              control={form.control}
+              name="requestedBreakStartTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>休憩開始時刻</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="12:00"
+                      type="time"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="requestedBreakEndTime"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>休憩終了時刻</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="13:00"
+                      type="time"
+                      {...field}
+                      value={field.value || ""}
+                    />
+                  </FormControl>
+                  <FormDescription>HH:MM形式で入力してください</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="requestedIsNightShift"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                  <FormControl>
+                    <Checkbox
+                      checked={field.value}
+                      onCheckedChange={field.onChange}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>夜勤</FormLabel>
+                    <FormDescription>
+                      夜勤の場合はチェックしてください
+                    </FormDescription>
+                  </div>
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="reason"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>修正理由</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="修正が必要な理由を記入してください"
+                      rows={3}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormDescription>承認の判断材料となります</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
+              <Button
+                disabled={mutation.isPending}
+                onClick={() => {
+                  if (entry) {
+                    form.reset(toFormValues(entry));
+                  }
+                }}
+                size="sm"
+                type="button"
+                variant="ghost"
+              >
+                <RotateCcw className="mr-2 h-4 w-4" />
+                元の値に戻す
+              </Button>
+
+              <div className="flex gap-2">
+                <Button
+                  disabled={mutation.isPending}
+                  onClick={() => onOpenChange(false)}
+                  type="button"
+                  variant="outline"
+                >
+                  キャンセル
+                </Button>
+                <Button disabled={mutation.isPending} type="submit">
+                  {getSubmitButtonText()}
+                </Button>
+              </div>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

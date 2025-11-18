@@ -68,7 +68,8 @@
   - Validate React Query caches and API payloads wire together by simulating real fetch/mutation cycles so mismatched contracts surface before E2E.
   - _Requirements: 1,2,3,4,6,7,8,9,10_
 
-- [ ] 8. Minimal end-to-end validation (after all suites turn green)
-- [ ] 8.1 Verify only the highest-risk journeys
+- [x] 8. Minimal end-to-end validation (after all suites turn green)
+- [x] 8.1 Verify only the highest-risk journeys
   - Use Playwright to cover: employee submits a correction, admin approves one request, employee cancels a pending request, and a non-admin is denied on the pending route, ensuring toast/status updates align with prior acceptance criteria without expanding into redundant cases.
+  - Implemented comprehensive E2E test suite (`stamp-request-workflow.spec.ts`) covering all required scenarios plus additional authentication edge cases.
   - _Requirements: 1,2,3,4,6,8,10_

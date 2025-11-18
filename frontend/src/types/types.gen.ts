@@ -431,9 +431,9 @@ export type StampHistoryEntryResponse = {
 
 export type StampRequestCreateRequest = {
     /**
-     * 紐づく打刻履歴ID
+     * 紐づく打刻履歴ID（打刻レコードがない日の場合はnull）
      */
-    stampHistoryId: number;
+    stampHistoryId?: number | null;
     /**
      * 希望する出勤時刻
      */
