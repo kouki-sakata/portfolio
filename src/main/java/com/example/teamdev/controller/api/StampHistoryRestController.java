@@ -72,7 +72,9 @@ public class StampHistoryRestController {
             asString(source.get("breakEndTime")),
             asInteger(source.get("overtimeMinutes")),
             asBoolean(source.get("isNightShift")),
-            asString(source.get("updateDate"))
+            asString(source.get("updateDate")),
+            asString(source.get("requestStatus")),
+            asInteger(source.get("requestId"))
         );
     }
 

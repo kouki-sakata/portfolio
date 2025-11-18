@@ -97,6 +97,16 @@ public class StampHistoryDisplay {
 	private OffsetDateTime breakEndTimeRaw;
 
 	/**
+	 * 申請ステータス（PENDING, APPROVED, REJECTED, CANCELLED, NONE）
+	 */
+	private String requestStatus;
+
+	/**
+	 * 申請ID
+	 */
+	private Integer requestId;
+
+	/**
 	 * CSV出力処理用
 	 */
 	public static String getCsvHeader() {

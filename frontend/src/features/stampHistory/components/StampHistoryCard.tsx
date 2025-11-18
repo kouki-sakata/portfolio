@@ -20,6 +20,7 @@ import {
   renderOvertimeCell,
 } from "@/features/stampHistory/lib/formatters";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
+import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { cn } from "@/shared/utils/cn";
 
@@ -46,9 +47,14 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
               <span className={cn("font-bold", dayOfWeekColor)}>
                 {entry.year}/{entry.month}/{entry.day}
               </span>
-              <Badge className="ml-2" variant="outline">
-                {entry.dayOfWeek}
-              </Badge>
+              <div className="flex gap-2">
+                <Badge className="ml-2" variant="outline">
+                  {entry.dayOfWeek}
+                </Badge>
+                {entry.requestStatus && entry.requestStatus !== "NONE" && (
+                  <RequestStatusBadge status={entry.requestStatus} />
+                )}
+              </div>
             </CardTitle>
           </CardHeader>
 

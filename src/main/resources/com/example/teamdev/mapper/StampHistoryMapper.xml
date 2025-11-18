@@ -6,6 +6,28 @@
     <!--対象年月の日数分行を取得したいので、MySQLのSQL文でカレンダーテーブル（generated_dates）を作成し、右外部結合する-->
     <select id="getStampHistoryByYearMonthEmployeeId" parameterType="map"
             resultType="com.example.teamdev.entity.StampHistoryDisplay">
+        WITH latest_request AS (
+            SELECT DISTINCT ON (
+                CASE
+                    WHEN sr.stamp_history_id IS NOT NULL THEN sr.stamp_history_id
+                    ELSE sr.stamp_date::TEXT || '_' || sr.employee_id::TEXT
+                END
+            )
+                sr.id AS request_id,
+                sr.status AS request_status,
+                sr.stamp_history_id,
+                sr.stamp_date,
+                sr.employee_id
+            FROM stamp_request sr
+            WHERE sr.employee_id = #{employeeId}
+            ORDER BY
+                CASE
+                    WHEN sr.stamp_history_id IS NOT NULL THEN sr.stamp_history_id
+                    ELSE sr.stamp_date::TEXT || '_' || sr.employee_id::TEXT
+                END,
+                CASE WHEN sr.status = 'PENDING' THEN 0 ELSE 1 END,
+                sr.created_at DESC
+        )
         SELECT
             sh.id AS id,
             to_char(gd.date, 'YYYY') AS year,
@@ -34,7 +56,9 @@
             sh.break_start_time AS "breakStartTimeRaw",
             sh.break_end_time AS "breakEndTimeRaw",
             sh.is_night_shift AS "isNightShift",
-            to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate"
+            to_char(sh.update_date AT TIME ZONE 'Asia/Tokyo', 'YYYY/MM/DD HH24:MI') AS "updateDate",
+            COALESCE(lr.request_status, 'NONE') AS "requestStatus",
+            lr.request_id AS "requestId"
         FROM (
             <foreach collection="datesInMonth" item="date" separator=" UNION ALL ">
                 SELECT CAST(#{date} AS DATE) AS date
@@ -45,6 +69,10 @@
             sh.employee_id = #{employeeId}
         LEFT JOIN employee emp ON emp.id = #{employeeId}
         LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+        LEFT JOIN latest_request lr ON (
+            (sh.id IS NOT NULL AND lr.stamp_history_id = sh.id) OR
+            (sh.id IS NULL AND lr.stamp_date = gd.date AND lr.stamp_history_id IS NULL AND lr.employee_id = #{employeeId})
+        )
         ORDER BY gd.date ASC
     </select>
 
@@ -72,6 +100,30 @@
                            cal.work_date
                     FROM target_employees te
                     CROSS JOIN calendar cal
+                ),
+                latest_request AS (
+                    SELECT DISTINCT ON (
+                        sr.employee_id,
+                        CASE
+                            WHEN sr.stamp_history_id IS NOT NULL THEN sr.stamp_history_id
+                            ELSE sr.stamp_date::TEXT || '_' || sr.employee_id::TEXT
+                        END
+                    )
+                        sr.id AS request_id,
+                        sr.status AS request_status,
+                        sr.stamp_history_id,
+                        sr.stamp_date,
+                        sr.employee_id
+                    FROM stamp_request sr
+                    WHERE sr.employee_id IN (<foreach collection="employeeIds" item="employeeId" separator=",">#{employeeId}</foreach>)
+                    ORDER BY
+                        sr.employee_id,
+                        CASE
+                            WHEN sr.stamp_history_id IS NOT NULL THEN sr.stamp_history_id
+                            ELSE sr.stamp_date::TEXT || '_' || sr.employee_id::TEXT
+                        END,
+                        CASE WHEN sr.status = 'PENDING' THEN 0 ELSE 1 END,
+                        sr.created_at DESC
                 )
                 SELECT
                     sh.id AS id,
@@ -101,13 +153,19 @@
                     sh.in_time AS "inTimeRaw",
                     sh.out_time AS "outTimeRaw",
                     sh.break_start_time AS "breakStartTimeRaw",
-                    sh.break_end_time AS "breakEndTimeRaw"
+                    sh.break_end_time AS "breakEndTimeRaw",
+                    COALESCE(lr.request_status, 'NONE') AS "requestStatus",
+                    lr.request_id AS "requestId"
                 FROM employee_calendar ec
                 LEFT JOIN stamp_history sh ON
                     sh.employee_id = ec.employee_id
                     AND sh.stamp_date = ec.work_date
                 LEFT JOIN employee emp ON emp.id = ec.employee_id
                 LEFT JOIN employee emp2 ON sh.update_employee_id = emp2.id
+                LEFT JOIN latest_request lr ON (
+                    (sh.id IS NOT NULL AND lr.stamp_history_id = sh.id) OR
+                    (sh.id IS NULL AND lr.stamp_date = ec.work_date AND lr.stamp_history_id IS NULL AND lr.employee_id = ec.employee_id)
+                )
                 ORDER BY ec.sort_order, ec.work_date
             </otherwise>
         </choose>
