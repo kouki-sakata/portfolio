@@ -26,7 +26,7 @@ const baseRequest: StampRequestListItem = {
   dateLabel: "2025/11/12",
   status: "PENDING",
   reason: "退勤が記録されていないため修正します。",
-  submittedAt: "2025-11-12 10:00",
+  createdAt: "2025-11-12T10:00:00+09:00",
   submittedTimestamp: 1_731_396_000_000,
   employeeName: "太郎 山田",
   requestedInTime: "09:30",

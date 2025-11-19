@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatSubmittedAt } from "@/features/stampHistory/lib/dateUtils";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 
@@ -234,7 +235,7 @@ export const WorkflowSidebar = ({
               {request.reason}
             </p>
             <div className="text-gray-400 text-xs">
-              提出: {request.submittedAt || "N/A"}
+              提出: {formatSubmittedAt(request.createdAt) || "N/A"}
             </div>
           </button>
         </div>

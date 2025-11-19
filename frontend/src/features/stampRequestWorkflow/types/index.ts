@@ -12,7 +12,7 @@ export type StampRequestListItem = {
   dateLabel: string;
   status: StampRequestStatus;
   reason: string;
-  submittedAt: string;
+  createdAt: string;
   submittedTimestamp: number;
   employeeName?: string | null;
   originalInTime?: string | null;

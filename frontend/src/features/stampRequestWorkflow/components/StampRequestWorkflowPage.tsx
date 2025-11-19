@@ -293,13 +293,13 @@ function filterAndSortRequests(
     switch (filters.sort) {
       case "recent":
         return (
-          new Date(b.submittedAt || 0).getTime() -
-          new Date(a.submittedAt || 0).getTime()
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
         );
       case "oldest":
         return (
-          new Date(a.submittedAt || 0).getTime() -
-          new Date(b.submittedAt || 0).getTime()
+          new Date(a.createdAt || 0).getTime() -
+          new Date(b.createdAt || 0).getTime()
         );
       case "status": {
         const statusOrder = {

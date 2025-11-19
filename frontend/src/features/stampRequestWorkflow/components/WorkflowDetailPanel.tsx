@@ -11,6 +11,10 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  extractTimeFromISO,
+  formatSubmittedAt,
+} from "@/features/stampHistory/lib/dateUtils";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 
@@ -93,13 +97,13 @@ export const WorkflowDetailPanel = ({
             <div>
               <div className="mb-1 text-gray-600 text-sm">勤務時間</div>
               <div>
-                {request.requestedInTime || "--"} 〜{" "}
-                {request.requestedOutTime || "--"}
+                {extractTimeFromISO(request.requestedInTime) || "--"} 〜{" "}
+                {extractTimeFromISO(request.requestedOutTime) || "--"}
               </div>
             </div>
             <div>
               <div className="mb-1 text-gray-600 text-sm">提出日時</div>
-              <div className="text-sm">{request.submittedAt}</div>
+              <div className="text-sm">{formatSubmittedAt(request.createdAt)}</div>
             </div>
           </div>
         </div>
