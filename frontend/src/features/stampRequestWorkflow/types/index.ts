@@ -19,10 +19,12 @@ export type StampRequestListItem = {
   originalOutTime?: string | null;
   originalBreakStartTime?: string | null;
   originalBreakEndTime?: string | null;
+  originalIsNightShift?: boolean | null;
   requestedInTime?: string | null;
   requestedOutTime?: string | null;
   requestedBreakStartTime?: string | null;
   requestedBreakEndTime?: string | null;
+  requestedIsNightShift?: boolean | null;
   approvalNote?: string | null;
   rejectionReason?: string | null;
   unread?: boolean;

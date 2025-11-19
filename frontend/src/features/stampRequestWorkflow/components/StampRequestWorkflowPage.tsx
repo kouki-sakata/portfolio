@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "@/features/auth/hooks/useAuth";
@@ -76,9 +76,9 @@ export const StampRequestWorkflowPage = ({
   const isLoading = isAdmin ? adminLoading : employeeLoading;
 
   // フィルタリングとソート（管理者ビューのみクライアント側）
-  const filteredAndSortedRequests = isAdmin
-    ? filterAndSortRequests(requests, adminFilters)
-    : requests;
+  const filteredAndSortedRequests = useMemo(() => {
+    return isAdmin ? filterAndSortRequests(requests, adminFilters) : requests;
+  }, [isAdmin, requests, adminFilters]);
 
   // 選択状態
   const [selectedRequest, setSelectedRequest] =
@@ -92,6 +92,25 @@ export const StampRequestWorkflowPage = ({
 
   // ミューテーション
   const bulkApproveMutation = useBulkApproveRequestsMutation();
+
+  // 選択中のリクエストを最新のリストと同期
+  useEffect(() => {
+    if (!selectedRequest) return;
+
+    const found = filteredAndSortedRequests.find(
+      (r) => r.id === selectedRequest.id
+    );
+
+    if (found) {
+      // 内容が更新されている場合のみセット（参照比較）
+      if (found !== selectedRequest) {
+        setSelectedRequest(found);
+      }
+    } else {
+      // リストから消えた場合（フィルタリングなど）は選択解除
+      setSelectedRequest(null);
+    }
+  }, [filteredAndSortedRequests, selectedRequest]);
 
   // 最初のリクエストを自動選択
   useEffect(() => {

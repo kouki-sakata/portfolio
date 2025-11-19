@@ -110,6 +110,57 @@ export const WorkflowDetailPanel = ({
           </div>
         </div>
 
+        {/* 変更内容 */}
+        <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
+          <div className="mb-3 flex items-center gap-2">
+            <Edit className="h-5 w-5 text-gray-600" />
+            <h3>変更内容</h3>
+          </div>
+
+          <div className="overflow-hidden rounded-md border text-sm">
+            <div className="grid grid-cols-3 border-b bg-gray-50 p-3 font-medium text-gray-600">
+              <div>項目</div>
+              <div>変更前</div>
+              <div>変更後</div>
+            </div>
+
+            {/* 出勤時間 */}
+            <DiffRow
+              label="出勤時間"
+              original={extractTimeFromISO(request.originalInTime)}
+              requested={extractTimeFromISO(request.requestedInTime)}
+            />
+
+            {/* 退勤時間 */}
+            <DiffRow
+              label="退勤時間"
+              original={extractTimeFromISO(request.originalOutTime)}
+              requested={extractTimeFromISO(request.requestedOutTime)}
+            />
+
+            {/* 休憩時間 */}
+            <DiffRow
+              label="休憩時間"
+              original={formatRange(
+                request.originalBreakStartTime,
+                request.originalBreakEndTime
+              )}
+              requested={formatRange(
+                request.requestedBreakStartTime,
+                request.requestedBreakEndTime
+              )}
+            />
+
+            {/* 深夜勤務 */}
+            <DiffRow
+              label="深夜勤務"
+              original={request.originalIsNightShift ? "あり" : "なし"}
+              requested={request.requestedIsNightShift ? "あり" : "なし"}
+              isLast
+            />
+          </div>
+        </div>
+
         {/* 申請理由 */}
         <div className="mb-6 rounded-lg border bg-white p-6 shadow-sm">
           <div className="mb-3 flex items-center gap-2">
@@ -209,5 +260,48 @@ export const WorkflowDetailPanel = ({
         </div>
       </div>
     </ScrollArea>
+  );
+};
+
+const formatRange = (start?: string | null, end?: string | null) => {
+  if (!(start && end)) {
+    return "--";
+  }
+  return `${extractTimeFromISO(start)} - ${extractTimeFromISO(end)}`;
+};
+
+type DiffRowProps = {
+  label: string;
+  original: string | null | undefined;
+  requested: string | null | undefined;
+  isLast?: boolean;
+};
+
+const DiffRow = ({
+  label,
+  original,
+  requested,
+  isLast = false,
+}: DiffRowProps) => {
+  const hasChanged = original !== requested;
+  const originalText = original || "--";
+  const requestedText = requested || "--";
+
+  return (
+    <div
+      className={`grid grid-cols-3 p-3 ${!isLast ? "border-b" : ""} ${
+        hasChanged ? "bg-yellow-50/50" : ""
+      }`}
+    >
+      <div className="text-gray-600">{label}</div>
+      <div
+        className={`${hasChanged ? "text-red-600 font-medium" : "text-gray-500"}`}
+      >
+        {originalText}
+      </div>
+      <div className={`font-medium ${hasChanged ? "text-green-600" : ""}`}>
+        {requestedText}
+      </div>
+    </div>
   );
 };
