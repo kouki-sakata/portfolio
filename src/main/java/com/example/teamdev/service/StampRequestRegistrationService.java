@@ -170,12 +170,7 @@ public class StampRequestRegistrationService {
     }
 
     private LocalDate resolveStampDate(java.util.Optional<StampHistory> historyOpt, StampRequestCreateRequest request) {
-        // requestedInTime から優先的に導出
-        if (request.requestedInTime() != null) {
-            return request.requestedInTime().toLocalDate();
-        }
-
-        // stampHistory が存在する場合はそこから取得
+        // stampHistory が存在する場合はそこから取得（整合性のため最優先）
         if (historyOpt.isPresent()) {
             StampHistory history = historyOpt.get();
             if (history.getStampDate() != null) {
@@ -188,6 +183,11 @@ public class StampRequestRegistrationService {
                     Integer.parseInt(history.getDay())
                 );
             }
+        }
+
+        // stampHistory がない場合は requestedInTime から導出
+        if (request.requestedInTime() != null) {
+            return request.requestedInTime().toLocalDate();
         }
 
         // フォールバック: 現在日付

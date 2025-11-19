@@ -130,7 +130,13 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             {/* 申請ステータス */}
             <div className="flex items-center gap-2 pt-2">
               <span className="text-muted-foreground text-xs">申請:</span>
-              <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
+              <RequestStatusBadge
+                status={
+                  entry.requestStatus === "CANCELLED"
+                    ? "NONE"
+                    : (entry.requestStatus ?? "NONE")
+                }
+              />
             </div>
           </CardContent>
 
