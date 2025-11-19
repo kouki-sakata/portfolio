@@ -153,10 +153,10 @@ export const WorkflowDetailPanel = ({
 
             {/* 深夜勤務 */}
             <DiffRow
+              isLast
               label="深夜勤務"
               original={request.originalIsNightShift ? "あり" : "なし"}
               requested={request.requestedIsNightShift ? "あり" : "なし"}
-              isLast
             />
           </div>
         </div>
@@ -188,73 +188,21 @@ export const WorkflowDetailPanel = ({
           <h3 className="mb-4">アクション</h3>
           <div className="space-y-3">
             {isAdmin ? (
-              // 管理者ビュー
-              <>
-                {isPending && (
-                  <>
-                    <Button
-                      className="w-full justify-start bg-green-600 hover:bg-green-700"
-                      onClick={onApprove}
-                    >
-                      <CheckCircle className="mr-2 h-4 w-4" />
-                      承認する
-                    </Button>
-                    <Button
-                      className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
-                      onClick={onReject}
-                      variant="outline"
-                    >
-                      <XCircle className="mr-2 h-4 w-4" />
-                      却下する
-                    </Button>
-                  </>
-                )}
-                {isApproved && (
-                  <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
-                    ✓ この申請は承認済みです
-                  </p>
-                )}
-                {isRejected && (
-                  <p className="rounded-lg bg-red-50 p-4 text-gray-600 text-sm">
-                    ✗ この申請は却下済みです
-                  </p>
-                )}
-              </>
+              <AdminActions
+                isApproved={isApproved}
+                isPending={isPending}
+                isRejected={isRejected}
+                onApprove={onApprove}
+                onReject={onReject}
+              />
             ) : (
-              // 従業員ビュー
-              <>
-                {request.status === "PENDING" && (
-                  <>
-                    <Button
-                      className="w-full justify-start"
-                      onClick={onEdit}
-                      variant="outline"
-                    >
-                      <Edit className="mr-2 h-4 w-4" />
-                      申請を編集する
-                    </Button>
-                    <Button
-                      className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
-                      onClick={() => onCancel?.(request.id)}
-                      variant="outline"
-                    >
-                      <Ban className="mr-2 h-4 w-4" />
-                      申請をキャンセルする
-                    </Button>
-                  </>
-                )}
-                {isRejected && (
-                  <Button className="w-full justify-start" onClick={onEdit}>
-                    <Edit className="mr-2 h-4 w-4" />
-                    修正して再申請する
-                  </Button>
-                )}
-                {isApproved && (
-                  <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
-                    ✓ この申請は承認済みです
-                  </p>
-                )}
-              </>
+              <EmployeeActions
+                isApproved={isApproved}
+                isRejected={isRejected}
+                onCancel={onCancel}
+                onEdit={onEdit}
+                request={request}
+              />
             )}
           </div>
         </div>
@@ -269,6 +217,104 @@ const formatRange = (start?: string | null, end?: string | null) => {
   }
   return `${extractTimeFromISO(start)} - ${extractTimeFromISO(end)}`;
 };
+
+type AdminActionsProps = {
+  isPending: boolean;
+  isApproved: boolean;
+  isRejected: boolean;
+  onApprove?: () => void;
+  onReject?: () => void;
+};
+
+const AdminActions = ({
+  isPending,
+  isApproved,
+  isRejected,
+  onApprove,
+  onReject,
+}: AdminActionsProps) => (
+  <>
+    {isPending && (
+      <>
+        <Button
+          className="w-full justify-start bg-green-600 hover:bg-green-700"
+          onClick={onApprove}
+        >
+          <CheckCircle className="mr-2 h-4 w-4" />
+          承認する
+        </Button>
+        <Button
+          className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
+          onClick={onReject}
+          variant="outline"
+        >
+          <XCircle className="mr-2 h-4 w-4" />
+          却下する
+        </Button>
+      </>
+    )}
+    {isApproved && (
+      <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
+        ✓ この申請は承認済みです
+      </p>
+    )}
+    {isRejected && (
+      <p className="rounded-lg bg-red-50 p-4 text-gray-600 text-sm">
+        ✗ この申請は却下済みです
+      </p>
+    )}
+  </>
+);
+
+type EmployeeActionsProps = {
+  request: StampRequestListItem;
+  isApproved: boolean;
+  isRejected: boolean;
+  onEdit?: () => void;
+  onCancel?: (id: number) => void;
+};
+
+const EmployeeActions = ({
+  request,
+  isApproved,
+  isRejected,
+  onEdit,
+  onCancel,
+}: EmployeeActionsProps) => (
+  <>
+    {request.status === "PENDING" && (
+      <>
+        <Button
+          className="w-full justify-start"
+          onClick={onEdit}
+          variant="outline"
+        >
+          <Edit className="mr-2 h-4 w-4" />
+          申請を編集する
+        </Button>
+        <Button
+          className="w-full justify-start border-red-200 text-red-600 hover:text-red-700"
+          onClick={() => onCancel?.(request.id)}
+          variant="outline"
+        >
+          <Ban className="mr-2 h-4 w-4" />
+          申請をキャンセルする
+        </Button>
+      </>
+    )}
+    {isRejected && (
+      <Button className="w-full justify-start" onClick={onEdit}>
+        <Edit className="mr-2 h-4 w-4" />
+        修正して再申請する
+      </Button>
+    )}
+    {isApproved && (
+      <p className="rounded-lg bg-green-50 p-4 text-gray-600 text-sm">
+        ✓ この申請は承認済みです
+      </p>
+    )}
+  </>
+);
 
 type DiffRowProps = {
   label: string;
@@ -289,13 +335,13 @@ const DiffRow = ({
 
   return (
     <div
-      className={`grid grid-cols-3 p-3 ${!isLast ? "border-b" : ""} ${
+      className={`grid grid-cols-3 p-3 ${isLast ? "" : "border-b"} ${
         hasChanged ? "bg-yellow-50/50" : ""
       }`}
     >
       <div className="text-gray-600">{label}</div>
       <div
-        className={`${hasChanged ? "text-red-600 font-medium" : "text-gray-500"}`}
+        className={`${hasChanged ? "font-medium text-red-600" : "text-gray-500"}`}
       >
         {originalText}
       </div>

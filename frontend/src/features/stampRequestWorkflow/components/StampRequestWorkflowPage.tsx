@@ -76,9 +76,10 @@ export const StampRequestWorkflowPage = ({
   const isLoading = isAdmin ? adminLoading : employeeLoading;
 
   // フィルタリングとソート（管理者ビューのみクライアント側）
-  const filteredAndSortedRequests = useMemo(() => {
-    return isAdmin ? filterAndSortRequests(requests, adminFilters) : requests;
-  }, [isAdmin, requests, adminFilters]);
+  const filteredAndSortedRequests = useMemo(
+    () => (isAdmin ? filterAndSortRequests(requests, adminFilters) : requests),
+    [isAdmin, requests, adminFilters]
+  );
 
   // 選択状態
   const [selectedRequest, setSelectedRequest] =
@@ -95,7 +96,9 @@ export const StampRequestWorkflowPage = ({
 
   // 選択中のリクエストを最新のリストと同期
   useEffect(() => {
-    if (!selectedRequest) return;
+    if (!selectedRequest) {
+      return;
+    }
 
     const found = filteredAndSortedRequests.find(
       (r) => r.id === selectedRequest.id
