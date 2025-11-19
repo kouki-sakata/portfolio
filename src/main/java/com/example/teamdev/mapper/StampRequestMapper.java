@@ -248,6 +248,43 @@ public interface StampRequestMapper {
     void update(StampRequest request);
 
     /**
+     * 検索条件に基づいてリクエストを検索します。
+     *
+     * <p>以下の条件でフィルタリングを行います:
+     * <ul>
+     *   <li>ステータス（完全一致）</li>
+     *   <li>検索キーワード（理由、ID、従業員名のいずれかに部分一致、大文字小文字無視）</li>
+     * </ul>
+     * </p>
+     *
+     * @param status ステータス（nullの場合は全ステータス）
+     * @param search 検索キーワード（nullの場合はフィルタなし）
+     * @param sort ソート順（"recent", "oldest", "status"）
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト
+     */
+    List<StampRequest> findWithSearch(
+            @Param("status") String status,
+            @Param("search") String search,
+            @Param("sort") String sort,
+            @Param("offset") int offset,
+            @Param("limit") int limit
+    );
+
+    /**
+     * 検索条件に基づいてリクエスト件数をカウントします。
+     *
+     * @param status ステータス（nullの場合は全ステータス）
+     * @param search 検索キーワード（nullの場合はフィルタなし）
+     * @return 該当するリクエストの件数
+     */
+    int countWithSearch(
+            @Param("status") String status,
+            @Param("search") String search
+    );
+
+    /**
      * 指定されたIDのリクエストを削除します。
      *
      * @param id 削除するリクエストのID
