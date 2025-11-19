@@ -493,9 +493,13 @@ class StampRequestRegistrationServiceTest {
     @Test
     void createRequest_成功_翌日退勤の調整() {
         // Given - 退勤時刻が翌日（日付を跨ぐ深夜勤務）
-        // 現在時刻（10:00）より前の時刻を使用
-        OffsetDateTime inTime = OffsetDateTime.parse("2025-11-14T22:00:00Z");  // 前日22:00
-        OffsetDateTime outTime = OffsetDateTime.parse("2025-11-15T02:00:00Z");  // 翌日02:00
+        // 未来時刻チェックを回避するため、Clockを進める
+        Clock futureClock = Clock.fixed(Instant.parse("2025-11-16T10:00:00Z"), ZoneId.of("UTC"));
+        store = new StampRequestStore(null, futureClock);
+        service = new StampRequestRegistrationService(store, stampHistoryMapper);
+
+        OffsetDateTime inTime = OffsetDateTime.parse("2025-11-15T22:00:00Z");  // 当日22:00
+        OffsetDateTime outTime = OffsetDateTime.parse("2025-11-16T02:00:00Z");  // 翌日02:00
 
         StampRequestCreateRequest request = new StampRequestCreateRequest(
             1,

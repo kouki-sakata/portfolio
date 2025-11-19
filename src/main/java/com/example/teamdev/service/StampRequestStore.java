@@ -335,6 +335,50 @@ public class StampRequestStore {
     }
 
     /**
+     * 検索条件に基づいてリクエストを検索します。
+     *
+     * @param status ステータス（nullの場合は全ステータス）
+     * @param search 検索キーワード（nullの場合はフィルタなし）
+     * @param sort ソート順（"recent", "oldest", "status"）
+     * @param offset スキップする件数
+     * @param limit 取得する最大件数
+     * @return 該当するリクエストのリスト
+     */
+    public List<StampRequest> findWithSearch(String status, String search, String sort, int offset, int limit) {
+        if (mapper != null) {
+            return mapper.findWithSearch(status, search, sort, offset, limit);
+        } else {
+            // テスト用簡易実装
+            return storage.values().stream()
+                .filter(r -> status == null || Objects.equals(r.getStatus(), status))
+                .filter(r -> search == null || (r.getReason() != null && r.getReason().contains(search)))
+                .sorted(Comparator.comparing(StampRequest::getCreatedAt).reversed()) // 簡易的に常に作成日降順
+                .skip(offset)
+                .limit(limit)
+                .toList();
+        }
+    }
+
+    /**
+     * 検索条件に基づいてリクエスト件数をカウントします。
+     *
+     * @param status ステータス（nullの場合は全ステータス）
+     * @param search 検索キーワード（nullの場合はフィルタなし）
+     * @return 該当するリクエストの件数
+     */
+    public int countWithSearch(String status, String search) {
+        if (mapper != null) {
+            return mapper.countWithSearch(status, search);
+        } else {
+            // テスト用簡易実装
+            return (int) storage.values().stream()
+                .filter(r -> status == null || Objects.equals(r.getStatus(), status))
+                .filter(r -> search == null || (r.getReason() != null && r.getReason().contains(search)))
+                .count();
+        }
+    }
+
+    /**
      * すべてのリクエストを取得します。
      *
      * <p><strong>警告:</strong> 本番環境では使用しないでください。

@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatSubmittedAt } from "@/features/stampHistory/lib/dateUtils";
 import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 
@@ -44,7 +45,7 @@ const SKELETON_IDS = [
 ] as const;
 
 type WorkflowSidebarProps = {
-  role: "employee" | "admin";
+  userRole: "employee" | "admin";
   requests: StampRequestListItem[];
   selectedId: number | null;
   isLoading: boolean;
@@ -61,7 +62,7 @@ type WorkflowSidebarProps = {
 };
 
 export const WorkflowSidebar = ({
-  role,
+  userRole,
   requests,
   selectedId,
   isLoading,
@@ -76,7 +77,7 @@ export const WorkflowSidebar = ({
   onToggleSelection,
   onToggleSelectAll,
 }: WorkflowSidebarProps) => {
-  const isAdmin = role === "admin";
+  const isAdmin = userRole === "admin";
 
   // ステータスカウントを計算
   const statusCounts = {
@@ -234,7 +235,7 @@ export const WorkflowSidebar = ({
               {request.reason}
             </p>
             <div className="text-gray-400 text-xs">
-              提出: {request.submittedAt || "N/A"}
+              提出: {formatSubmittedAt(request.createdAt) || "N/A"}
             </div>
           </button>
         </div>

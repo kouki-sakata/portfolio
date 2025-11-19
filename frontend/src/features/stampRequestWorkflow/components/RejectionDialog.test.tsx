@@ -31,7 +31,7 @@ const baseRequest: StampRequestListItem = {
   dateLabel: "2025/11/12",
   status: "PENDING",
   reason: "退勤時刻が誤って記録されたため修正します。",
-  submittedAt: "2025-11-12 08:15",
+  createdAt: "2025-11-12T08:15:00+09:00",
   submittedTimestamp: 1_731_388_800_000,
   employeeName: "佐藤 花子",
   requestedInTime: "08:00",

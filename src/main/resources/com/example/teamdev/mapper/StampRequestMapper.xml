@@ -291,4 +291,85 @@
         WHERE id = #{id}
     </delete>
 
+    <!-- 検索条件付き取得（ページネーション・ソート対応） -->
+    <select id="findWithSearch" resultMap="StampRequestResultMap">
+        SELECT
+            r.id,
+            r.employee_id,
+            r.stamp_history_id,
+            r.stamp_date,
+            r.status,
+            r.original_in_time,
+            r.original_out_time,
+            r.original_break_start_time,
+            r.original_break_end_time,
+            r.original_is_night_shift,
+            r.requested_in_time,
+            r.requested_out_time,
+            r.requested_break_start_time,
+            r.requested_break_end_time,
+            r.requested_is_night_shift,
+            r.reason,
+            r.approval_note,
+            r.rejection_reason,
+            r.cancellation_reason,
+            r.approval_employee_id,
+            r.rejection_employee_id,
+            r.created_at,
+            r.updated_at,
+            r.approved_at,
+            r.rejected_at,
+            r.cancelled_at
+        FROM stamp_request r
+        LEFT JOIN employee e ON r.employee_id = e.id
+        <where>
+            <if test="status != null">
+                AND r.status = #{status}::stamp_request_status
+            </if>
+            <if test="search != null">
+                AND (
+                    CAST(r.id AS TEXT) LIKE '%' || #{search} || '%'
+                    OR LOWER(r.reason) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.first_name) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.last_name) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.first_name || ' ' || e.last_name) LIKE '%' || LOWER(#{search}) || '%'
+                )
+            </if>
+        </where>
+        <choose>
+            <when test="sort == 'oldest'">
+                ORDER BY r.created_at ASC, r.id ASC
+            </when>
+            <when test="sort == 'status'">
+                ORDER BY r.status ASC, r.created_at DESC, r.id DESC
+            </when>
+            <otherwise>
+                <!-- default: recent -->
+                ORDER BY r.created_at DESC, r.id DESC
+            </otherwise>
+        </choose>
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <!-- 検索条件付き件数カウント -->
+    <select id="countWithSearch" resultType="int">
+        SELECT COUNT(*)
+        FROM stamp_request r
+        LEFT JOIN employee e ON r.employee_id = e.id
+        <where>
+            <if test="status != null">
+                AND r.status = #{status}::stamp_request_status
+            </if>
+            <if test="search != null">
+                AND (
+                    CAST(r.id AS TEXT) LIKE '%' || #{search} || '%'
+                    OR LOWER(r.reason) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.first_name) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.last_name) LIKE '%' || LOWER(#{search}) || '%'
+                    OR LOWER(e.first_name || ' ' || e.last_name) LIKE '%' || LOWER(#{search}) || '%'
+                )
+            </if>
+        </where>
+    </select>
+
 </mapper>

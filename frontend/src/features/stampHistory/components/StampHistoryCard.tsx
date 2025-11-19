@@ -20,6 +20,7 @@ import {
   renderOvertimeCell,
 } from "@/features/stampHistory/lib/formatters";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
+import { RequestStatusBadge } from "@/features/stampRequestWorkflow/components/RequestStatusBadge";
 import { SpriteIcon } from "@/shared/components/icons/SpriteIcon";
 import { cn } from "@/shared/utils/cn";
 
@@ -124,6 +125,12 @@ export const StampHistoryCard = memo<StampHistoryCardProps>(
             {/* 更新日時 */}
             <div className="pt-2 text-muted-foreground text-xs">
               更新: {entry.updateDate ?? "-"}
+            </div>
+
+            {/* 申請ステータス */}
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-muted-foreground text-xs">申請:</span>
+              <RequestStatusBadge status={entry.requestStatus ?? "NONE"} />
             </div>
           </CardContent>
 

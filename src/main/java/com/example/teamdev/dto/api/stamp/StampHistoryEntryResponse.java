@@ -17,6 +17,8 @@ public record StampHistoryEntryResponse(
     @Schema(description = "休憩終了時刻", example = "12:45", nullable = true) String breakEndTime,
     @Schema(description = "残業分数", example = "60", nullable = true) Integer overtimeMinutes,
     @Schema(description = "夜勤フラグ", example = "false", nullable = true) Boolean isNightShift,
-    @Schema(description = "更新日時", example = "2025-01-15 18:01:00", nullable = true) String updateDate
+    @Schema(description = "更新日時", example = "2025-01-15 18:01:00", nullable = true) String updateDate,
+    @Schema(description = "申請ID", example = "42", nullable = true) Integer requestId,
+    @Schema(description = "申請ステータス", example = "PENDING", nullable = true, allowableValues = {"PENDING", "APPROVED", "REJECTED", "CANCELLED"}) String requestStatus
 ) {
 }

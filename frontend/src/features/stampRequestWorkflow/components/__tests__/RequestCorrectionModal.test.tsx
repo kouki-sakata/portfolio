@@ -78,10 +78,10 @@ describe("RequestCorrectionModal", () => {
     await waitFor(() => {
       expect(mutateAsync).toHaveBeenCalledWith({
         stampHistoryId: mockStampHistoryEntry.id,
-        requestedInTime: "09:00",
-        requestedOutTime: "18:10",
-        requestedBreakStartTime: "12:00",
-        requestedBreakEndTime: "13:00",
+        requestedInTime: "2025-11-07T09:00:00+09:00",
+        requestedOutTime: "2025-11-07T18:10:00+09:00",
+        requestedBreakStartTime: "2025-11-07T12:00:00+09:00",
+        requestedBreakEndTime: "2025-11-07T13:00:00+09:00",
         requestedIsNightShift: false,
         reason:
           "システム障害で退勤打刻がずれたため、正しい時刻へ修正をお願いします。",

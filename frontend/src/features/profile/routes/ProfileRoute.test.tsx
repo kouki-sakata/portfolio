@@ -220,7 +220,7 @@ describe("ProfileRoute", () => {
     await waitFor(() => expect(lastPatchPayload).not.toBeNull());
     await waitFor(() => {
       const cached = queryClient.getQueryData<any>(["profile", "overview"]);
-      expect(cached?.overview?.department).toBe("DX推進室");
+      expect(cached?.raw?.metadata?.department).toBe("DX推進室");
     });
     await waitFor(() =>
       expect(screen.getByTestId("profile-overview-card").textContent).toContain(

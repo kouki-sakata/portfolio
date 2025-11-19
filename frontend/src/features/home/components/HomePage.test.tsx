@@ -620,8 +620,10 @@ describe("HomePage", () => {
 
       await user.click(stampButton);
 
-      // ボタンが無効化されているか確認
-      expect(stampButton).toBeDisabled();
+      // ボタンが無効化されているか確認（非同期状態更新を待つ）
+      await waitFor(() => {
+        expect(stampButton).toBeDisabled();
+      });
     });
 
     it("打刻時にJST固定のタイムスタンプが送信される", async () => {

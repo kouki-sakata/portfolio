@@ -137,9 +137,11 @@ describe("StampHistoryPage", () => {
       </QueryClientProvider>
     );
 
-    expect(
-      await screen.findByRole("status", { name: "審査中" })
-    ).toBeInTheDocument();
+    // モバイルとデスクトップビューの両方がレンダリングされるため、複数の要素が見つかる可能性がある
+    const statusBadges = await screen.findAllByRole("status", {
+      name: "審査中",
+    });
+    expect(statusBadges.length).toBeGreaterThan(0);
 
     const requestButtons = screen.getAllByRole("button", { name: "修正申請" });
     const disabledButton = requestButtons.find((btn) =>

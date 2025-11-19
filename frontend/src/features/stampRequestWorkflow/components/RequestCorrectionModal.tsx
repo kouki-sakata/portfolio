@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { combineDateTimeToISO } from "@/features/stampHistory/lib/dateUtils";
 import type { StampHistoryEntry } from "@/features/stampHistory/types";
 import { useCreateStampRequestMutation } from "@/features/stampRequestWorkflow/hooks/useStampRequests";
 import { stampRequestCreateSchema } from "@/features/stampRequestWorkflow/schemas/stampRequestSchema";
@@ -57,14 +58,35 @@ const toFormValues = (entry: StampHistoryEntry): RequestCorrectionForm => ({
 });
 
 const normalizePayload = (
-  values: RequestCorrectionForm
+  values: RequestCorrectionForm,
+  entry: StampHistoryEntry
 ): StampRequestCreatePayload => ({
   stampHistoryId:
     values.stampHistoryId === 0 ? null : (values.stampHistoryId ?? null),
-  requestedInTime: values.requestedInTime || null,
-  requestedOutTime: values.requestedOutTime || null,
-  requestedBreakStartTime: values.requestedBreakStartTime || null,
-  requestedBreakEndTime: values.requestedBreakEndTime || null,
+  requestedInTime: combineDateTimeToISO(
+    entry.year,
+    entry.month,
+    entry.day,
+    values.requestedInTime || null
+  ),
+  requestedOutTime: combineDateTimeToISO(
+    entry.year,
+    entry.month,
+    entry.day,
+    values.requestedOutTime || null
+  ),
+  requestedBreakStartTime: combineDateTimeToISO(
+    entry.year,
+    entry.month,
+    entry.day,
+    values.requestedBreakStartTime || null
+  ),
+  requestedBreakEndTime: combineDateTimeToISO(
+    entry.year,
+    entry.month,
+    entry.day,
+    values.requestedBreakEndTime || null
+  ),
   requestedIsNightShift: values.requestedIsNightShift ?? false,
   reason: values.reason,
 });
@@ -100,8 +122,11 @@ export const RequestCorrectionModal = ({
   }
 
   const handleSubmitForm = async (values: RequestCorrectionForm) => {
+    if (!entry) {
+      return;
+    }
     try {
-      await mutation.mutateAsync(normalizePayload(values));
+      await mutation.mutateAsync(normalizePayload(values, entry));
       onOpenChange(false);
       form.reset();
     } catch (error) {
