@@ -321,7 +321,7 @@
             r.rejected_at,
             r.cancelled_at
         FROM stamp_request r
-        LEFT JOIN employees e ON r.employee_id = e.id
+        LEFT JOIN employee e ON r.employee_id = e.id
         <where>
             <if test="status != null">
                 AND r.status = #{status}::stamp_request_status
@@ -355,7 +355,7 @@
     <select id="countWithSearch" resultType="int">
         SELECT COUNT(*)
         FROM stamp_request r
-        LEFT JOIN employees e ON r.employee_id = e.id
+        LEFT JOIN employee e ON r.employee_id = e.id
         <where>
             <if test="status != null">
                 AND r.status = #{status}::stamp_request_status
