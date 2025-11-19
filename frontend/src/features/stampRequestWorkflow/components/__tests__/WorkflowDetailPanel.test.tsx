@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 import { WorkflowDetailPanel } from "../WorkflowDetailPanel";
 
@@ -43,18 +43,16 @@ describe("WorkflowDetailPanel", () => {
     it("should display placeholder when no request is selected", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={null}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
-      expect(
-        screen.getByText("申請を選択してください")
-      ).toBeInTheDocument();
+      expect(screen.getByText("申請を選択してください")).toBeInTheDocument();
     });
   });
 
@@ -62,12 +60,12 @@ describe("WorkflowDetailPanel", () => {
     it("should format ISO 8601 createdAt to Japanese datetime format", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
@@ -78,12 +76,12 @@ describe("WorkflowDetailPanel", () => {
     it("should extract time (HH:mm) from ISO 8601 requestedInTime and requestedOutTime", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
@@ -100,12 +98,12 @@ describe("WorkflowDetailPanel", () => {
 
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={requestWithNullTime}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
@@ -118,30 +116,28 @@ describe("WorkflowDetailPanel", () => {
     it("should display edit and cancel buttons for pending request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
       expect(screen.getByText("申請を編集する")).toBeInTheDocument();
-      expect(
-        screen.getByText("申請をキャンセルする")
-      ).toBeInTheDocument();
+      expect(screen.getByText("申請をキャンセルする")).toBeInTheDocument();
     });
 
     it("should display resubmit button for rejected request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockRejectedRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
@@ -152,18 +148,16 @@ describe("WorkflowDetailPanel", () => {
     it("should display approved message for approved request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockApprovedRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
-      expect(
-        screen.getByText("✓ この申請は承認済みです")
-      ).toBeInTheDocument();
+      expect(screen.getByText("✓ この申請は承認済みです")).toBeInTheDocument();
     });
   });
 
@@ -171,12 +165,12 @@ describe("WorkflowDetailPanel", () => {
     it("should display employee name for admin", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="admin"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="admin"
         />
       );
 
@@ -186,12 +180,12 @@ describe("WorkflowDetailPanel", () => {
     it("should display approve and reject buttons for pending request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="admin"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="admin"
         />
       );
 
@@ -202,12 +196,12 @@ describe("WorkflowDetailPanel", () => {
     it("should format all datetime fields correctly", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockApprovedRequest}
-          role="admin"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="admin"
         />
       );
 
@@ -220,12 +214,12 @@ describe("WorkflowDetailPanel", () => {
     it("should display correct status for pending request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="employee"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 
@@ -235,12 +229,12 @@ describe("WorkflowDetailPanel", () => {
     it("should display unread badge for unread request", () => {
       render(
         <WorkflowDetailPanel
+          onApprove={vi.fn()}
+          onCancel={vi.fn()}
+          onEdit={vi.fn()}
+          onReject={vi.fn()}
           request={mockPendingRequest}
-          role="admin"
-          onApprove={() => {}}
-          onReject={() => {}}
-          onCancel={() => {}}
-          onEdit={() => {}}
+          userRole="employee"
         />
       );
 

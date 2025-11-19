@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types";
 import { WorkflowSidebar } from "../WorkflowSidebar";
 
@@ -26,7 +26,8 @@ const mockRequests: StampRequestListItem[] = [
     stampHistoryId: 46,
     dateLabel: "2025/11/06",
     status: "APPROVED",
-    reason: "交通遅延で出勤時間がズレたため修正をお願いします（証明書添付済み）。",
+    reason:
+      "交通遅延で出勤時間がズレたため修正をお願いします（証明書添付済み）。",
     createdAt: "2025-11-06T08:45:00+09:00",
     submittedTimestamp: 1_699_277_100_000,
     employeeName: "佐藤 花子",
@@ -62,24 +63,30 @@ describe("WorkflowSidebar", () => {
     it("should format ISO 8601 createdAt to Japanese datetime format", () => {
       render(
         <WorkflowSidebar
-          role="employee"
-          requests={mockRequests}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={mockRequests}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 
       // 各リクエストの提出日時が "YYYY/MM/DD HH:mm" 形式で表示される
-      expect(screen.getByText(/提出:\s*2025\/11\/07 19:05/)).toBeInTheDocument();
-      expect(screen.getByText(/提出:\s*2025\/11\/06 08:45/)).toBeInTheDocument();
-      expect(screen.getByText(/提出:\s*2025\/11\/05 14:20/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/07 19:05/)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/06 08:45/)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/05 14:20/)
+      ).toBeInTheDocument();
     });
 
     it("should display 'N/A' when createdAt is null", () => {
@@ -92,17 +99,17 @@ describe("WorkflowSidebar", () => {
 
       render(
         <WorkflowSidebar
-          role="employee"
-          requests={requestsWithNullCreatedAt}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={requestsWithNullCreatedAt}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 
@@ -115,17 +122,17 @@ describe("WorkflowSidebar", () => {
     it("should display all requests for employee", () => {
       render(
         <WorkflowSidebar
-          role="employee"
-          requests={mockRequests}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={mockRequests}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 
@@ -137,17 +144,17 @@ describe("WorkflowSidebar", () => {
     it("should display request reasons", () => {
       render(
         <WorkflowSidebar
-          role="employee"
-          requests={mockRequests}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={mockRequests}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 
@@ -166,17 +173,17 @@ describe("WorkflowSidebar", () => {
     it("should display employee names for admin", () => {
       render(
         <WorkflowSidebar
-          role="admin"
-          requests={mockRequests}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={mockRequests}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="admin"
         />
       );
 
@@ -188,24 +195,30 @@ describe("WorkflowSidebar", () => {
     it("should format submission times for all requests", () => {
       render(
         <WorkflowSidebar
-          role="admin"
-          requests={mockRequests}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={mockRequests}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="admin"
         />
       );
 
       // すべての提出日時が正しくフォーマットされている
-      expect(screen.getByText(/提出:\s*2025\/11\/07 19:05/)).toBeInTheDocument();
-      expect(screen.getByText(/提出:\s*2025\/11\/06 08:45/)).toBeInTheDocument();
-      expect(screen.getByText(/提出:\s*2025\/11\/05 14:20/)).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/07 19:05/)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/06 08:45/)
+      ).toBeInTheDocument();
+      expect(
+        screen.getByText(/提出:\s*2025\/11\/05 14:20/)
+      ).toBeInTheDocument();
     });
   });
 
@@ -213,17 +226,17 @@ describe("WorkflowSidebar", () => {
     it("should display skeleton loaders when loading", () => {
       const { container } = render(
         <WorkflowSidebar
-          role="employee"
-          requests={[]}
-          selectedId={null}
           isLoading={true}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={[]}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 
@@ -237,17 +250,17 @@ describe("WorkflowSidebar", () => {
     it("should display empty message when no requests", () => {
       render(
         <WorkflowSidebar
-          role="employee"
-          requests={[]}
-          selectedId={null}
           isLoading={false}
-          statusFilter="ALL"
+          onSearchChange={vi.fn()}
+          onSelectRequest={vi.fn()}
+          onSortChange={vi.fn()}
+          onStatusChange={vi.fn()}
+          requests={[]}
           searchQuery=""
+          selectedId={null}
           sortBy="submittedAt"
-          onSelectRequest={() => {}}
-          onStatusChange={() => {}}
-          onSearchChange={() => {}}
-          onSortChange={() => {}}
+          statusFilter="ALL"
+          userRole="employee"
         />
       );
 

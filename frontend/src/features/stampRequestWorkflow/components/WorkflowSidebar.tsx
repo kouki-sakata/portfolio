@@ -45,7 +45,7 @@ const SKELETON_IDS = [
 ] as const;
 
 type WorkflowSidebarProps = {
-  role: "employee" | "admin";
+  userRole: "employee" | "admin";
   requests: StampRequestListItem[];
   selectedId: number | null;
   isLoading: boolean;
@@ -62,7 +62,7 @@ type WorkflowSidebarProps = {
 };
 
 export const WorkflowSidebar = ({
-  role,
+  userRole,
   requests,
   selectedId,
   isLoading,
@@ -77,7 +77,7 @@ export const WorkflowSidebar = ({
   onToggleSelection,
   onToggleSelectAll,
 }: WorkflowSidebarProps) => {
-  const isAdmin = role === "admin";
+  const isAdmin = userRole === "admin";
 
   // ステータスカウントを計算
   const statusCounts = {

@@ -20,7 +20,7 @@ import type { StampRequestListItem } from "@/features/stampRequestWorkflow/types
 
 type WorkflowDetailPanelProps = {
   request: StampRequestListItem | null;
-  role: "employee" | "admin";
+  userRole: "employee" | "admin";
   onApprove?: () => void;
   onReject?: () => void;
   onCancel?: (id: number) => void;
@@ -29,7 +29,7 @@ type WorkflowDetailPanelProps = {
 
 export const WorkflowDetailPanel = ({
   request,
-  role,
+  userRole,
   onApprove,
   onReject,
   onCancel,
@@ -48,7 +48,7 @@ export const WorkflowDetailPanel = ({
     );
   }
 
-  const isAdmin = role === "admin";
+  const isAdmin = userRole === "admin";
   const isPending = request.status === "PENDING" || request.status === "NEW";
   const isRejected = request.status === "REJECTED";
   const isApproved = request.status === "APPROVED";
@@ -103,7 +103,9 @@ export const WorkflowDetailPanel = ({
             </div>
             <div>
               <div className="mb-1 text-gray-600 text-sm">提出日時</div>
-              <div className="text-sm">{formatSubmittedAt(request.createdAt)}</div>
+              <div className="text-sm">
+                {formatSubmittedAt(request.createdAt)}
+              </div>
             </div>
           </div>
         </div>

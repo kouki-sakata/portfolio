@@ -222,12 +222,12 @@ export const StampRequestWorkflowPage = ({
           onToggleSelectAll={isAdmin ? handleToggleSelectAll : undefined}
           onToggleSelection={isAdmin ? handleToggleSelection : undefined}
           requests={filteredAndSortedRequests}
-          role={role}
           searchQuery={currentFilters.search}
           selectedId={selectedRequest?.id ?? null}
           selectedIds={isAdmin ? selectedIds : undefined}
           sortBy={currentFilters.sort}
           statusFilter={currentFilters.status}
+          userRole={role}
         />
 
         <div className="flex-1 bg-gray-50">
@@ -237,7 +237,7 @@ export const StampRequestWorkflowPage = ({
             onEdit={undefined}
             onReject={() => setRejectionDialogOpen(true)}
             request={selectedRequest}
-            role={role}
+            userRole={role}
           />
         </div>
       </div>
