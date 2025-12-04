@@ -1,5 +1,0 @@
-reviews:
-  path_filters:
-    - src/**
-    - frontend/**
-    - "!docs/**"
